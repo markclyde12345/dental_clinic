@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dentist Dashboard — Fano Dental Clinic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/dentist-dashboard.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="sidebar">
+      <div>
+        <a href="../pages/landing-page.html" class="sidebar-logo">
+          <img src="../Resources/logo.png" alt="Fano Clinic Logo">
+          <span>Fano Dental</span>
+        </a>
+
+        <!-- Clinic Badge -->
+        <div class="sidebar-clinic-card">
+          <div class="clinic-badge-title">Fano Dental Clinic</div>
+          <div class="clinic-badge-sub">
+            <span class="status-dot"></span>
+            <span>Dentist Clinical Suite</span>
+          </div>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <ul class="sidebar-menu">
+          <li>
+            <a href="#" data-tab="overview" class="active">
+              <i class="fa-solid fa-gauge-high"></i>
+              <span>Dashboard Overview</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" data-tab="schedule">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span>Today's Schedule</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" data-tab="queue">
+              <i class="fa-solid fa-user-clock"></i>
+              <span>Patient Queue</span>
+              <span class="nav-counter-pill" id="nav-queue-count">0</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" data-tab="patients">
+              <i class="fa-solid fa-hospital-user"></i>
+              <span>Patient Records</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" data-tab="chart">
+              <i class="fa-solid fa-tooth"></i>
+              <span>Dental Charting</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" data-tab="treatments">
+              <i class="fa-solid fa-stethoscope"></i>
+              <span>Treatments & Plans</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" data-tab="prescriptions">
+              <i class="fa-solid fa-prescription"></i>
+              <span>Prescriptions (Rx)</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" data-tab="followups">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>Follow-Ups</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" data-tab="calendar">
+              <i class="fa-solid fa-calendar-days"></i>
+              <span>Clinical Calendar</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" data-tab="reports">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Reports & Stats</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" data-tab="profile">
+              <i class="fa-solid fa-user-doctor"></i>
+              <span>Dentist Profile</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="user-info" id="dentist-profile-card">
+          <div class="user-avatar" id="user-avatar">D</div>
+          <div class="user-details">
+            <h4 id="user-name">Dr. Dentist</h4>
+            <span id="user-role">Licensed Dental Surgeon</span>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <span>Log Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="main-content">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <h2 id="page-title">Dentist Dashboard Overview</h2>
+          <p class="header-sub" id="header-subtitle">Welcome back, manage your clinical schedule & patients</p>
+        </div>
+        <div class="header-actions">
+          <div class="header-date-badge">
+            <i class="fa-regular fa-calendar"></i>
+            <span id="current-date"></span>
+          </div>
+
+          <!-- Notification Dropdown Toggle -->
+          <div class="notif-wrapper">
+            <button class="icon-btn" id="notif-toggle" title="Notifications">
+              <i class="fa-regular fa-bell"></i>
+              <span class="notif-badge" id="notif-badge-count">3</span>
+            </button>
+            <div class="notif-dropdown" id="notif-dropdown" hidden>
+              <div class="notif-header">
+                <h4>Clinical Notifications</h4>
+                <button class="btn-link" id="mark-all-read">Mark all as read</button>
+              </div>
+              <div class="notif-list" id="notif-list">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="openQuickActionModal()">
+            <i class="fa-solid fa-plus"></i> Quick Action
+          </button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+
+        <!-- ==================== 1. OVERVIEW TAB ==================== -->
+        <section id="tab-overview" class="tab-panel">
+          <!-- 5 Summary Cards -->
+          <div class="overview-cards-grid">
+            <div class="stat-card stat-teal">
+              <div class="stat-icon"><i class="fa-solid fa-calendar-day"></i></div>
+              <div class="stat-content">
+                <span class="stat-label">Today's Appointments</span>
+                <div class="stat-value" id="stat-today">0</div>
+                <span class="stat-sub" id="stat-today-sub">Scheduled for today</span>
+              </div>
+            </div>
+
+            <div class="stat-card stat-gold">
+              <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+              <div class="stat-content">
+                <span class="stat-label">Patients Waiting</span>
+                <div class="stat-value" id="stat-waiting">0</div>
+                <span class="stat-sub">In queue / reception</span>
+              </div>
+            </div>
+
+            <div class="stat-card stat-emerald">
+              <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-content">
+                <span class="stat-label">Completed Today</span>
+                <div class="stat-value" id="stat-completed-today">0</div>
+                <span class="stat-sub">Procedures finished</span>
+              </div>
+            </div>
+
+            <div class="stat-card stat-indigo">
+              <div class="stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+              <div class="stat-content">
+                <span class="stat-label">Upcoming Follow-Ups</span>
+                <div class="stat-value" id="stat-followups">0</div>
+                <span class="stat-sub">Next 7 days</span>
+              </div>
+            </div>
+
+            <div class="stat-card stat-cyan">
+              <div class="stat-icon"><i class="fa-solid fa-user-doctor"></i></div>
+              <div class="stat-content">
+                <span class="stat-label">Seen This Month</span>
+                <div class="stat-value" id="stat-month-total">0</div>
+                <span class="stat-sub">Total treated</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dual Column: Today's Schedule & Patient Queue Widget -->
+          <div class="overview-dual-grid">
+            <!-- Left: Today's Schedule Table -->
+            <div class="panel-card schedule-panel">
+              <div class="panel-header">
+                <div>
+                  <h3>Today's Patient Schedule</h3>
+                  <p class="panel-sub">Real-time schedule for today's consultations & procedures</p>
+                </div>
+                <button class="btn btn-ghost small" onclick="switchTab('schedule')">View All</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table" id="today-schedule-table">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Patient Name</th>
+                      <th>Procedure</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="today-schedule-tbody">
+                    <tr><td colspan="5" class="table-loading">Loading schedule...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right: Patient Queue Widget -->
+            <div class="panel-card queue-panel">
+              <div class="panel-header">
+                <div>
+                  <h3>Patient Queue</h3>
+                  <p class="panel-sub">Current chair & waiting line</p>
+                </div>
+                <button class="btn btn-primary small" id="btn-call-next" onclick="triggerCallNext()">
+                  <i class="fa-solid fa-bullhorn"></i> Call Next
+                </button>
+              </div>
+
+              <!-- Current Patient in Chair -->
+              <div class="queue-chair-card" id="queue-chair-card">
+                <div class="chair-badge"><i class="fa-solid fa-chair"></i> CURRENT PATIENT IN CHAIR</div>
+                <div class="chair-body" id="chair-content">
+                  <div class="no-patient-in-chair">
+                    <i class="fa-solid fa-couch"></i>
+                    <p>No patient currently in chair.</p>
+                    <button class="btn btn-gold small" onclick="triggerCallNext()">Start Next Patient</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Next & Waiting List -->
+              <div class="queue-sub-section">
+                <h4>Next in Line</h4>
+                <div id="queue-next-box" class="queue-next-box">
+                  <span class="muted small">No next patient waiting.</span>
+                </div>
+              </div>
+
+              <div class="queue-sub-section">
+                <h4>Waiting List (<span id="queue-waiting-count">0</span>)</h4>
+                <div id="queue-waiting-list" class="queue-waiting-list">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 2. TODAY'S SCHEDULE TAB ==================== -->
+        <section id="tab-schedule" class="tab-panel" hidden>
+          <div class="panel-card">
+            <div class="panel-header flex-wrap">
+              <div>
+                <h3>Full Appointments Schedule</h3>
+                <p class="panel-sub">Manage, update status, and open clinical records</p>
+              </div>
+              <div class="schedule-filters">
+                <input type="date" id="schedule-date-filter" class="input input-compact">
+                <select id="schedule-status-filter" class="input input-compact">
+                  <option value="All">All Statuses</option>
+                  <option value="Pending">Pending / Waiting</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <input type="search" id="schedule-search-filter" class="input input-compact" placeholder="Search patient...">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date & Time</th>
+                    <th>Patient Name</th>
+                    <th>Contact</th>
+                    <th>Procedure</th>
+                    <th>Status</th>
+                    <th>Clinical Notes</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="full-schedule-tbody">
+                  <tr><td colspan="7" class="table-loading">Loading appointments...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 3. PATIENT QUEUE TAB ==================== -->
+        <section id="tab-queue" class="tab-panel" hidden>
+          <div class="queue-tab-layout">
+            <!-- Active Chair Card -->
+            <div class="panel-card queue-active-workspace">
+              <div class="panel-header">
+                <div>
+                  <h3 style="color:var(--primary-color);">Dental Chair 1 — Active Patient</h3>
+                  <p class="panel-sub">Treatment in progress console</p>
+                </div>
+                <div class="chair-timer" id="chair-live-timer">
+                  <i class="fa-regular fa-clock"></i> <span id="timer-display">00:00:00</span>
+                </div>
+              </div>
+
+              <div id="queue-detailed-chair" class="detailed-chair-view">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <!-- Queue Management List -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <div>
+                  <h3>Queue Sequence</h3>
+                  <p class="panel-sub">Re-order, mark priority/emergency cases</p>
+                </div>
+                <button class="btn btn-primary small" onclick="triggerCallNext()">
+                  <i class="fa-solid fa-forward-step"></i> Next Patient
+                </button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Queue #</th>
+                      <th>Patient</th>
+                      <th>Time</th>
+                      <th>Treatment</th>
+                      <th>Priority</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="queue-detailed-tbody">
+                    <tr><td colspan="6" class="table-loading">Loading queue...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 4. PATIENT RECORDS TAB ==================== -->
+        <section id="tab-patients" class="tab-panel" hidden>
+          <div class="panel-card">
+            <div class="panel-header flex-wrap">
+              <div>
+                <h3>Patient Electronic Health Records (EHR)</h3>
+                <p class="panel-sub">Access full medical history, past visits, clinical notes, and X-rays</p>
+              </div>
+              <div class="patients-toolbar">
+                <div class="search-box-wrap">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="search" id="patient-search" class="input" placeholder="Search by name, email, phone...">
+                </div>
+                <span id="patient-count" class="badge-count-pill">0 patients</span>
+              </div>
+            </div>
+
+            <div id="patient-cards-grid" class="patient-grid">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 5. DENTAL CHARTING TAB ==================== -->
+        <section id="tab-chart" class="tab-panel" hidden>
+          <div class="chart-layout">
+            <!-- Left: Tooth Chart & Surface Selector -->
+            <div class="panel-card chart-main-panel">
+              <div class="panel-header flex-wrap">
+                <div>
+                  <h3>Interactive Dental Odontogram</h3>
+                  <p class="panel-sub">Select patient & click teeth to record clinical conditions and treatments</p>
+                </div>
+                <div class="chart-patient-select-wrap">
+                  <label for="chart-patient-select">Patient:</label>
+                  <select id="chart-patient-select" class="input input-compact">
+                    <option value="">-- Select Patient --</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Tooth Chart Mode Selector (Adult 32 vs Pediatric 20) -->
+              <div class="chart-controls-bar">
+                <div class="btn-group">
+                  <button class="btn btn-ghost small active" id="btn-chart-adult" onclick="setChartType('adult')">Adult (32 Teeth)</button>
+                  <button class="btn btn-ghost small" id="btn-chart-pediatric" onclick="setChartType('pediatric')">Pediatric (20 Primary)</button>
+                </div>
+                <div class="chart-legend">
+                  <span class="legend-item"><span class="color-box col-healthy"></span> Healthy</span>
+                  <span class="legend-item"><span class="color-box col-decay"></span> Decay/Cavity</span>
+                  <span class="legend-item"><span class="color-box col-filled"></span> Filled</span>
+                  <span class="legend-item"><span class="color-box col-crown"></span> Crown</span>
+                  <span class="legend-item"><span class="color-box col-rct"></span> Root Canal</span>
+                  <span class="legend-item"><span class="color-box col-missing"></span> Missing</span>
+                  <span class="legend-item"><span class="color-box col-implant"></span> Implant</span>
+                  <span class="legend-item"><span class="color-box col-extract"></span> Extract Req.</span>
+                </div>
+              </div>
+
+              <!-- Interactive Odontogram Map -->
+              <div class="odontogram-wrapper">
+                <div class="jaw-section">
+                  <div class="jaw-title">MAXILLARY ARCH (UPPER JAW)</div>
+                  <div class="teeth-row" id="upper-teeth-row">
+                    <!-- Injected via JS -->
+                  </div>
+                </div>
+
+                <div class="jaw-divider">
+                  <span>MIDLINE / OCCLUSAL PLANE</span>
+                </div>
+
+                <div class="jaw-section">
+                  <div class="teeth-row" id="lower-teeth-row">
+                    <!-- Injected via JS -->
+                  </div>
+                  <div class="jaw-title">MANDIBULAR ARCH (LOWER JAW)</div>
+                </div>
+              </div>
+
+              <!-- Surface & Action Tool -->
+              <div class="selected-tooth-details-bar" id="selected-tooth-bar">
+                <div class="tooth-meta">
+                  <strong id="selected-tooth-title">Tooth #--</strong>
+                  <span class="muted" id="selected-tooth-desc">Click a tooth above to edit condition</span>
+                </div>
+                <div class="condition-picker">
+                  <select id="tooth-condition-select" class="input input-compact">
+                    <option value="Healthy">Healthy (Sound)</option>
+                    <option value="Decay">Decay / Caries</option>
+                    <option value="Filled">Restored / Filled</option>
+                    <option value="Crown">Prosthetic Crown</option>
+                    <option value="RCT">Root Canal Treated</option>
+                    <option value="Missing">Missing / Extracted</option>
+                    <option value="Implant">Dental Implant</option>
+                    <option value="Extract">Extraction Needed</option>
+                  </select>
+                  <input type="text" id="tooth-custom-note" class="input input-compact" placeholder="Add surface (MODBL) or notes...">
+                  <button class="btn btn-primary small" id="btn-apply-tooth" onclick="applyToothCondition()">Apply</button>
+                  <button class="btn btn-success small" onclick="saveActiveChart()">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Chart
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Condition Summary & History -->
+            <div class="panel-card chart-side-panel">
+              <div class="panel-header">
+                <div>
+                  <h3>Chart Findings Summary</h3>
+                  <p class="panel-sub">Pathology & planned procedures</p>
+                </div>
+              </div>
+              <div class="chart-summary-list" id="chart-summary-list">
+                <p class="muted small">Select a patient to load their dental chart.</p>
+              </div>
+              <div class="chart-clinical-notes-box">
+                <h4>Odontogram Notes</h4>
+                <textarea id="chart-overall-notes" class="input textarea" rows="4" placeholder="General periodontal status, occlusion, hygiene notes..."></textarea>
+                <button class="btn btn-primary small mt-2" onclick="saveActiveChart()">Update Notes</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 6. TREATMENTS & PLANS TAB ==================== -->
+        <section id="tab-treatments" class="tab-panel" hidden>
+          <div class="panel-card">
+            <div class="panel-header flex-wrap">
+              <div>
+                <h3>Treatment Plans & Clinical Procedures</h3>
+                <p class="panel-sub">Create multi-stage treatment plans, assign procedures, and track progress</p>
+              </div>
+              <button class="btn btn-primary" onclick="openCreatePlanModal()">
+                <i class="fa-solid fa-plus"></i> + Create Treatment Plan
+              </button>
+            </div>
+
+            <div class="plan-list" id="plan-list">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 7. PRESCRIPTION MANAGEMENT TAB ==================== -->
+        <section id="tab-prescriptions" class="tab-panel" hidden>
+          <div class="panel-card">
+            <div class="panel-header flex-wrap">
+              <div>
+                <h3>Prescription Management (Rx)</h3>
+                <p class="panel-sub">Issue digital prescriptions with clinical instructions & printable Rx slips</p>
+              </div>
+              <button class="btn btn-primary" onclick="openNewPrescriptionModal()">
+                <i class="fa-solid fa-prescription"></i> + New Prescription
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date Issued</th>
+                    <th>Patient Name</th>
+                    <th>Medication</th>
+                    <th>Dosage & Frequency</th>
+                    <th>Duration</th>
+                    <th>Prescribing Doctor</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="prescriptions-tbody">
+                  <tr><td colspan="7" class="table-loading">Loading prescriptions...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 8. FOLLOW-UP MANAGEMENT TAB ==================== -->
+        <section id="tab-followups" class="tab-panel" hidden>
+          <div class="panel-card">
+            <div class="panel-header flex-wrap">
+              <div>
+                <h3>Post-Treatment Follow-Up Management</h3>
+                <p class="panel-sub">Track recovery checkups, suture removals, and ongoing care</p>
+              </div>
+              <button class="btn btn-primary" onclick="openNewFollowUpModal()">
+                <i class="fa-solid fa-plus"></i> + Schedule Follow-Up
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Scheduled Date</th>
+                    <th>Patient Name</th>
+                    <th>Contact</th>
+                    <th>Treatment Case</th>
+                    <th>Status</th>
+                    <th>Follow-Up Goal / Notes</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="followups-tbody">
+                  <tr><td colspan="7" class="table-loading">Loading follow-ups...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 9. CLINICAL CALENDAR TAB ==================== -->
+        <section id="tab-calendar" class="tab-panel" hidden>
+          <div class="panel-card">
+            <div class="schedule-toolbar">
+              <button class="btn btn-ghost" id="cal-prev"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+              <h3 id="cal-title" style="margin:0; font-family: var(--font-display); color: var(--primary-color);">Week</h3>
+              <button class="btn btn-ghost" id="cal-next">Next <i class="fa-solid fa-chevron-right"></i></button>
+              <div style="flex:1"></div>
+              <button class="btn btn-ghost small active" id="cal-view-week">Week View</button>
+              <button class="btn btn-ghost small" id="cal-view-day">Today</button>
+            </div>
+            <div id="calendar-root" class="calendar-grid"></div>
+          </div>
+        </section>
+
+        <!-- ==================== 10. REPORTS & STATS TAB ==================== -->
+        <section id="tab-reports" class="tab-panel" hidden>
+          <div class="reports-grid">
+            <!-- Metrics -->
+            <div class="panel-card">
+              <h3>Clinical Performance Overview</h3>
+              <div class="reports-metric-row">
+                <div class="report-stat-item">
+                  <span class="report-stat-num" id="rep-total-treated">0</span>
+                  <span class="report-stat-label">Total Patients Treated</span>
+                </div>
+                <div class="report-stat-item">
+                  <span class="report-stat-num" id="rep-completion-rate">0%</span>
+                  <span class="report-stat-label">Appointment Completion Rate</span>
+                </div>
+                <div class="report-stat-item">
+                  <span class="report-stat-num" id="rep-satisfaction">98.5%</span>
+                  <span class="report-stat-label">Patient Satisfaction Score</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Procedures -->
+            <div class="panel-card">
+              <h3>Top Performed Procedures</h3>
+              <div id="rep-top-treatments" class="top-treatments-bars">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Trend Card -->
+          <div class="panel-card mt-4">
+            <div class="panel-header">
+              <div>
+                <h3>Monthly Treatment Trends</h3>
+                <p class="panel-sub">Volume of completed dental procedures throughout the year</p>
+              </div>
+            </div>
+            <div class="bar-chart-container" id="rep-monthly-bars">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 11. DENTIST PROFILE TAB ==================== -->
+        <section id="tab-profile" class="tab-panel" hidden>
+          <div class="profile-tab-grid">
+            <!-- Profile Overview Card -->
+            <div class="panel-card profile-bio-card">
+              <div class="profile-header-avatar">
+                <div class="profile-large-avatar" id="prof-avatar">D</div>
+                <h3 id="prof-name" style="margin:12px 0 4px 0; color:var(--primary-color);">Dr. Dentist</h3>
+                <span class="badge badge-confirmed" id="prof-specialty">General Dentist & Orthodontics</span>
+              </div>
+              <div class="profile-meta-list">
+                <div class="meta-item">
+                  <i class="fa-solid fa-id-card"></i>
+                  <div>
+                    <small>License Number</small>
+                    <strong id="prof-license">PRC-0089421</strong>
+                  </div>
+                </div>
+                <div class="meta-item">
+                  <i class="fa-solid fa-envelope"></i>
+                  <div>
+                    <small>Email</small>
+                    <strong id="prof-email">dentist@fanoclinic.com</strong>
+                  </div>
+                </div>
+                <div class="meta-item">
+                  <i class="fa-solid fa-phone"></i>
+                  <div>
+                    <small>Contact</small>
+                    <strong id="prof-contact">+63 917 555 0192</strong>
+                  </div>
+                </div>
+                <div class="meta-item">
+                  <i class="fa-solid fa-clock"></i>
+                  <div>
+                    <small>Clinical Hours</small>
+                    <strong>Mon - Sat: 9:00 AM - 6:00 PM</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Edit Form -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <div>
+                  <h3>Update Professional Profile</h3>
+                  <p class="panel-sub">Manage your credentials, clinic information, and bio</p>
+                </div>
+              </div>
+              <form id="dentist-profile-form" onsubmit="handleSaveProfile(event)">
+                <div class="form-grid">
+                  <label class="field">
+                    Full Name
+                    <input type="text" id="edit-dentist-name" class="input" required>
+                  </label>
+                  <label class="field">
+                    Dental Specialization
+                    <input type="text" id="edit-dentist-spec" class="input" value="Orthodontics & General Dentistry">
+                  </label>
+                  <label class="field">
+                    PRC License Number
+                    <input type="text" id="edit-dentist-license" class="input" value="PRC-0089421">
+                  </label>
+                  <label class="field">
+                    Contact Number
+                    <input type="tel" id="edit-dentist-phone" class="input">
+                  </label>
+                </div>
+                <label class="field">
+                  Professional Bio & Clinical Philosophy
+                  <textarea id="edit-dentist-bio" class="input textarea" rows="4">Dedicated dental practitioner with over 10 years of experience in restorative, cosmetic, and orthodontic dentistry. Committed to gentle, patient-centered care and precision treatments.</textarea>
+                </label>
+                <div class="form-actions mt-3">
+                  <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODAL ROOT & PRINT CONTAINER ==================== -->
+  <div id="modal-root"></div>
+
+  <!-- Printable Prescription Template Container (hidden from view, displayed only on print) -->
+  <div id="printable-rx-container" class="print-only"></div>
+
+  <!-- Component Scripts -->
+  <script src="../js/api.js"></script>
+  <script src="../js/components/modal.js"></script>
+  <script src="../js/components/calendar.js"></script>
+  <script src="../js/components/patientRecords.js"></script>
+  <script src="../js/components/clinicalWorkspace.js"></script>
+  <script src="../js/components/treatmentPlans.js"></script>
+  <script src="../js/dentist-dashboard.js"></script>
+</body>
+</html>

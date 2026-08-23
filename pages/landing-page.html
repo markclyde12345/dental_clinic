@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10711 Dental Clinic — Transforming Smiles with Modern Dental Care</title>
+  <meta name="description" content="Experience advanced, comfortable, and professional dental services designed for every smile. Where science meets artistry at 10711 Dental Clinic.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css?v=10">
+  <link rel="stylesheet" href="../css/ai-chat.css">
+</head>
+<body>
+
+<!-- ===== LOADER ===== -->
+<div id="loader">
+  <div class="loader-logo-wrap">
+    <img src="../Resources/logo.png" alt="10711 Dental Clinic Logo" class="loader-logo">
+  </div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<!-- ===== MOBILE MENU ===== -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a href="#hero" onclick="closeMobileMenu()">Home</a>
+  <a href="#about" onclick="closeMobileMenu()">About</a>
+  <a href="#services" onclick="closeMobileMenu()">Services</a>
+  <a href="#dentist" onclick="closeMobileMenu()">Dentist</a>
+  <a href="#booking" onclick="closeMobileMenu()" style="color:var(--purple)">Book Now</a>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav id="navbar">
+  <a href="#hero" class="nav-logo">
+    <img src="../Resources/logo.png" alt="10711 Dental Clinic Logo" class="nav-logo-img">
+  </a>
+  <ul class="nav-links">
+    <li><a href="#hero">Home</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#dentist">Dentist</a></li>
+    <li><a href="#booking" class="nav-cta">Book Now</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section id="hero">
+  <div class="hero-bg-wavy">
+    <img src="../Resources/10711.webp" alt="10711 Dental Clinic" class="hero-bg-wavy-img">
+  </div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">
+      Transforming<br>
+      <span class="underline-word">Smiles</span><br>
+      with Modern<br>Dental Care
+    </h1>
+    <p class="hero-sub">
+      Experience advanced, comfortable, and professional dental services
+      designed for every smile. Where science meets artistry.
+    </p>
+    <div class="hero-actions">
+      <a href="login.html" class="btn-primary">Get Started →</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">5+</div>
+        <div class="hero-stat-label">Years Experience</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num" id="patient-count-stat">8K+</div>
+        <div class="hero-stat-label">Happy Patients</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">98%</div>
+        <div class="hero-stat-label">Satisfaction Rate</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section id="services">
+  <div class="section-inner"> 
+    <div class="services-header reveal">
+      <div class="section-label">What We Offer</div>
+      <h2 class="section-title">Comprehensive <em>Dental</em> Services</h2>
+      <p class="section-text">From routine cleanings to advanced cosmetic procedures, we provide complete dental care tailored to your unique needs.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal reveal-delay-1">
+        <div class="service-icon-wrap">🦷</div>
+        <div class="service-name">General Dentistry</div>
+        <p class="service-desc">Routine checkups, cleanings, fillings, and preventive care to keep your teeth healthy and strong for life.</p>
+        <a href="#booking" class="service-link">Learn More →</a>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <div class="service-icon-wrap">🩹</div>
+        <div class="service-name">Endodontics</div>
+        <p class="service-desc">Specialized root canal treatments to relieve pain, eliminate infection, and preserve your natural teeth.</p>
+        <a href="#booking" class="service-link">Learn More →</a>
+      </div>
+      <div class="service-card reveal reveal-delay-3">
+        <div class="service-icon-wrap">🔬</div>
+        <div class="service-name">Orthodontics</div>
+        <p class="service-desc">Invisalign and traditional braces to straighten your teeth discreetly and comfortably at any age.</p>
+        <a href="#booking" class="service-link">Learn More →</a>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <div class="service-icon-wrap">✨</div>
+        <div class="service-name">Aesthetic Dentistry</div>
+        <p class="service-desc">Custom veneers, professional teeth whitening, and smile makeovers designed to enhance your natural beauty.</p>
+        <a href="#booking" class="service-link">Learn More →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about">
+  <div class="about-inner">
+    <div class="about-img-wrap reveal">
+      <div class="about-img-frame">
+        <img src="../Resources/dentist-hero.png" alt="Fano Dental Clinic Specialists">
+      </div>
+      <div class="about-badge">
+        <span class="about-badge-num">15+</span>
+        <div class="about-badge-text">Years of Excellence</div>
+      </div>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <span class="section-label">About Us</span>
+      <h2 class="section-title">Your Trusted <em>Dental</em> Partners</h2>
+      <p class="section-text">
+        At 10711 Dental Clinic, we combine state-of-the-art technology with a patient-centered approach.
+        Our mission is to deliver exceptional dental care in a warm and welcoming environment.
+      </p>
+      <div class="about-features">
+        <div class="about-feature">
+          <div class="feature-check">✓</div>
+          <div class="feature-text">
+            <h4>Board-Certified Specialists</h4>
+            <p>Our team of experienced dentists are certified and continuously trained on the latest techniques.</p>
+          </div>
+        </div>
+        <div class="about-feature">
+          <div class="feature-check">✓</div>
+          <div class="feature-text">
+            <h4>Cutting-Edge Technology</h4>
+            <p>We invest in the latest dental technology to ensure the most accurate and comfortable treatments.</p>
+          </div>
+        </div>
+        <div class="about-feature">
+          <div class="feature-check">✓</div>
+          <div class="feature-text">
+            <h4>Patient-First Philosophy</h4>
+            <p>Every treatment plan is personalized, and we take time to explain procedures and answer your questions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DENTISTS ===== -->
+<section id="dentist">
+  <div class="section-inner">
+    <div class="dentist-header reveal">
+      <div class="section-label">Our Team</div>
+      <h2 class="section-title">Meet Our <em>Expert</em> Dentists</h2>
+      <p class="section-text" style="margin:0 auto;">Highly skilled, compassionate dental professionals dedicated to your smile.</p>
+    </div>
+    <div class="dentists-grid">
+      <div class="dentist-card reveal reveal-delay-1">
+        <div class="dentist-photo">
+          <img src="../Resources/doctor4.png" alt="doctor4">
+          <div class="dentist-photo-overlay"></div>
+        </div>
+        <div class="dentist-info">
+          <div class="dentist-name">Dr. Ana Reyes</div>
+          <div class="dentist-role">Lead Dentist &amp; Founder</div>
+          <p class="dentist-bio">15+ years in cosmetic and general dentistry. Specializes in full smile makeovers.</p>
+          <div class="dentist-social">
+            <a href="#" class="social-icon" aria-label="Facebook">
+              <img src="../Icon/communication.png" alt="Facebook icon">
+            </a>
+            <a href="#" class="social-icon" aria-label="Instagram">
+              <img src="../Icon/instagram.png" alt="Instagram Icon">
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="dentist-card reveal reveal-delay-2">
+        <div class="dentist-photo">
+          <img src="../Resources/doctor3.webp" alt="doctor3">
+          <div class="dentist-photo-overlay"></div>
+        </div>
+        <div class="dentist-info">
+          <div class="dentist-name">Dr. Sara Haile</div>
+          <div class="dentist-role">Orthodontic Specialist</div>
+          <p class="dentist-bio">Expert in Invisalign and braces. Helps patients achieve straighter smiles at any age.</p>
+          <div class="dentist-social">
+             <a href="#" class="social-icon" aria-label="Facebook">
+              <img src="../Icon/communication.png" alt="Facebook icon">
+            </a>
+            <a href="#" class="social-icon" aria-label="Instagram">
+              <img src="../Icon/instagram.png" alt="Instagram Icon">
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="dentist-card reveal reveal-delay-3">
+        <div class="dentist-photo">
+          <img src="../Resources/doctor 2.png" alt="doctor2">
+          <div class="dentist-photo-overlay"></div>
+        </div>
+        <div class="dentist-info">
+          <div class="dentist-name">Dr. Marcus Tesfaye</div>
+          <div class="dentist-role">Implant Surgeon</div>
+          <p class="dentist-bio">Specializes in dental implants and oral surgery with a gentle, precision approach.</p>
+          <div class="dentist-social">
+             <a href="#" class="social-icon" aria-label="Facebook">
+              <img src="../Icon/communication.png" alt="Facebook icon">
+            </a>
+            <a href="#" class="social-icon" aria-label="Instagram">
+              <img src="../Icon/instagram.png" alt="Instagram Icon">
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="dentist-card reveal reveal-delay-4">
+        <div class="dentist-photo">
+          <img src="../Resources/doctor1.webp" alt="doctor1">
+          <div class="dentist-photo-overlay"></div>
+        </div>
+        <div class="dentist-info">
+          <div class="dentist-name">Dr. Liya Girma</div>
+          <div class="dentist-role">Pediatric Dentist</div>
+          <p class="dentist-bio">Passionate about making dental visits fun and comfortable for children of all ages.</p>
+          <div class="dentist-social">
+             <a href="#" class="social-icon" aria-label="Facebook">
+              <img src="../Icon/communication.png" alt="Facebook icon">
+            </a>
+            <a href="#" class="social-icon" aria-label="Instagram">
+              <img src="../Icon/instagram.png" alt="Instagram Icon">
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY CHOOSE US ===== -->
+<section id="why">
+  <div class="why-blob why-blob-1"></div>
+  <div class="why-blob why-blob-2"></div>
+  <div class="why-inner">
+    <div class="reveal" style="text-align:center; max-width:560px; margin:0 auto 16px;">
+      <span class="section-label" style="justify-content:center;">
+        <span>Why Choose Us</span>
+      </span>
+      <h2 class="section-title">Why Patients <em>Love</em> 10711 Dental</h2>
+      <p class="section-text" style="margin:0 auto;">We go beyond dentistry to create an experience that makes you feel valued, comfortable, and cared for.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card reveal reveal-delay-2">
+        <div class="why-icon">💻</div>
+        <div class="why-title">Digital X-Rays</div>
+        <p class="why-text">Advanced imaging with 90% less radiation for faster, safer diagnosis.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-3">
+        <div class="why-icon">🕐</div>
+        <div class="why-title">Flexible Hours</div>
+        <p class="why-text">Open 6 days a week with early morning and evening appointments available.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-4">
+        <div class="why-icon">💳</div>
+        <div class="why-title">Easy Payment Plans</div>
+        <p class="why-text">0% interest financing options and all major insurances accepted.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-5">
+        <div class="why-icon">🛡️</div>
+        <div class="why-title">Safe &amp; Sterilized</div>
+        <p class="why-text">Rigorous infection control and hospital-grade sterilization protocols.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-1">
+        <div class="why-icon">🤝</div>
+        <div class="why-title">Personalized Care</div>
+        <p class="why-text">Every treatment plan uniquely crafted based on your specific dental needs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section id="testimonials">
+  <div class="testimonials-header reveal">
+    <div class="section-label" style="justify-content:center;">
+      <span>Patient Reviews</span>
+    </div>
+    <h2 class="section-title">What Our Patients <em>Say</em></h2>
+  </div>
+  <div class="track-outer">
+    <div class="testimonials-track">
+      <!-- Set 1 -->
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"The best dental experience I've ever had. The team made me feel so comfortable and my teeth look absolutely amazing!"</p>
+        <div class="t-author">
+          <div class="t-avatar">😊</div>
+          <div>
+            <div class="t-name">Amara Bekele</div>
+            <div class="t-role">Whitening Patient</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"Dr. Sara transformed my smile with Invisalign. I couldn't believe how quick and painless the process was. Highly recommended!"</p>
+        <div class="t-author">
+          <div class="t-avatar">🙂</div>
+          <div>
+            <div class="t-name">Solomon Tadesse</div>
+            <div class="t-role">Orthodontic Patient</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"I used to be terrified of the dentist, but 10711 Dental changed everything. So gentle, professional, and caring. 10/10!"</p>
+        <div class="t-author">
+          <div class="t-avatar">😄</div>
+          <div>
+            <div class="t-name">Hiwot Mekonnen</div>
+            <div class="t-role">General Dentistry</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"Got my dental implants here and I couldn't be happier. Looks and feels like natural teeth. The whole process was smooth and painless."</p>
+        <div class="t-author">
+          <div class="t-avatar">😁</div>
+          <div>
+            <div class="t-name">Yonas Alemu</div>
+            <div class="t-role">Implant Patient</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"The staff are so friendly and the clinic is spotless. My kids actually look forward to their dental visits now. Incredible team!"</p>
+        <div class="t-author">
+          <div class="t-avatar">👩</div>
+          <div>
+            <div class="t-name">Tigist Worku</div>
+            <div class="t-role">Pediatric Patient Parent</div>
+          </div>
+        </div>
+      </div>
+      <!-- Set 2 (duplicate for infinite scroll) -->
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"The best dental experience I've ever had. The team made me feel so comfortable and my teeth look absolutely amazing!"</p>
+        <div class="t-author">
+          <div class="t-avatar">😊</div>
+          <div>
+            <div class="t-name">Amara Bekele</div>
+            <div class="t-role">Whitening Patient</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"Dr. Sara transformed my smile with Invisalign. I couldn't believe how quick and painless the process was. Highly recommended!"</p>
+        <div class="t-author">
+          <div class="t-avatar">🙂</div>
+          <div>
+            <div class="t-name">Solomon Tadesse</div>
+            <div class="t-role">Orthodontic Patient</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"I used to be terrified of the dentist, but 10711 Dental changed everything. So gentle, professional, and caring. 10/10!"</p>
+        <div class="t-author">
+          <div class="t-avatar">😄</div>
+          <div>
+            <div class="t-name">Hiwot Mekonnen</div>
+            <div class="t-role">General Dentistry</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"Got my dental implants here and I couldn't be happier. Looks and feels like natural teeth. The whole process was smooth and painless."</p>
+        <div class="t-author">
+          <div class="t-avatar">😁</div>
+          <div>
+            <div class="t-name">Yonas Alemu</div>
+            <div class="t-role">Implant Patient</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"The staff are so friendly and the clinic is spotless. My kids actually look forward to their dental visits now. Incredible team!"</p>
+        <div class="t-author">
+          <div class="t-avatar">👩</div>
+          <div>
+            <div class="t-name">Tigist Worku</div>
+            <div class="t-role">Pediatric Patient Parent</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BOOKING CTA ===== -->
+<section id="booking">
+  <div class="booking-ring"></div>
+  <div class="booking-ring"></div>
+  <div class="booking-ring"></div>
+  <div class="booking-inner">
+    <div class="booking-label reveal">Ready to Transform Your Smile?</div>
+    <h2 class="booking-title reveal">Book Your <br>Free Consultation</h2>
+    <p class="booking-text reveal">Take the first step toward your dream smile. Schedule a free, no-obligation consultation with our expert dental team today.</p>
+    <a href="tel:+251911000000" class="booking-btn reveal">
+      📅 Book Appointment Now
+    </a>
+    <div class="booking-contacts reveal">
+      <div class="booking-contact">
+        <div class="booking-contact-icon">📞</div>
+        <div>
+          <h4>Call Us</h4>
+          <p>+251 911 000 000</p>
+        </div>
+      </div>
+      <div class="booking-contact">
+        <div class="booking-contact-icon">📍</div>
+        <div>
+          <h4>Location</h4>
+          <p>Bole, Addis Ababa</p>
+        </div>
+      </div>
+      <div class="booking-contact">
+        <div class="booking-contact-icon">🕐</div>
+        <div>
+          <h4>Hours</h4>
+          <p>Mon–Sat: 8am – 7pm</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand-logo">
+        <img src="../Resources/logo.png" alt="10711 Dental Clinic Logo" class="footer-logo-img">
+      </div>
+      <b><p class="footer-tagline">Transforming smiles with modern dental care. Advanced, comfortable, and professional dental services for every smile.</p></b>
+      <div class="footer-socials">
+        <a href="#" class="footer-social" aria-label="Facebook">📘</a>
+        <a href="#" class="footer-social" aria-label="Instagram">📷</a>
+        <a href="#" class="footer-social" aria-label="Twitter">🐦</a>
+        <a href="#" class="footer-social" aria-label="YouTube">▶️</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#dentist">Our Dentists</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="#services">General Dentistry</a></li>
+        <li><a href="#services">Endodontics</a></li>
+        <li><a href="#services">Orthodontics</a></li>
+        <li><a href="#services">Aesthetic Dentistry</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><span>📞 +63 9569924709</span></li>
+        <li><span>📞 (032)260 3998</span></li>
+        <li><span>✉️ Example@10711dental.com</span></li>
+        <li><span>📍 Highway East Poblacion City of Naga, Cebu</span></li>
+        <li><span>🕐 Mon–Sat: 8am–7pm</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2024 10711 Dental Clinic. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Cookie Policy</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+<script src="../js/ai-chat.js"></script>
+
+</body>
+</html>

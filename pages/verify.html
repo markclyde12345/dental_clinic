@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Identity — Fano Dental Clinic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css?v=11">
+  <link rel="stylesheet" href="../css/auth.css?v=11">
+</head>
+<body>
+
+  <div class="verify-page">
+    <div class="verify-blob verify-blob-1"></div>
+    <div class="verify-blob verify-blob-2"></div>
+
+    <div class="verify-card">
+
+      <a href="landing-page.html" class="verify-logo">
+        <img src="../Resources/logo.png" alt="Fano Dental Clinic">
+        <span>Fano Dental Clinic</span>
+      </a>
+
+      <!-- Shield icon -->
+      <div class="verify-shield">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L3 7V12C3 16.55 6.84 20.74 12 22C17.16 20.74 21 16.55 21 12V7L12 2Z"
+                fill="#6a4f3b" opacity="0.9"/>
+          <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <h1 class="verify-title">Check your email</h1>
+      <p class="verify-subtitle" id="verify-subtitle">
+        We sent a 6-digit code to your email.<br>Enter it below to verify your account.
+      </p>
+
+      <!-- Channel tabs -->
+      <div class="verify-tabs" id="verify-tabs">
+        <button class="verify-tab active" id="tab-email" onclick="switchChannel('email')">📧 Email</button>
+        <button class="verify-tab" id="tab-sms" onclick="switchChannel('sms')">📱 SMS</button>
+      </div>
+
+      <!-- Send status -->
+      <div class="verify-status" id="verify-status">
+        <span class="status-dot"></span>
+        <span id="status-text">Sending code…</span>
+      </div>
+
+      <!-- 6-digit OTP input grid -->
+      <form id="otp-form" class="otp-boxes-form">
+        <div class="otp-boxes" id="otp-boxes">
+          <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+          <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+          <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+          <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+          <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+          <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        </div>
+
+        <div id="otp-error" class="otp-error" style="display:none;"></div>
+
+        <button type="submit" class="verify-btn" id="verify-btn">
+          <span id="verify-btn-text">Verify & Continue</span>
+        </button>
+      </form>
+
+      <!-- Resend & back -->
+      <div class="verify-footer">
+        Didn't receive a code?
+        <button class="resend-btn" id="resend-btn" onclick="resendOTP()">Resend</button>
+        <span id="resend-timer" style="display:none;">
+          Resend in <strong id="countdown">60</strong>s
+        </span>
+      </div>
+
+      <a href="login.html" class="back-link">← Back to Login</a>
+
+    </div>
+  </div>
+
+  <script src="../js/verify.js"></script>
+</body>
+</html>

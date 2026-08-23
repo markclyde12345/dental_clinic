@@ -1,0 +1,74 @@
+[
+  {
+    "id": "1",
+    "name": "Dental Composite (A2)",
+    "category": "Restorative",
+    "stock": 45,
+    "unit": "Syringes",
+    "threshold": 15,
+    "status": "In Stock"
+  },
+  {
+    "id": "2",
+    "name": "Anesthetic Cartridges (Lidocaine 2%)",
+    "category": "Anesthetics",
+    "stock": 8,
+    "unit": "Boxes (100ct)",
+    "threshold": 20,
+    "status": "Low Stock"
+  },
+  {
+    "id": "3",
+    "name": "Nitrile Gloves (Medium)",
+    "category": "Disposables",
+    "stock": 5,
+    "unit": "Boxes (100ct)",
+    "threshold": 10,
+    "status": "Low Stock"
+  },
+  {
+    "id": "4",
+    "name": "Sterilization Pouches (3.5x9\")",
+    "category": "Hygiene",
+    "stock": 250,
+    "unit": "Pouches",
+    "threshold": 100,
+    "status": "In Stock"
+  },
+  {
+    "id": "5",
+    "name": "Saliva Ejectors (Blue)",
+    "category": "Disposables",
+    "stock": 120,
+    "unit": "Packs (100ct)",
+    "threshold": 50,
+    "status": "In Stock"
+  },
+  {
+    "id": "6",
+    "name": "Prophy Paste (Mint/Medium)",
+    "category": "Hygiene",
+    "stock": 12,
+    "unit": "Tubs",
+    "threshold": 10,
+    "status": "In Stock"
+  },
+  {
+    "id": "7",
+    "name": "Cotton Rolls (#2 Medium)",
+    "category": "Disposables",
+    "stock": 2,
+    "unit": "Boxes (2000ct)",
+    "threshold": 5,
+    "status": "Low Stock"
+  },
+  {
+    "id": "1783514962656",
+    "name": "Test Syringes",
+    "category": "Restorative",
+    "unit": "Syringes",
+    "stock": 50,
+    "threshold": 10,
+    "status": "In Stock"
+  }
+]

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Routing Dashboard — Fano Dental Clinic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f8fafc;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      color: #0b131e;
+    }
+    .loader-container {
+      text-align: center;
+      background: #ffffff;
+      padding: 40px 48px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(11, 60, 77, 0.04);
+      border: 1px solid rgba(11, 60, 77, 0.08);
+    }
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0b3c4d;
+    }
+    .logo-badge img {
+      width: 32px;
+      height: 32px;
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid #eef6f8;
+      border-top-color: #0b3c4d;
+      border-right-color: #c59b27;
+      border-radius: 50%;
+      animation: spin 0.9s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
+      margin: 0 auto 18px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    p {
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: #64748b;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="loader-container">
+    <div class="logo-badge">
+      <img src="../Resources/logo.png" alt="Logo">
+      <span>Fano Dental Clinic</span>
+    </div>
+    <div class="spinner"></div>
+    <p>Authenticating &amp; routing to your dashboard...</p>
+  </div>
+  <script src="../js/dashboard.js"></script>
+</body>
+</html>

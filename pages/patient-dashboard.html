@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Dashboard — Fano Dental Clinic</title>
+  <meta name="description" content="Manage your dental appointments, records, and billing at Fano Dental Clinic.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="../css/patient-dashboard.css">
+  <link rel="stylesheet" href="../css/ai-chat.css">
+</head>
+<body>
+
+  <!-- Sidebar Backdrop overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="dashboard-layout">
+
+    <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+    <aside class="sidebar" id="sidebar">
+      <!-- Logo -->
+      <div class="sidebar-top">
+        <a href="../pages/landing-page.html" class="sidebar-logo">
+          <img src="../Resources/logo.png" alt="Fano Dental Clinic Logo" class="sb-logo-img">
+          <span class="sb-logo-text">Fano Clinic</span>
+        </a>
+        <button class="burger-menu-btn" id="burger-menu-btn" aria-label="Toggle sidebar">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
+      <!-- Clinic Info Badge Card -->
+      <div class="sidebar-clinic-card">
+        <div class="clinic-badge-title">Fano Dental Clinic</div>
+        <div class="clinic-badge-sub">
+          <span class="status-dot"></span>
+          <span>Patient Portal • Active</span>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="sidebar-nav">
+        <p class="nav-label">MAIN</p>
+        <ul class="sidebar-menu">
+          <li>
+            <a href="#" class="nav-item active" data-section="overview" id="nav-overview">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item" data-section="appointments" id="nav-appointments">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Book Appointment
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item" data-section="records" id="nav-records">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              My Records
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item" data-section="billing" id="nav-billing">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              Billing &amp; Invoices
+            </a>
+          </li>
+        </ul>
+
+        <p class="nav-label" style="margin-top:24px;">PERSONAL</p>
+        <ul class="sidebar-menu">
+          <li>
+            <a href="#" class="nav-item" data-section="profile" id="nav-profile">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              My Profile
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item" data-section="settings" id="nav-settings">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Settings
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar User Footer -->
+      <div class="sidebar-footer">
+        <div class="sidebar-user-card">
+          <div class="sidebar-avatar" id="sidebar-avatar">P</div>
+          <div class="sidebar-user-info">
+            <span class="sidebar-user-name" id="sidebar-user-name">Loading...</span>
+            <span class="sidebar-user-role">Patient</span>
+          </div>
+        </div>
+        <button class="sidebar-logout-btn" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Log Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+    <main class="main-content">
+
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="burger-toggle" id="burger-toggle" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="breadcrumb">
+            <span class="breadcrumb-item">Patient Dashboard</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            <span class="breadcrumb-current" id="breadcrumb-current">Overview</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <span class="header-date" id="header-date"></span>
+          <button class="notif-btn" aria-label="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-dot"></span>
+          </button>
+          <button class="quick-book-btn" id="quick-book-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Book Appointment
+          </button>
+          <div class="header-user" id="header-user">
+            <div class="header-avatar" id="header-avatar">P</div>
+            <span class="header-user-name" id="header-user-name">Patient</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ══════════ OVERVIEW SECTION ══════════ -->
+      <section id="overview-section" class="content-section active">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Patient Overview</h1>
+            <p class="section-subtitle" id="greeting-text">Good morning! Here's your health summary.</p>
+          </div>
+          <button class="primary-btn" onclick="switchSection('appointments')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Schedule Visit
+          </button>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+          <div class="stat-card stat-primary">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Next Appointment</p>
+              <p class="stat-value" id="next-appt-val">None Scheduled</p>
+            </div>
+          </div>
+          <div class="stat-card stat-success">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Total Visits</p>
+              <p class="stat-value" id="total-visits-val">0</p>
+            </div>
+          </div>
+          <div class="stat-card stat-warning">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Unpaid Balance</p>
+              <p class="stat-value" id="unpaid-val">₱0.00</p>
+            </div>
+          </div>
+          <div class="stat-card stat-info">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Health Status</p>
+              <p class="stat-value" id="health-status-val">Good</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overview Main Grid -->
+        <div class="overview-grid">
+          <!-- Patient Details Card -->
+          <div class="card patient-detail-card">
+            <div class="card-header">
+              <h3 class="card-title">Patient Details</h3>
+              <button class="card-action-btn" onclick="switchSection('profile')">Edit</button>
+            </div>
+            <div class="patient-info-header">
+              <div class="patient-avatar-lg" id="patient-avatar-lg">P</div>
+              <div>
+                <h2 class="patient-name" id="patient-full-name">Loading...</h2>
+                <span class="patient-id" id="patient-id-tag">PT-2026-0001</span>
+                <div class="patient-status-badge">
+                  <span class="status-dot"></span>
+                  Active Patient
+                </div>
+              </div>
+            </div>
+            <div class="patient-detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Member Since
+                </span>
+                <span class="detail-value" id="detail-since">—</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9c1.48 2.56 3.57 4.65 6.13 6.13l.75-.75a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  Phone
+                </span>
+                <span class="detail-value" id="detail-phone">—</span>
+              </div>
+              <div class="detail-item" style="grid-column: span 2;">
+                <span class="detail-label">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  Email
+                </span>
+                <span class="detail-value" id="detail-email">—</span>
+              </div>
+              <div class="detail-item" style="grid-column: span 2;">
+                <span class="detail-label">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Address
+                </span>
+                <span class="detail-value" id="detail-address">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Appointments & Billing Previews -->
+          <div class="overview-right-col" style="display: flex; flex-direction: column; gap: 22px;">
+            <!-- Upcoming Appointments Card -->
+            <div class="card appointments-preview-card">
+              <div class="card-header">
+                <h3 class="card-title">Upcoming Appointments</h3>
+                <button class="card-action-btn" onclick="switchSection('appointments')">+ Book</button>
+              </div>
+              <div id="upcoming-appointments-list">
+                <div class="empty-state-sm">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <p>No upcoming appointments</p>
+                  <button class="link-btn" onclick="switchSection('appointments')">Schedule one now →</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Invoices Card -->
+            <div class="card invoices-preview-card">
+              <div class="card-header">
+                <h3 class="card-title">Recent Billing</h3>
+                <button class="card-action-btn" onclick="switchSection('billing')">View All</button>
+              </div>
+              <div id="recent-invoices-list">
+                <div class="empty-state-sm">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                  <p>No billing history</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ BOOK APPOINTMENT SECTION ══════════ -->
+      <section id="appointments-section" class="content-section">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Book Appointment</h1>
+            <p class="section-subtitle">Schedule your next dental visit with ease.</p>
+          </div>
+        </div>
+
+        <div class="two-col-layout">
+          <!-- Booking Form Card -->
+          <div class="card booking-form-card">
+            <h3 class="form-heading" style="text-align: center; margin-bottom: 24px;">Book a Dental Appointment</h3>
+            
+            <!-- Step Progress Indicator -->
+            <div class="booking-steps-indicator">
+              <div class="step-line"></div>
+              <div class="step-line-active" id="step-progress-line"></div>
+              
+              <div class="step-indicator-item active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Service</div>
+              </div>
+              <div class="step-indicator-item" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Dentist</div>
+              </div>
+              <div class="step-indicator-item" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Date &amp; Time</div>
+              </div>
+              <div class="step-indicator-item" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Details</div>
+              </div>
+              <div class="step-indicator-item" data-step="5">
+                <div class="step-number">5</div>
+                <div class="step-label">Confirm</div>
+              </div>
+            </div>
+            
+            <form id="booking-wizard-form">
+              <!-- STEP 1: SELECT TREATMENT -->
+              <div class="wizard-step active" id="wizard-step-1">
+                <h4 style="margin: 0 0 16px 0; color: var(--accent); font-weight: 700;">Select Dental Service</h4>
+                <div class="services-grid" id="services-picker-grid">
+                  <!-- Dynamically populated card items -->
+                </div>
+                <input type="hidden" id="wizard-treatment-id" required>
+              </div>
+              
+              <!-- STEP 2: SELECT DENTIST -->
+              <div class="wizard-step" id="wizard-step-2" style="display: none;">
+                <h4 style="margin: 0 0 16px 0; color: var(--accent); font-weight: 700;">Choose Your Dentist</h4>
+                <div class="dentists-grid" id="dentists-picker-grid">
+                  <!-- Dynamically populated dentist items -->
+                </div>
+                <input type="hidden" id="wizard-dentist-name" value="No Preference">
+              </div>
+              
+              <!-- STEP 3: SELECT DATE & TIME -->
+              <div class="wizard-step" id="wizard-step-3" style="display: none;">
+                <h4 style="margin: 0 0 16px 0; color: var(--accent); font-weight: 700;">Choose Date &amp; Time</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 20px;">
+                  <div>
+                    <label class="form-label">Select Date</label>
+                    <input type="date" id="wizard-date" class="form-input" required>
+                  </div>
+                  <div>
+                    <label class="form-label">Available Time Slots</label>
+                    <div id="slots-picker-grid">
+                      <button type="button" class="slot-btn" data-time="09:00 AM">09:00 AM</button>
+                      <button type="button" class="slot-btn" data-time="10:00 AM">10:00 AM</button>
+                      <button type="button" class="slot-btn" data-time="11:00 AM">11:00 AM</button>
+                      <button type="button" class="slot-btn" data-time="02:00 PM">02:00 PM</button>
+                      <button type="button" class="slot-btn" data-time="03:00 PM">03:00 PM</button>
+                      <button type="button" class="slot-btn" data-time="04:00 PM">04:00 PM</button>
+                    </div>
+                    <input type="hidden" id="wizard-time" required>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- STEP 4: PATIENT DETAILS & CLINICAL SCREENING -->
+              <div class="wizard-step" id="wizard-step-4" style="display: none;">
+                <div class="step-subheading-wrap" style="margin-bottom: 20px;">
+                  <h4 style="margin: 0 0 4px 0; color: var(--accent); font-weight: 800; font-size: 1.05rem;">Patient Details &amp; Health Screening</h4>
+                  <p style="margin: 0; font-size: 0.84rem; color: var(--text-secondary);">Provide your contact, health profile, and preferences for a safe and personalized dental visit.</p>
+                </div>
+
+                <!-- 1. Contact & Emergency Contact Card -->
+                <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 18px;">
+                  <div style="font-size: 0.78rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    1. Personal &amp; Emergency Contact
+                  </div>
+                  
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div>
+                      <label class="form-label">Full Name</label>
+                      <input type="text" id="wizard-pat-name" class="form-input" readonly>
+                    </div>
+                    <div>
+                      <label class="form-label">Email Address</label>
+                      <input type="email" id="wizard-pat-email" class="form-input" readonly>
+                    </div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div>
+                      <label class="form-label">Contact Number</label>
+                      <input type="text" id="wizard-pat-phone" class="form-input" readonly>
+                    </div>
+                    <div>
+                      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <label class="form-label" style="margin-bottom: 0;">Patient / Home Address</label>
+                        <button type="button" class="link-btn" id="btn-detect-gps" style="font-size: 0.76rem; display: flex; align-items: center; gap: 4px;">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                          Detect GPS
+                        </button>
+                      </div>
+                      <input type="text" id="wizard-pat-address" class="form-input" placeholder="e.g. Balirong, City of Naga, Cebu">
+                    </div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div>
+                      <label class="form-label">Emergency Contact Name</label>
+                      <input type="text" id="wizard-emergency-name" class="form-input" placeholder="e.g. Maria Santos (Family/Spouse)">
+                    </div>
+                    <div>
+                      <label class="form-label">Emergency Contact Phone</label>
+                      <input type="tel" id="wizard-emergency-phone" class="form-input" placeholder="e.g. 0917 123 4567">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Medical Screening & Health Alerts Card -->
+                <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 18px;">
+                  <div style="font-size: 0.78rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    2. Medical History &amp; Clinical Alerts
+                  </div>
+
+                  <label class="form-label" style="margin-bottom: 8px;">Pre-existing Medical Conditions (Select all that apply)</label>
+                  <div class="health-conditions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-bottom: 14px;">
+                    <label class="checkbox-pill-label">
+                      <input type="checkbox" name="med_condition" value="Hypertension">
+                      <span> High Blood Pressure</span>
+                    </label>
+                    <label class="checkbox-pill-label">
+                      <input type="checkbox" name="med_condition" value="Diabetes">
+                      <span> Diabetes</span>
+                    </label>
+                    <label class="checkbox-pill-label">
+                      <input type="checkbox" name="med_condition" value="Bleeding Disorder">
+                      <span> Bleeding Disorder</span>
+                    </label>
+                    <label class="checkbox-pill-label">
+                      <input type="checkbox" name="med_condition" value="Heart Condition">
+                      <span> Heart Condition</span>
+                    </label>
+                    <label class="checkbox-pill-label">
+                      <input type="checkbox" name="med_condition" value="Pregnant">
+                      <span> Pregnant</span>
+                    </label>
+                    <label class="checkbox-pill-label">
+                      <input type="checkbox" name="med_condition" value="None" id="cond-none">
+                      <span> None / Healthy</span>
+                    </label>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div>
+                      <label class="form-label">Known Allergies (Medications / Latex)</label>
+                      <input type="text" id="wizard-allergies" class="form-input" placeholder="e.g. Penicillin, Latex, Local Anesthesia, None">
+                    </div>
+                    <div>
+                      <label class="form-label">Current Maintenance Medications</label>
+                      <input type="text" id="wizard-medications" class="form-input" placeholder="e.g. Aspirin, Blood Thinners, Insulin, None">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Dental Concern, Insurance & Preferences Card -->
+                <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 18px;">
+                  <div style="font-size: 0.78rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8 2 4 5 4 9c0 5.25 8 13 8 13s8-7.75 8-13c0-4-4-7-8-7z"/></svg>
+                    3. Dental Concerns, Insurance &amp; Preferences
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div>
+                      <label class="form-label">Primary Concern / Symptom</label>
+                      <select id="wizard-primary-concern" class="form-input">
+                        <option value="Routine Cleaning & General Checkup">Routine Cleaning &amp; General Checkup</option>
+                        <option value="Toothache / Tooth Sensitivity">Toothache / Tooth Sensitivity</option>
+                        <option value="Cosmetic / Whitening / Alignment">Cosmetic / Whitening / Alignment</option>
+                        <option value="Broken / Chipped Tooth or Lost Filling">Broken / Chipped Tooth or Lost Filling</option>
+                        <option value="Bleeding Gums / Bad Breath">Bleeding Gums / Bad Breath</option>
+                        <option value="Wisdom Tooth Pain / Extraction Inquiry">Wisdom Tooth Pain / Extraction Inquiry</option>
+                        <option value="Other Consultation">Other Consultation</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="form-label">Dental Insurance / HMO Provider</label>
+                      <select id="wizard-insurance-provider" class="form-input">
+                        <option value="None / Self-Pay">None / Self-Pay</option>
+                        <option value="Maxicare">Maxicare</option>
+                        <option value="Intellicare">Intellicare</option>
+                        <option value="Medicard">Medicard</option>
+                        <option value="PhilHealth">PhilHealth</option>
+                        <option value="Cigna">Cigna</option>
+                        <option value="PhilCare">PhilCare</option>
+                        <option value="Other HMO">Other HMO</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div>
+                      <label class="form-label">HMO / Policy Card ID (optional)</label>
+                      <input type="text" id="wizard-insurance-id" class="form-input" placeholder="e.g. MAXI-10293847">
+                    </div>
+                    <div>
+                      <label class="form-label">Preferred Reminder Method</label>
+                      <select id="wizard-reminder-pref" class="form-input">
+                        <option value="SMS Text Message">SMS Text Message</option>
+                        <option value="Email">Email</option>
+                        <option value="Phone Call">Phone Call</option>
+                        <option value="Both SMS and Email">Both SMS &amp; Email</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Comfort & Anxiety Support Toggle -->
+                  <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                      <span style="font-size: 0.86rem; font-weight: 700; color: var(--text-primary); display: block;">Comfort Care &amp; Anxiety Accommodation</span>
+                      <span style="font-size: 0.76rem; color: var(--text-muted);">Check this if you experience dental anxiety so our dentists provide extra gentle care &amp; pauses.</span>
+                    </div>
+                    <label class="toggle-switch" style="margin-left: 14px;">
+                      <input type="checkbox" id="wizard-dental-anxiety">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Nearest Branch Recommendation Card -->
+                <div class="nearest-branch-banner" id="nearest-branch-banner">
+                  <div class="nb-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </div>
+                  <div class="nb-info">
+                    <div class="nb-header">
+                      <span class="nb-badge">Nearest Branch to You</span>
+                      <span class="nb-distance" id="nearest-branch-dist">Calculating...</span>
+                    </div>
+                    <h4 class="nb-title" id="nearest-branch-name">Fano Dental Clinic — Main Branch (Balirong)</h4>
+                    <p class="nb-address" id="nearest-branch-addr">Balirong Highway, City of Naga, Cebu</p>
+                  </div>
+                </div>
+
+                <!-- Interactive Map -->
+                <div class="map-section-wrap" style="margin-bottom: 22px;">
+                  <div class="map-header-row" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">Interactive Clinic Map &amp; Routes</span>
+                    <span style="font-size: 0.76rem; color: var(--text-muted);">Blue pin = You • Red pin = Fano Clinic</span>
+                  </div>
+                  <div id="clinic-map-container" class="clinic-map-container"></div>
+                </div>
+
+                <!-- Branch Selection Grid -->
+                <div style="margin-bottom: 20px;">
+                  <label class="form-label" style="margin-bottom: 10px;">Select Clinic Branch (or keep recommended nearest)</label>
+                  <div class="branches-picker-grid" id="branches-picker-grid">
+                    <!-- Dynamically populated branch cards with distances -->
+                  </div>
+                  <input type="hidden" id="wizard-selected-branch" value="Fano Dental Clinic — Main Branch (Balirong)">
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                  <label class="form-label">Specific Symptoms &amp; Special Requests</label>
+                  <textarea id="wizard-notes" class="form-input" rows="2" placeholder="Describe symptoms, tooth location, pain level, or any special requests..."></textarea>
+                </div>
+              </div>
+              
+              <!-- STEP 5: CONFIRMATION -->
+              <div class="wizard-step" id="wizard-step-5" style="display: none;">
+                <h4 style="margin: 0 0 16px 0; color: var(--accent); font-weight: 700;">Confirm Appointment Summary</h4>
+                <div style="background: #f8fafc; border-radius: 14px; border: 1px solid var(--border); padding: 22px; margin-bottom: 20px;">
+                  
+                  <!-- Primary Appointment Info -->
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px;">
+                    <div>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Dental Service</strong>
+                      <span id="summary-service" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">—</span>
+                    </div>
+                    <div>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Assigned Dentist</strong>
+                      <span id="summary-dentist" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">—</span>
+                    </div>
+                    <div>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Date &amp; Time Slot</strong>
+                      <span id="summary-datetime" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">—</span>
+                    </div>
+                    <div>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Assigned Clinic Branch</strong>
+                      <span id="summary-branch" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">Main Branch, Fano Dental Clinic</span>
+                    </div>
+                  </div>
+
+                  <!-- Detailed Health & Patient Summary -->
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 0.85rem;">
+                    <div>
+                      <span style="color: var(--text-muted); display: block; font-size: 0.74rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Patient Contact</span>
+                      <span id="summary-patient-contact" style="font-weight: 600; color: var(--text-secondary);">—</span>
+                    </div>
+                    <div>
+                      <span style="color: var(--text-muted); display: block; font-size: 0.74rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Emergency Contact</span>
+                      <span id="summary-emergency-contact" style="font-weight: 600; color: var(--text-secondary);">None specified</span>
+                    </div>
+                    <div>
+                      <span style="color: var(--text-muted); display: block; font-size: 0.74rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Medical Alerts &amp; Allergies</span>
+                      <span id="summary-medical-alerts" style="font-weight: 600; color: var(--text-secondary);">None</span>
+                    </div>
+                    <div>
+                      <span style="color: var(--text-muted); display: block; font-size: 0.74rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Insurance &amp; Care Preferences</span>
+                      <span id="summary-insurance-care" style="font-weight: 600; color: var(--text-secondary);">Self-Pay • Standard Care</span>
+                    </div>
+                  </div>
+
+                </div>
+                <div style="font-size: 0.82rem; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); padding: 12px 14px; border-radius: 8px; font-weight: 600;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <span>Instant confirmation: An SMS reminder &amp; email voucher will be sent to you upon booking.</span>
+                </div>
+              </div>
+              
+              <!-- NAVIGATION BUTTONS -->
+              <div class="wizard-actions" style="display: flex; justify-content: space-between; margin-top: 28px; border-top: 1px solid var(--border); padding-top: 20px;">
+                <button type="button" id="btn-prev-step" class="secondary-btn" style="display: none;">Back</button>
+                <div style="flex: 1;"></div>
+                <button type="button" id="btn-next-step" class="primary-btn">Next Step</button>
+                <button type="submit" id="btn-submit-booking" class="primary-btn" style="display: none;">Confirm &amp; Book Appointment</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ MY RECORDS SECTION ══════════ -->
+      <section id="records-section" class="content-section">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Medical Records</h1>
+            <p class="section-subtitle">Your complete dental treatment history.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Procedure</th>
+                  <th>Dentist</th>
+                  <th>Description</th>
+                  <th>Cost</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="records-table-body">
+                <tr>
+                  <td colspan="6" class="empty-table-row">No medical records found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ BILLING SECTION ══════════ -->
+      <section id="billing-section" class="content-section">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Billing &amp; Invoices</h1>
+            <p class="section-subtitle">Track your payments and outstanding balances.</p>
+          </div>
+          <div class="balance-summary">
+            <span class="balance-label">Outstanding Balance</span>
+            <span class="balance-value" id="balance-display">₱0.00</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Date Issued</th>
+                  <th>Service</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Paid At</th>
+                </tr>
+              </thead>
+              <tbody id="invoices-table-body">
+                <tr>
+                  <td colspan="6" class="empty-table-row">No invoices found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ PROFILE SECTION ══════════ -->
+      <section id="profile-section" class="content-section">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">My Profile</h1>
+            <p class="section-subtitle">Manage your personal information.</p>
+          </div>
+        </div>
+
+        <div class="two-col-layout">
+          <!-- Profile Card -->
+          <div class="card profile-hero-card">
+            <div class="profile-hero-avatar" id="profile-hero-avatar">P</div>
+            <h2 class="profile-hero-name" id="profile-hero-name">Loading...</h2>
+            <p class="profile-hero-email" id="profile-hero-email">—</p>
+            <div class="profile-badges">
+              <span class="profile-badge verified">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Verified
+              </span>
+              <span class="profile-badge patient">Patient</span>
+            </div>
+            <div class="profile-stats">
+              <div class="profile-stat">
+                <span class="pstat-val" id="pstat-visits">0</span>
+                <span class="pstat-label">Visits</span>
+              </div>
+              <div class="profile-stat-divider"></div>
+              <div class="profile-stat">
+                <span class="pstat-val" id="pstat-invoices">0</span>
+                <span class="pstat-label">Invoices</span>
+              </div>
+              <div class="profile-stat-divider"></div>
+              <div class="profile-stat">
+                <span class="pstat-val" id="pstat-balance">₱0</span>
+                <span class="pstat-label">Balance</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Profile Form -->
+          <div class="card">
+            <h3 class="form-heading">Edit Personal Information</h3>
+            <form id="profile-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="profile-first-name" class="form-label">First Name</label>
+                  <input type="text" id="profile-first-name" class="form-input" placeholder="First name" required>
+                </div>
+                <div class="form-group">
+                  <label for="profile-last-name" class="form-label">Last Name</label>
+                  <input type="text" id="profile-last-name" class="form-input" placeholder="Last name" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="profile-email" class="form-label">Email Address</label>
+                <input type="email" id="profile-email" class="form-input" disabled>
+                <span class="form-hint">Email cannot be changed. Contact support if needed.</span>
+              </div>
+              <div class="form-group">
+                <label for="profile-phone" class="form-label">Contact Number</label>
+                <input type="tel" id="profile-phone" class="form-input" placeholder="+63 9XX XXX XXXX">
+              </div>
+              <div class="form-group">
+                <label for="profile-address" class="form-label">Home Address</label>
+                <input type="text" id="profile-address" class="form-input" placeholder="Street, Barangay, City">
+              </div>
+              <button type="submit" class="primary-btn full-width">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ SETTINGS SECTION ══════════ -->
+      <section id="settings-section" class="content-section">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Settings</h1>
+            <p class="section-subtitle">Customize your dashboard experience.</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <!-- Display Preferences -->
+          <div class="card settings-card">
+            <div class="settings-card-icon settings-icon-display">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <h3 class="settings-card-title">Display Preferences</h3>
+            <div class="form-group">
+              <label for="settings-theme" class="form-label">Visual Theme</label>
+              <select id="settings-theme" class="form-input">
+                <option value="light">Classic Light</option>
+                <option value="dark">Comfort Dark</option>
+                <option value="blue" selected>Ocean Blue (Default)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="settings-lang" class="form-label">Display Language</label>
+              <select id="settings-lang" class="form-input">
+                <option value="en">English (US)</option>
+                <option value="tl">Tagalog</option>
+                <option value="es">Español</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="card settings-card">
+            <div class="settings-card-icon settings-icon-notif">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <h3 class="settings-card-title">Notification Preferences</h3>
+            <div class="toggle-group">
+              <div class="toggle-item">
+                <div>
+                  <p class="toggle-label">Email Reminders</p>
+                  <p class="toggle-desc">Appointment alerts & billing statements</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notify-email" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="toggle-item">
+                <div>
+                  <p class="toggle-label">SMS Alerts</p>
+                  <p class="toggle-desc">Text message reminders to your phone</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notify-sms" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="toggle-item">
+                <div>
+                  <p class="toggle-label">Appointment Reminders</p>
+                  <p class="toggle-desc">24-hour advance notice before visits</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notify-reminders" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security -->
+          <div class="card settings-card">
+            <div class="settings-card-icon settings-icon-security">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h3 class="settings-card-title">Security &amp; Privacy</h3>
+            <div class="toggle-group">
+              <div class="toggle-item">
+                <div>
+                  <p class="toggle-label">Two-Factor Authentication</p>
+                  <p class="toggle-desc">Verify your identity at each login</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="enable-2fa">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="settings-actions">
+              <button class="secondary-btn full-width" onclick="alert('Password reset link sent to your email!')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Change Password
+              </button>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="card settings-card danger-zone-card">
+            <div class="settings-card-icon settings-icon-danger">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <h3 class="settings-card-title danger-title">Danger Zone</h3>
+            <p class="settings-desc">Deactivating your account will disable your login and hide all your records. This action can be reversed by contacting support.</p>
+            <button class="danger-btn full-width" onclick="if(confirm('Are you sure you want to deactivate your account?')) alert('Account deactivated. Contact support to reactivate.')">
+              Deactivate My Account
+            </button>
+          </div>
+
+          <!-- Save Settings Button -->
+          <div class="settings-save-row">
+            <button class="primary-btn" id="save-settings-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Save All Settings
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ══════════ APPOINTMENT DETAILS & ACTIONS MODAL ══════════ -->
+  <div class="modal-overlay" id="appointment-details-modal">
+    <div class="modal-card appointment-modal-card">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h3 class="modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Appointment Details</h3>
+          <span class="status-pill" id="modal-appt-status-pill">Pending</span>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeAppointmentModal()" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-body" id="modal-appt-body">
+        <!-- Top banner / Service Overview -->
+        <div class="modal-service-hero">
+          <div class="modal-service-icon">🦷</div>
+          <div>
+            <h4 id="modal-appt-service" class="modal-service-title">Dental Consultation</h4>
+            <p id="modal-appt-dentist-branch" class="modal-service-meta">Assigned Dentist • Main Branch</p>
+          </div>
+        </div>
+
+        <!-- Key Details Grid -->
+        <div class="modal-details-grid">
+          <div class="modal-detail-card">
+            <span class="md-label">📅 Scheduled Date &amp; Time</span>
+            <span class="md-val" id="modal-appt-datetime">—</span>
+          </div>
+          <div class="modal-detail-card">
+            <span class="md-label">📍 Clinic Location</span>
+            <span class="md-val" id="modal-appt-branch">—</span>
+          </div>
+          <div class="modal-detail-card">
+            <span class="md-label">💰 Estimated Service Fee</span>
+            <span class="md-val" id="modal-appt-price">—</span>
+          </div>
+          <div class="modal-detail-card">
+            <span class="md-label">⏱ Estimated Duration</span>
+            <span class="md-val" id="modal-appt-duration">—</span>
+          </div>
+        </div>
+
+        <!-- Additional Details & Notes Box -->
+        <div class="modal-notes-box" id="modal-appt-notes-box">
+          <span class="md-label">📝 Clinical Notes &amp; Medical Alerts</span>
+          <p id="modal-appt-notes" class="modal-notes-text">No additional notes provided.</p>
+        </div>
+
+        <!-- INLINE RESCHEDULE DRAWER (toggled by Reschedule button) -->
+        <div id="inline-reschedule-panel" class="inline-reschedule-panel" style="display: none;">
+          <div class="reschedule-header">
+            <h4 style="margin: 0; color: var(--accent); font-weight: 800; font-size: 0.95rem;">Select New Date &amp; Time</h4>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">Pick an available slot to reschedule your appointment</span>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0;">
+            <div>
+              <label class="form-label" style="font-size: 0.78rem;">New Appointment Date</label>
+              <input type="date" id="reschedule-date-input" class="form-input" style="padding: 8px 12px; font-size: 0.88rem;">
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 0.78rem;">Available Time Slot</label>
+              <select id="reschedule-time-select" class="form-input" style="padding: 8px 12px; font-size: 0.88rem;">
+                <option value="">Select Time Slot</option>
+                <option value="09:00 AM">09:00 AM</option>
+                <option value="10:00 AM">10:00 AM</option>
+                <option value="11:00 AM">11:00 AM</option>
+                <option value="02:00 PM">02:00 PM</option>
+                <option value="03:00 PM">03:00 PM</option>
+                <option value="04:00 PM">04:00 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="secondary-btn" onclick="toggleReschedulePanel(false)" style="padding: 8px 16px; font-size: 0.84rem;">Cancel</button>
+            <button type="button" class="primary-btn" id="btn-confirm-reschedule" onclick="executeReschedule()" style="padding: 8px 18px; font-size: 0.84rem;">Save New Schedule</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Actions Footer -->
+      <div class="modal-actions-footer">
+        <div class="modal-primary-actions">
+          <button type="button" class="btn-action-reschedule" id="btn-modal-reschedule" onclick="toggleReschedulePanel(true)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+            Reschedule
+          </button>
+          <button type="button" class="btn-action-cancel" id="btn-modal-cancel" onclick="executeCancelAppointment()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            Cancel Visit
+          </button>
+        </div>
+
+        <div class="modal-secondary-actions">
+          <button type="button" class="btn-action-util" onclick="downloadCalendarEvent()" title="Add to Google/Apple/Outlook Calendar (.ics)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Add to Calendar
+          </button>
+          <button type="button" class="btn-action-util" onclick="openBranchDirections()" title="Get Clinic Map Navigation">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            Directions
+          </button>
+          <button type="button" class="btn-action-util" onclick="printAppointmentSlip()" title="Print Appointment Voucher">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print Slip
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="../js/patient-dashboard.js"></script>
+  <script src="../js/ai-chat.js"></script>
+</body>
+</html>

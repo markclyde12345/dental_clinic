@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accounting Dashboard — Fano Dental Clinic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/accounting-dashboard.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div>
+        <a href="../pages/landing-page.html" class="sidebar-logo">
+          <img src="../Resources/logo.png" alt="Logo">
+          <span>Fano Clinic</span>
+        </a>
+
+        <!-- Clinic Info Badge Card -->
+        <div class="sidebar-clinic-card">
+          <div class="clinic-badge-title">Fano Dental Clinic</div>
+          <div class="clinic-badge-sub">
+            <span class="status-dot"></span>
+            <span>Finance Control • Active</span>
+          </div>
+        </div>
+        
+        <ul class="sidebar-menu">
+          <li><a href="#" class="active">Overview</a></li>
+          <li><a href="#">Invoices</a></li>
+          <li><a href="#">Payments</a></li>
+        </ul>
+      </div>
+      
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">F</div>
+          <div class="user-details">
+            <h4 id="user-name">Loading...</h4>
+            <span id="user-role">Accountant</span>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Log Out</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <header class="top-header">
+        <h2 id="page-title">Financial Control Portal</h2>
+        <div class="header-actions">
+          <span id="current-date" style="color: #64748b; font-weight: 600; font-size: 0.9rem;"></span>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="widgets-grid">
+          <div class="widget-card">
+            <h3>Pending Invoices</h3>
+            <div class="value" id="pending-inv-val">0</div>
+          </div>
+          <div class="widget-card">
+            <h3>Total Receivable</h3>
+            <div class="value" id="receivable-val">₱0.00</div>
+          </div>
+        </div>
+
+        <div class="recent-activity" style="background: white; border-radius: 20px; padding: 28px; box-shadow: 0 10px 30px rgba(11, 60, 77, 0.03); border: 1px solid rgba(11, 60, 77, 0.08); margin-top: 24px;">
+          <h3 style="margin-bottom: 16px; font-family: var(--font-display); font-size: 1.25rem; color: var(--primary-color);">Recent Invoices</h3>
+          <p id="activity-placeholder" style="color: #64748b; font-size: 0.95rem;">No billing activity found.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/accounting-dashboard.js"></script>
+</body>
+</html>

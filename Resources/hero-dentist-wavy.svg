@@ -1,0 +1,15 @@
+<svg width="920" height="880" viewBox="0 0 920 880" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <filter id="shadowFilter" x="-20" y="-20" width="960" height="920" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="-8" dy="4" stdDeviation="12" flood-color="#0b3c4d" flood-opacity="0.15"/>
+    </filter>
+    <clipPath id="dentistWavyClip">
+      <path d="M575.254 61.3091C661.744 55.2937 703.36 35.1513 779.084 23.3772C854.808 11.6032 873.75 69.2097 949.355 81.5555C1024.96 93.9013 907.998 921.662 907.998 921.662L597.821 941.921C597.821 941.921 308.172 1005.63 226.102 969.939C144.032 934.244 170.394 941.78 124.267 879.863C78.1403 817.946 17.4979 774.21 26.7433 700.74C35.9887 627.271 168.163 624.405 171.492 553.323C174.822 482.241 52.4649 412.391 52.3452 341.249C52.2256 270.108 150.521 252.08 213.342 192.108C276.162 132.136 218.757 71.4151 305.41 33.4832C392.062 -4.44875 488.764 67.3245 575.254 61.3091Z"/>
+    </clipPath>
+  </defs>
+  <g filter="url(#shadowFilter)">
+    <g clip-path="url(#dentistWavyClip)">
+      <image href="10711.webp" x="0" y="0" width="920" height="880" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+  </g>
+</svg>

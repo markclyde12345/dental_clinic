@@ -1,0 +1,72 @@
+[
+  {
+    "id": "00786b9f-ab12-49ac-801d-2dfafbe88805",
+    "name": "Dental Composite (A2)",
+    "category": "Restorative",
+    "unit": "Syringes",
+    "stock": 45,
+    "threshold": 15,
+    "status": "In Stock",
+    "created_at": "2026-07-08T13:02:46.540581+00:00"
+  },
+  {
+    "id": "e06acbb1-3dbd-48d0-a17a-c03645484181",
+    "name": "Anesthetic Cartridges (Lidocaine 2%)",
+    "category": "Anesthetics",
+    "unit": "Boxes (100ct)",
+    "stock": 8,
+    "threshold": 20,
+    "status": "Low Stock",
+    "created_at": "2026-07-08T13:02:46.540581+00:00"
+  },
+  {
+    "id": "a471dc58-890b-43df-a992-95eaf50826c5",
+    "name": "Nitrile Gloves (Medium)",
+    "category": "Disposables",
+    "unit": "Boxes (100ct)",
+    "stock": 5,
+    "threshold": 10,
+    "status": "Low Stock",
+    "created_at": "2026-07-08T13:02:46.540581+00:00"
+  },
+  {
+    "id": "a2d99193-4d4e-42e8-a8a1-a625ae407683",
+    "name": "Sterilization Pouches (3.5x9\")",
+    "category": "Hygiene",
+    "unit": "Pouches",
+    "stock": 250,
+    "threshold": 100,
+    "status": "In Stock",
+    "created_at": "2026-07-08T13:02:46.540581+00:00"
+  },
+  {
+    "id": "bcd86c73-3e23-484b-bbfc-4a6ec210c34f",
+    "name": "Saliva Ejectors (Blue)",
+    "category": "Disposables",
+    "unit": "Packs (100ct)",
+    "stock": 120,
+    "threshold": 50,
+    "status": "In Stock",
+    "created_at": "2026-07-08T13:02:46.540581+00:00"
+  },
+  {
+    "id": "2558f1b2-cbfe-45bc-8e51-c7b29740eccb",
+    "name": "Prophy Paste (Mint/Medium)",
+    "category": "Hygiene",
+    "unit": "Tubs",
+    "stock": 12,
+    "threshold": 10,
+    "status": "In Stock",
+    "created_at": "2026-07-08T13:02:46.540581+00:00"
+  },
+  {
+    "id": "041d9021-d0ad-497f-87e1-89360185cc36",
+    "name": "Cotton Rolls (#2 Medium)",
+    "category": "Disposables",
+    "unit": "Boxes (2000ct)",
+    "stock": 2,
+    "threshold": 5,
+    "status": "Low Stock",
+    "created_at": "2026-07-08T13:02:46.540581+00:00"
+  }
+]

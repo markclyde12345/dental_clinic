@@ -1,0 +1,451 @@
+/* ===================================================
+   Fano Dental Clinic — Handcrafted Human Auth Stylesheet
+   File: css/auth.css
+   =================================================== */
+
+/* ===== PAGE WRAPPER ===== */
+.auth-page, .verify-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  padding: 32px 20px;
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-body);
+}
+
+/* Subtle background blobs */
+.auth-blob, .verify-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(100px);
+  z-index: 0;
+}
+.verify-blob-1 {
+  width: 380px; height: 380px;
+  top: -80px; left: -120px;
+  background: rgba(11, 60, 77, 0.08);
+}
+.verify-blob-2 {
+  width: 280px; height: 280px;
+  bottom: -60px; right: -80px;
+  background: rgba(197, 155, 39, 0.06);
+}
+.verify-blob-3 {
+  width: 200px; height: 200px;
+  top: 40%; right: 10%;
+  background: rgba(11, 60, 77, 0.05);
+}
+
+/* ===== CARD ===== */
+.auth-card, .verify-card {
+  position: relative;
+  z-index: 10;
+  background: #ffffff;
+  border: 1px solid rgba(11, 60, 77, 0.08);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 440px;
+  padding: 40px 38px 36px;
+  box-shadow: 0 16px 40px -6px rgba(11, 60, 77, 0.08);
+  animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* ===== LOGO ===== */
+.auth-logo, .verify-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  margin-bottom: 20px;
+}
+.auth-logo img, .verify-logo img {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+.verify-logo span {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0b3c4d;
+  letter-spacing: -0.01em;
+}
+
+/* ===== VERIFY SHIELD ICON ===== */
+.verify-shield {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: #eef6f8;
+  border: 1px solid rgba(11, 60, 77, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+.verify-shield svg {
+  width: 26px; height: 26px;
+  color: #0b3c4d;
+}
+
+/* ===== HEADINGS ===== */
+.auth-title, .verify-title {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #0b3c4d;
+  margin-bottom: 5px;
+  text-align: center;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.auth-subtitle, .verify-subtitle {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 24px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Hide old split-panel info section */
+.auth-panel.auth-info { display: none !important; }
+
+/* ===== DIVIDER ===== */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  margin: 4px 0;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+/* ===== FORM ===== */
+.auth-form, .otp-boxes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+/* Side-by-side row (first + last name) */
+.signup-row-flex {
+  display: flex;
+  gap: 10px;
+}
+.signup-row-flex .form-group-minimal {
+  flex: 1;
+}
+@media (max-width: 460px) {
+  .signup-row-flex { flex-direction: column; gap: 14px; }
+}
+
+/* ===== FORM FIELDS ===== */
+.form-group-minimal {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.form-group-minimal label {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.form-group-minimal input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: #0b131e;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+}
+.form-group-minimal input:focus {
+  border-color: #0b3c4d;
+  box-shadow: 0 0 0 3px rgba(11, 60, 77, 0.1);
+  background: #ffffff;
+}
+.form-group-minimal input::placeholder {
+  color: #94a3b8;
+}
+
+/* Custom Password Reveal/Toggle Styles */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.password-wrapper input {
+  padding-right: 40px !important;
+}
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  z-index: 2;
+}
+.toggle-password:hover {
+  color: #0b3c4d;
+}
+.toggle-password svg {
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+/* Disable native Edge/IE password reveal button */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
+/* ===== REMEMBER + FORGOT ROW ===== */
+.auth-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+.auth-actions label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+.auth-actions input[type="checkbox"] {
+  accent-color: #0b3c4d;
+  width: 15px; height: 15px;
+}
+.auth-actions a {
+  color: #0b3c4d;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: opacity 0.2s;
+}
+.auth-actions a:hover { opacity: 0.7; }
+
+/* ===== PRIMARY BUTTON ===== */
+.auth-btn, .verify-btn {
+  width: 100%;
+  padding: 13px 20px;
+  background: linear-gradient(135deg, #0b3c4d 0%, #082d3b 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(11, 60, 77, 0.2);
+}
+.auth-btn:hover, .verify-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(11, 60, 77, 0.3);
+}
+.auth-btn:active, .verify-btn:active {
+  transform: translateY(0);
+}
+.auth-btn:disabled, .verify-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== FOOTER (sign up / log in link) ===== */
+.auth-footer, .verify-footer {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+.auth-footer a {
+  color: #0b3c4d;
+  text-decoration: none;
+  font-weight: 700;
+  transition: opacity 0.2s;
+}
+.auth-footer a:hover { opacity: 0.7; }
+
+/* ===== BACK LINK ===== */
+.back-link {
+  display: block;
+  text-align: center;
+  margin-top: 18px;
+  font-size: 0.88rem;
+  color: #0b3c4d;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+.back-link:hover { opacity: 0.7; }
+
+/* ===== ERROR / SUCCESS BANNERS ===== */
+.otp-error, #auth-error {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  text-align: center;
+  margin: 4px 0;
+  /* default: error red */
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* ===== VERIFY PAGE — OTP BOXES ===== */
+.otp-boxes {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 6px 0 4px;
+}
+.otp-box {
+  width: 48px;
+  height: 56px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-align: center;
+  background: #f8fafc;
+  color: #0b131e;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: var(--font-body);
+}
+.otp-box:focus {
+  border-color: #0b3c4d;
+  box-shadow: 0 0 0 3px rgba(11, 60, 77, 0.1);
+}
+.otp-box.filled {
+  border-color: #0b3c4d;
+  background: #eef6f8;
+}
+
+/* ===== VERIFY PAGE — TABS ===== */
+.verify-tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+  gap: 0;
+}
+.verify-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+  font-family: var(--font-body);
+}
+.verify-tab.active {
+  color: #0b3c4d;
+  font-weight: 700;
+}
+.verify-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0; right: 0;
+  height: 2px;
+  background: #0b3c4d;
+  border-radius: 2px 2px 0 0;
+}
+
+/* ===== VERIFY PAGE — STATUS BADGE ===== */
+.verify-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 0.84rem;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #c59b27;
+  animation: pulseDot 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes pulseDot {
+  0%, 100% { transform: scale(0.8); opacity: 0.5; }
+  50%       { transform: scale(1.2); opacity: 1; }
+}
+
+/* ===== VERIFY PAGE — FOOTER ===== */
+.verify-footer {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 0.86rem;
+  color: #64748b;
+}
+.resend-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #0b3c4d;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 3px;
+  transition: opacity 0.2s;
+}
+.resend-btn:hover { opacity: 0.7; }
+
+/* ===== ANIMATION ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .auth-card, .verify-card {
+    padding: 28px 20px 24px;
+    border-radius: 16px;
+  }
+}
