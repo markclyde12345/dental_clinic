@@ -3,28 +3,27 @@ const path = require('path');
 const supabase = require('../config/db');
 const seedUsers = require('../utils/seeder');
 
-const DATA_DIR = 'c:\\visualstudio\\Dental_Clinic_Backups';
-// Only enable local file backups when running on your own machine.
-// Vercel's serverless filesystem is temporary and doesn't support this.
-const IS_SERVERLESS = !!process.env.VERCEL;
-
-const DATA_DIR = 'c:\\visualstudio\\Dental_Clinic_Backups';
+// Use /tmp for cross-platform compatibility (works on Vercel Linux + local Windows via env override)
+const DATA_DIR = process.env.DATA_DIR || '/tmp/dental_clinic_backups';
 const INVENTORY_FILE = path.join(DATA_DIR, 'inventory.json');
 const STAFF_FILE = path.join(DATA_DIR, 'staff_schedules.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 
-// Ensure directories exist (local development only)
-if (!IS_SERVERLESS) {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    if (!fs.existsSync(BACKUP_DIR)) {
-      fs.mkdirSync(BACKUP_DIR, { recursive: true });
-    }
-  } catch (err) {
-    console.error('[Backup Dir Setup Error]', err.message);
+// Only enable local file backups when running on your own machine.
+// Vercel's serverless filesystem is temporary and doesn't support this.
+const IS_SERVERLESS = !!process.env.VERCEL;
+
+// Ensure directories exist — wrapped in try/catch because Vercel's filesystem
+// outside /tmp is read-only; a failure here must not crash the whole module.
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
   }
+  if (!fs.existsSync(BACKUP_DIR)) {
+    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn('[Admin] Could not create backup directories (read-only filesystem?):', err.message);
 }
 
 // ─── Live System Logs Buffer ──────────────────────────────────────────────────
