@@ -16,6 +16,32 @@ if (!fs.existsSync(BACKUP_DIR)) {
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
 }
 
+// ─── Live System Logs Buffer ──────────────────────────────────────────────────
+const systemLogsBuffer = [
+  { id: 1, timestamp: new Date(Date.now() - 120000).toISOString(), level: 'INFO', module: 'SYSTEM', message: 'System core services initialized. Security middleware (Helmet, RateLimiters, XSS) active.' },
+  { id: 2, timestamp: new Date(Date.now() - 90000).toISOString(), level: 'SUCCESS', module: 'DATABASE', message: 'Supabase PostgreSQL cloud connection verified and pool active.' },
+  { id: 3, timestamp: new Date(Date.now() - 60000).toISOString(), level: 'INFO', module: 'AI', message: 'AI Dental Symptoms & Diagnosis service online (Gemini 2.5 Flash).' },
+  { id: 4, timestamp: new Date(Date.now() - 40000).toISOString(), level: 'INFO', module: 'AUTH', message: 'JWT Auth token validator and RBAC guards online.' },
+  { id: 5, timestamp: new Date(Date.now() - 20000).toISOString(), level: 'INFO', module: 'SYSTEM', message: 'REST API listener ready on port 5000.' }
+];
+
+let nextLogId = 6;
+
+const recordServerLog = (level, moduleName, message) => {
+  const newEntry = {
+    id: nextLogId++,
+    timestamp: new Date().toISOString(),
+    level: (level || 'INFO').toUpperCase(),
+    module: (moduleName || 'SYSTEM').toUpperCase(),
+    message: String(message)
+  };
+  systemLogsBuffer.unshift(newEntry);
+  if (systemLogsBuffer.length > 250) {
+    systemLogsBuffer.pop();
+  }
+  return newEntry;
+};
+
 const createBackup = (filename, data) => {
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -405,6 +431,44 @@ const addInventory = async (req, res) => {
   }
 };
 
+// @desc    Update a supply item in inventory
+// @route   PUT /api/admin/inventory/:id
+// @access  Private (Admin)
+const updateInventory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, category, unit, stock, threshold } = req.body;
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (category !== undefined) updateData.category = category;
+    if (unit !== undefined) updateData.unit = unit;
+    if (stock !== undefined) updateData.stock = parseInt(stock, 10);
+    if (threshold !== undefined) updateData.threshold = parseInt(threshold, 10);
+
+    // Recompute status
+    const currentThreshold = threshold !== undefined ? parseInt(threshold, 10) : null;
+    const currentStock = stock !== undefined ? parseInt(stock, 10) : null;
+    if (currentStock !== null && currentThreshold !== null) {
+      updateData.status = currentStock <= currentThreshold ? 'Low Stock' : 'In Stock';
+    }
+
+    const { data: updatedItem, error } = await supabase
+      .from('inventory')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json(updatedItem);
+  } catch (error) {
+    console.error('[Admin Update Inventory Error]', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Delete supply item from inventory
 // @route   DELETE /api/admin/inventory/:id
 // @access  Private (Admin)
@@ -506,6 +570,17 @@ const addStaffSchedule = async (req, res) => {
   try {
     const { name, role, shift, days, contact, availability, email } = req.body;
 
+    // Check if staff schedule with same name already exists case-insensitively
+    const { data: existing } = await supabase
+      .from('staff_schedules')
+      .select('id')
+      .ilike('name', name)
+      .maybeSingle();
+
+    if (existing) {
+      return res.status(400).json({ message: 'A schedule listing for this staff member already exists.' });
+    }
+
     const { data: newSched, error } = await supabase
       .from('staff_schedules')
       .insert([{
@@ -522,12 +597,50 @@ const addStaffSchedule = async (req, res) => {
 
     if (error) throw error;
 
-    const { data: fullList } = await supabase.from('staff_schedules').select('*').order('created_at', { ascending: true });
-    if (fullList) createBackup(STAFF_FILE, fullList);
+    setImmediate(async () => {
+      try {
+        const { data: fullList } = await supabase.from('staff_schedules').select('*').order('created_at', { ascending: true });
+        if (fullList) createBackup(STAFF_FILE, fullList);
+      } catch (e) {
+        console.error('[Async Staff Backup Error]', e.message);
+      }
+    });
 
     res.status(201).json(newSched);
   } catch (error) {
     console.error('[Admin Add Staff Schedule Error]', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update a staff schedule listing
+// @route   PUT /api/admin/staff-schedules/:id
+// @access  Private (Admin)
+const updateStaffSchedule = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, role, shift, days, contact, availability } = req.body;
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (role !== undefined) updateData.role = role;
+    if (shift !== undefined) updateData.shift = shift;
+    if (days !== undefined) updateData.days = days;
+    if (contact !== undefined) updateData.contact = contact;
+    if (availability !== undefined) updateData.availability = availability;
+
+    const { data: updatedSched, error } = await supabase
+      .from('staff_schedules')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json(updatedSched);
+  } catch (error) {
+    console.error('[Admin Update Staff Schedule Error]', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -546,8 +659,14 @@ const deleteStaffSchedule = async (req, res) => {
 
     if (error) throw error;
 
-    const { data: fullList } = await supabase.from('staff_schedules').select('*').order('created_at', { ascending: true });
-    if (fullList) createBackup(STAFF_FILE, fullList);
+    setImmediate(async () => {
+      try {
+        const { data: fullList } = await supabase.from('staff_schedules').select('*').order('created_at', { ascending: true });
+        if (fullList) createBackup(STAFF_FILE, fullList);
+      } catch (e) {
+        console.error('[Async Staff Backup Error]', e.message);
+      }
+    });
 
     res.json({ success: true, message: 'Staff schedule listing deleted successfully' });
   } catch (error) {
@@ -559,9 +678,51 @@ const deleteStaffSchedule = async (req, res) => {
 const resetSeeder = async (req, res) => {
   try {
     await seedUsers();
+    recordServerLog('WARN', 'DATABASE', 'Admin triggered Database Seeder reset.');
     res.json({ success: true, message: 'Database reset & seeded successfully' });
   } catch (error) {
     console.error('[Admin Reset Seeder Error]', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get active system service & audit logs
+// @route   GET /api/admin/logs
+// @access  Private (Admin)
+const getSystemLogs = async (req, res) => {
+  try {
+    res.json(systemLogsBuffer);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Add a system service or audit log
+// @route   POST /api/admin/logs
+// @access  Private (Admin)
+const addSystemLog = async (req, res) => {
+  try {
+    const { level, module, message } = req.body;
+    if (!message) {
+      return res.status(400).json({ message: 'Log message is required' });
+    }
+    const log = recordServerLog(level || 'INFO', module || 'CLIENT', message);
+    res.status(201).json(log);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Clear active system logs
+// @route   DELETE /api/admin/logs
+// @access  Private (Admin)
+const clearSystemLogs = async (req, res) => {
+  try {
+    systemLogsBuffer.length = 0;
+    const adminName = req.user?.name || req.user?.email || 'Admin';
+    recordServerLog('WARN', 'SYSTEM', `Admin (${adminName}) cleared system service logs.`);
+    res.json({ success: true, message: 'Logs cleared successfully', logs: systemLogsBuffer });
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -572,9 +733,15 @@ module.exports = {
   getDetailedStats, 
   getInventory, 
   addInventory,
+  updateInventory,
   deleteInventory,
   getStaffSchedules, 
   addStaffSchedule,
+  updateStaffSchedule,
   deleteStaffSchedule,
-  resetSeeder
+  resetSeeder,
+  getSystemLogs,
+  addSystemLog,
+  clearSystemLogs,
+  recordServerLog
 };

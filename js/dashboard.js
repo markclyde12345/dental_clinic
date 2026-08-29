@@ -4,7 +4,11 @@
  * validates it against the server, then redirects to the role-specific dashboard.
  */
 
-const API = 'http://localhost:5000/api/auth';
+const BASE_ORIGIN = (
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+  window.location.port !== '5000' && window.location.port !== ''
+) ? 'http://localhost:5000' : '';
+const API = `${BASE_ORIGIN}/api/auth`;
 
 // Check both storage types (localStorage = "remember me", sessionStorage = session only)
 const token    = localStorage.getItem('token') || sessionStorage.getItem('token');

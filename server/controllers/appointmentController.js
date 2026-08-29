@@ -123,14 +123,28 @@ const getAppointments = async (req, res) => {
 };
 
 // @desc    Get occupied/booked appointment time slots across the clinic
-// @route   GET /api/appointments/occupied
+// @route   GET /api/appointments/occupied?date=YYYY-MM-DD
 // @access  Private
 const getOccupiedSlots = async (req, res) => {
   try {
-    const { data: appointments, error } = await supabase
+    const { date } = req.query;
+
+    let query = supabase
       .from('appointments')
       .select('id, appointment_date, status')
       .neq('status', 'Cancelled');
+
+    // If a specific date is provided, filter server-side for much faster results
+    if (date) {
+      // Build UTC range for the requested local date
+      const startUTC = new Date(`${date}T00:00:00.000Z`);
+      const endUTC   = new Date(`${date}T23:59:59.999Z`);
+      query = query
+        .gte('appointment_date', startUTC.toISOString())
+        .lte('appointment_date', endUTC.toISOString());
+    }
+
+    const { data: appointments, error } = await query;
 
     if (error) throw error;
 
@@ -141,9 +155,9 @@ const getOccupiedSlots = async (req, res) => {
         minute: '2-digit',
         hour12: true
       });
-      const year = d.getFullYear();
+      const year  = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
+      const day   = String(d.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
 
       return {
@@ -331,7 +345,7 @@ const sendAppointmentStatusEmail = async (updated, status) => {
           <!-- CTA -->
           <tr>
             <td style="padding:0 40px 28px 40px;text-align:center;">
-              <a href="http://localhost:5000/pages/patient-dashboard.html" style="display:inline-block;background:linear-gradient(135deg,#0b3c4d,#14536a);color:#ffffff;font-size:14px;font-weight:700;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;">View My Appointments &#8594;</a>
+              <a href="${process.env.APP_URL || 'http://localhost:5000'}/pages/patient-dashboard.html" style="display:inline-block;background:linear-gradient(135deg,#0b3c4d,#14536a);color:#ffffff;font-size:14px;font-weight:700;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;">View My Appointments &#8594;</a>
             </td>
           </tr>
           <!-- Divider -->

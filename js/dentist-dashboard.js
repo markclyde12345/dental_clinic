@@ -96,9 +96,23 @@ function setupTabs() {
       if (tabName) switchTab(tabName);
     });
   });
+
+  window.addEventListener('hashchange', () => {
+    const hash = (window.location.hash || '').replace('#', '').trim();
+    if (hash) switchTab(hash);
+  });
+
+  const validTabs = ['overview', 'schedule', 'queue', 'patients', 'chart', 'treatments', 'prescriptions', 'followups', 'calendar', 'reports', 'profile'];
+  const hashTab = (window.location.hash || '').replace('#', '').trim();
+  const savedTab = localStorage.getItem('dentist_active_tab');
+  const initialTab = validTabs.includes(hashTab) ? hashTab : (validTabs.includes(savedTab) ? savedTab : 'overview');
+  if (initialTab !== 'overview') {
+    switchTab(initialTab);
+  }
 }
 
 function switchTab(tabName) {
+  if (!tabName) return;
   const menuLinks = document.querySelectorAll('.sidebar-menu a');
   menuLinks.forEach(l => l.classList.toggle('active', l.getAttribute('data-tab') === tabName));
 
@@ -107,6 +121,13 @@ function switchTab(tabName) {
 
   const activePanel = document.getElementById('tab-' + tabName);
   if (activePanel) activePanel.hidden = false;
+
+  try {
+    localStorage.setItem('dentist_active_tab', tabName);
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, null, '#' + tabName);
+    }
+  } catch (e) {}
 
   const titles = {
     overview: 'Dashboard Overview',

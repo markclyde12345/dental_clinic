@@ -4,7 +4,11 @@ document.getElementById('current-date').textContent = new Date().toLocaleDateStr
   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
 });
 
-const API = 'http://localhost:5000/api/auth';
+const BASE_ORIGIN = (
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+  window.location.port !== '5000' && window.location.port !== ''
+) ? 'http://localhost:5000' : '';
+const API = `${BASE_ORIGIN}/api/auth`;
 
 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 let user = null;

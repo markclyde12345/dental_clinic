@@ -59,4 +59,31 @@ const createInvoice = async (req, res) => {
   }
 };
 
-module.exports = { getInvoices, createInvoice };
+// @desc    Update an invoice status
+// @route   PUT /api/invoices/:id
+// @access  Private (Accounting/Admin)
+const updateInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, paid_amount } = req.body;
+
+    const updateData = {};
+    if (status !== undefined) updateData.status = status;
+    if (paid_amount !== undefined) updateData.paid_amount = parseFloat(paid_amount);
+    if (status === 'Paid') updateData.paid_at = new Date().toISOString();
+
+    const { data: invoice, error } = await supabase
+      .from('invoices')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(invoice);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getInvoices, createInvoice, updateInvoice };

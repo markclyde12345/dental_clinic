@@ -117,7 +117,8 @@ window.addEventListener('scroll', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const patientStat = document.getElementById('patient-count-stat');
   if (patientStat) {
-    fetch('http://localhost:5000/api/patients/count')
+    const baseOrigin = ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000' && window.location.port !== '') ? 'http://localhost:5000' : '';
+    fetch(`${baseOrigin}/api/patients/count`)
       .then(res => res.json())
       .then(data => {
         // Set the text content to the real number of patients from the DB

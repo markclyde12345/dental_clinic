@@ -58,22 +58,33 @@ app.use(helmet({
 }));
 
 // ─── Security: CORS ───────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5000')
-  .split(',')
-  .map(o => o.trim());
-
-// Always allow Live Server origins in development
-if (process.env.NODE_ENV !== 'production') {
-  allowedOrigins.push('http://127.0.0.1:5500', 'http://localhost:5500');
-}
+const rawAllowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : [];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
+    // Allow requests with no origin (e.g. mobile apps, same-origin, curl)
+    if (!origin) return callback(null, true);
+
+    if (rawAllowedOrigins.length > 0) {
+      if (rawAllowedOrigins.includes(origin)) return callback(null, true);
     } else {
-      callback(new Error('CORS policy: origin not allowed'));
+      // Default: allow localhost, 127.0.0.1, and vercel preview/prod domains
+      if (
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.endsWith('.vercel.app')
+      ) {
+        return callback(null, true);
+      }
     }
+
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+
+    callback(new Error('CORS policy: origin not allowed'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -161,6 +172,11 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} [${process.env.NODE_ENV || 'development'} mode]`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT} [${process.env.NODE_ENV || 'development'} mode]`);
+  });
+}
+
+module.exports = app;
+

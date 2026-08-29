@@ -27,5 +27,8 @@
     "nodemailer": "^8.0.9",
     "twilio": "^6.0.2",
     "xss-clean": "^0.1.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

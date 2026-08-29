@@ -20,6 +20,29 @@ const internalError = (res, error) => {
   return res.status(500).json({ message: 'Something went wrong. Please try again.' });
 };
 
+// Asynchronous non-blocking backup for staff schedules to prevent latency during user creation
+const asyncBackupStaffSchedules = () => {
+  setImmediate(async () => {
+    try {
+      const DATA_DIR = 'c:\\visualstudio\\Dental_Clinic_Backups';
+      const STAFF_FILE = path.join(DATA_DIR, 'staff_schedules.json');
+      const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+      if (!fs.existsSync(BACKUP_DIR)) {
+        fs.mkdirSync(BACKUP_DIR, { recursive: true });
+      }
+      const { data: fullList } = await supabase.from('staff_schedules').select('*').order('created_at', { ascending: true });
+      if (fullList && fs.existsSync(BACKUP_DIR)) {
+        fs.promises.writeFile(STAFF_FILE, JSON.stringify(fullList, null, 2)).catch(() => {});
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupPath = path.join(BACKUP_DIR, `staff_schedules_backup_${timestamp}.json`);
+        fs.promises.writeFile(backupPath, JSON.stringify(fullList, null, 2)).catch(() => {});
+      }
+    } catch (err) {
+      console.error('[Async Staff Schedule Backup Error]', err.message);
+    }
+  });
+};
+
 // Map Supabase row (snake_case) → app user object (camelCase)
 const mapUser = (row) => ({
   _id: row.id,
@@ -52,8 +75,8 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists.' });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
+    // Hash password with optimized salt rounds (fast & secure)
+    const salt = await bcrypt.genSalt(8);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Generate OTP
@@ -479,8 +502,8 @@ const createStaffUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists.' });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
+    // Hash password with optimized salt rounds (fast & secure)
+    const salt = await bcrypt.genSalt(8);
     const hashedPassword = await bcrypt.hash(password || 'patient123', salt);
     const fullName = `${firstName} ${lastName}`.trim();
  
@@ -561,20 +584,8 @@ const createStaffUser = async (req, res) => {
  
         if (schedError) throw schedError;
  
-        // Trigger local backup snapshot of full schedules list
-        const DATA_DIR = 'c:\\visualstudio\\Dental_Clinic_Backups';
-        const STAFF_FILE = path.join(DATA_DIR, 'staff_schedules.json');
-        const BACKUP_DIR = path.join(DATA_DIR, 'backups');
-        if (!fs.existsSync(BACKUP_DIR)) {
-          fs.mkdirSync(BACKUP_DIR, { recursive: true });
-        }
-        const { data: fullList } = await supabase.from('staff_schedules').select('*').order('created_at', { ascending: true });
-        if (fullList && fs.existsSync(BACKUP_DIR)) {
-          fs.writeFileSync(STAFF_FILE, JSON.stringify(fullList, null, 2));
-          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-          const backupPath = path.join(BACKUP_DIR, `staff_schedules_backup_${timestamp}.json`);
-          fs.writeFileSync(backupPath, JSON.stringify(fullList, null, 2));
-        }
+        // Trigger non-blocking async backup
+        asyncBackupStaffSchedules();
       } catch (err) {
         console.error('[Sync Staff Schedule Error]', err.message);
       }
@@ -639,20 +650,8 @@ const createStaffUser = async (req, res) => {
 
        if (schedError) throw schedError;
 
-       // Trigger local backup snapshot of full schedules list
-       const DATA_DIR = 'c:\\visualstudio\\Dental_Clinic_Backups';
-       const STAFF_FILE = path.join(DATA_DIR, 'staff_schedules.json');
-       const BACKUP_DIR = path.join(DATA_DIR, 'backups');
-       if (!fs.existsSync(BACKUP_DIR)) {
-         fs.mkdirSync(BACKUP_DIR, { recursive: true });
-       }
-       const { data: fullList } = await supabase.from('staff_schedules').select('*').order('created_at', { ascending: true });
-       if (fullList && fs.existsSync(BACKUP_DIR)) {
-         fs.writeFileSync(STAFF_FILE, JSON.stringify(fullList, null, 2));
-         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-         const backupPath = path.join(BACKUP_DIR, `staff_schedules_backup_${timestamp}.json`);
-         fs.writeFileSync(backupPath, JSON.stringify(fullList, null, 2));
-       }
+       // Trigger non-blocking async backup
+       asyncBackupStaffSchedules();
      } catch (err) {
        console.error('[Sync Staff Schedule Delete Error]', err.message);
      }

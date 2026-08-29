@@ -173,26 +173,12 @@ nav.scrolled::before {
 /* ===== HERO ===== */
 #hero {
   min-height: 92vh;
-  background: linear-gradient(135deg, #fdfbf7 0%, #f7f2ea 50%, #f0e9db 100%);
+  background: #f7f2ea;
   display: flex;
   align-items: center;
   padding: 120px 6vw 80px;
   position: relative;
   overflow: hidden;
-}
-#hero::before {
-  content: '';
-  position: absolute; top: -100px; right: -100px;
-  width: 550px; height: 550px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(197, 155, 39, 0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-#hero::after {
-  content: '';
-  position: absolute; bottom: -80px; left: -80px;
-  width: 450px; height: 450px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(11, 60, 77, 0.08) 0%, transparent 70%);
-  pointer-events: none;
 }
 .hero-content {
   position: relative;
@@ -261,55 +247,22 @@ nav.scrolled::before {
 }
 .hero-stat-label { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; font-weight: 500; }
 
-/* Hero Background Wavy Layer */
+/* Hero Background Layer — 100% full width seamless studio background */
 .hero-bg-wavy {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 62%;
+  inset: 0;
+  width: 100%;
   height: 100%;
   pointer-events: none;
   z-index: 1;
   overflow: hidden;
 }
-.hero-bg-wavy::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    #f4efe6 0%,
-    rgba(244, 239, 230, 0.85) 18%,
-    rgba(244, 239, 230, 0.3) 45%,
-    transparent 70%
-  );
-  z-index: 2;
-  pointer-events: none;
-}
-.hero-bg-wavy::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(244, 239, 230, 0.5) 0%,
-    transparent 20%,
-    transparent 80%,
-    rgba(234, 225, 211, 0.5) 100%
-  );
-  z-index: 2;
-  pointer-events: none;
-}
 .hero-bg-wavy-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
+  object-position: right center;
   display: block;
-  mix-blend-mode: multiply;
-  filter: brightness(1.05) saturate(0.6) contrast(0.9);
-  opacity: 0.85;
 }
 
 /* ===== SECTION BASE ===== */

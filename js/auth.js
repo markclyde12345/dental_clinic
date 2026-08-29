@@ -4,9 +4,11 @@
  */
 
 // ─── API Base URL ─────────────────────────────────────────────────────────────
-// Always point to the backend at port 5000, regardless of which port the
-// front-end is served from (e.g. VS Code Live Server on 5500, or direct 5000).
-const API_BASE = 'http://localhost:5000/api/auth';
+const BASE_ORIGIN = (
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+  window.location.port !== '5000' && window.location.port !== ''
+) ? 'http://localhost:5000' : '';
+const API_BASE = `${BASE_ORIGIN}/api/auth`;
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 function showError(msg) {
@@ -53,7 +55,7 @@ async function apiFetch(url, options = {}) {
     // fetch() itself threw — server is unreachable or CORS blocked
     const isNetwork = err instanceof TypeError;
     const message   = isNetwork
-      ? 'Cannot reach the server. Make sure the backend is running (node server.js).'
+      ? (BASE_ORIGIN ? 'Cannot reach the backend server (node server.js).' : 'Cannot reach the server. Please check your network connection.')
       : `Unexpected error: ${err.message}`;
     return { ok: false, status: 0, data: { message }, networkError: true };
   }
@@ -141,6 +143,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const confirmPass   = document.getElementById('signup-confirm').value;
       const btn           = signupForm.querySelector('.auth-btn');
 
+      // ── Terms agreement validation ──
+      const termsCheckbox = document.getElementById('signup-terms');
+      if (termsCheckbox && !termsCheckbox.checked) {
+        showError('Please read and agree to the Terms of Service & Privacy Policy.');
+        return;
+      }
+
       // ── Client-side validation ──
       const phoneRegex = /^(09|\+639)\d{9}$/;
       if (!phoneRegex.test(contactNumber)) {
@@ -197,7 +206,105 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize password toggles
   initPasswordToggles();
+
+  // Initialize social authentication buttons
+  initSocialAuth();
+
+  // Initialize Terms & Privacy policy modals
+  initTermsModal();
 });
+
+// ─── Social Authentication ───────────────────────────────────────────────────
+function initSocialAuth() {
+  const googleBtns = document.querySelectorAll('#google-auth-btn');
+  const fbBtns     = document.querySelectorAll('#facebook-auth-btn');
+
+  googleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      handleSocialAuth('Google');
+    });
+  });
+
+  fbBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      handleSocialAuth('Facebook');
+    });
+  });
+}
+
+function handleSocialAuth(provider) {
+  showSuccess(`Redirecting to ${provider} authentication…`);
+  // If Supabase OAuth or direct provider is enabled
+  setTimeout(() => {
+    showError(`${provider} login: Please ensure ${provider} OAuth credentials are set in your backend configuration.`);
+  }, 1200);
+}
+
+// ─── Terms of Service & Privacy Policy Modal ─────────────────────────────────
+function initTermsModal() {
+  const modal = document.getElementById('termsModal');
+  if (!modal) return;
+
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody  = document.getElementById('modalBody');
+  const closeBtn   = document.getElementById('closeTermsModal');
+  const agreeBtn   = document.getElementById('agreeModalBtn');
+
+  const termsContent = `
+    <h3>1. Patient Terms of Agreement</h3>
+    <p>By creating an account or accessing services at Fano Dental Clinic, you agree to provide accurate and truthful personal and medical information. All appointments booked online are subject to dentist schedule confirmation.</p>
+    <h3>2. Medical & Dental Records</h3>
+    <p>Your electronic dental records, treatment histories, and appointment logs are maintained with clinical confidentiality following Philippine healthcare guidelines and patient privacy laws.</p>
+    <h3>3. Cancellations & Rescheduling</h3>
+    <p>We request patients to provide at least 24 hours advance notice for appointment cancellations or rescheduling to help us accommodate other patients needing urgent dental care.</p>
+    <h3>4. Patient Rights & Responsibilities</h3>
+    <p>Patients have the right to full informed consent before any dental procedure, transparent cost estimates, and the duty to disclose relevant medical allergies or preexisting health conditions.</p>
+  `;
+
+  const privacyContent = `
+    <h3>1. Information We Collect</h3>
+    <p>We collect essential personal information including your full name, email address, contact phone number, home address, and medical/dental history to provide comprehensive dental treatment.</p>
+    <h3>2. How We Protect Your Data</h3>
+    <p>All sensitive health records and user credentials are encrypted using industry-standard security protocols and stored securely in certified database infrastructure.</p>
+    <h3>3. Privacy & Third-Party Disclosure</h3>
+    <p>We do not sell, trade, or share your personal data with third parties, except as required for dental laboratory prosthetics manufacturing, diagnostic imaging, or regulatory compliance.</p>
+  `;
+
+  document.querySelectorAll('.open-terms-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      modalTitle.textContent = 'Terms of Service & Agreement';
+      modalBody.innerHTML = termsContent;
+      modal.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.open-privacy-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      modalTitle.textContent = 'Privacy Policy';
+      modalBody.innerHTML = privacyContent;
+      modal.classList.add('active');
+    });
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+  }
+  if (agreeBtn) {
+    agreeBtn.addEventListener('click', () => {
+      modal.classList.remove('active');
+      const termsCheckbox = document.getElementById('signup-terms');
+      if (termsCheckbox) termsCheckbox.checked = true;
+    });
+  }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.remove('active');
+    }
+  });
+}
 
 // ─── Password Visibility Toggle ───────────────────────────────────────────────
 function initPasswordToggles() {

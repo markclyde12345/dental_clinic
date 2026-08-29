@@ -162,4 +162,53 @@ const getPatientWithHistory = async (req, res) => {
   }
 };
 
-module.exports = { getPatients, createPatientProfile, getPatientCount, getPatientWithHistory };
+// @desc    Update a patient profile (both user account and patient demographics)
+// @route   PUT /api/patients/:id
+// @access  Private (Admin, Receptionist)
+const updatePatientProfile = async (req, res) => {
+  const { id } = req.params; // user_id
+  const { firstName, lastName, dob, gender, bloodType, contactNumber, allergies, medicalNotes } = req.body;
+  try {
+    // 1. Update users table details
+    const fullName = `${firstName} ${lastName}`.trim();
+    const { error: userError } = await supabase
+      .from('users')
+      .update({
+        first_name: firstName,
+        last_name: lastName,
+        name: fullName,
+        contact_number: contactNumber
+      })
+      .eq('id', id);
+
+    if (userError) throw userError;
+
+    // 2. Parse allergies array
+    let allergiesArray = [];
+    if (Array.isArray(allergies)) {
+      allergiesArray = allergies;
+    } else if (typeof allergies === 'string') {
+      allergiesArray = allergies.split(',').map(a => a.trim()).filter(Boolean);
+    }
+
+    // 3. Update patient_profiles details
+    const { error: profileError } = await supabase
+      .from('patient_profiles')
+      .update({
+        date_of_birth: dob,
+        gender,
+        blood_type: bloodType,
+        allergies: allergiesArray,
+        medical_notes: medicalNotes
+      })
+      .eq('user_id', id);
+
+    if (profileError) throw profileError;
+
+    res.json({ success: true, message: 'Patient profile updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getPatients, createPatientProfile, getPatientCount, getPatientWithHistory, updatePatientProfile };

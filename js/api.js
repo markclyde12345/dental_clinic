@@ -1,7 +1,11 @@
 // Shared API client for the Dental Clinic front-end.
 // Centralizes the base URL, auth header injection, and error handling.
 
-const API_BASE = 'http://localhost:5000/api';
+const BASE_ORIGIN = (
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+  window.location.port !== '5000' && window.location.port !== ''
+) ? 'http://localhost:5000' : '';
+const API_BASE = `${BASE_ORIGIN}/api`;
 
 const api = {
   get token() {

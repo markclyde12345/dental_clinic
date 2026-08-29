@@ -148,6 +148,24 @@
   color: var(--text-secondary);
 }
 
+[data-theme="dark"] .slot-btn.occupied,
+[data-theme="dark"] .slot-btn:disabled.occupied {
+  background: repeating-linear-gradient(
+    -45deg,
+    #2d1113,
+    #2d1113 5px,
+    #3f1519 5px,
+    #3f1519 10px
+  ) !important;
+  border-color: #7f1d1d !important;
+  color: #fca5a5 !important;
+}
+
+[data-theme="dark"] .slot-btn.occupied > span:first-child {
+  text-decoration-color: #f87171;
+}
+
+
 [data-theme="dark"] .service-card,
 [data-theme="dark"] .dentist-card,
 [data-theme="dark"] .branch-card {
@@ -1327,32 +1345,68 @@ body {
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* Red Occupied Slot Style */
+/* ── Occupied Slot — Bold Blocked State ── */
 .slot-btn.occupied,
 .slot-btn:disabled.occupied {
-  background: #fef2f2 !important;
-  border-color: #fca5a5 !important;
-  color: #dc2626 !important;
+  background: repeating-linear-gradient(
+    -45deg,
+    #fff1f2,
+    #fff1f2 5px,
+    #fee2e2 5px,
+    #fee2e2 10px
+  ) !important;
+  border: 1.5px solid #fca5a5 !important;
+  color: #b91c1c !important;
   cursor: not-allowed !important;
   opacity: 1 !important;
   box-shadow: none !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.slot-btn.occupied > span:first-child {
+  text-decoration: line-through;
+  text-decoration-color: #ef4444;
+  text-decoration-thickness: 2px;
+  opacity: 0.7;
 }
 
 .slot-badge-occupied {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 800;
-  color: #dc2626;
+  color: #ffffff;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: #fee2e2;
-  padding: 1px 6px;
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  padding: 2px 7px;
   border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.35);
+}
+
+.slot-badge-occupied::before {
+  content: '🔒';
+  font-size: 0.6rem;
 }
 
 .slot-badge-available {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
-  color: var(--green);
+  color: #16a34a;
+  background: #dcfce7;
+  padding: 2px 7px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.slot-badge-available::before {
+  content: '✓';
+  font-size: 0.65rem;
+  font-weight: 900;
 }
 
 .slot-btn:disabled:not(.occupied) {
@@ -2174,8 +2228,297 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   transition: all 0.15s ease;
 }
 
-.btn-action-util:hover {
+/* ─── AI Chat Panel ──────────────────────────────────── */
+.ai-chat-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #f8f9fc;
+}
+
+.ai-chat-messages {
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8f9fc;
+  scroll-behavior: smooth;
+}
+
+.ai-chat-messages::-webkit-scrollbar { width: 4px; }
+.ai-chat-messages::-webkit-scrollbar-track { background: transparent; }
+.ai-chat-messages::-webkit-scrollbar-thumb { background: #dde0e8; border-radius: 4px; }
+
+.ai-chat-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  animation: msg-in 0.28s cubic-bezier(.34,1.56,.64,1) both;
+  max-width: 85%;
+}
+
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ai-chat-msg.bot { flex-direction: row; }
+.ai-chat-msg.user { flex-direction: row-reverse; align-self: flex-end; }
+
+.ai-chat-msg .msg-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.ai-chat-msg.bot .msg-avatar { background: #e8eaf0; }
+.ai-chat-msg.user .msg-avatar { background: transparent; }
+
+.ai-chat-msg .msg-bubble {
+  padding: 8px 12px; border-radius: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem; line-height: 1.5;
+  word-break: break-word;
+}
+.ai-chat-msg.bot .msg-bubble {
+  background: #fff; color: #1e1e2e;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+.ai-chat-msg.user .msg-bubble {
+  background: linear-gradient(135deg, #0b3c4d, #082d3b);
+  color: #fff; border-bottom-right-radius: 4px;
+}
+
+.ai-chat-input-area {
+  display: flex; align-items: flex-end; gap: 8px;
+  padding: 10px 12px; background: #fff;
+  border-top: 1px solid var(--border);
+}
+
+.ai-chat-textarea {
+  flex: 1; resize: none; border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 8px 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem; color: var(--text-primary);
+  outline: none; max-height: 80px; min-height: 36px;
+  overflow-y: auto; background: var(--bg-base);
+  transition: border-color 0.2s;
+}
+.ai-chat-textarea:focus { border-color: var(--accent); }
+
+.ai-chat-send-btn {
+  width: 36px; height: 36px; border: none;
+  border-radius: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; background: linear-gradient(135deg, var(--accent), #082d3b);
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), opacity 0.2s;
+  flex-shrink: 0;
+}
+.ai-chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ai-chat-send-btn:not(:disabled):hover { transform: scale(1.1); }
+.ai-chat-send-btn svg { width: 16px; height: 16px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ai-chat-messages { max-height: 200px; }
+}
+
+.ai-chat-panel .typing-dots {
+  padding: 6px 10px;
+  box-shadow: none;
+  background: transparent;
+}
+
+.ai-chat-panel .typing-dots span {
+  width: 6px; height: 6px;
+}
+
+/* ─── Financial Widgets ────────────────────────────────── */
+.financial-widgets-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.widget-card.widget-financial {
   background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.widget-card.widget-financial::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--gold-color));
+}
+
+.widget-card.widget-financial:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-glow);
+}
+
+.widget-title {
+  margin: 0 0 8px 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.widget-value {
+  margin: 0 0 6px 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+.widget-trend {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.widget-trend.positive { color: var(--green); }
+.widget-trend.negative { color: var(--red); }
+.widget-trend.neutral { color: var(--text-muted); }
+
+/* ─── Financial Activity Card ──────────────────────────── */
+.financial-activity-card {
+  max-height: 380px;
+  overflow: hidden;
+}
+
+#financial-activity-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#financial-activity-list::-webkit-scrollbar { width: 4px; }
+#financial-activity-list::-webkit-scrollbar-track { background: transparent; }
+#financial-activity-list::-webkit-scrollbar-thumb { background: #dde0e8; border-radius: 4px; }
+
+.financial-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.financial-activity-item:last-child { border-bottom: none; }
+
+.activity-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.activity-icon.payment { background: var(--green-bg); color: var(--green); }
+.activity-icon.invoice { background: var(--blue-bg); color: var(--blue); }
+.activity-icon.refund { background: var(--yellow-bg); color: var(--yellow); }
+.activity-icon.insurance { background: #f3e8ff; color: #a855f7; }
+.activity-icon.adjustment { background: var(--red-bg); color: var(--red); }
+
+.activity-content { flex: 1; min-width: 0; }
+
+.activity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.activity-type {
+  font-size: 0.85rem;
+  font-weight: 700;
   color: var(--text-primary);
-  border-color: var(--accent);
+}
+
+.activity-amount {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.activity-amount.paid { color: var(--green); }
+.activity-amount.pending { color: var(--yellow); }
+.activity-amount.refunded { color: var(--red); }
+
+.activity-details {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.activity-invoice {
+  background: var(--bg-base);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.7rem;
+}
+
+.activity-date {
+  color: var(--text-muted);
+}
+
+.activity-method {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.activity-status {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.activity-status.completed { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+.activity-status.pending { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
+.activity-status.failed { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .financial-widgets-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .financial-widgets-row { grid-template-columns: 1fr; }
+  .activity-details { flex-direction: column; align-items: flex-start; gap: 6px; }
 }

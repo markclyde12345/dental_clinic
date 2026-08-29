@@ -4,11 +4,17 @@ document.getElementById('current-date').textContent = new Date().toLocaleDateStr
   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
 });
 
-const AUTH_API = 'http://localhost:5000/api/auth';
-const ADMIN_API = 'http://localhost:5000/api/admin';
-const APPT_API = 'http://localhost:5000/api/appointments';
-const PATIENT_API = 'http://localhost:5000/api/patients';
-const INVOICE_API = 'http://localhost:5000/api/invoices';
+const BASE_ORIGIN = (
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+  window.location.port !== '5000' && window.location.port !== ''
+) ? 'http://localhost:5000' : '';
+
+const AUTH_API = `${BASE_ORIGIN}/api/auth`;
+const ADMIN_API = `${BASE_ORIGIN}/api/admin`;
+const APPT_API = `${BASE_ORIGIN}/api/appointments`;
+const PATIENT_API = `${BASE_ORIGIN}/api/patients`;
+const INVOICE_API = `${BASE_ORIGIN}/api/invoices`;
+const TREATMENT_API = `${BASE_ORIGIN}/api/treatments`;
 
 function getCurrencySymbol() {
   return localStorage.getItem('set-currency') || '₱';
@@ -77,58 +83,105 @@ function renderAdminSidebar() {
 // ─── Initialize Dashboard Features ──────────────────────────────────────────
 function initDashboard() {
   setupTabs();
-  loadStats(); // Default tab is Overview
   setupFilters(); // Attach keypress and select dropdown filters
   initPasswordToggles();
+  initSystemLogsListeners(); // Attach live system logs search, filter, and stream controls
+
+  // Restore the active tab if page is refreshed or accessed via hash link
+  const validTabs = ['overview', 'appointments', 'patients', 'billing', 'staff', 'inventory', 'users', 'history', 'logs', 'settings'];
+  const hashTab = (window.location.hash || '').replace('#', '').trim();
+  const savedTab = localStorage.getItem('admin_active_tab');
+  const initialTab = validTabs.includes(hashTab) ? hashTab : (validTabs.includes(savedTab) ? savedTab : 'overview');
+
+  activateTab(initialTab);
 }
 
 // ─── Tab Switcher ─────────────────────────────────────────────────────────────
-function setupTabs() {
+window.activateTab = function(targetTab, skipDataLoad = false) {
+  if (!targetTab) return;
   const tabs = document.querySelectorAll('.nav-tab');
   const panes = document.querySelectorAll('.tab-pane');
+
+  tabs.forEach(t => {
+    if (t.getAttribute('data-tab') === targetTab) {
+      t.classList.add('active');
+    } else {
+      t.classList.remove('active');
+    }
+  });
+
+  panes.forEach(pane => {
+    if (pane.id === `tab-${targetTab}`) {
+      pane.classList.add('active');
+    } else {
+      pane.classList.remove('active');
+    }
+  });
+
+  // Manage live polling for system logs tab
+  if (targetTab === 'logs') {
+    loadSystemLogs();
+    if (!logsPollingInterval) {
+      logsPollingInterval = setInterval(loadSystemLogs, 4000);
+    }
+  } else {
+    if (logsPollingInterval) {
+      clearInterval(logsPollingInterval);
+      logsPollingInterval = null;
+    }
+  }
+
+  // Persist current active tab so refreshes stay on the exact same page/tab
+  try {
+    localStorage.setItem('admin_active_tab', targetTab);
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, null, '#' + targetTab);
+    }
+  } catch (e) {}
+
+  if (!skipDataLoad) {
+    if (targetTab === 'overview') {
+      loadStats();
+    } else if (targetTab === 'appointments') {
+      loadAppointments();
+    } else if (targetTab === 'patients') {
+      loadPatients();
+    } else if (targetTab === 'billing') {
+      loadBilling();
+    } else if (targetTab === 'staff') {
+      loadStaffSchedules();
+    } else if (targetTab === 'inventory') {
+      loadInventory();
+    } else if (targetTab === 'users') {
+      loadUsers();
+    } else if (targetTab === 'history') {
+      loadVisitsHistory();
+    } else if (targetTab === 'logs') {
+      // Handled via loadSystemLogs above
+    } else if (targetTab === 'settings') {
+      loadSettings();
+    }
+  }
+};
+
+function setupTabs() {
+  const tabs = document.querySelectorAll('.nav-tab');
 
   tabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
       e.preventDefault();
-      
       const targetTab = tab.getAttribute('data-tab');
-
-      // Update active nav state
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      // Update active tab pane display
-      panes.forEach(pane => {
-        pane.classList.remove('active');
-        if (pane.id === `tab-${targetTab}`) {
-          pane.classList.add('active');
-        }
-      });
-
-      // Load data on demand
-      if (targetTab === 'overview') {
-        loadStats();
-      } else if (targetTab === 'appointments') {
-        loadAppointments();
-      } else if (targetTab === 'patients') {
-        loadPatients();
-      } else if (targetTab === 'billing') {
-        loadBilling();
-      } else if (targetTab === 'staff') {
-        loadStaffSchedules();
-      } else if (targetTab === 'inventory') {
-        loadInventory();
-
-      } else if (targetTab === 'users') {
-        loadUsers();
-      } else if (targetTab === 'history') {
-        loadVisitsHistory();
-      } else if (targetTab === 'logs') {
-        logConsoleEvent('[INFO] User requested System Logs. Logs reloaded.');
-      } else if (targetTab === 'settings') {
-        loadSettings();
-      }
+      activateTab(targetTab);
     });
+  });
+
+  // Handle browser back/forward buttons seamlessly
+  window.addEventListener('hashchange', () => {
+    const hash = (window.location.hash || '').replace('#', '').trim();
+    const validTabs = ['overview', 'appointments', 'patients', 'billing', 'staff', 'inventory', 'users', 'history', 'logs', 'settings'];
+    if (hash && validTabs.includes(hash)) {
+      activateTab(hash);
+    }
   });
 }
 
@@ -844,16 +897,17 @@ function renderExpensesBreakdown(invoices, period) {
     expTotalEl.textContent = `${getCurrencySymbol()}${totalExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
+  const isZeroLegend = totalExpense === 0;
   const salLeg = document.getElementById('exp-legend-salaries');
-  if (salLeg) salLeg.textContent = `Salaries: 42% (${getCurrencySymbol()}${salaries.toFixed(2)})`;
+  if (salLeg) salLeg.textContent = `Salaries: ${isZeroLegend ? '0' : '42'}% (${getCurrencySymbol()}${salaries.toFixed(2)})`;
   const supLeg = document.getElementById('exp-legend-supplies');
-  if (supLeg) supLeg.textContent = `Supplies: 25% (${getCurrencySymbol()}${supplies.toFixed(2)})`;
+  if (supLeg) supLeg.textContent = `Supplies: ${isZeroLegend ? '0' : '25'}% (${getCurrencySymbol()}${supplies.toFixed(2)})`;
   const rentLeg = document.getElementById('exp-legend-rent');
-  if (rentLeg) rentLeg.textContent = `Rent: 15% (${getCurrencySymbol()}${rent.toFixed(2)})`;
+  if (rentLeg) rentLeg.textContent = `Rent: ${isZeroLegend ? '0' : '15'}% (${getCurrencySymbol()}${rent.toFixed(2)})`;
   const eqLeg = document.getElementById('exp-legend-equip');
-  if (eqLeg) eqLeg.textContent = `Equipment: 12% (${getCurrencySymbol()}${equip.toFixed(2)})`;
+  if (eqLeg) eqLeg.textContent = `Equipment: ${isZeroLegend ? '0' : '12'}% (${getCurrencySymbol()}${equip.toFixed(2)})`;
   const utLeg = document.getElementById('exp-legend-utils');
-  if (utLeg) utLeg.textContent = `Utilities: 6% (${getCurrencySymbol()}${utils.toFixed(2)})`;
+  if (utLeg) utLeg.textContent = `Utilities: ${isZeroLegend ? '0' : '6'}% (${getCurrencySymbol()}${utils.toFixed(2)})`;
 
   const isZero = totalExpense === 0;
 
@@ -979,10 +1033,35 @@ function setupFilters() {
         showToast(data.message, 'error');
         return;
       }
+      
+      // Optimistically update patient list immediately for snappy feel
+      if (!allPatients) allPatients = [];
+      let allergiesArray = [];
+      if (typeof allergies === 'string') allergiesArray = allergies.split(',').map(a => a.trim()).filter(Boolean);
+      allPatients.unshift({
+        id: data.id,
+        user_id: data.id,
+        blood_type: bloodType || 'O+',
+        gender: gender || 'Male',
+        date_of_birth: dob || null,
+        allergies: allergiesArray,
+        medical_notes: medicalNotes || '',
+        user: {
+          id: data.id,
+          name: data.name || `${firstName} ${lastName}`,
+          first_name: firstName,
+          last_name: lastName,
+          email: data.email || email,
+          contact_number: contactNumber,
+          role: 'Patient'
+        }
+      });
+      filterAndRenderPatients();
+
       showToast('Patient account and profile created successfully', 'success');
       modalAddPatient.classList.remove('active');
       e.target.reset();
-      loadPatients();
+      loadPatients(); // Background refresh to sync any additional server fields
     })
     .catch(err => {
       console.error('Error creating patient:', err);
@@ -1133,19 +1212,24 @@ function filterAndRenderAppointments() {
     }
 
     const status = a.status || 'Pending';
-    let statusClr = '#888';
-    if (status === 'Completed') statusClr = '#2ecc71';
-    else if (status === 'Approved') statusClr = '#3498db';
-    else if (status === 'Pending') statusClr = '#e6a23c';
-    else if (status === 'Cancelled') statusClr = '#e74c3c';
+    const statusLower = status.toLowerCase();
+    const isLocked = status === 'Completed' || status === 'Cancelled';
+
+    const statusSelectHtml = isLocked
+      ? `<span class="status-badge-select status-${statusLower}" style="display: inline-block; cursor: default;" title="Status locked (${escapeHTML(status)})">${status === 'Completed' ? 'Completed' : 'Cancelled'}</span>`
+      : `
+        <select class="status-badge-select status-${statusLower}" onchange="updateApptStatus('${a.id}', this.value)">
+          <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
+          <option value="Approved" ${status === 'Approved' ? 'selected' : ''}>Approved</option>
+          <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>Completed</option>
+          <option value="Cancelled" ${status === 'Cancelled' ? 'selected' : ''}> Cancelled</option>
+        </select>
+      `;
 
     const actionButtonsHtml = `
-      <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
-        <button class="slot-btn" style="padding: 4px 8px; font-size: 0.75rem; border-color: #3498db; color: #3498db; width: auto;" onclick="updateApptStatus('${a.id}', 'Approved')">Approve</button>
-        <button class="slot-btn" style="padding: 4px 8px; font-size: 0.75rem; border-color: #e6a23c; color: #e6a23c; width: auto;" onclick="updateApptStatus('${a.id}', 'Pending')">Pending</button>
-        <button class="slot-btn" style="padding: 4px 8px; font-size: 0.75rem; border-color: #e74c3c; color: #e74c3c; width: auto;" onclick="updateApptStatus('${a.id}', 'Cancelled')">Cancel</button>
-        <button class="slot-btn" style="padding: 4px 8px; font-size: 0.75rem; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="openEditApptModal('${a.id}', '${escapeJS(pName)}', '${a.appointment_date}', '${escapeJS(location)}', '${a.status}', '${escapeJS(notesStr)}')">Edit</button>
-        <button class="btn-danger-action" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 8px; width: auto; font-weight: 600;" onclick="deleteAppt('${a.id}')">Delete</button>
+      <div class="table-action-group">
+        <button type="button" class="btn-action-btn btn-edit" onclick="event.preventDefault(); openEditApptModal('${a.id}', '${escapeJS(pName)}', '${a.appointment_date}', '${escapeJS(location)}', '${a.status}', '${escapeJS(notesStr)}')">✏️ Edit</button>
+        <button type="button" class="btn-action-btn btn-delete" onclick="event.preventDefault(); deleteAppt('${a.id}')">🗑️ Delete</button>
       </div>
     `;
 
@@ -1156,7 +1240,7 @@ function filterAndRenderAppointments() {
         <td style="padding: 14px 16px;">${escapeHTML(contact)}</td>
         <td style="padding: 14px 16px;">${escapeHTML(dateStr)}</td>
         <td style="padding: 14px 16px;">${escapeHTML(location)}</td>
-        <td style="padding: 14px 16px; font-weight: 600; color: ${statusClr};">${status}</td>
+        <td style="padding: 14px 16px;">${statusSelectHtml}</td>
         <td style="padding: 14px 16px; text-align: right;">${actionButtonsHtml}</td>
       </tr>
     `;
@@ -1218,24 +1302,46 @@ function filterAndRenderPatients() {
   if (!tbody) return;
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #888;">No patients found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #888;">No patients found</td></tr>';
     return;
   }
 
   tbody.innerHTML = filtered.map(p => {
-    const name = p.user ? (p.user.name || `${p.user.first_name || ''} ${p.user.last_name || ''}`.trim() || 'Unknown Patient') : 'Unknown Patient';
+    const firstName = p.user ? (p.user.first_name || '') : '';
+    const lastName = p.user ? (p.user.last_name || '') : '';
+    const name = p.user ? (p.user.name || `${firstName} ${lastName}`.trim() || 'Unknown Patient') : 'Unknown Patient';
     const email = p.user ? p.user.email : 'No Email';
-    const phone = p.user ? (p.user.contact_number || p.user.contactNumber || 'N/A') : 'N/A';
-    const notes = p.medical_notes || 'No medical notes recorded.';
+    const gender = p.gender || 'Unspecified';
+    const dobVal = p.date_of_birth ? new Date(p.date_of_birth).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+    const bloodType = p.blood_type || 'Unspecified';
+    const allergiesStr = Array.isArray(p.allergies) ? p.allergies.join(', ') : (p.allergies || 'None');
+    const phone = p.user ? (p.user.contact_number || p.user.contactNumber || '') : '';
+    const notes = p.medical_notes || '';
+
+    // Create variables for safe escaping in onclick
+    const escFirstName = escapeJS(firstName);
+    const escLastName = escapeJS(lastName);
+    const escEmail = escapeJS(email);
+    const escGender = escapeJS(gender);
+    const escDob = p.date_of_birth || '';
+    const escBlood = escapeJS(bloodType);
+    const escPhone = escapeJS(phone);
+    const escAllergies = escapeJS(allergiesStr);
+    const escNotes = escapeJS(notes);
 
     return `
       <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color);">
         <td style="padding: 14px 16px; font-weight: 500;">${escapeHTML(name)}</td>
         <td style="padding: 14px 16px;">${escapeHTML(email)}</td>
-        <td style="padding: 14px 16px;">${escapeHTML(phone)}</td>
-        <td style="padding: 14px 16px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(notes)}">${escapeHTML(notes)}</td>
+        <td style="padding: 14px 16px;">${escapeHTML(gender)}</td>
+        <td style="padding: 14px 16px;">${escapeHTML(dobVal)}</td>
+        <td style="padding: 14px 16px;">${escapeHTML(bloodType)}</td>
+        <td style="padding: 14px 16px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(allergiesStr)}">${escapeHTML(allergiesStr)}</td>
         <td style="padding: 14px 16px; text-align: right;">
-          <button class="btn-danger-action" style="padding: 4px 12px; font-size: 0.8rem; border-radius: 6px; width: auto;" onclick="deletePatientUser('${p.user_id}', '${escapeJS(name)}')">Delete</button>
+          <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;">
+            <button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="openEditPatientModal('${p.user_id}', '${escFirstName}', '${escLastName}', '${escEmail}', '${escGender}', '${escDob}', '${escBlood}', '${escPhone}', '${escAllergies}', '${escNotes}')">Edit</button>
+            <button class="btn-danger-action" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; width: auto;" onclick="deletePatientUser('${p.user_id}', '${escapeJS(name)}')">Delete</button>
+          </div>
         </td>
       </tr>
     `;
@@ -1370,7 +1476,7 @@ function loadBilling() {
 
     const tbody = document.getElementById('billing-table-body');
     if (allInvoices.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #888;">No invoices created yet.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #888;">No invoices created yet.</td></tr>';
       return;
     }
 
@@ -1382,6 +1488,8 @@ function loadBilling() {
 
       const patientName = inv.patient ? inv.patient.name : (inv.patient_name || 'Patient Roster');
       const invoiceNum = inv.id.substring(0, 8).toUpperCase();
+      const issuedVal = inv.issued_at || inv.created_at;
+      const issuedDateStr = issuedVal ? new Date(issuedVal).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
 
       let statusBadge = `<span style="background:#fef0f0; color:#f56c6c; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:4px; text-transform:uppercase;">Unpaid</span>`;
       if (inv.status?.toLowerCase() === 'paid') {
@@ -1390,13 +1498,20 @@ function loadBilling() {
         statusBadge = `<span style="background:#fdf6ec; color:#e6a23c; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:4px; text-transform:uppercase;">Partial</span>`;
       }
 
+      const isPaid = inv.status?.toLowerCase() === 'paid';
+      const actionButton = isPaid 
+        ? `<button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #ccc; color: #aaa; width: auto;" disabled>Settled</button>`
+        : `<button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #2ecc71; color: #2ecc71; width: auto;" onclick="openMarkPaidModal('${inv.id}', '${escapeJS(patientName)}', ${total}, '${escapeJS(inv.status || 'Unpaid')}', ${paid})">Mark Paid</button>`;
+
       return `
         <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color);">
           <td style="padding: 14px 16px; font-weight: 600;">#INV-${invoiceNum}</td>
           <td style="padding: 14px 16px;">${escapeHTML(patientName)}</td>
           <td style="padding: 14px 16px;">${getCurrencySymbol()}${total.toFixed(2)}</td>
           <td style="padding: 14px 16px;">${getCurrencySymbol()}${paid.toFixed(2)}</td>
+          <td style="padding: 14px 16px;">${escapeHTML(issuedDateStr)}</td>
           <td style="padding: 14px 16px;">${statusBadge}</td>
+          <td style="padding: 14px 16px; text-align: right;">${actionButton}</td>
         </tr>
       `;
     }).join('');
@@ -1475,9 +1590,12 @@ function renderStaffTable(data) {
         <td style="padding: 14px 16px; font-weight:600; color:${statusColor}">${s.availability}</td>
         <td style="padding: 14px 16px;">${escapeHTML(s.contact)}</td>
         <td style="padding: 14px 16px; text-align: right;">
-          <button onclick="deleteStaffSchedule('${s.id}', '${escapeHTML(s.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: #fee2e2; color: #ef4444; transition: background 0.2s;">
-            Delete
-          </button>
+          <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;">
+            <button type="button" class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="event.preventDefault(); openEditStaffScheduleModal('${s.id}', '${escapeJS(s.name)}', '${escapeJS(s.role)}', '${escapeJS(s.shift)}', '${escapeJS(s.days)}', '${escapeJS(s.contact)}', '${escapeJS(s.availability)}')">Edit</button>
+            <button type="button" onclick="event.preventDefault(); deleteStaffSchedule('${s.id}', '${escapeHTML(s.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: #fee2e2; color: #ef4444; transition: background 0.2s;">
+              Delete
+            </button>
+          </div>
         </td>
       </tr>
     `;
@@ -1499,6 +1617,9 @@ window.deleteStaffSchedule = function(id, name) {
       localStaffSchedules = (localStaffSchedules || []).filter(s => s.id !== id);
       showToast(`Staff schedule for "${name}" deleted.`, 'success');
       logConsoleEvent(`[INFO] Admin deleted staff schedule listing for "${name}".`);
+
+      // Preserve active staff tab (prevent fallback to dashboard)
+      activateTab('staff');
       filterAndRenderStaff();
     })
     .catch(err => {
@@ -1563,6 +1684,7 @@ function renderInventoryTable(data) {
         <td style="padding: 14px 16px;">${statusBadge}</td>
         <td style="padding: 14px 16px; text-align: right;">
           <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+            <button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="openEditInventoryModal('${item.id}', '${escapeJS(item.name)}', '${escapeJS(item.category)}', '${escapeJS(item.unit)}', ${item.stock}, ${item.threshold})">Edit</button>
             <button onclick="reorderSupply('${escapeHTML(item.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: var(--secondary-color); color: white;">
               Reorder
             </button>
@@ -1644,6 +1766,7 @@ window.filterInventory = function() {
         <td style="padding: 14px 16px;">${statusBadge}</td>
         <td style="padding: 14px 16px; text-align: right;">
           <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+            <button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="openEditInventoryModal('${item.id}', '${escapeJS(item.name)}', '${escapeJS(item.category)}', '${escapeJS(item.unit)}', ${item.stock}, ${item.threshold})">Edit</button>
             <button onclick="reorderSupply('${escapeHTML(item.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: var(--secondary-color); color: white;">
               Reorder
             </button>
@@ -1904,6 +2027,32 @@ if (addStaffScheduleForm) {
     const contact = document.getElementById('staff-sched-contact').value.trim();
     const availability = document.getElementById('staff-sched-status').value;
 
+    if (!name) {
+      showToast('Please enter staff name', 'error');
+      return;
+    }
+
+    // Check for duplicate account / listing
+    const nameLower = name.toLowerCase();
+    const contactClean = contact.replace(/[\s-]/g, '');
+
+    const isDuplicate = (localStaffSchedules || []).some(s => {
+      const sName = (s.name || '').toLowerCase();
+      const sContact = (s.contact || '').replace(/[\s-]/g, '');
+      return sName === nameLower || (contactClean.length > 5 && sContact === contactClean);
+    });
+
+    if (isDuplicate) {
+      showToast(`A listing or account for "${name}" already exists! Duplicate entries are not allowed.`, 'error');
+      return;
+    }
+
+    const btnSubmit = e.target.querySelector('button[type=submit]');
+    if (btnSubmit) {
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Saving...';
+    }
+
     fetch(`${ADMIN_API}/staff-schedules`, {
       method: 'POST',
       headers: {
@@ -1923,14 +2072,24 @@ if (addStaffScheduleForm) {
       }
       localStaffSchedules.push(newSched);
 
-      showToast(`Shift listing for "${name}" added!`, 'success');
+      showToast(`Shift listing for "${name}" saved!`, 'success');
       logConsoleEvent(`[INFO] Admin added staff shift listing: ${name} (${role}).`);
       modalAddStaffSchedule.classList.remove('active');
+      addStaffScheduleForm.reset();
+
+      // Ensure view stays on current Staff tab (no redirect to Dashboard)
+      activateTab('staff');
       filterAndRenderStaff();
     })
     .catch(err => {
       console.error('Error adding staff schedule:', err);
       showToast('Failed to add staff schedule listing', 'error');
+    })
+    .finally(() => {
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Save Listing';
+      }
     });
   });
 }
@@ -1968,11 +2127,30 @@ if (addStaffForm) {
 
     const firstName = document.getElementById('staff-firstname').value.trim();
     const lastName = document.getElementById('staff-lastname').value.trim();
-    const email = document.getElementById('staff-email').value.trim();
+    const email = document.getElementById('staff-email').value.trim().toLowerCase();
     const contactNumber = document.getElementById('staff-phone').value.trim();
     const role = document.getElementById('staff-role').value;
     const password = document.getElementById('staff-password').value;
     const address = document.getElementById('staff-address').value.trim();
+
+    // Prevent duplicate accounts by email or full name
+    const fullName = `${firstName} ${lastName}`.toLowerCase();
+    const isDuplicateAccount = (localUsers || []).some(u => {
+      const uEmail = (u.email || '').toLowerCase();
+      const uName = (u.name || `${u.first_name || ''} ${u.last_name || ''}`).toLowerCase();
+      return uEmail === email || (fullName.length > 3 && uName === fullName);
+    });
+
+    if (isDuplicateAccount) {
+      showToast(`An account with email "${email}" or name "${firstName} ${lastName}" already exists!`, 'error');
+      return;
+    }
+
+    const btnSubmit = e.target.querySelector('button[type=submit]');
+    if (btnSubmit) {
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Creating...';
+    }
 
     fetch(`${AUTH_API}/users`, {
       method: 'POST',
@@ -1989,26 +2167,205 @@ if (addStaffForm) {
       return res.json();
     })
     .then(data => {
-      showToast(`Account created for ${data.name} as ${data.role}!`, 'success');
-      logConsoleEvent(`[INFO] Admin created new staff user account: ${data.email} (${data.role}).`);
+      // Optimistically update users list immediately
+      if (!localUsers) localUsers = [];
+      localUsers.unshift({
+        id: data.id,
+        first_name: firstName,
+        last_name: lastName,
+        name: data.name || `${firstName} ${lastName}`,
+        email: data.email || email,
+        role: data.role || role,
+        contact_number: contactNumber,
+        is_active: true
+      });
+      filterAndRenderUsers();
+
+      showToast(`Account created for ${data.name || firstName} as ${data.role || role}!`, 'success');
+      logConsoleEvent(`Admin created new staff user account: ${data.email || email} (${data.role || role})`, 'SUCCESS', 'AUTH');
       modalAddStaffAccount.classList.remove('active');
-      loadUsers();
+      addStaffForm.reset();
+      loadUsers(); // Background refresh
     })
     .catch(err => {
+      logConsoleEvent(`Failed to create staff account (${email}): ${err.message}`, 'ERROR', 'AUTH');
       showToast(err.message, 'error');
+    })
+    .finally(() => {
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Create Staff Account';
+      }
     });
   });
 }
 
-// ─── System Logs Utility ──────────────────────────────────────────────────────
-function logConsoleEvent(message) {
+// ─── Live Active System Logs Engine ──────────────────────────────────────────
+let allSystemLogs = [];
+let logsPollingInterval = null;
+
+function loadSystemLogs() {
+  fetch(`${ADMIN_API}/logs`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+  .then(res => res.json())
+  .then(logs => {
+    if (Array.isArray(logs)) {
+      allSystemLogs = logs;
+      filterAndRenderLogs();
+    }
+  })
+  .catch(err => {
+    console.error('Error fetching system logs:', err);
+  });
+}
+
+function logConsoleEvent(message, level = 'INFO', module = 'SYSTEM') {
+  const timestamp = new Date().toISOString();
+  const logItem = {
+    id: Date.now() + Math.random(),
+    timestamp,
+    level: level.toUpperCase(),
+    module: module.toUpperCase(),
+    message
+  };
+
+  allSystemLogs.unshift(logItem);
+  filterAndRenderLogs();
+
+  // Non-blocking sync to server logs
+  if (token) {
+    fetch(`${ADMIN_API}/logs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ level, module, message })
+    }).catch(() => {});
+  }
+}
+
+function filterAndRenderLogs() {
   const container = document.getElementById('logs-container');
-  if (container) {
-    const time = new Date().toLocaleTimeString();
-    const logNode = document.createElement('div');
-    logNode.textContent = `[${time}] ${message}`;
-    container.appendChild(logNode);
+  const countBadge = document.getElementById('logs-total-badge');
+  if (!container) return;
+
+  const searchVal = (document.getElementById('logs-search-input')?.value || '').toLowerCase().trim();
+  const levelVal = document.getElementById('logs-level-filter')?.value || 'all';
+  const moduleVal = document.getElementById('logs-module-filter')?.value || 'all';
+  const autoScroll = document.getElementById('logs-autoscroll')?.checked !== false;
+
+  const filtered = allSystemLogs.filter(log => {
+    const lvl = (log.level || 'INFO').toUpperCase();
+    const mod = (log.module || 'SYSTEM').toUpperCase();
+    const msg = (log.message || '').toLowerCase();
+    const time = new Date(log.timestamp || Date.now()).toLocaleTimeString().toLowerCase();
+
+    if (levelVal !== 'all' && lvl !== levelVal) return false;
+    if (moduleVal !== 'all' && mod !== moduleVal) return false;
+    if (searchVal && !msg.includes(searchVal) && !lvl.toLowerCase().includes(searchVal) && !mod.toLowerCase().includes(searchVal) && !time.includes(searchVal)) return false;
+
+    return true;
+  });
+
+  if (countBadge) {
+    countBadge.textContent = `${filtered.length} of ${allSystemLogs.length} Logs`;
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="log-empty-state">No system log entries matching current filter.</div>';
+    return;
+  }
+
+  // Reverse so newest entries display cleanly in stream
+  const displayLogs = [...filtered].reverse();
+
+  container.innerHTML = displayLogs.map(l => {
+    const timeStr = l.timestamp ? new Date(l.timestamp).toLocaleTimeString('en-US', { hour12: true }) : new Date().toLocaleTimeString();
+    const lvl = (l.level || 'INFO').toUpperCase();
+    const mod = (l.module || 'SYSTEM').toUpperCase();
+    const lvlClass = `level-${lvl.toLowerCase()}`;
+
+    return `
+      <div class="log-entry-row">
+        <span class="log-time">${timeStr}</span>
+        <span class="log-badge-level ${lvlClass}">${lvl}</span>
+        <span class="log-badge-module">[${mod}]</span>
+        <span class="log-msg-text">${escapeHTML(l.message)}</span>
+      </div>
+    `;
+  }).join('');
+
+  if (autoScroll) {
     container.scrollTop = container.scrollHeight;
+  }
+}
+
+// Setup System Logs listeners & live poller
+function initSystemLogsListeners() {
+  const searchInput = document.getElementById('logs-search-input');
+  const levelFilter = document.getElementById('logs-level-filter');
+  const moduleFilter = document.getElementById('logs-module-filter');
+  const btnRefresh = document.getElementById('btn-refresh-logs');
+  const btnClear = document.getElementById('btn-clear-logs');
+  const btnExport = document.getElementById('btn-export-logs');
+
+  if (searchInput) searchInput.addEventListener('input', filterAndRenderLogs);
+  if (levelFilter) levelFilter.addEventListener('change', filterAndRenderLogs);
+  if (moduleFilter) moduleFilter.addEventListener('change', filterAndRenderLogs);
+
+  if (btnRefresh) {
+    btnRefresh.addEventListener('click', () => {
+      loadSystemLogs();
+      showToast('System logs refreshed from server', 'success');
+    });
+  }
+
+  if (btnClear) {
+    btnClear.addEventListener('click', () => {
+      showDeleteConfirmation('Are you sure you want to clear the active system console logs?', () => {
+        fetch(`${ADMIN_API}/logs`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+          allSystemLogs = data.logs || [];
+          filterAndRenderLogs();
+          showToast('System console logs cleared', 'success');
+        })
+        .catch(() => {
+          allSystemLogs = [];
+          filterAndRenderLogs();
+          showToast('Local log view cleared', 'info');
+        });
+      });
+    });
+  }
+
+  if (btnExport) {
+    btnExport.addEventListener('click', () => {
+      if (allSystemLogs.length === 0) {
+        showToast('No logs to export', 'info');
+        return;
+      }
+      const textContent = allSystemLogs.map(l => {
+        const d = l.timestamp ? new Date(l.timestamp).toISOString() : new Date().toISOString();
+        return `[${d}] [${(l.level || 'INFO').toUpperCase()}] [${(l.module || 'SYSTEM').toUpperCase()}] ${l.message}`;
+      }).join('\n');
+
+      const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Fano_Clinic_Logs_${new Date().toISOString().slice(0, 10)}.log`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('System logs downloaded successfully', 'success');
+    });
   }
 }
 
@@ -2076,7 +2433,18 @@ function showDeleteConfirmation(message, onConfirm) {
     if (confirm(message)) onConfirm();
     return;
   }
-  textEl.textContent = message;
+
+  // Format message to highlight quoted entity names cleanly with entity-highlight badge
+  const safeEscaped = escapeHTML(message);
+  const formattedHtml = safeEscaped.replace(
+    /&quot;(.*?)&quot;/g,
+    '<strong class="entity-highlight">"$1"</strong>'
+  ).replace(
+    /"(.*?)"/g,
+    '<strong class="entity-highlight">"$1"</strong>'
+  );
+
+  textEl.innerHTML = formattedHtml;
   onDeleteConfirmCallback = onConfirm;
   modal.classList.add('active');
 }
@@ -2086,17 +2454,22 @@ const btnConfirmDelete = document.getElementById('btn-confirm-delete');
 const modalConfirmDelete = document.getElementById('modal-confirm-delete');
 
 if (btnCancelDelete) {
-  btnCancelDelete.addEventListener('click', () => {
+  btnCancelDelete.addEventListener('click', (e) => {
+    e.preventDefault();
     modalConfirmDelete.classList.remove('active');
     onDeleteConfirmCallback = null;
   });
 }
 
 if (btnConfirmDelete) {
-  btnConfirmDelete.addEventListener('click', () => {
+  btnConfirmDelete.addEventListener('click', (e) => {
+    e.preventDefault();
     modalConfirmDelete.classList.remove('active');
-    if (onDeleteConfirmCallback) onDeleteConfirmCallback();
-    onDeleteConfirmCallback = null;
+    if (onDeleteConfirmCallback) {
+      const cb = onDeleteConfirmCallback;
+      onDeleteConfirmCallback = null;
+      cb();
+    }
   });
 }
 
@@ -2283,38 +2656,140 @@ if (twilioForm) {
   });
 }
 
-// Branches management
+// Branches management with Leaflet Interactive Map Pinning
+let adminMap = null;
+let adminNewMarker = null;
+let adminBranchMarkers = [];
+
+window.initAdminBranchMap = function() {
+  const mapContainer = document.getElementById('admin-branch-map');
+  if (!mapContainer || typeof L === 'undefined') return;
+
+  if (!adminMap) {
+    adminMap = L.map('admin-branch-map').setView([10.2098, 123.7580], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(adminMap);
+
+    // Map click handler to pin location & auto-fill lat/lng
+    adminMap.on('click', function(e) {
+      const lat = e.latlng.lat.toFixed(5);
+      const lng = e.latlng.lng.toFixed(5);
+
+      const latInput = document.getElementById('branch-input-lat');
+      const lngInput = document.getElementById('branch-input-lng');
+      if (latInput) latInput.value = lat;
+      if (lngInput) lngInput.value = lng;
+
+      if (adminNewMarker) {
+        adminNewMarker.setLatLng(e.latlng);
+      } else {
+        adminNewMarker = L.marker(e.latlng, { draggable: true }).addTo(adminMap);
+        adminNewMarker.bindPopup('<b>New Branch Pin</b><br>Drag or click to adjust location').openPopup();
+
+        adminNewMarker.on('dragend', function(event) {
+          const pos = event.target.getLatLng();
+          if (latInput) latInput.value = pos.lat.toFixed(5);
+          if (lngInput) lngInput.value = pos.lng.toFixed(5);
+        });
+      }
+
+      showToast(`Pin set at Lat: ${lat}, Lng: ${lng}`, 'info');
+    });
+  } else {
+    setTimeout(() => { adminMap.invalidateSize(); }, 200);
+  }
+
+  updateAdminMapMarkers();
+};
+
+function updateAdminMapMarkers() {
+  if (!adminMap || typeof L === 'undefined') return;
+
+  // Clear existing markers
+  adminBranchMarkers.forEach(m => adminMap.removeLayer(m));
+  adminBranchMarkers = [];
+
+  const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || [
+    { name: 'Fano Dental Clinic — Main Branch', address: 'Balirong Highway, City of Naga, Cebu', lat: 10.2098, lng: 123.7580 },
+    { name: 'Fano Dental Clinic — Minglanilla', address: 'Poblacion Ward II, Minglanilla, Cebu', lat: 10.2450, lng: 123.7960 }
+  ];
+
+  const bounds = [];
+  detailedBranches.forEach(b => {
+    if (b.lat && b.lng) {
+      const marker = L.marker([b.lat, b.lng]).addTo(adminMap);
+      marker.bindPopup(`<b>${escapeHTML(b.name)}</b><br>${escapeHTML(b.address || 'Clinic Branch')}`);
+      adminBranchMarkers.push(marker);
+      bounds.push([b.lat, b.lng]);
+    }
+  });
+
+  if (bounds.length > 0) {
+    adminMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+  }
+}
+
 window.renderBranchesList = function() {
   const listContainer = document.getElementById('settings-branches-list');
   if (!listContainer) return;
-  
-  const branches = JSON.parse(localStorage.getItem('set-clinic-branches')) || ['Main Branch, Fano Dental', 'South Branch, Fano Dental'];
-  localStorage.setItem('set-clinic-branches', JSON.stringify(branches));
 
-  if (branches.length === 0) {
+  const defaultDetailed = [
+    { name: 'Fano Dental Clinic — Main Branch', address: 'Balirong Highway, City of Naga, Cebu', lat: 10.2098, lng: 123.7580 },
+    { name: 'Fano Dental Clinic — Minglanilla', address: 'Poblacion Ward II, Minglanilla, Cebu', lat: 10.2450, lng: 123.7960 }
+  ];
+
+  const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || defaultDetailed;
+  localStorage.setItem('set-clinic-branches-detailed', JSON.stringify(detailedBranches));
+
+  // Maintain string list for legacy selects
+  const branchNames = detailedBranches.map(b => typeof b === 'string' ? b : b.name);
+  localStorage.setItem('set-clinic-branches', JSON.stringify(branchNames));
+
+  if (detailedBranches.length === 0) {
     listContainer.innerHTML = '<span style="font-size:0.85rem; color:#888; font-style:italic;">No branches configured.</span>';
-    return;
+  } else {
+    listContainer.innerHTML = detailedBranches.map((b, idx) => {
+      const name = typeof b === 'string' ? b : b.name;
+      const addr = typeof b === 'object' && b.address ? b.address : '';
+      const lat = typeof b === 'object' && b.lat ? b.lat : '';
+      const lng = typeof b === 'object' && b.lng ? b.lng : '';
+
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#f9f9f9; border:1px solid #eee; border-radius:10px; padding:10px 14px; font-size:0.85rem; color:var(--dark-color);">
+          <div>
+            <div style="font-weight:700; color:var(--secondary-color);">${escapeHTML(name)}</div>
+            ${addr ? `<div style="font-size:0.78rem; color:#666;">📍 ${escapeHTML(addr)}</div>` : ''}
+            ${lat && lng ? `<div style="font-size:0.74rem; color:#888;">Coordinates: ${lat}, ${lng}</div>` : ''}
+          </div>
+          <button class="btn-danger-action" style="padding:4px 10px; font-size:0.75rem; border-radius:6px; width:auto; height:auto;" onclick="deleteBranch(${idx})">Delete</button>
+        </div>
+      `;
+    }).join('');
   }
 
-  listContainer.innerHTML = branches.map((b, idx) => `
-    <div style="display:flex; justify-content:space-between; align-items:center; background:#f9f9f9; border:1px solid #eee; border-radius:8px; padding:8px 12px; font-size:0.85rem; color:var(--dark-color);">
-      <span>${escapeHTML(b)}</span>
-      <button class="btn-danger-action" style="padding:2px 8px; font-size:0.75rem; border-radius:6px; width:auto;" onclick="deleteBranch(${idx})">Delete</button>
-    </div>
-  `).join('');
-  
   const editSelect = document.getElementById('edit-appt-location');
   if (editSelect) {
-    editSelect.innerHTML = branches.map(b => `<option value="${escapeHTML(b)}">${escapeHTML(b)}</option>`).join('');
+    editSelect.innerHTML = branchNames.map(b => `<option value="${escapeHTML(b)}">${escapeHTML(b)}</option>`).join('');
   }
+
+  // Initialize/refresh map
+  setTimeout(() => {
+    initAdminBranchMap();
+  }, 100);
 };
 
 window.deleteBranch = function(idx) {
-  const branches = JSON.parse(localStorage.getItem('set-clinic-branches')) || [];
-  branches.splice(idx, 1);
-  localStorage.setItem('set-clinic-branches', JSON.stringify(branches));
+  const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || [];
+  detailedBranches.splice(idx, 1);
+  localStorage.setItem('set-clinic-branches-detailed', JSON.stringify(detailedBranches));
+
+  const branchNames = detailedBranches.map(b => typeof b === 'string' ? b : b.name);
+  localStorage.setItem('set-clinic-branches', JSON.stringify(branchNames));
+
   renderBranchesList();
-  showToast('Branch deleted successfully', 'success');
+  showToast('Branch removed successfully', 'success');
 };
 
 const addBranchForm = document.getElementById('add-branch-form');
@@ -2322,26 +2797,50 @@ if (addBranchForm) {
   addBranchForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const nameInput = document.getElementById('branch-input-name');
-    const name = nameInput.value.trim();
-    if (!name) return;
+    const addrInput = document.getElementById('branch-input-address');
+    const latInput = document.getElementById('branch-input-lat');
+    const lngInput = document.getElementById('branch-input-lng');
 
-    const branches = JSON.parse(localStorage.getItem('set-clinic-branches')) || [];
-    if (branches.includes(name)) {
-      showToast('Branch name already exists', 'error');
+    const name = nameInput?.value.trim();
+    const address = addrInput?.value.trim() || '';
+    const lat = parseFloat(latInput?.value) || 10.2098;
+    const lng = parseFloat(lngInput?.value) || 123.7580;
+
+    if (!name) {
+      showToast('Branch name is required', 'error');
       return;
     }
 
-    branches.push(name);
-    localStorage.setItem('set-clinic-branches', JSON.stringify(branches));
+    const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || [];
+    if (detailedBranches.some(b => (typeof b === 'string' ? b : b.name).toLowerCase() === name.toLowerCase())) {
+      showToast('A branch with this name already exists', 'error');
+      return;
+    }
+
+    detailedBranches.push({ name, address, lat, lng });
+    localStorage.setItem('set-clinic-branches-detailed', JSON.stringify(detailedBranches));
+
+    const branchNames = detailedBranches.map(b => b.name);
+    localStorage.setItem('set-clinic-branches', JSON.stringify(branchNames));
+
     nameInput.value = '';
+    if (addrInput) addrInput.value = '';
+    if (latInput) latInput.value = '';
+    if (lngInput) lngInput.value = '';
+
+    if (adminNewMarker && adminMap) {
+      adminMap.removeLayer(adminNewMarker);
+      adminNewMarker = null;
+    }
+
     renderBranchesList();
-    showToast('Branch added successfully', 'success');
+    showToast('New clinic branch & pin added successfully!', 'success');
   });
 }
 
 // Treatments & Services management
 window.loadSettingsTreatments = function() {
-  fetch('http://localhost:5000/api/treatments', {
+  fetch(TREATMENT_API, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
   .then(res => res.json())
@@ -2382,7 +2881,7 @@ window.deleteTreatmentItem = function(id) {
   if (!confirm('Are you sure you want to permanently delete this treatment service?')) {
     return;
   }
-  fetch(`http://localhost:5000/api/treatments/${id}`, {
+  fetch(`${TREATMENT_API}/${id}`, {
     method: 'DELETE',
     headers: { 'Authorization': `Bearer ${token}` }
   })
@@ -2416,7 +2915,7 @@ if (addTreatForm) {
     btnSave.disabled = true;
     btnSave.textContent = 'Saving...';
 
-    fetch('http://localhost:5000/api/treatments', {
+    fetch(TREATMENT_API, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2571,3 +3070,269 @@ function initPasswordToggles() {
     });
   });
 }
+
+// ─── Edit Patient Modal & Handler ─────────────────────────────────────────────
+window.openEditPatientModal = function(userId, firstName, lastName, email, gender, dob, bloodType, phone, allergies, medicalNotes) {
+  document.getElementById('edit-patient-user-id').value = userId;
+  document.getElementById('edit-patient-firstname').value = firstName;
+  document.getElementById('edit-patient-lastname').value = lastName;
+  document.getElementById('edit-patient-gender').value = gender;
+
+  if (dob) {
+    document.getElementById('edit-patient-dob').value = dob.slice(0, 10);
+  } else {
+    document.getElementById('edit-patient-dob').value = '';
+  }
+
+  document.getElementById('edit-patient-blood').value = bloodType;
+  document.getElementById('edit-patient-phone').value = phone;
+  document.getElementById('edit-patient-allergies').value = allergies;
+  document.getElementById('edit-patient-notes').value = medicalNotes;
+
+  document.getElementById('modal-edit-patient').classList.add('active');
+};
+
+document.getElementById('edit-patient-form')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const userId = document.getElementById('edit-patient-user-id').value;
+  const firstName = document.getElementById('edit-patient-firstname').value.trim();
+  const lastName = document.getElementById('edit-patient-lastname').value.trim();
+  const gender = document.getElementById('edit-patient-gender').value;
+  const dob = document.getElementById('edit-patient-dob').value;
+  const bloodType = document.getElementById('edit-patient-blood').value;
+  const contactNumber = document.getElementById('edit-patient-phone').value.trim();
+  const allergies = document.getElementById('edit-patient-allergies').value.trim();
+  const medicalNotes = document.getElementById('edit-patient-notes').value.trim();
+
+  const payload = {
+    firstName,
+    lastName,
+    dob,
+    gender,
+    bloodType,
+    contactNumber,
+    allergies,
+    medicalNotes
+  };
+
+  const btnSave = e.target.querySelector('button[type=submit]');
+  btnSave.disabled = true;
+  btnSave.textContent = 'Saving...';
+
+  fetch(`${PATIENT_API}/${userId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message && !data.success) {
+      showToast(data.message, 'error');
+      return;
+    }
+    showToast('Patient profile updated successfully', 'success');
+    document.getElementById('modal-edit-patient').classList.remove('active');
+    loadPatients();
+  })
+  .catch(err => {
+    console.error('Error updating patient:', err);
+    showToast('Failed to update patient profile', 'error');
+  })
+  .finally(() => {
+    btnSave.disabled = false;
+    btnSave.textContent = 'Save Changes';
+  });
+});
+
+document.getElementById('btn-cancel-edit-patient')?.addEventListener('click', () => {
+  document.getElementById('modal-edit-patient').classList.remove('active');
+});
+
+
+// ─── Edit Staff Schedule Modal & Handler ──────────────────────────────────────
+window.openEditStaffScheduleModal = function(id, name, role, shift, days, contact, availability) {
+  document.getElementById('edit-sched-id').value = id;
+  document.getElementById('edit-sched-name').value = name;
+  document.getElementById('edit-sched-role').value = role;
+  document.getElementById('edit-sched-shift').value = shift;
+  document.getElementById('edit-sched-days').value = days;
+  document.getElementById('edit-sched-contact').value = contact;
+  document.getElementById('edit-sched-availability').value = availability;
+
+  document.getElementById('modal-edit-staff-schedule').classList.add('active');
+};
+
+document.getElementById('edit-staff-schedule-form')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = document.getElementById('edit-sched-id').value;
+  const name = document.getElementById('edit-sched-name').value.trim();
+  const role = document.getElementById('edit-sched-role').value.trim();
+  const shift = document.getElementById('edit-sched-shift').value.trim();
+  const days = document.getElementById('edit-sched-days').value.trim();
+  const contact = document.getElementById('edit-sched-contact').value.trim();
+  const availability = document.getElementById('edit-sched-availability').value;
+
+  const payload = { name, role, shift, days, contact, availability };
+
+  const btnSave = e.target.querySelector('button[type=submit]');
+  btnSave.disabled = true;
+  btnSave.textContent = 'Saving...';
+
+  fetch(`${ADMIN_API}/staff-schedules/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message) {
+      showToast(data.message, 'error');
+      return;
+    }
+    showToast('Staff schedule listing updated successfully', 'success');
+    document.getElementById('modal-edit-staff-schedule').classList.remove('active');
+    loadStaffSchedules();
+  })
+  .catch(err => {
+    console.error('Error updating staff schedule:', err);
+    showToast('Failed to update staff schedule listing', 'error');
+  })
+  .finally(() => {
+    btnSave.disabled = false;
+    btnSave.textContent = 'Save Changes';
+  });
+});
+
+document.getElementById('btn-cancel-edit-staff-schedule')?.addEventListener('click', () => {
+  document.getElementById('modal-edit-staff-schedule').classList.remove('active');
+});
+
+
+// ─── Edit Inventory Modal & Handler ───────────────────────────────────────────
+window.openEditInventoryModal = function(id, name, category, unit, stock, threshold) {
+  document.getElementById('edit-inv-id').value = id;
+  document.getElementById('edit-inv-name').value = name;
+  document.getElementById('edit-inv-category').value = category;
+  document.getElementById('edit-inv-unit').value = unit;
+  document.getElementById('edit-inv-stock').value = stock;
+  document.getElementById('edit-inv-threshold').value = threshold;
+
+  document.getElementById('modal-edit-inventory').classList.add('active');
+};
+
+document.getElementById('edit-inventory-form')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = document.getElementById('edit-inv-id').value;
+  const name = document.getElementById('edit-inv-name').value.trim();
+  const category = document.getElementById('edit-inv-category').value;
+  const unit = document.getElementById('edit-inv-unit').value.trim();
+  const stock = parseInt(document.getElementById('edit-inv-stock').value, 10);
+  const threshold = parseInt(document.getElementById('edit-inv-threshold').value, 10);
+
+  const payload = { name, category, unit, stock, threshold };
+
+  const btnSave = e.target.querySelector('button[type=submit]');
+  btnSave.disabled = true;
+  btnSave.textContent = 'Saving...';
+
+  fetch(`${ADMIN_API}/inventory/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message) {
+      showToast(data.message, 'error');
+      return;
+    }
+    showToast('Inventory item updated successfully', 'success');
+    document.getElementById('modal-edit-inventory').classList.remove('active');
+    loadInventory();
+  })
+  .catch(err => {
+    console.error('Error updating inventory:', err);
+    showToast('Failed to update inventory item', 'error');
+  })
+  .finally(() => {
+    btnSave.disabled = false;
+    btnSave.textContent = 'Save Changes';
+  });
+});
+
+document.getElementById('btn-cancel-edit-inventory')?.addEventListener('click', () => {
+  document.getElementById('modal-edit-inventory').classList.remove('active');
+});
+
+
+// ─── Mark Invoice as Paid Modal & Handler ─────────────────────────────────────
+window.openMarkPaidModal = function(id, patientName, totalAmount, currentStatus, currentPaidAmount) {
+  document.getElementById('mark-paid-inv-id').value = id;
+  document.getElementById('mark-paid-inv-label').value = `Invoice #${id.substring(0, 8).toUpperCase()} for ${patientName}`;
+  document.getElementById('mark-paid-status').value = currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1).toLowerCase();
+  document.getElementById('mark-paid-amount').value = currentPaidAmount || totalAmount;
+
+  document.getElementById('modal-mark-paid').classList.add('active');
+};
+
+document.getElementById('mark-paid-form')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = document.getElementById('mark-paid-inv-id').value;
+  const status = document.getElementById('mark-paid-status').value;
+  const paid_amount = parseFloat(document.getElementById('mark-paid-amount').value) || 0;
+
+  const payload = { status, paid_amount };
+
+  const btnSave = e.target.querySelector('button[type=submit]');
+  btnSave.disabled = true;
+  btnSave.textContent = 'Saving...';
+
+  fetch(`${INVOICE_API}/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message) {
+      showToast(data.message, 'error');
+      return;
+    }
+    logConsoleEvent(`Invoice #${id.substring(0, 8).toUpperCase()} updated: Status=${status}, Paid Amount=${paid_amount}`, 'SUCCESS', 'BILLING');
+    showToast('Payment status updated successfully', 'success');
+    document.getElementById('modal-mark-paid').classList.remove('active');
+    loadBilling();
+  })
+  .catch(err => {
+    console.error('Error updating payment status:', err);
+    logConsoleEvent(`Failed to update invoice #${id.substring(0, 8).toUpperCase()}: ${err.message}`, 'ERROR', 'BILLING');
+    showToast('Failed to update payment status', 'error');
+  })
+  .finally(() => {
+    btnSave.disabled = false;
+    btnSave.textContent = 'Confirm Payment';
+  });
+});
+
+document.getElementById('btn-cancel-mark-paid')?.addEventListener('click', () => {
+  document.getElementById('modal-mark-paid').classList.remove('active');
+});
+
+
+// ─── Switch Tab Helper ────────────────────────────────────────────────────────
+window.switchToInventoryTab = function() {
+  activateTab('inventory');
+};
+

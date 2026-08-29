@@ -2,7 +2,11 @@
 //  Patient Dashboard — JS Logic
 // ═══════════════════════════════════════════════════════════
 
-const API = 'http://localhost:5000/api';
+const BASE_ORIGIN = (
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+  window.location.port !== '5000' && window.location.port !== ''
+) ? 'http://localhost:5000' : '';
+const API = `${BASE_ORIGIN}/api`;
 
 // Global connection error handler
 function showConnectionError(msg) {
@@ -416,6 +420,115 @@ function renderInvoiceStats() {
   safeSet('pstat-invoices', allInvoices.length);
 }
 
+// ─── Financial Widgets (Accounting Dashboard Features) ───────────
+function renderFinancialWidgets() {
+  const now = new Date();
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const allAmounts = allInvoices.map(inv => parseFloat(inv.amount || inv.total_amount || 0));
+  const totalBilled = allAmounts.reduce((sum, amt) => sum + amt, 0);
+
+  const thisMonthInvoices = allInvoices.filter(inv => {
+    const invDate = new Date(inv.issued_at || inv.created_at);
+    return invDate >= thisMonth;
+  });
+  const paidThisMonth = thisMonthInvoices
+    .filter(inv => inv.status === 'Paid' || inv.is_paid)
+    .reduce((sum, inv) => sum + parseFloat(inv.amount || inv.total_amount || 0), 0);
+
+  const lastMonthInvoices = allInvoices.filter(inv => {
+    const invDate = new Date(inv.issued_at || inv.created_at);
+    return invDate >= lastMonth && invDate < thisMonth;
+  });
+  const paidLastMonth = lastMonthInvoices
+    .filter(inv => inv.status === 'Paid' || inv.is_paid)
+    .reduce((sum, inv) => sum + parseFloat(inv.amount || inv.total_amount || 0), 0);
+
+  const pendingInvoices = allInvoices.filter(inv => inv.status === 'Unpaid' || !inv.is_paid);
+  const pendingAmount = pendingInvoices.reduce((sum, inv) => sum + parseFloat(inv.amount || inv.total_amount || 0), 0);
+
+  const insuranceClaims = allInvoices.filter(inv => 
+    inv.insurance_provider && inv.insurance_provider !== 'None / Self-Pay'
+  ).length;
+
+  // Calculate trends
+  const billedTrend = lastMonthInvoices.length > 0 
+    ? ((thisMonthInvoices.length - lastMonthInvoices.length) / lastMonthInvoices.length * 100).toFixed(1)
+    : 0;
+  const paidTrend = paidLastMonth > 0
+    ? ((paidThisMonth - paidLastMonth) / paidLastMonth * 100).toFixed(1)
+    : 0;
+
+  safeSet('total-billed-val', `₱${totalBilled.toFixed(2)}`);
+  safeSet('total-billed-trend', `${billedTrend >= 0 ? '+' : ''}${billedTrend}% vs last month`);
+  document.getElementById('total-billed-trend')?.classList.toggle('positive', billedTrend >= 0);
+  document.getElementById('total-billed-trend')?.classList.toggle('negative', billedTrend < 0);
+
+  safeSet('pending-payments-val', `₱${pendingAmount.toFixed(2)}`);
+  safeSet('pending-payments-trend', `${pendingInvoices.length} invoice${pendingInvoices.length !== 1 ? 's' : ''} pending`);
+
+  safeSet('paid-month-val', `₱${paidThisMonth.toFixed(2)}`);
+  safeSet('paid-month-trend', `${paidTrend >= 0 ? '+' : ''}${paidTrend}% vs last month`);
+  document.getElementById('paid-month-trend')?.classList.toggle('positive', paidTrend >= 0);
+  document.getElementById('paid-month-trend')?.classList.toggle('negative', paidTrend < 0);
+
+  safeSet('insurance-claims-val', insuranceClaims);
+  safeSet('insurance-claims-trend', insuranceClaims > 0 ? `${insuranceClaims} pending review` : 'No active claims');
+}
+
+function renderFinancialActivity() {
+  const container = document.getElementById('financial-activity-list');
+  if (!container) return;
+
+  // Combine invoices with payment-like activity
+  const activities = allInvoices.map(inv => {
+    const isPaid = inv.status === 'Paid' || inv.is_paid;
+    const date = new Date(inv.issued_at || inv.created_at);
+    const amount = parseFloat(inv.amount || inv.total_amount || 0);
+    const insuranceProvider = inv.insurance_provider || 'None / Self-Pay';
+
+    return {
+      id: inv.id,
+      date: date,
+      type: isPaid ? 'payment' : 'invoice',
+      title: isPaid ? 'Payment Received' : 'Invoice Generated',
+      amount: amount,
+      status: isPaid ? 'completed' : 'pending',
+      invoiceNumber: `#${inv.id.slice(0, 8).toUpperCase()}`,
+      method: inv.payment_method || (insuranceProvider !== 'None / Self-Pay' ? 'Insurance' : 'Cash/Card'),
+      patient: inv.patient?.name || 'Unknown'
+    };
+  }).sort((a, b) => b.date - a.date).slice(0, 10);
+
+  if (activities.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state-sm">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9"/><circle cx="12" cy="12" r="3"/></svg>
+        <p>No financial activity</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = activities.map(act => `
+    <div class="financial-activity-item">
+      <div class="activity-icon ${act.type}">${act.type === 'payment' ? '✓' : '📄'}</div>
+      <div class="activity-content">
+        <div class="activity-header">
+          <span class="activity-type">${act.title}</span>
+          <span class="activity-amount ${act.status}">${act.status === 'completed' ? '+' : ''}₱${act.amount.toFixed(2)}</span>
+        </div>
+        <div class="activity-details">
+          <span class="activity-invoice">${act.invoiceNumber}</span>
+          <span class="activity-date">${act.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          <span class="activity-method">${act.method}</span>
+          <span class="activity-status ${act.status}">${act.status}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
 function renderInvoicesPreview() {
   const container = document.getElementById('recent-invoices-list');
   if (!container) return;
@@ -597,52 +710,93 @@ function setupBookingWizard() {
 //  CLINIC BRANCHES & MAP ROUTING SYSTEM
 // ═══════════════════════════════════════════════════════════
 
-const CLINIC_BRANCHES = [
-  {
-    id: 'main-balirong',
-    name: 'Fano Dental Clinic — Main Branch',
-    shortName: 'Main Branch (Balirong)',
-    address: 'Balirong Highway, City of Naga, Cebu',
-    city: 'City of Naga',
-    lat: 10.2098,
-    lng: 123.7580,
-    phone: '(032) 489-1200',
-    hours: 'Mon - Sat: 8:00 AM - 6:00 PM'
-  },
-  {
-    id: 'minglanilla',
-    name: 'Fano Dental Clinic — Minglanilla',
-    shortName: 'Minglanilla Branch',
-    address: 'Poblacion Ward II, Minglanilla, Cebu',
-    city: 'Minglanilla',
-    lat: 10.2444,
-    lng: 123.7972,
-    phone: '(032) 272-3456',
-    hours: 'Mon - Sun: 8:30 AM - 6:30 PM'
-  },
-  {
-    id: 'san-fernando',
-    name: 'Fano Dental Clinic — San Fernando',
-    shortName: 'San Fernando Branch',
-    address: 'Poblacion South, San Fernando, Cebu',
-    city: 'San Fernando',
-    lat: 10.1612,
-    lng: 123.7088,
-    phone: '(032) 488-9900',
-    hours: 'Mon - Sat: 9:00 AM - 5:00 PM'
-  },
-  {
-    id: 'talisay',
-    name: 'Fano Dental Clinic — Talisay City',
-    shortName: 'Talisay City Branch',
-    address: 'Tabunok Commercial Strip, Talisay City, Cebu',
-    city: 'Talisay City',
-    lat: 10.2601,
-    lng: 123.8347,
-    phone: '(032) 273-8888',
-    hours: 'Mon - Sat: 8:00 AM - 7:00 PM'
+function getClinicBranches() {
+  const defaultBranches = [
+    {
+      id: 'main-balirong',
+      name: 'Fano Dental Clinic — Main Branch',
+      shortName: 'Main Branch (Balirong)',
+      address: 'Balirong Highway, City of Naga, Cebu',
+      city: 'City of Naga',
+      lat: 10.2098,
+      lng: 123.7580,
+      phone: '(032) 489-1200',
+      hours: 'Mon - Sat: 8:00 AM - 6:00 PM'
+    },
+    {
+      id: 'minglanilla',
+      name: 'Fano Dental Clinic — Minglanilla',
+      shortName: 'Minglanilla Branch',
+      address: 'Poblacion Ward II, Minglanilla, Cebu',
+      city: 'Minglanilla',
+      lat: 10.2444,
+      lng: 123.7972,
+      phone: '(032) 272-3456',
+      hours: 'Mon - Sun: 8:30 AM - 6:30 PM'
+    },
+    {
+      id: 'san-fernando',
+      name: 'Fano Dental Clinic — San Fernando',
+      shortName: 'San Fernando Branch',
+      address: 'Poblacion South, San Fernando, Cebu',
+      city: 'San Fernando',
+      lat: 10.1612,
+      lng: 123.7088,
+      phone: '(032) 488-9900',
+      hours: 'Mon - Sat: 9:00 AM - 5:00 PM'
+    },
+    {
+      id: 'talisay',
+      name: 'Fano Dental Clinic — Talisay City',
+      shortName: 'Talisay City Branch',
+      address: 'Tabunok Commercial Strip, Talisay City, Cebu',
+      city: 'Talisay City',
+      lat: 10.2601,
+      lng: 123.8347,
+      phone: '(032) 273-8888',
+      hours: 'Mon - Sat: 8:00 AM - 7:00 PM'
+    }
+  ];
+
+  try {
+    const saved = localStorage.getItem('set-clinic-branches-detailed');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((item, idx) => {
+          if (typeof item === 'string') {
+            return {
+              id: `custom-branch-${idx}`,
+              name: item,
+              shortName: item,
+              address: 'Fano Dental Clinic',
+              city: 'Cebu',
+              lat: 10.2098 + (idx * 0.01),
+              lng: 123.7580 + (idx * 0.01),
+              phone: '(032) 489-1200',
+              hours: 'Mon - Sat: 8:00 AM - 6:00 PM'
+            };
+          }
+          return {
+            id: `admin-branch-${idx}-${(item.name || '').replace(/\s+/g, '-').toLowerCase()}`,
+            name: item.name || `Fano Dental Branch ${idx + 1}`,
+            shortName: item.name || `Branch ${idx + 1}`,
+            address: item.address || 'Clinic Branch Address',
+            city: item.address ? (item.address.split(',')[1] || 'Cebu').trim() : 'Cebu',
+            lat: parseFloat(item.lat) || 10.2098,
+            lng: parseFloat(item.lng) || 123.7580,
+            phone: item.phone || '(032) 489-1200',
+            hours: item.hours || 'Mon - Sat: 8:00 AM - 6:00 PM'
+          };
+        });
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to parse admin branches:', e);
   }
-];
+
+  return defaultBranches;
+}
 
 const KNOWN_COORDS = {
   'balirong': { lat: 10.2098, lng: 123.7540, label: 'Balirong, City of Naga, Cebu' },
@@ -662,7 +816,7 @@ let branchMap = null;
 let mapMarkers = [];
 let mapRouteLine = null;
 let currentPatientCoords = { lat: 10.2098, lng: 123.7540 }; // Default: Balirong, Naga
-let selectedBranchObj = CLINIC_BRANCHES[0];
+let selectedBranchObj = getClinicBranches()[0];
 
 function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   const R = 6371; // Earth radius in km
@@ -735,8 +889,10 @@ function geocodeAndLocate(addressText) {
 }
 
 function updateNearestBranchAndMap(patientLat, patientLng, addressLabel) {
+  const currentBranches = getClinicBranches();
+
   // Compute distances for all branches
-  const branchesWithDistance = CLINIC_BRANCHES.map(b => {
+  const branchesWithDistance = currentBranches.map(b => {
     const dist = calculateDistanceKm(patientLat, patientLng, b.lat, b.lng);
     return { ...b, distanceKm: dist };
   });
@@ -781,7 +937,7 @@ function updateNearestBranchAndMap(patientLat, patientLng, addressLabel) {
     container.querySelectorAll('.branch-card').forEach(card => {
       card.addEventListener('click', () => {
         const branchId = card.getAttribute('data-branch-id');
-        const chosen = CLINIC_BRANCHES.find(b => b.id === branchId);
+        const chosen = getClinicBranches().find(b => b.id === branchId);
         if (chosen) {
           selectedBranchObj = chosen;
           safeVal('wizard-selected-branch', `${chosen.name} (${chosen.address})`);
@@ -840,7 +996,7 @@ function renderMapVisuals(patientLat, patientLng, addressLabel, targetBranch) {
   mapMarkers.push(patientMarker);
 
   // 2. Dental Clinic Markers
-  CLINIC_BRANCHES.forEach(b => {
+  getClinicBranches().forEach(b => {
     const isTarget = b.id === targetBranch.id;
     const clinicIcon = L.divIcon({
       className: 'clinic-map-pin',
@@ -908,7 +1064,7 @@ function goToStep(step) {
   // Progress line
   const progressLine = document.getElementById('step-progress-line');
   if (progressLine) {
-    const percent = ((step - 1) / 4) * 80; // Scale progress bar line
+    const percent = ((step - 1) / 2) * 100;
     progressLine.style.width = `${percent}%`;
   }
 
@@ -918,16 +1074,12 @@ function goToStep(step) {
   const btnSubmit = document.getElementById('btn-submit-booking');
 
   if (btnPrev) btnPrev.style.display = step > 1 ? 'inline-flex' : 'none';
-  if (btnNext) btnNext.style.display = step < 5 ? 'inline-flex' : 'none';
-  if (btnSubmit) btnSubmit.style.display = step === 5 ? 'inline-flex' : 'none';
+  if (btnNext) btnNext.style.display = step < 3 ? 'inline-flex' : 'none';
+  if (btnSubmit) btnSubmit.style.display = step === 3 ? 'inline-flex' : 'none';
 
-  // Check slots when on Step 3
-  if (step === 3) {
+  // Step 1: Check available slots & initialize Map
+  if (step === 1) {
     checkAvailableSlots();
-  }
-
-  // Initialize Map & Route when on Step 4
-  if (step === 4) {
     setTimeout(() => {
       const addr = document.getElementById('wizard-pat-address')?.value || user?.address || 'Balirong, City of Naga, Cebu';
       geocodeAndLocate(addr);
@@ -937,33 +1089,42 @@ function goToStep(step) {
     }, 200);
   }
 
-  // Render confirmation details at Step 5
-  if (step === 5) {
+  // Step 2: Load Dentists & Services
+  if (step === 2) {
+    loadDentists();
+    if (allTreatments.length === 0) {
+      loadTreatments();
+    } else {
+      renderTreatmentsPicker();
+    }
+  }
+
+  // Step 3: Render confirmation details
+  if (step === 3) {
     renderConfirmationDetails();
   }
 }
 
 function validateStep(step) {
   if (step === 1) {
-    const treatmentId = document.getElementById('wizard-treatment-id').value;
-    if (!treatmentId) {
-      showToast('Please select a dental service/treatment to continue.', 'error');
-      return false;
-    }
-  } else if (step === 2) {
-    // Optional or default to No Preference
-    return true;
-  } else if (step === 3) {
-    const date = document.getElementById('wizard-date').value;
-    const time = document.getElementById('wizard-time').value;
+    const date = document.getElementById('wizard-date')?.value;
+    const time = document.getElementById('wizard-time')?.value;
     if (!date) {
-      showToast('Please pick a preferred date.', 'error');
+      showToast('Please pick a preferred appointment date.', 'error');
       return false;
     }
     if (!time) {
       showToast('Please select an available time slot.', 'error');
       return false;
     }
+    return true;
+  } else if (step === 2) {
+    const treatmentId = document.getElementById('wizard-treatment-id')?.value;
+    if (!treatmentId) {
+      showToast('Please select a dental service/treatment to continue.', 'error');
+      return false;
+    }
+    return true;
   }
   return true;
 }
@@ -1012,10 +1173,11 @@ function loadDentists() {
 function checkAvailableSlots() {
   const dateVal = document.getElementById('wizard-date').value;
   const slotButtons = document.querySelectorAll('.slot-btn');
+
   if (!dateVal) {
     slotButtons.forEach(btn => {
       const time = btn.getAttribute('data-time');
-      btn.classList.remove('selected', 'occupied');
+      btn.classList.remove('selected', 'occupied', 'slot-loading');
       btn.disabled = false;
       btn.innerHTML = `<span>${time}</span>`;
     });
@@ -1026,7 +1188,19 @@ function checkAvailableSlots() {
   selectedTime = '';
   document.getElementById('wizard-time').value = '';
 
-  // Fetch all occupied appointments across clinic from backend
+  // ── Instant optimistic render: show all slots as Available immediately ──
+  slotButtons.forEach(btn => {
+    const time = btn.getAttribute('data-time');
+    btn.classList.remove('occupied', 'selected', 'slot-loading');
+    btn.disabled = false;
+    btn.title = 'Click to select this time slot';
+    btn.innerHTML = `
+      <span>${time}</span>
+      <span class="slot-badge-available">Available</span>
+    `;
+  });
+
+  // ── Fetch only today's occupied slots from server (date-filtered) ──
   apiFetch(`/appointments/occupied?date=${dateVal}`, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
@@ -1053,14 +1227,13 @@ function checkAvailableSlots() {
       });
     }
 
+    // Only update slots that are actually occupied — available ones already rendered
     slotButtons.forEach(btn => {
       const time = btn.getAttribute('data-time');
       const normTime = time ? time.trim().toUpperCase() : '';
       const noZeroTime = normTime.startsWith('0') ? normTime.substring(1) : ('0' + normTime);
 
-      const isOccupied = occupiedTimes.has(normTime) || occupiedTimes.has(noZeroTime);
-
-      if (isOccupied) {
+      if (occupiedTimes.has(normTime) || occupiedTimes.has(noZeroTime)) {
         btn.classList.add('occupied');
         btn.classList.remove('selected');
         btn.disabled = true;
@@ -1069,20 +1242,12 @@ function checkAvailableSlots() {
           <span>${time}</span>
           <span class="slot-badge-occupied">Occupied</span>
         `;
-      } else {
-        btn.classList.remove('occupied');
-        btn.disabled = false;
-        btn.title = 'Click to select this time slot';
-        btn.innerHTML = `
-          <span>${time}</span>
-          <span class="slot-badge-available">Available</span>
-        `;
       }
     });
   })
   .catch(err => {
     console.error('Error fetching occupied slots:', err);
-    // Fallback: check cached allAppointments
+    // Fallback: check cached allAppointments — slots already shown as Available above
     const selectedDateStr = new Date(dateVal).toDateString();
     slotButtons.forEach(btn => {
       const time = btn.getAttribute('data-time');
@@ -1104,13 +1269,6 @@ function checkAvailableSlots() {
         btn.innerHTML = `
           <span>${time}</span>
           <span class="slot-badge-occupied">Occupied</span>
-        `;
-      } else {
-        btn.classList.remove('occupied');
-        btn.disabled = false;
-        btn.innerHTML = `
-          <span>${time}</span>
-          <span class="slot-badge-available">Available</span>
         `;
       }
     });
@@ -1144,8 +1302,13 @@ function renderConfirmationDetails() {
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
   });
 
-  safeSet('summary-dentist', dentist);
+  const treatmentId = document.getElementById('wizard-treatment-id')?.value;
+  const selectedTreat = allTreatments.find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
+  const serviceName = selectedTreat ? `${selectedTreat.name} (${selectedTreat.price ? '₱' + selectedTreat.price : ''})` : 'General Dental Consultation';
+
   safeSet('summary-datetime', `${formattedDate} at ${timeVal}`);
+  safeSet('summary-dentist', dentist);
+  safeSet('summary-service', serviceName);
   safeSet('summary-branch', branchVal);
 
   const patPhone = document.getElementById('wizard-pat-phone')?.value || user?.contact_number || user?.contactNumber || '';
