@@ -4,16 +4,27 @@ const supabase = require('../config/db');
 const seedUsers = require('../utils/seeder');
 
 const DATA_DIR = 'c:\\visualstudio\\Dental_Clinic_Backups';
+// Only enable local file backups when running on your own machine.
+// Vercel's serverless filesystem is temporary and doesn't support this.
+const IS_SERVERLESS = !!process.env.VERCEL;
+
+const DATA_DIR = 'c:\\visualstudio\\Dental_Clinic_Backups';
 const INVENTORY_FILE = path.join(DATA_DIR, 'inventory.json');
 const STAFF_FILE = path.join(DATA_DIR, 'staff_schedules.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 
-// Ensure directories exist
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-if (!fs.existsSync(BACKUP_DIR)) {
-  fs.mkdirSync(BACKUP_DIR, { recursive: true });
+// Ensure directories exist (local development only)
+if (!IS_SERVERLESS) {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(BACKUP_DIR)) {
+      fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    }
+  } catch (err) {
+    console.error('[Backup Dir Setup Error]', err.message);
+  }
 }
 
 // ─── Live System Logs Buffer ──────────────────────────────────────────────────
@@ -43,6 +54,7 @@ const recordServerLog = (level, moduleName, message) => {
 };
 
 const createBackup = (filename, data) => {
+  if (IS_SERVERLESS) return; // Skip local file backups in production/serverless
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const ext = path.extname(filename);
