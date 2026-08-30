@@ -158,7 +158,7 @@ app.use(express.static(path.join(__dirname, '../')));
 
 // ─── Base Route ───────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
-  res.redirect('/pages/landing-page.html');
+  res.redirect('/pages/dashboard.html');
 });
 
 // ─── Global Error Handler ─────────────────────────────────────────────────────
