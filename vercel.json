@@ -19,6 +19,10 @@
   ],
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/pages/landing-page.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api/index.js"
     }
