@@ -8,6 +8,6 @@ router.route('/')
   .post(protect, authorize('Accounting', 'Admin', 'Receptionist'), createInvoice);
 
 router.route('/:id')
-  .put(protect, authorize('Accounting', 'Admin'), updateInvoice);
+  .put(protect, authorize('Accounting', 'Admin', 'Receptionist'), updateInvoice);
 
 module.exports = router;

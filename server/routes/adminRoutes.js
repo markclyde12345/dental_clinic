@@ -41,7 +41,7 @@ router.route('/inventory/:id')
 
 // Staff schedules routes
 router.route('/staff-schedules')
-  .get(protect, authorize('Admin'), getStaffSchedules)
+  .get(protect, authorize('Admin', 'Receptionist', 'Dentist'), getStaffSchedules)
   .post(protect, authorize('Admin'), addStaffSchedule);
 
 router.route('/staff-schedules/:id')

@@ -67,7 +67,7 @@
   margin-bottom: 20px;
 }
 .auth-logo img, .verify-logo img {
-  height: 36px;
+  height: 60px;
   width: auto;
   object-fit: contain;
 }

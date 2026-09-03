@@ -134,8 +134,9 @@ window.activateTab = function(targetTab, skipDataLoad = false) {
   // Persist current active tab so refreshes stay on the exact same page/tab
   try {
     localStorage.setItem('admin_active_tab', targetTab);
-    if (window.history && window.history.replaceState) {
-      window.history.replaceState(null, null, '#' + targetTab);
+    // Keep the URL clean — no #hash fragments appended
+    if (window.history && window.history.replaceState && window.location.hash) {
+      window.history.replaceState(null, null, window.location.pathname);
     }
   } catch (e) {}
 

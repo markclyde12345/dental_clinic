@@ -98,4 +98,49 @@ const validateVerifyOTP = [
   runValidation,
 ];
 
-module.exports = { validateRegister, validateLogin, validateSendOTP, validateVerifyOTP };
+// ─── Forgot Password validation ──────────────────────────────────────────────
+const validateForgotPassword = [
+  body('email')
+    .trim()
+    .notEmpty().withMessage('Email is required.')
+    .isEmail().withMessage('Please provide a valid email address.')
+    .normalizeEmail(),
+
+  runValidation,
+];
+
+// ─── Verify Reset OTP validation ─────────────────────────────────────────────
+const validateVerifyResetOTP = [
+  body('email')
+    .trim()
+    .notEmpty().withMessage('Email is required.')
+    .isEmail().withMessage('Please provide a valid email address.')
+    .normalizeEmail(),
+
+  body('otpCode')
+    .trim()
+    .notEmpty().withMessage('OTP code is required.')
+    .isLength({ min: 6, max: 6 }).withMessage('OTP must be exactly 6 digits.')
+    .isNumeric().withMessage('OTP must contain only digits.'),
+
+  runValidation,
+];
+
+// ─── Reset Password validation ───────────────────────────────────────────────
+const validateResetPassword = [
+  body('resetToken')
+    .trim()
+    .notEmpty().withMessage('Reset token is required.'),
+
+  body('newPassword')
+    .notEmpty().withMessage('New password is required.')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters.')
+    .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter.')
+    .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter.')
+    .matches(/\d/).withMessage('Password must contain at least one number.')
+    .matches(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/).withMessage('Password must contain at least one special character.'),
+
+  runValidation,
+];
+
+module.exports = { validateRegister, validateLogin, validateSendOTP, validateVerifyOTP, validateForgotPassword, validateVerifyResetOTP, validateResetPassword };

@@ -24,7 +24,7 @@ const internalError = (res, error) => {
 const asyncBackupStaffSchedules = () => {
   setImmediate(async () => {
     try {
-      const DATA_DIR = 'c:\\visualstudio\\Dental_Clinic_Backups';
+      const DATA_DIR = process.env.DATA_DIR || '/tmp/dental_clinic_backups';
       const STAFF_FILE = path.join(DATA_DIR, 'staff_schedules.json');
       const BACKUP_DIR = path.join(DATA_DIR, 'backups');
       if (!fs.existsSync(BACKUP_DIR)) {
@@ -445,6 +445,202 @@ const verifyOTP = async (req, res) => {
   }
 };
 
+// ─── Forgot Password — Send Reset OTP ────────────────────────────────────────
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const { data: user } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
+
+    // Always return success to prevent email enumeration
+    if (!user || !user.is_active) {
+      return res.json({ message: 'If this email is registered, a reset code has been sent.' });
+    }
+
+    // Enforce a 60-second cooldown
+    if (user.otp_expires && (new Date(user.otp_expires) - Date.now()) > (9 * 60 * 1000)) {
+      return res.status(429).json({ message: 'A code was recently sent. Please wait before requesting another.' });
+    }
+
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    console.log(`\n🔑 [DEV RESET OTP] Code for ${email} is: ${otp}\n`);
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    await supabase.from('users').update({
+      otp_code: otp,
+      otp_expires: otpExpires,
+      otp_attempts: 0
+    }).eq('id', user.id);
+
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Password Reset Code — Fano Dental Clinic</title>
+      </head>
+      <body style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0b131e;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 14px rgba(11,60,77,0.06);">
+          <tr>
+            <td style="background-color: #0b3c4d; padding: 24px 32px; text-align: left;">
+              <h1 style="color: #ffffff; font-size: 20px; font-weight: bold; margin: 0; letter-spacing: 0.5px;">🦷 Fano Dental Clinic</h1>
+              <p style="color: #c59b27; font-size: 12px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">Password Reset Request</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px;">
+              <p style="font-size: 15px; margin: 0 0 16px 0;">Hello <strong>${user.name}</strong>,</p>
+              <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 24px 0;">
+                We received a request to reset your password. Please use the 6-digit code below to proceed:
+              </p>
+              <div style="background-color: #eef6f8; border: 1px dashed #0b3c4d; border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 24px;">
+                <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0b3c4d; display: inline-block;">${otp}</span>
+              </div>
+              <p style="font-size: 13px; line-height: 1.5; color: #64748b; margin: 0 0 8px 0;">
+                ⏱️ <strong>This code will expire in 10 minutes.</strong>
+              </p>
+              <p style="font-size: 12px; line-height: 1.5; color: #94a3b8; margin: 0;">
+                If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f8fafc; padding: 20px 32px; border-top: 1px solid #f1f5f9; text-align: center;">
+              <p style="font-size: 11px; color: #94a3b8; margin: 0 0 4px 0;">
+                Fano Dental Clinic • Balirong Highway, City of Naga, Cebu • (032) 489-1200
+              </p>
+              <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+                © 2026 Fano Dental Clinic. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+    const emailText = `Hello ${user.name},\n\nWe received a request to reset your password.\nYour 6-digit reset code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this, you can safely ignore this email.\n\nFano Dental Clinic\nBalirong Highway, City of Naga, Cebu\n(032) 489-1200`;
+
+    sendEmail(user.email, 'Password Reset Code: ' + otp + ' — Fano Dental Clinic', emailHtml, emailText).catch(err => {
+      console.error('[Password Reset Email Error]', err);
+    });
+
+    return res.json({ message: 'If this email is registered, a reset code has been sent.' });
+  } catch (error) {
+    return internalError(res, error);
+  }
+};
+
+// ─── Forgot Password — Verify Reset OTP ──────────────────────────────────────
+// @route   POST /api/auth/verify-reset-otp
+// @access  Public
+const verifyResetOTP = async (req, res) => {
+  const { email, otpCode } = req.body;
+  try {
+    const { data: user } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (!user || !user.otp_code || !user.otp_expires) {
+      return res.status(400).json({ message: 'Invalid or expired reset code.' });
+    }
+
+    if (Date.now() > new Date(user.otp_expires)) {
+      await supabase.from('users').update({
+        otp_code: null,
+        otp_expires: null,
+        otp_attempts: 0
+      }).eq('id', user.id);
+      return res.status(400).json({ message: 'Reset code has expired. Please request a new one.' });
+    }
+
+    // Brute-force protection
+    const attempts = (user.otp_attempts || 0) + 1;
+    if (attempts > 5) {
+      await supabase.from('users').update({
+        otp_code: null,
+        otp_expires: null,
+        otp_attempts: 0
+      }).eq('id', user.id);
+      return res.status(429).json({ message: 'Too many failed attempts. Please request a new code.' });
+    }
+
+    await supabase.from('users').update({ otp_attempts: attempts }).eq('id', user.id);
+
+    if (user.otp_code !== otpCode) {
+      return res.status(400).json({ message: 'Invalid reset code.' });
+    }
+
+    // OTP is valid — generate a short-lived reset token (15 min)
+    const resetToken = jwt.sign(
+      { id: user.id, purpose: 'password-reset' },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m', algorithm: 'HS256' }
+    );
+
+    // Clear OTP after successful verification
+    await supabase.from('users').update({
+      otp_code: null,
+      otp_expires: null,
+      otp_attempts: 0
+    }).eq('id', user.id);
+
+    return res.json({ message: 'Code verified. You may now reset your password.', resetToken });
+  } catch (error) {
+    return internalError(res, error);
+  }
+};
+
+// ─── Forgot Password — Reset Password ────────────────────────────────────────
+// @route   POST /api/auth/reset-password
+// @access  Public (requires reset token)
+const resetPassword = async (req, res) => {
+  const { resetToken, newPassword } = req.body;
+  try {
+    if (!resetToken) {
+      return res.status(400).json({ message: 'Reset token is required.' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(resetToken, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+    } catch (err) {
+      return res.status(400).json({ message: 'Reset token is invalid or has expired. Please start over.' });
+    }
+
+    if (decoded.purpose !== 'password-reset') {
+      return res.status(400).json({ message: 'Invalid reset token.' });
+    }
+
+    const { data: user } = await supabase
+      .from('users')
+      .select('id, is_active')
+      .eq('id', decoded.id)
+      .maybeSingle();
+
+    if (!user || !user.is_active) {
+      return res.status(400).json({ message: 'User account not found or is deactivated.' });
+    }
+
+    const salt = await bcrypt.genSalt(8);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await supabase.from('users').update({
+      password: hashedPassword
+    }).eq('id', user.id);
+
+    return res.json({ message: 'Password has been reset successfully. You may now log in.' });
+  } catch (error) {
+    return internalError(res, error);
+  }
+};
+
 // ─── Get Profile ──────────────────────────────────────────────────────────────
 // @route   GET /api/auth/profile
 // @access  Private
@@ -507,6 +703,9 @@ const createStaffUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password || 'patient123', salt);
     const fullName = `${firstName} ${lastName}`.trim();
  
+    // Enforce role restriction: Receptionist can only create Patients
+    const assignedRole = req.user.role === 'Receptionist' ? 'Patient' : (role || 'Patient');
+
     const { data: newUser, error: insertError } = await supabase
       .from('users')
       .insert([{
@@ -517,8 +716,8 @@ const createStaffUser = async (req, res) => {
         contact_number: contactNumber,
         address,
         password: hashedPassword,
-        role,
-        is_verified: true, // admin created is auto-verified
+        role: assignedRole,
+        is_verified: true, // staff created is auto-verified
         is_active: true
       }])
       .select('id, email, name, role')
@@ -662,4 +861,4 @@ const createStaffUser = async (req, res) => {
    }
  };
  
- module.exports = { registerUser, authUser, sendOTP, verifyOTP, getUserProfile, getAllUsers, createStaffUser, updateUserStatus, deleteUser };
+ module.exports = { registerUser, authUser, sendOTP, verifyOTP, forgotPassword, verifyResetOTP, resetPassword, getUserProfile, getAllUsers, createStaffUser, updateUserStatus, deleteUser };

@@ -343,6 +343,27 @@ const updatePatientRecord = async (req, res) => {
 // @access Private (Dentist)
 const getDentalChart = async (req, res) => {
   const { patientId } = req.params;
+  try {
+    const { data, error } = await supabase
+      .from('dental_charts')
+      .select('*')
+      .eq('patient_id', patientId)
+      .maybeSingle();
+
+    if (!error && data) {
+      return res.json({
+        patientId: data.patient_id,
+        chartType: data.chart_type || 'adult',
+        teeth: data.teeth_data || {},
+        notes: data.notes || '',
+        updatedAt: data.updated_at
+      });
+    }
+  } catch (err) {
+    console.warn('[Dental Chart Supabase Fetch Fallback]', err.message);
+  }
+
+  // Fallback to local file store
   const charts = getStore('dental_charts.json', {});
   const chart = charts[patientId] || {
     patientId,
@@ -358,14 +379,39 @@ const getDentalChart = async (req, res) => {
 // @access Private (Dentist)
 const saveDentalChart = async (req, res) => {
   const { patientId } = req.params;
-  const { teeth, notes, summary } = req.body;
+  const { teeth, notes, summary, chartType } = req.body;
+  const now = new Date().toISOString();
+
+  // Try Supabase first
+  try {
+    const { data, error } = await supabase
+      .from('dental_charts')
+      .upsert({
+        patient_id: patientId,
+        dentist_id: req.user.id,
+        chart_type: chartType || 'adult',
+        teeth_data: teeth || {},
+        notes: notes || summary || '',
+        updated_at: now
+      }, { onConflict: 'patient_id' })
+      .select()
+      .maybeSingle();
+
+    if (!error && data) {
+      return res.json({ success: true, chart: data });
+    }
+  } catch (err) {
+    console.warn('[Dental Chart Supabase Upsert Fallback]', err.message);
+  }
+
+  // Fallback to local file store
   const charts = getStore('dental_charts.json', {});
   charts[patientId] = {
     patientId,
     teeth: teeth || {},
     notes: notes || '',
     summary: summary || '',
-    updatedAt: new Date().toISOString(),
+    updatedAt: now,
     updatedBy: req.user.name || 'Dentist'
   };
   saveStore('dental_charts.json', charts);
@@ -376,8 +422,21 @@ const saveDentalChart = async (req, res) => {
 // @route GET /api/dentist/prescriptions
 // @access Private (Dentist)
 const getPrescriptions = async (req, res) => {
-  const allRxs = getStore('prescriptions.json', []);
   const patientId = req.query.patientId;
+  try {
+    let query = supabase.from('prescriptions').select('*').order('created_at', { ascending: false });
+    if (patientId) {
+      query = query.eq('patient_id', patientId);
+    }
+    const { data, error } = await query;
+    if (!error && data && data.length > 0) {
+      return res.json(data);
+    }
+  } catch (err) {
+    console.warn('[Prescriptions Supabase Fetch Fallback]', err.message);
+  }
+
+  const allRxs = getStore('prescriptions.json', []);
   if (patientId) {
     return res.json(allRxs.filter(r => String(r.patient_id) === String(patientId)));
   }
@@ -388,7 +447,33 @@ const getPrescriptions = async (req, res) => {
 // @route POST /api/dentist/prescriptions
 // @access Private (Dentist)
 const createPrescription = async (req, res) => {
-  const { patient_id, patient_name, medication, dosage, frequency, duration, instructions, precautions, notes } = req.body;
+  const { patient_id, appointment_id, patient_name, medication, dosage, frequency, duration, instructions, precautions, notes } = req.body;
+  
+  // Try Supabase first
+  try {
+    const { data, error } = await supabase
+      .from('prescriptions')
+      .insert([{
+        patient_id: patient_id && patient_id.includes('-') ? patient_id : null,
+        appointment_id: appointment_id && appointment_id.includes('-') ? appointment_id : null,
+        dentist_id: req.user.id,
+        medication: medication || 'Prescription',
+        dosage: dosage || '',
+        frequency: frequency || '',
+        duration: duration || '',
+        instructions: instructions || precautions || notes || ''
+      }])
+      .select()
+      .maybeSingle();
+
+    if (!error && data) {
+      return res.status(201).json(data);
+    }
+  } catch (err) {
+    console.warn('[Prescriptions Supabase Insert Fallback]', err.message);
+  }
+
+  // Fallback to local store
   const allRxs = getStore('prescriptions.json', []);
   const newRx = {
     id: 'rx_' + Date.now(),
@@ -414,6 +499,33 @@ const createPrescription = async (req, res) => {
 // @route GET /api/dentist/followups
 // @access Private (Dentist)
 const getFollowUps = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('follow_ups')
+      .select(`
+        *,
+        patient:patient_id ( id, name, contact_number ),
+        dentist:dentist_id ( id, name )
+      `)
+      .order('follow_up_date', { ascending: true });
+
+    if (!error && data && data.length > 0) {
+      const mapped = data.map(f => ({
+        id: f.id,
+        patient_id: f.patient_id,
+        patient_name: f.patient ? f.patient.name : 'Patient',
+        treatment: f.notes || 'Follow-Up Check',
+        scheduled_date: f.follow_up_date,
+        status: f.status || 'Upcoming',
+        notes: f.notes || '',
+        contact: f.patient ? f.patient.contact_number : ''
+      }));
+      return res.json(mapped);
+    }
+  } catch (err) {
+    console.warn('[FollowUps Supabase Fetch Fallback]', err.message);
+  }
+
   const followups = getStore('follow_ups.json', [
     {
       id: 'fu-1',
@@ -443,7 +555,40 @@ const getFollowUps = async (req, res) => {
 // @route POST /api/dentist/followups
 // @access Private (Dentist)
 const createFollowUp = async (req, res) => {
-  const { patient_id, patient_name, treatment, scheduled_date, notes, contact } = req.body;
+  const { patient_id, appointment_id, patient_name, treatment, scheduled_date, notes, contact } = req.body;
+  
+  // Try Supabase first
+  try {
+    const { data, error } = await supabase
+      .from('follow_ups')
+      .insert([{
+        patient_id: patient_id && patient_id.includes('-') ? patient_id : null,
+        appointment_id: appointment_id && appointment_id.includes('-') ? appointment_id : null,
+        dentist_id: req.user.id,
+        follow_up_date: scheduled_date || new Date().toISOString().split('T')[0],
+        status: 'Pending',
+        notes: `${treatment ? treatment + ': ' : ''}${notes || ''}`
+      }])
+      .select()
+      .maybeSingle();
+
+    if (!error && data) {
+      return res.status(201).json({
+        id: data.id,
+        patient_id: data.patient_id,
+        patient_name: patient_name || 'Patient',
+        treatment: treatment || 'Follow-Up Check',
+        scheduled_date: data.follow_up_date,
+        status: data.status,
+        notes: data.notes,
+        contact: contact || ''
+      });
+    }
+  } catch (err) {
+    console.warn('[FollowUps Supabase Insert Fallback]', err.message);
+  }
+
+  // Fallback to local store
   const followups = getStore('follow_ups.json', []);
   const newFu = {
     id: 'fu_' + Date.now(),

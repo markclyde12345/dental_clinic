@@ -14,13 +14,16 @@
   const INVOICE_API = `${BASE_ORIGIN}/api/invoices`;
   const USERS_API = `${BASE_ORIGIN}/api/users`;
   const ADMIN_API = `${BASE_ORIGIN}/api/admin`;
+  const EXPENSE_API = `${BASE_ORIGIN}/api/expenses`;
+  const HMO_API = `${BASE_ORIGIN}/api/hmo-claims`;
 
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   let currentUser = null;
   let allInvoices = [];
   let allPatients = [];
   let allInventory = [];
-  let allExpenses = [];  // stored in localStorage as JSON
+  let allExpenses = [];  // stored in database with local caching
+  let allHmoClaims = [];
   let currentReceiptInvoice = null;
 
   // Formatting helpers
@@ -424,13 +427,50 @@
     }).join('');
   }
 
-  function renderHMOClaims() {
+  async function renderHMOClaims() {
     const tbody = document.getElementById('hmo-claims-body');
     if (!tbody) return;
 
+    try {
+      const res = await fetch(HMO_API, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const claims = await res.json();
+        if (Array.isArray(claims) && claims.length > 0) {
+          tbody.innerHTML = claims.map((c, idx) => {
+            const claimId = c.claim_id || (c.id && c.id.length > 8 ? `CLM-${c.id.slice(0, 8).toUpperCase()}` : `CLM-2026-${String(idx + 1).padStart(4, '0')}`);
+            const pName = c.patient ? c.patient.name : (c.patient_name || 'Insured Member');
+            const provider = c.provider_name || 'HMO Provider';
+            const policyNo = c.policy_number || 'POL-00000000';
+            const amt = parseFloat(c.claim_amount) || 0;
+            const isApproved = c.status === 'Approved' || c.status === 'Disbursed';
+
+            return `
+              <tr>
+                <td><strong style="color: var(--primary-color); font-family: monospace;">${claimId}</strong></td>
+                <td><strong>${escapeHtml(pName)}</strong></td>
+                <td>${escapeHtml(provider)}</td>
+                <td style="font-family: monospace; font-size: 0.82rem;">${escapeHtml(policyNo)}</td>
+                <td style="font-weight: 700;">${formatMoney(amt)}</td>
+                <td>${formatDate(c.filed_at || new Date())}</td>
+                <td>
+                  ${isApproved ? '<span class="badge-status badge-paid">✅ Approved & Disbursed</span>' : '<span class="badge-status badge-hmo">⏳ Under HMO Review</span>'}
+                </td>
+                <td style="text-align: right;">
+                  <button type="button" class="btn-text-action" onclick="showToast('HMO Claim ${claimId} verified with ${escapeHtml(provider)}', 'success')">Verify Claim</button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('HMO fetch error:', e);
+    }
+
     const hmoProviders = ['Maxicare Healthcare', 'Intellicare Provider', 'Medicard Philippines', 'PhilHealth Accredited', 'Cocolife Health'];
-    
-    // Generate dummy claims or map existing HMO records
     const hmoInvoices = allInvoices.filter(inv => inv.status === 'HMO' || (inv.notes && inv.notes.toLowerCase().includes('hmo')));
     const displayList = hmoInvoices.length > 0 ? hmoInvoices : allInvoices.slice(0, 3);
 
@@ -802,7 +842,36 @@
     ];
   }
 
-  function loadExpenses() {
+  async function loadExpenses() {
+    try {
+      const res = await fetch(EXPENSE_API, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          allExpenses = data.map(d => ({
+            id: d.id,
+            ref: d.ref_no || d.ref,
+            vendor: d.vendor,
+            category: d.category,
+            desc: d.description || d.desc,
+            amount: d.amount,
+            dueDate: d.due_date || d.dueDate,
+            paidDate: d.paid_date || d.paidDate,
+            status: d.status,
+            payMethod: d.payment_method || d.payMethod,
+            payRef: d.reference_no || d.payRef
+          }));
+          saveExpenses();
+          renderExpensesTab();
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Expenses API fetch error, using local cache:', err);
+    }
+
     try {
       const raw = localStorage.getItem(EXPENSE_STORAGE_KEY);
       allExpenses = raw ? JSON.parse(raw) : getDefaultExpenses();
@@ -815,7 +884,6 @@
     }
     saveExpenses();
     renderExpensesTab();
-    return Promise.resolve();
   }
 
   function saveExpenses() {
@@ -967,14 +1035,30 @@
         const ref = document.getElementById('pay-bill-ref').value.trim();
 
         if (idx >= 0 && idx < allExpenses.length) {
-          allExpenses[idx].status = 'Paid';
-          allExpenses[idx].paidDate = paidDate;
-          allExpenses[idx].payMethod = method;
-          allExpenses[idx].payRef = ref;
+          const exp = allExpenses[idx];
+          exp.status = 'Paid';
+          exp.paidDate = paidDate;
+          exp.payMethod = method;
+          exp.payRef = ref;
           saveExpenses();
           renderExpensesTab();
           closeModal('modal-pay-bill');
-          showToast(`✅ Bill paid: ${allExpenses[idx].vendor} — ${formatMoney(allExpenses[idx].amount)}`, 'success');
+
+          // Sync to Database API
+          if (exp.id && !String(exp.id).startsWith('exp-')) {
+            fetch(`${EXPENSE_API}/${exp.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({
+                status: 'Paid',
+                paid_date: paidDate,
+                payment_method: method,
+                reference_no: ref
+              })
+            }).catch(e => console.warn('Expense DB update sync error:', e));
+          }
+
+          showToast(`✅ Bill paid: ${exp.vendor} — ${formatMoney(exp.amount)}`, 'success');
         }
       });
     }
@@ -1007,6 +1091,22 @@
         saveExpenses();
         renderExpensesTab();
         closeModal('modal-add-expense');
+
+        // Sync to Database API
+        fetch(EXPENSE_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(newExp)
+        })
+        .then(r => r.json())
+        .then(saved => {
+          if (saved && saved.id) {
+            newExp.id = saved.id;
+            saveExpenses();
+          }
+        })
+        .catch(e => console.warn('Expense DB insert sync error:', e));
+
         showToast(`Expense recorded: ${newExp.vendor} — ${formatMoney(newExp.amount)}`, 'success');
       });
     }
@@ -1017,6 +1117,15 @@
     allExpenses = allExpenses.filter(e => e.id !== expId);
     saveExpenses();
     renderExpensesTab();
+
+    // Sync deletion to Database API
+    if (expId && !String(expId).startsWith('exp-')) {
+      fetch(`${EXPENSE_API}/${expId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      }).catch(e => console.warn('Expense DB delete sync error:', e));
+    }
+
     showToast('Expense record removed.', 'success');
   };
 

@@ -199,16 +199,29 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'This time slot is already occupied. Please choose another time.' });
     }
 
+    // Allow Receptionist, Admin, or Dentist to book for a patient directly
+    const assignedPatientId = (req.user.role !== 'Patient' && (req.body.patient_id || req.body.patientId))
+      ? (req.body.patient_id || req.body.patientId)
+      : req.user.id;
+
+    const initialStatus = (req.user.role !== 'Patient' && req.body.status)
+      ? req.body.status
+      : 'Pending';
+
     const { data: appointment, error } = await supabase
       .from('appointments')
       .insert([{
-        patient_id: req.user.id,
+        patient_id: assignedPatientId,
         treatment_id: treatment_id || treatmentId || null,
         appointment_date: targetDate,
         notes,
-        status: 'Pending'
+        status: initialStatus
       }])
-      .select()
+      .select(`
+        id, appointment_date, status, notes, created_at,
+        patient:patient_id ( id, name, email, contact_number ),
+        treatment:treatment_id ( id, name, price, duration_minutes )
+      `)
       .single();
 
     if (error) throw error;

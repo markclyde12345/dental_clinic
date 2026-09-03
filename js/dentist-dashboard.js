@@ -124,8 +124,9 @@ function switchTab(tabName) {
 
   try {
     localStorage.setItem('dentist_active_tab', tabName);
-    if (window.history && window.history.replaceState) {
-      window.history.replaceState(null, null, '#' + tabName);
+    // Keep the URL clean — no #hash fragments
+    if (window.history && window.history.replaceState && window.location.hash) {
+      window.history.replaceState(null, null, window.location.pathname);
     }
   } catch (e) {}
 

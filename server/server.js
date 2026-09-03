@@ -23,6 +23,9 @@ if (process.env.SUPABASE_URL && !process.env.SUPABASE_URL.includes('your-project
 
 const app = express();
 
+// Trust reverse proxy (Vercel, Railway, Render, etc.)
+app.set('trust proxy', 1);
+
 // ─── Express 5 Compatibility Workaround ──────────────────────────────────────
 app.use((req, res, next) => {
   Object.defineProperty(req, 'query', {
@@ -106,6 +109,7 @@ const generalLimiter = rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false, default: true },
   message: { message: 'Too many requests, please try again after 15 minutes.' },
 });
 
@@ -114,6 +118,7 @@ const authLimiter = rateLimit({
   max: 15,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false, default: true },
   message: { message: 'Too many authentication attempts. Please try again after 15 minutes.' },
   skipSuccessfulRequests: true,
 });
@@ -149,6 +154,8 @@ app.use('/api/appointments', require('./routes/prescriptionRoutes'));
 app.use('/api/treatment-plans', require('./routes/treatmentPlanRoutes'));
 app.use('/api/treatments', require('./routes/treatmentRoutes'));
 app.use('/api/invoices', require('./routes/invoiceRoutes'));
+app.use('/api/expenses', require('./routes/expenseRoutes'));
+app.use('/api/hmo-claims', require('./routes/hmoRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/dentist', require('./routes/dentistRoutes'));
