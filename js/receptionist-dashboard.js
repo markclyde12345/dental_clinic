@@ -1976,3 +1976,127 @@ function logout() {
   window.location.replace('login.html');
 }
 
+// ─── AUDIT TRAIL MODAL & ACTIVITY LOG ──────────────────────────────
+let allAuditLogs = [];
+
+function openAuditLogsModal() {
+  openModal('modal-audit-logs');
+  loadAuditLogs();
+}
+
+async function loadAuditLogs(forceRefresh = false) {
+  const tbody = document.getElementById('audit-logs-table-body');
+  const countInfo = document.getElementById('audit-count-info');
+  if (tbody && (forceRefresh || !allAuditLogs.length)) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center py-4 text-muted">
+          <i class="fa-solid fa-spinner fa-spin"></i> Fetching audit records...
+        </td>
+      </tr>
+    `;
+  }
+
+  try {
+    const res = await fetch(`${BASE_ORIGIN}/api/audit-logs?limit=100`, {
+      headers: authHeader
+    });
+    const data = await res.json();
+    allAuditLogs = data.logs || [];
+    filterAuditLogs();
+  } catch (err) {
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center py-4 text-danger">
+            <i class="fa-solid fa-triangle-exclamation"></i> Failed to load audit trail: ${escapeHtml(err.message)}
+          </td>
+        </tr>
+      `;
+    }
+  }
+}
+
+function filterAuditLogs() {
+  const filter = document.getElementById('audit-action-filter')?.value || 'ALL';
+  const filtered = filter === 'ALL'
+    ? allAuditLogs
+    : allAuditLogs.filter(l => l.action === filter);
+
+  renderAuditLogs(filtered);
+}
+
+function renderAuditLogs(list) {
+  const tbody = document.getElementById('audit-logs-table-body');
+  const countInfo = document.getElementById('audit-count-info');
+  if (!tbody) return;
+
+  if (!list || !list.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center py-4 text-muted">
+          <i class="fa-solid fa-clock-rotate-left" style="font-size: 1.5rem; margin-bottom: 6px; display: block;"></i>
+          No audit records found matching the criteria.
+        </td>
+      </tr>
+    `;
+    if (countInfo) countInfo.textContent = 'Showing 0 audit entries';
+    return;
+  }
+
+  tbody.innerHTML = list.map(item => {
+    const d = new Date(item.timestamp || item.created_at || Date.now());
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    let actionBadge = '';
+    switch (item.action) {
+      case 'PAYMENT_COLLECTED':
+        actionBadge = `<span class="status-badge badge-completed" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;"><i class="fa-solid fa-cash-register"></i> Payment Collected</span>`;
+        break;
+      case 'INVOICE_WRITTEN_OFF':
+        actionBadge = `<span class="status-badge" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;"><i class="fa-solid fa-ban"></i> Bad Debt Write-Off</span>`;
+        break;
+      case 'APPOINTMENT_CANCELLED':
+        actionBadge = `<span class="status-badge badge-cancelled"><i class="fa-solid fa-xmark"></i> Cancelled</span>`;
+        break;
+      case 'APPOINTMENT_STATUS_CHANGED':
+        actionBadge = `<span class="status-badge badge-inprogress" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;"><i class="fa-solid fa-arrows-rotate"></i> Status Updated</span>`;
+        break;
+      case 'APPOINTMENT_DELETED':
+        actionBadge = `<span class="status-badge" style="background:#fef2f2; color:#991b1b; border:1px solid #f87171;"><i class="fa-solid fa-trash"></i> Deleted</span>`;
+        break;
+      default:
+        actionBadge = `<span class="status-badge badge-secondary">${escapeHtml(item.action)}</span>`;
+    }
+
+    const staff = item.user_name || 'Staff';
+    const role = item.user_role ? `<span style="font-size: 0.72rem; color: #64748b; display: block;">${escapeHtml(item.user_role)}</span>` : '';
+    const ip = item.ip_address || '127.0.0.1';
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight: 600; font-size: 0.82rem; color: #1e293b;">${dateStr}</div>
+          <div style="font-size: 0.74rem; color: #64748b;">${timeStr}</div>
+        </td>
+        <td>
+          <strong style="color: #334155; font-size: 0.84rem;">${escapeHtml(staff)}</strong>
+          ${role}
+        </td>
+        <td>${actionBadge}</td>
+        <td style="font-size: 0.83rem; line-height: 1.45; color: #334155;">
+          ${escapeHtml(item.details)}
+        </td>
+        <td>
+          <code style="font-size: 0.74rem; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #475569;">${escapeHtml(ip)}</code>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  if (countInfo) {
+    countInfo.textContent = `Showing ${list.length} audit entrie${list.length !== 1 ? 's' : ''}`;
+  }
+}
+

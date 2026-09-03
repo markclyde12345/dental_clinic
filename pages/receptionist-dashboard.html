@@ -71,6 +71,12 @@
               <span class="nav-pill warning-pill" id="nav-badge-billing">0</span>
             </a>
           </li>
+          <li>
+            <a href="#" class="nav-tab" onclick="openAuditLogsModal(); return false;">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>Audit Trail</span>
+            </a>
+          </li>
         </ul>
       </div>
       
@@ -105,6 +111,10 @@
             <span class="clock-divider">|</span>
             <span id="current-date">Loading date...</span>
           </div>
+          <button class="btn btn-outline-secondary" onclick="openAuditLogsModal()" title="View financial and staff activity audit trail" style="border: 1px solid var(--border); background: #fff; color: #475569; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>Audit Trail</span>
+          </button>
           <button class="btn btn-primary" onclick="openBookAppointmentModal()">
             <i class="fa-solid fa-plus"></i>
             <span>Book Appointment</span>
@@ -828,6 +838,63 @@
       </div>
       <div class="modal-footer" id="appt-details-footer">
         <button type="button" class="btn btn-outline" onclick="closeModal('modal-appt-details')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. MODAL: AUDIT TRAIL & FINANCIAL ACTIVITY LOGS -->
+  <div class="modal-overlay" id="modal-audit-logs">
+    <div class="modal-dialog modal-xl" style="max-width: 980px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> System Audit Trail &amp; Activity Log</h3>
+          <p class="modal-sub">Real-time immutable log of receptionist payment collections, cancellations, and bad debt write-offs</p>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modal-audit-logs')">&times;</button>
+      </div>
+      <div class="modal-body" style="overflow-y: auto; padding: 20px;">
+        <!-- Filters Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #475569;">Filter Action:</label>
+            <select id="audit-action-filter" onchange="filterAuditLogs()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; background: #fff;">
+              <option value="ALL">All Actions</option>
+              <option value="PAYMENT_COLLECTED">Payments Collected</option>
+              <option value="INVOICE_WRITTEN_OFF">Bad Debt Write-Offs</option>
+              <option value="APPOINTMENT_CANCELLED">Appointment Cancellations</option>
+              <option value="APPOINTMENT_STATUS_CHANGED">Status Updates</option>
+            </select>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary" onclick="loadAuditLogs(true)" style="font-size: 0.8rem; border: 1px solid var(--border); background: #fff; padding: 5px 12px;">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh Log
+          </button>
+        </div>
+
+        <!-- Audit Table -->
+        <div class="table-container" style="max-height: 520px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 170px;">Date &amp; Time</th>
+                <th style="width: 170px;">Staff Member</th>
+                <th style="width: 170px;">Action</th>
+                <th>Activity Details</th>
+                <th style="width: 120px;">IP / Source</th>
+              </tr>
+            </thead>
+            <tbody id="audit-logs-table-body">
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">
+                  <i class="fa-solid fa-spinner fa-spin"></i> Loading audit trail...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span class="text-muted" style="font-size: 0.8rem;" id="audit-count-info">Showing 0 audit entries</span>
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-audit-logs')">Close</button>
       </div>
     </div>
   </div>

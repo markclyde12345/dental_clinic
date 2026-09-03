@@ -527,6 +527,35 @@ const updateAppointment = async (req, res) => {
       }
     }
 
+    // Log appointment status changes and cancellations in audit trail
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      const apptRef = id ? id.substring(0, 8).toUpperCase() : id;
+      const patientName = updated.patient ? (updated.patient.name || updated.patient.email) : 'Patient';
+
+      if (status === 'Cancelled') {
+        logAuditAction({
+          action: 'APPOINTMENT_CANCELLED',
+          entityType: 'appointment',
+          entityId: id,
+          details: `${req.user?.name || 'Staff'} cancelled appointment #${apptRef} for ${patientName}`,
+          metadata: { appointment_id: id, patient_id: updated.patient_id, status: 'Cancelled' },
+          req
+        });
+      } else if (status) {
+        logAuditAction({
+          action: 'APPOINTMENT_STATUS_CHANGED',
+          entityType: 'appointment',
+          entityId: id,
+          details: `${req.user?.name || 'Staff'} updated appointment #${apptRef} for ${patientName} to status '${status}'`,
+          metadata: { appointment_id: id, patient_id: updated.patient_id, status },
+          req
+        });
+      }
+    } catch (auditErr) {
+      console.warn('[Audit Log Skip]', auditErr.message);
+    }
+
     res.json(updated);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -545,6 +574,20 @@ const deleteAppointment = async (req, res) => {
       .eq('id', id);
 
     if (error) throw error;
+
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      const apptRef = id ? id.substring(0, 8).toUpperCase() : id;
+      logAuditAction({
+        action: 'APPOINTMENT_DELETED',
+        entityType: 'appointment',
+        entityId: id,
+        details: `${req.user?.name || 'Staff'} deleted appointment record #${apptRef}`,
+        metadata: { appointment_id: id },
+        req
+      });
+    } catch (_) {}
+
     res.json({ success: true, message: 'Appointment deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });

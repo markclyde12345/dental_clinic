@@ -122,6 +122,39 @@ const updateInvoice = async (req, res) => {
       .single();
 
     if (error) throw error;
+
+    // Log financial audit actions
+    const { logAuditAction } = require('../utils/auditLogger');
+    const invoiceRef = id ? id.substring(0, 8).toUpperCase() : id;
+    const staffName = req.user?.name || req.user?.email || 'Staff';
+
+    if (status === 'Paid') {
+      logAuditAction({
+        action: 'PAYMENT_COLLECTED',
+        entityType: 'invoice',
+        entityId: id,
+        details: `${staffName} collected payment of ₱${paid_amount || invoice.amount} for Invoice #${invoiceRef}`,
+        metadata: {
+          invoice_id: id,
+          amount: paid_amount || invoice.amount,
+          payment_method: req.body.payment_method || 'Cash / Front Desk'
+        },
+        req
+      });
+    } else if (status === 'Written Off') {
+      logAuditAction({
+        action: 'INVOICE_WRITTEN_OFF',
+        entityType: 'invoice',
+        entityId: id,
+        details: `${staffName} declared Invoice #${invoiceRef} (₱${invoice.amount}) as uncollectible Bad Debt`,
+        metadata: {
+          invoice_id: id,
+          amount: invoice.amount
+        },
+        req
+      });
+    }
+
     res.json(invoice);
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "7dc24d2f-80fa-4eff-b44b-d3a0257b58b8",
+    "timestamp": "2026-09-03T18:46:21.895Z",
+    "action": "INVOICE_WRITTEN_OFF",
+    "entity_type": "invoice",
+    "entity_id": "14A41988",
+    "user_id": "system",
+    "user_name": "Maria Santos",
+    "user_role": "Receptionist",
+    "details": "Maria Santos declared Invoice #14A41988 (₱250.00 - 640 days overdue) as uncollectible Bad Debt",
+    "metadata": {
+      "invoice_id": "14A41988",
+      "amount": 250,
+      "days_overdue": 640
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Node/Server"
+  }
+]
