@@ -800,13 +800,15 @@ body {
 .stat-card {
   background: var(--bg-card);
   border-radius: var(--radius-md);
-  padding: 20px 22px;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
   gap: 16px;
   border: 1px solid var(--border-card);
   box-shadow: var(--shadow-sm);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 94px;
+  box-sizing: border-box;
 }
 .stat-card:hover {
   transform: translateY(-2px);
@@ -830,22 +832,32 @@ body {
 .stat-warning .stat-icon { background: var(--yellow-bg); color: var(--yellow); }
 .stat-info    .stat-icon { background: var(--blue-bg); color: var(--blue); }
 
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
 .stat-label {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 .stat-value {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 /* Overview Grid */
@@ -3534,6 +3546,67 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   border-radius: 6px;
   font-size: 0.76rem;
   color: #475569;
+}
+
+/* ═════════════════════ MY RECORDS REFINEMENTS ═════════════════════ */
+#records-section .stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+#records-section .stat-card {
+  height: 94px;
+  min-height: 94px;
+  max-height: 94px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  box-sizing: border-box;
+}
+
+#records-section .stat-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex: 1;
+}
+
+#records-section .stat-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+#records-section .stat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#records-section .table-wrapper {
+  overflow-x: auto;
+}
+
+#records-section .data-table th,
+#records-section .data-table td {
+  padding: 14px 12px;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 
