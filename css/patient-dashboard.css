@@ -2514,11 +2514,396 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 .activity-status.pending { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
 .activity-status.failed { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .financial-widgets-row { grid-template-columns: repeat(2, 1fr); }
+/* ═══════════════════════════════════════════════════════════════
+   MASTER COMPREHENSIVE MULTI-DEVICE RESPONSIVE SYSTEM
+   Mobile Phones (≤480px) • Phablets (481px–768px) •
+   Tablets (769px–1024px) • Laptops (1025px–1280px) • Desktops (1281px+)
+═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Universal Layout & Grid Classes ── */
+.form-grid-2,
+.summary-grid-2,
+.reschedule-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
+
+/* ── 2. Large Tablet & Small Laptop (max-width: 1200px) ── */
+@media (max-width: 1200px) {
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+  .financial-widgets-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+  .overview-grid {
+    grid-template-columns: 320px 1fr !important;
+    gap: 20px !important;
+  }
+}
+
+/* ── 3. Tablet Landscape & Portrait (max-width: 1024px) ── */
+@media (max-width: 1024px) {
+  .overview-grid {
+    grid-template-columns: 1fr !important;
+    gap: 22px !important;
+  }
+  .patient-detail-card {
+    grid-row: auto !important;
+    grid-column: auto !important;
+    height: auto !important;
+  }
+  .two-col-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 24px !important;
+  }
+  .booking-form-card {
+    max-width: 100% !important;
+    padding: 30px 24px !important;
+  }
+  .settings-grid {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+  .settings-save-row {
+    grid-column: span 1 !important;
+  }
+}
+
+/* ── 4. Mobile & Tablet Portrait Breakpoint (max-width: 768px) ── */
+@media (max-width: 768px) {
+  /* Sidebar Off-Canvas Drawer */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 280px !important;
+    max-width: 85vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 1100 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: none !important;
+    background: var(--bg-card) !important;
+    overflow-y: auto !important;
+  }
+  .sidebar.open {
+    transform: translateX(0) !important;
+    box-shadow: 12px 0 40px rgba(11, 60, 77, 0.25) !important;
+  }
+  .sidebar-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(11, 19, 30, 0.55) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    z-index: 1050 !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease !important;
+  }
+  .sidebar-overlay.show {
+    display: block !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+  .burger-menu-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg-base);
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .burger-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Main Content Layout */
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  .top-header {
+    padding: 0 16px !important;
+    height: 64px !important;
+  }
+  .header-date {
+    display: none !important;
+  }
+  .header-user-name {
+    display: none !important;
+  }
+  .header-user {
+    padding: 2px !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .content-section {
+    padding: 20px 16px 44px !important;
+  }
+
+  /* Section Title & Header */
+  .section-header {
+    margin-bottom: 20px !important;
+    gap: 12px !important;
+  }
+  .section-title {
+    font-size: 1.45rem !important;
+  }
+  .section-subtitle {
+    font-size: 0.84rem !important;
+  }
+
+  /* All 2-Column Grids collapse cleanly into 1 column */
+  div[style*="grid-template-columns: 1fr 1fr"],
+  div[style*="grid-template-columns:1fr 1fr"],
+  .form-grid-2,
+  .summary-grid-2,
+  .reschedule-grid-2,
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  div[style*="grid-column: span 2"] {
+    grid-column: auto !important;
+  }
+
+  /* Tables: Full Horizontal Scroll with Touch Momentum */
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .data-table {
+    min-width: 600px !important;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 12px 14px !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* Booking Wizard Cards */
+  .booking-form-card {
+    padding: 22px 16px !important;
+    border-radius: 16px !important;
+  }
+  .wizard-step > div[style*="background: var(--bg-base)"] {
+    padding: 16px 14px !important;
+    border-radius: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Appointment Details Modal on Mobile */
+  .appointment-modal-card {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    max-height: 90dvh !important;
+    border-radius: 18px !important;
+    margin: 10px auto !important;
+  }
+  .modal-header {
+    padding: 14px 18px !important;
+  }
+  .modal-body {
+    padding: 14px 18px !important;
+    gap: 14px !important;
+  }
+  .modal-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .modal-actions-footer {
+    padding: 14px 18px 18px !important;
+  }
+  .modal-primary-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  .modal-primary-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .modal-secondary-actions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .btn-action-util {
+    flex: 1 1 calc(50% - 6px) !important;
+    justify-content: center !important;
+    font-size: 0.76rem !important;
+  }
+}
+
+/* ── 5. Small Phones & Narrow Screens (max-width: 600px) ── */
 @media (max-width: 600px) {
-  .financial-widgets-row { grid-template-columns: 1fr; }
-  .activity-details { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .top-header {
+    padding: 0 12px !important;
+  }
+  /* Header breadcrumb shows only current view name */
+  .breadcrumb-item,
+  .breadcrumb svg {
+    display: none !important;
+  }
+  .breadcrumb-current {
+    font-size: 0.95rem !important;
+  }
+  .header-right {
+    gap: 8px !important;
+  }
+  .quick-book-btn {
+    padding: 8px 12px !important;
+    font-size: 0.78rem !important;
+    border-radius: 10px !important;
+  }
+
+  /* Stats and Widgets: 1 column */
+  .stats-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .stat-card {
+    padding: 14px 16px !important;
+  }
+  .stat-icon {
+    width: 42px !important;
+    height: 42px !important;
+  }
+  .stat-value {
+    font-size: 1.15rem !important;
+  }
+  .financial-widgets-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .activity-details {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+
+  /* Booking Steps Indicator */
+  .booking-steps-indicator {
+    margin: 16px 0 22px !important;
+  }
+  .step-indicator-item .step-number {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.8rem !important;
+  }
+  .step-indicator-item .step-label {
+    font-size: 0.7rem !important;
+  }
+
+  /* Slots Grid on Phones: 3 compact columns */
+  #slots-picker-grid {
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)) !important;
+    gap: 8px !important;
+  }
+  .slot-btn {
+    padding: 10px 6px !important;
+    font-size: 0.78rem !important;
+  }
+
+  /* Nearest Branch Banner */
+  .nearest-branch-banner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+
+  /* Map Container */
+  .clinic-map-container {
+    height: 200px !important;
+  }
+
+  /* Dentists & Services Grids */
+  .dentists-grid,
+  .services-grid,
+  .branches-picker-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Profile Stats */
+  .profile-stats {
+    gap: 8px !important;
+  }
+  .pstat-val {
+    font-size: 1.15rem !important;
+  }
 }
+
+/* ── 6. Extra Small Screens (max-width: 440px) ── */
+@media (max-width: 440px) {
+  .quick-book-btn span,
+  .quick-book-btn {
+    font-size: 0.74rem !important;
+    padding: 7px 10px !important;
+  }
+  .notif-btn {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  .header-avatar {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.78rem !important;
+  }
+
+  /* Hide step text labels on very narrow phones so step circles stay clean */
+  .step-indicator-item .step-label {
+    display: none !important;
+  }
+
+  /* Patient Details Grid inside card */
+  .patient-detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .patient-info-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* Wizard Actions Bottom Bar */
+  .wizard-actions {
+    flex-direction: column-reverse !important;
+    gap: 10px !important;
+  }
+  .wizard-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .btn-action-util {
+    flex: 1 1 100% !important;
+  }
+}
+
