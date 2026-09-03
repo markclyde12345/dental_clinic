@@ -514,7 +514,7 @@ function renderAppointmentsTable(list) {
   if (!list || !list.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" class="text-center py-5 text-muted">
+        <td colspan="5" class="text-center py-5 text-muted">
           <div class="empty-state-box">
             <i class="fa-regular fa-calendar-xmark" style="font-size: 2.2rem; color: #cbd5e1; margin-bottom: 10px;"></i>
             <h4 style="margin: 0 0 4px 0; color: #475569;">No appointments match your filters</h4>
@@ -550,9 +550,6 @@ function renderAppointmentsTable(list) {
     if (parsedNotes.concern && parsedNotes.concern !== 'None' && parsedNotes.concern !== 'N/A') {
       chipsHtml += `<span class="notes-chip chip-concern" title="Chief Concern"><i class="fa-solid fa-tooth"></i> ${escapeHtml(parsedNotes.concern)}</span>`;
     }
-    if (parsedNotes.dentist && parsedNotes.dentist !== 'N/A') {
-      chipsHtml += `<span class="notes-chip chip-dentist" title="Assigned Doctor"><i class="fa-solid fa-user-doctor"></i> ${escapeHtml(parsedNotes.dentist)}</span>`;
-    }
     if (parsedNotes.hmo && parsedNotes.hmo !== 'None' && parsedNotes.hmo !== 'N/A') {
       chipsHtml += `<span class="notes-chip chip-hmo" title="HMO / Insurance"><i class="fa-solid fa-shield-halved"></i> ${escapeHtml(parsedNotes.hmo)}</span>`;
     }
@@ -566,6 +563,11 @@ function renderAppointmentsTable(list) {
     } else if (!chipsHtml) {
       chipsHtml = `<span class="notes-chip chip-default">Standard Consultation</span>`;
     }
+
+    // Doctor info badge
+    const dentistBadge = (parsedNotes.dentist && parsedNotes.dentist !== 'N/A' && parsedNotes.dentist !== 'No Preference')
+      ? `<span class="doctor-badge" title="Assigned Doctor"><i class="fa-solid fa-user-doctor"></i> ${escapeHtml(parsedNotes.dentist)}</span>`
+      : '';
 
     // Front Desk Action Buttons
     let mainActionBtn = '';
@@ -630,18 +632,14 @@ function renderAppointmentsTable(list) {
 
     return `
       <tr class="appt-row row-status-${(appt.status || '').toLowerCase().replace(/\s+/g, '')}">
-        <!-- Ref # -->
-        <td>
-          <span class="ref-pill" onclick="copyRefId('${refId}')" title="Click to copy Reference ID">
-            <i class="fa-solid fa-hashtag"></i>${refId}
-          </span>
-        </td>
-
-        <!-- Date & Time -->
+        <!-- Date & Schedule -->
         <td>
           <div class="appt-time-cell">
             <div class="appt-date"><i class="fa-regular fa-calendar"></i> ${dateStr}</div>
-            <div class="appt-time-pill"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
+            <div class="appt-time-row">
+              <span class="appt-time-pill"><i class="fa-regular fa-clock"></i> ${timeStr}</span>
+              ${statusBadge}
+            </div>
           </div>
         </td>
 
@@ -652,29 +650,30 @@ function renderAppointmentsTable(list) {
               ${patientInitial}
             </div>
             <div class="patient-cell-meta">
-              <span class="patient-name">${escapeHtml(patientName)}</span>
+              <div class="patient-name-row">
+                <span class="patient-name">${escapeHtml(patientName)}</span>
+                <span class="ref-pill" onclick="copyRefId('${refId}')" title="Click to copy Reference ID">#${refId}</span>
+              </div>
               <span class="patient-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(patientPhone || 'No phone recorded')}</span>
             </div>
           </div>
         </td>
 
-        <!-- Procedure -->
+        <!-- Procedure & Doctor -->
         <td>
           <div class="procedure-cell">
             <div class="procedure-icon-wrap"><i class="fa-solid fa-tooth"></i></div>
             <div class="procedure-meta">
               <span class="procedure-name">${escapeHtml(treatmentName)}</span>
-              ${treatmentPrice ? `<span class="procedure-price">${treatmentPrice}</span>` : '<span class="procedure-price text-muted">Standard Care</span>'}
+              <div class="procedure-sub-row">
+                <span class="procedure-price">${treatmentPrice || '<span class="text-muted">Standard Care</span>'}</span>
+                ${dentistBadge}
+              </div>
             </div>
           </div>
         </td>
 
-        <!-- Status -->
-        <td>
-          ${statusBadge}
-        </td>
-
-        <!-- Intake & Notes -->
+        <!-- Clinical Intake & Notes -->
         <td>
           <div class="notes-smart-cell">
             <div class="chips-flex-row">
@@ -682,14 +681,14 @@ function renderAppointmentsTable(list) {
             </div>
             ${freeNoteHtml}
             <button class="btn-open-intake" onclick="openApptIntakeDetails('${appt.id}')">
-              <i class="fa-solid fa-file-medical"></i>
+              <i class="fa-solid fa-file-waveform"></i>
               <span>Intake Details &rarr;</span>
             </button>
           </div>
         </td>
 
         <!-- Front Desk Actions -->
-        <td>
+        <td style="text-align: right;">
           <div class="action-cell-container">
             ${mainActionBtn}
             <div class="secondary-actions-group">

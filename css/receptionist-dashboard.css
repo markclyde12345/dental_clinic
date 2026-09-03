@@ -1359,8 +1359,8 @@ body {
 }
 
 .modern-table tbody td {
-  padding: 14px 16px;
-  vertical-align: top;
+  padding: 12px 14px;
+  vertical-align: middle;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -1377,67 +1377,72 @@ body {
 .ref-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: var(--primary-subtle);
-  color: var(--primary-color);
-  font-size: 0.74rem;
+  gap: 3px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.68rem;
   font-weight: 800;
   font-family: monospace;
-  padding: 5px 10px;
-  border-radius: 6px;
+  padding: 2px 7px;
+  border-radius: 5px;
   letter-spacing: 0.04em;
   cursor: pointer;
-  border: 1px solid rgba(11,60,77,0.1);
+  border: 1px solid #e2e8f0;
   user-select: none;
-  transition: background 0.15s;
+  transition: all 0.15s;
 }
 
 .ref-pill:hover {
-  background: #d0ecf4;
+  background: var(--primary-subtle);
+  color: var(--primary-color);
+  border-color: rgba(11,60,77,0.2);
 }
 
-.ref-pill i {
-  font-size: 0.62rem;
-  opacity: 0.7;
-}
-
-/* ── Date & Time cell ── */
+/* ── Date & Schedule cell ── */
 .appt-time-cell {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .appt-date {
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.84rem;
+  font-weight: 700;
   color: var(--dark-color);
   display: flex;
   align-items: center;
   gap: 5px;
+  white-space: nowrap;
 }
 
 .appt-date i {
   color: #94a3b8;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
+}
+
+.appt-time-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 
 .appt-time-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   background: var(--primary-color);
   color: #fff;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 999px;
-  width: fit-content;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 
 .appt-time-pill i {
   font-size: 0.65rem;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 /* ── Patient cell ── */
@@ -1459,7 +1464,7 @@ body {
   font-weight: 800;
   font-size: 0.88rem;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 
 .patient-cell-meta {
@@ -1469,11 +1474,18 @@ body {
   min-width: 0;
 }
 
+.patient-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .patient-name {
-  font-size: 0.86rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--dark-color);
-  word-break: break-word;
+  line-height: 1.25;
 }
 
 .patient-contact {
@@ -1481,7 +1493,7 @@ body {
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .patient-contact i {
@@ -1506,7 +1518,7 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   flex-shrink: 0;
 }
 
@@ -1517,15 +1529,36 @@ body {
 }
 
 .procedure-name {
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--dark-color);
 }
 
+.procedure-sub-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
 .procedure-price {
-  font-size: 0.73rem;
-  font-weight: 600;
+  font-size: 0.74rem;
+  font-weight: 700;
   color: var(--accent-color);
+}
+
+.doctor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  border: 1px solid #bfdbfe;
+  white-space: nowrap;
 }
 
 /* ── Notes smart cell ── */
@@ -1545,14 +1578,13 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 9px;
-  border-radius: 20px;
-  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.71rem;
   font-weight: 600;
-  white-space: nowrap;
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+  max-width: 220px;
 }
 
 .chip-concern {
@@ -1631,12 +1663,12 @@ body {
   text-decoration: underline;
   text-underline-offset: 2px;
   font-family: var(--font-body);
-  opacity: 0.7;
+  opacity: 0.75;
   transition: opacity 0.15s;
+  width: fit-content;
 }
 
 .btn-open-intake:hover { opacity: 1; }
-
 .btn-open-intake i { font-size: 0.7rem; }
 
 /* ── Action Buttons — Main Primary ── */
@@ -1644,26 +1676,28 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 7px;
+  gap: 6px;
+  width: 100%;
 }
 
 .btn-action-main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 8px 16px;
+  gap: 6px;
+  padding: 7px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 7px;
   font-family: var(--font-body);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
   letter-spacing: 0.01em;
   width: 100%;
-  min-width: 130px;
+  max-width: 125px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .btn-action-confirm {
