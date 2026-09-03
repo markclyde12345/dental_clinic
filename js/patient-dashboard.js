@@ -395,6 +395,8 @@ function renderAppointmentsFullList() {
 }
 
 // ─── Load Invoices ───────────────────────────────────────────
+let delinquentOverdueInvoice = null;
+
 function loadInvoices() {
   apiFetch('/invoices', {
     headers: { 'Authorization': `Bearer ${token}` }
@@ -403,15 +405,17 @@ function loadInvoices() {
     if (!Array.isArray(data)) return;
     allInvoices = data;
     renderInvoiceStats();
+    renderFinancialWidgets();
     renderInvoicesPreview();
     renderInvoicesTable();
+    checkDelinquentBookingLock();
   })
   .catch(err => console.error('Invoices error:', err));
 }
 
 function renderInvoiceStats() {
   const unpaid = allInvoices
-    .filter(inv => inv.status === 'Unpaid' || !inv.is_paid)
+    .filter(inv => (inv.status === 'Unpaid' || !inv.is_paid) && inv.status !== 'Written Off')
     .reduce((sum, inv) => sum + parseFloat(inv.amount || inv.total_amount || 0), 0);
 
   const unpaidStr = `₱${unpaid.toFixed(2)}`;
@@ -419,6 +423,55 @@ function renderInvoiceStats() {
   safeSet('balance-display', unpaidStr);
   safeSet('pstat-balance', `₱${unpaid.toFixed(0)}`);
   safeSet('pstat-invoices', allInvoices.length);
+}
+
+function checkDelinquentBookingLock() {
+  const lockBanner = document.getElementById('booking-delinquent-lock');
+  const wizardWrap = document.getElementById('booking-form-card-wrap');
+  if (!lockBanner) return;
+
+  const now = Date.now();
+  const overdueInvs = allInvoices.filter(inv => {
+    const isUnpaid = (inv.status || '').toLowerCase() === 'unpaid' || !inv.is_paid;
+    if (!isUnpaid || inv.status === 'Written Off') return false;
+    const issuedDate = new Date(inv.issued_at || inv.created_at || now);
+    const daysOld = Math.floor((now - issuedDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysOld > 30;
+  });
+
+  if (overdueInvs.length > 0) {
+    overdueInvs.sort((a, b) => new Date(a.issued_at || a.created_at) - new Date(b.issued_at || b.created_at));
+    delinquentOverdueInvoice = overdueInvs[0];
+
+    const totalOverdue = overdueInvs.reduce((sum, inv) => sum + (parseFloat(inv.amount || inv.total_amount) || 0), 0);
+    const oldestDays = Math.max(31, Math.floor((now - new Date(delinquentOverdueInvoice.issued_at || delinquentOverdueInvoice.created_at).getTime()) / (1000 * 60 * 60 * 24)));
+
+    safeSet('lock-days-badge', `${oldestDays} Days Overdue`);
+    safeSet('lock-overdue-amount', `₱${totalOverdue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`);
+
+    lockBanner.style.display = 'block';
+    if (wizardWrap) {
+      wizardWrap.style.opacity = '0.35';
+      wizardWrap.style.pointerEvents = 'none';
+      wizardWrap.style.filter = 'grayscale(0.6)';
+    }
+  } else {
+    delinquentOverdueInvoice = null;
+    lockBanner.style.display = 'none';
+    if (wizardWrap) {
+      wizardWrap.style.opacity = '1';
+      wizardWrap.style.pointerEvents = 'auto';
+      wizardWrap.style.filter = 'none';
+    }
+  }
+}
+
+function payOverdueInvoiceNow() {
+  if (delinquentOverdueInvoice && delinquentOverdueInvoice.id) {
+    openPaymongoModal(delinquentOverdueInvoice.id);
+  } else {
+    switchSection('billing');
+  }
 }
 
 // ─── Financial Widgets (Accounting Dashboard Features) ───────────

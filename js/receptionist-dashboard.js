@@ -630,6 +630,22 @@ function renderAppointmentsTable(list) {
       </button>
     `;
 
+    // Check if patient has delinquent overdue balance (> 30 days)
+    const patientOverdueInvs = (allInvoices || []).filter(inv => {
+      const pId = inv.patient_id || inv.patient?.id;
+      const isMatch = pId && String(pId) === String(appt.patient_id);
+      const isUnpaid = (inv.status || '').toLowerCase() === 'unpaid';
+      const daysOld = Math.floor((Date.now() - new Date(inv.issued_at || inv.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24));
+      return isMatch && isUnpaid && daysOld > 30;
+    });
+
+    let delinquentTag = '';
+    if (patientOverdueInvs.length > 0) {
+      const maxDays = Math.max(...patientOverdueInvs.map(i => Math.floor((Date.now() - new Date(i.issued_at || i.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24))));
+      const totalOverdue = patientOverdueInvs.reduce((sum, i) => sum + (parseFloat(i.amount || i.total_amount) || 0), 0);
+      delinquentTag = `<span class="patient-delinquent-tag" title="Account has ₱${totalOverdue.toFixed(2)} overdue for ${maxDays} days!"><i class="fa-solid fa-triangle-exclamation"></i> Overdue (${maxDays}d)</span>`;
+    }
+
     return `
       <tr class="appt-row row-status-${(appt.status || '').toLowerCase().replace(/\s+/g, '')}">
         <!-- Date & Schedule -->
@@ -653,6 +669,7 @@ function renderAppointmentsTable(list) {
               <div class="patient-name-row">
                 <span class="patient-name">${escapeHtml(patientName)}</span>
                 <span class="ref-pill" onclick="copyRefId('${refId}')" title="Click to copy Reference ID">#${refId}</span>
+                ${delinquentTag}
               </div>
               <span class="patient-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(patientPhone || 'No phone recorded')}</span>
             </div>
@@ -1255,23 +1272,46 @@ function renderBillingTable(list) {
     const patientName = inv.patient ? (inv.patient.name || inv.patient.email || 'Patient') : 'Walk-in Patient';
     const amount = Number(inv.amount || inv.total_amount || 0).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
     const isPaid = (inv.status || '').toLowerCase() === 'paid';
-    const statusBadge = isPaid
-      ? `<span class="status-badge badge-completed"><i class="fa-solid fa-check"></i> Paid</span>`
-      : `<span class="status-badge badge-cancelled"><i class="fa-solid fa-clock"></i> Unpaid</span>`;
+    const isWrittenOff = (inv.status || '').toLowerCase() === 'written off';
+    const issuedDate = new Date(inv.issued_at || inv.created_at || Date.now());
+    const daysOld = Math.max(0, Math.floor((Date.now() - issuedDate.getTime()) / (1000 * 60 * 60 * 24)));
+    const isOverdue = !isPaid && !isWrittenOff && daysOld > 30;
+
+    let statusBadge = '';
+    if (isPaid) {
+      statusBadge = `<span class="status-badge badge-completed"><i class="fa-solid fa-check"></i> Paid</span>`;
+    } else if (isWrittenOff) {
+      statusBadge = `<span class="status-badge" style="background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1;"><i class="fa-solid fa-ban"></i> Bad Debt (Written Off)</span>`;
+    } else if (isOverdue) {
+      statusBadge = `<span class="status-badge badge-cancelled" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;" title="${daysOld} days past due"><i class="fa-solid fa-triangle-exclamation"></i> Overdue (${daysOld}d)</span>`;
+    } else {
+      statusBadge = `<span class="status-badge badge-pending"><i class="fa-solid fa-clock"></i> Unpaid (${daysOld}d)</span>`;
+    }
 
     const dateIssued = inv.issued_at || inv.created_at ? new Date(inv.issued_at || inv.created_at).toLocaleDateString() : 'N/A';
     const invoiceNum = inv.id ? inv.id.substring(0, 8).toUpperCase() : '--';
 
     let actionBtn = '';
-    if (!isPaid) {
+    if (isPaid) {
       actionBtn = `
-        <button class="btn btn-sm btn-success" onclick="openPaymentModal('${inv.id}', '${escapeHtml(patientName)}', '${inv.amount || inv.total_amount || 0}')">
-          <i class="fa-solid fa-cash-register"></i> Collect Payment
-        </button>
+        <span class="text-muted" style="font-size: 0.8rem;"><i class="fa-solid fa-circle-check text-green"></i> Settled</span>
+      `;
+    } else if (isWrittenOff) {
+      actionBtn = `
+        <span class="text-muted" style="font-size: 0.78rem; font-style: italic;">Written Off</span>
       `;
     } else {
       actionBtn = `
-        <span class="text-muted" style="font-size: 0.8rem;"><i class="fa-solid fa-circle-check text-green"></i> Settled</span>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button class="btn btn-sm btn-success" onclick="openPaymentModal('${inv.id}', '${escapeHtml(patientName)}', '${inv.amount || inv.total_amount || 0}')" title="Collect payment">
+            <i class="fa-solid fa-cash-register"></i> Collect
+          </button>
+          ${daysOld >= 60 ? `
+            <button class="btn btn-sm" onclick="markInvoiceAsBadDebt('${inv.id}', '${escapeHtml(patientName)}', '${daysOld}')" title="Write off as uncollectible bad debt" style="background: #f1f5f9; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.74rem; padding: 4px 8px;">
+              <i class="fa-solid fa-ban"></i> Write Off
+            </button>
+          ` : ''}
+        </div>
       `;
     }
 
@@ -1289,6 +1329,33 @@ function renderBillingTable(list) {
 
   if (countInfo) {
     countInfo.textContent = `Showing ${list.length} invoice${list.length !== 1 ? 's' : ''}`;
+  }
+}
+
+async function markInvoiceAsBadDebt(invId, patientName, daysOld) {
+  if (!confirm(`Are you sure you want to write off the invoice for ${patientName} (${daysOld} days overdue) as uncollectible Bad Debt?\n\nThis will update its accounting status in accordance with clinic policy.`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${BASE_ORIGIN}/api/invoices/${invId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeader
+      },
+      body: JSON.stringify({ status: 'Written Off' })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Failed to update invoice');
+    }
+
+    showToast(`Invoice for ${patientName} written off as bad debt.`, 'info');
+    await loadInitialData();
+  } catch (err) {
+    showToast(err.message || 'Failed to write off invoice', 'error');
   }
 }
 

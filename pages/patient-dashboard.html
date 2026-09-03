@@ -320,9 +320,35 @@
           </div>
         </div>
 
+        <!-- Delinquent Account Booking Lock Banner -->
+        <div class="card booking-lock-card" id="booking-delinquent-lock" style="display: none; border: 2px solid #ef4444; background: #fff5f5; padding: 24px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.12);">
+          <div style="display: flex; align-items: flex-start; gap: 18px;">
+            <div style="width: 50px; height: 50px; border-radius: 14px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(220,38,38,0.2);">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
+                <h4 style="margin: 0; color: #991b1b; font-size: 1.15rem; font-weight: 800;">Booking Temporarily Suspended: Overdue Account Balance</h4>
+                <span style="background: #dc2626; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.03em;" id="lock-days-badge">Overdue</span>
+              </div>
+              <p style="margin: 0 0 16px 0; color: #7f1d1d; font-size: 0.88rem; line-height: 1.55;">
+                Our records show an outstanding balance of <strong id="lock-overdue-amount" style="font-size: 1rem; color: #991b1b;">₱0.00</strong> that has remained unpaid for over 30 days. Per clinic policy, new appointments cannot be scheduled online until this balance is settled.
+              </p>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-primary" id="btn-lock-pay-now" onclick="payOverdueInvoiceNow()" style="background: #dc2626; border-color: #dc2626; font-weight: 700; box-shadow: 0 4px 12px rgba(220,38,38,0.35);">
+                  <i class="fa-solid fa-credit-card"></i> Settle Overdue Balance with PayMongo
+                </button>
+                <button type="button" class="secondary-btn" onclick="switchSection('billing')">
+                  <i class="fa-solid fa-receipt"></i> View Invoices &amp; Breakdown
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="two-col-layout">
           <!-- Booking Form Card -->
-          <div class="card booking-form-card">
+          <div class="card booking-form-card" id="booking-form-card-wrap">
             <h3 class="form-heading" style="text-align: center; margin-bottom: 24px;">Book a Dental Appointment</h3>
             
             <!-- Step Progress Indicator (4 Steps) -->

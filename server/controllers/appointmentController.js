@@ -199,14 +199,29 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'This time slot is already occupied. Please choose another time.' });
     }
 
-    // Allow Receptionist, Admin, or Dentist to book for a patient directly
-    const assignedPatientId = (req.user.role !== 'Patient' && (req.body.patient_id || req.body.patientId))
-      ? (req.body.patient_id || req.body.patientId)
-      : req.user.id;
+    // Delinquent balance protection: Patients with unpaid balances > 30 days cannot book new appointments
+    if (req.user.role === 'Patient') {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: overdueInvoices } = await supabase
+        .from('invoices')
+        .select('id, amount, issued_at, status')
+        .eq('patient_id', req.user.id)
+        .eq('status', 'Unpaid')
+        .lt('issued_at', thirtyDaysAgo);
 
-    const initialStatus = (req.user.role !== 'Patient' && req.body.status)
-      ? req.body.status
-      : 'Pending';
+      if (overdueInvoices && overdueInvoices.length > 0) {
+        const totalOverdue = overdueInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+        const oldest = overdueInvoices.reduce((oldest, inv) => new Date(inv.issued_at) < new Date(oldest.issued_at) ? inv : oldest, overdueInvoices[0]);
+        const daysPastDue = Math.max(1, Math.floor((Date.now() - new Date(oldest.issued_at).getTime()) / (1000 * 60 * 60 * 24)));
+        return res.status(403).json({
+          message: `Booking locked: You have an outstanding overdue balance of ₱${totalOverdue.toFixed(2)} (${daysPastDue} days past due). Please settle your past-due balance before booking new appointments.`,
+          is_delinquent: true,
+          overdue_amount: totalOverdue,
+          oldest_invoice_id: oldest.id,
+          days_past_due: daysPastDue
+        });
+      }
+    }
 
     const { data: appointment, error } = await supabase
       .from('appointments')

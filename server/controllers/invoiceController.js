@@ -54,13 +54,22 @@ const getInvoices = async (req, res) => {
 
     if (error) throw error;
 
-    // Provide legacy mapping fields so UI doesn't break
-    const mapped = invoices.map(inv => ({
-      ...inv,
-      total_amount: inv.amount,
-      is_paid: inv.status === 'Paid',
-      created_at: inv.issued_at
-    }));
+    // Provide legacy mapping fields and overdue calculation
+    const mapped = invoices.map(inv => {
+      const issuedTime = inv.issued_at || inv.created_at;
+      const daysOld = issuedTime
+        ? Math.max(0, Math.floor((Date.now() - new Date(issuedTime).getTime()) / (1000 * 60 * 60 * 24)))
+        : 0;
+      const isOverdue = inv.status === 'Unpaid' && daysOld > 30;
+      return {
+        ...inv,
+        total_amount: inv.amount,
+        is_paid: inv.status === 'Paid',
+        created_at: inv.issued_at,
+        days_old: daysOld,
+        is_overdue: isOverdue
+      };
+    });
 
     res.json(mapped);
   } catch (error) {
