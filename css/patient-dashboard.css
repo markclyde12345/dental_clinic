@@ -1179,8 +1179,8 @@ body {
 .step-line {
   position: absolute;
   top: 17px;
-  left: calc(100% / 6);
-  right: calc(100% / 6);
+  left: calc(100% / 8);
+  right: calc(100% / 8);
   height: 3px;
   background: #e2e8f0;
   z-index: 1;
@@ -3271,5 +3271,187 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   color: #059669 !important;
   font-size: 1.1rem;
 }
+
+/* ═════════════════════ BOOKING WIZARD PAYMENT STEP ═════════════════════ */
+.booking-fee-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(14, 116, 144, 0.08), rgba(6, 182, 212, 0.12));
+  border: 1px solid rgba(14, 116, 144, 0.2);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 22px;
+}
+
+.fee-banner-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
+}
+
+.fee-banner-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fee-service-name {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fee-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.fee-banner-amount {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+.payment-method-selector-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.payment-choice-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.payment-choice-card:hover {
+  border-color: rgba(14, 116, 144, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.payment-choice-card.selected {
+  border-color: var(--accent);
+  background: rgba(14, 116, 144, 0.03);
+  box-shadow: 0 0 0 1px var(--accent), 0 6px 20px rgba(14, 116, 144, 0.12);
+}
+
+.choice-radio-wrap {
+  margin-top: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.payment-choice-card.selected .choice-radio-wrap {
+  border-color: var(--accent);
+}
+
+.choice-radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.payment-choice-card.selected .choice-radio-dot {
+  background: var(--accent);
+}
+
+.choice-card-content {
+  flex: 1;
+}
+
+.choice-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.choice-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.choice-badge-green {
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.choice-badge-gray {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.choice-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0 0 12px 0;
+}
+
+.choice-channels-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pms-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.pms-chip.gcash { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+.pms-chip.maya { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.pms-chip.cards { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+.pms-chip.billease { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.pms-chip.counter { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
 
 

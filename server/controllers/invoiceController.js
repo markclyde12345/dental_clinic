@@ -5,12 +5,45 @@ const supabase = require('../config/db');
 // @access  Private
 const getInvoices = async (req, res) => {
   try {
+    // If patient, auto-reconcile any appointments that are missing invoices
+    if (req.user.role === 'Patient' && req.user.id) {
+      try {
+        const { data: appts } = await supabase
+          .from('appointments')
+          .select('id, treatment_id, appointment_date, status, treatment:treatment_id ( id, name, price )')
+          .eq('patient_id', req.user.id)
+          .neq('status', 'Cancelled');
+
+        if (appts && appts.length > 0) {
+          const { data: existingInvs } = await supabase
+            .from('invoices')
+            .select('appointment_id')
+            .eq('patient_id', req.user.id);
+          const existingApptIds = new Set((existingInvs || []).map(i => i.appointment_id));
+
+          for (const a of appts) {
+            if (!existingApptIds.has(a.id)) {
+              const price = a.treatment?.price ? parseFloat(a.treatment.price) : 0;
+              await supabase.from('invoices').insert([{
+                patient_id: req.user.id,
+                appointment_id: a.id,
+                amount: price,
+                status: 'Unpaid'
+              }]);
+            }
+          }
+        }
+      } catch (recErr) {
+        console.error('[Invoice Reconcile Error]', recErr.message);
+      }
+    }
+
     let query = supabase
       .from('invoices')
       .select(`
         id, amount, status, issued_at, paid_at, appointment_id,
         patient:patient_id ( id, name, email ),
-        appointment:appointment_id ( id, appointment_date, notes )
+        appointment:appointment_id ( id, appointment_date, notes, treatment:treatment_id ( id, name, price ) )
       `);
 
     if (req.user.role === 'Patient') {

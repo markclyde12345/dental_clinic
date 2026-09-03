@@ -1235,10 +1235,10 @@ function goToStep(step) {
     }
   });
 
-  // Progress line
+  // Progress line for 4 steps: (step - 1) / 3 * 100
   const progressLine = document.getElementById('step-progress-line');
   if (progressLine) {
-    const percent = ((step - 1) / 2) * 100;
+    const percent = ((step - 1) / 3) * 100;
     progressLine.style.width = `${percent}%`;
   }
 
@@ -1248,8 +1248,8 @@ function goToStep(step) {
   const btnSubmit = document.getElementById('btn-submit-booking');
 
   if (btnPrev) btnPrev.style.display = step > 1 ? 'inline-flex' : 'none';
-  if (btnNext) btnNext.style.display = step < 3 ? 'inline-flex' : 'none';
-  if (btnSubmit) btnSubmit.style.display = step === 3 ? 'inline-flex' : 'none';
+  if (btnNext) btnNext.style.display = step < 4 ? 'inline-flex' : 'none';
+  if (btnSubmit) btnSubmit.style.display = step === 4 ? 'inline-flex' : 'none';
 
   // Step 1: Check available slots & initialize Map
   if (step === 1) {
@@ -1273,9 +1273,40 @@ function goToStep(step) {
     }
   }
 
-  // Step 3: Render confirmation details
+  // Step 3: Render Payment Details
   if (step === 3) {
+    renderPaymentDetails();
+  }
+
+  // Step 4: Render confirmation details
+  if (step === 4) {
     renderConfirmationDetails();
+  }
+}
+
+function selectBookingPaymentMethod(method) {
+  document.querySelectorAll('.payment-choice-card').forEach(card => {
+    card.classList.toggle('selected', card.getAttribute('data-method') === method);
+  });
+  const input = document.getElementById('wizard-payment-method');
+  if (input) input.value = method;
+}
+
+function renderPaymentDetails() {
+  const treatmentId = document.getElementById('wizard-treatment-id')?.value;
+  const selectedTreat = allTreatments.find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
+  const feeService = document.getElementById('wizard-fee-service');
+  const feeAmount = document.getElementById('wizard-fee-amount');
+
+  if (selectedTreat) {
+    if (feeService) feeService.textContent = selectedTreat.name;
+    if (feeAmount) {
+      const price = parseFloat(selectedTreat.price) || 0;
+      feeAmount.textContent = price > 0 ? `₱${price.toFixed(2)}` : 'Free Consultation';
+    }
+  } else {
+    if (feeService) feeService.textContent = 'General Dental Consultation';
+    if (feeAmount) feeAmount.textContent = '₱0.00';
   }
 }
 
@@ -1296,6 +1327,13 @@ function validateStep(step) {
     const treatmentId = document.getElementById('wizard-treatment-id')?.value;
     if (!treatmentId) {
       showToast('Please select a dental service/treatment to continue.', 'error');
+      return false;
+    }
+    return true;
+  } else if (step === 3) {
+    const method = document.getElementById('wizard-payment-method')?.value;
+    if (!method) {
+      showToast('Please select a payment method.', 'error');
       return false;
     }
     return true;
@@ -1497,6 +1535,12 @@ function renderConfirmationDetails() {
 
   safeSet('summary-medical-alerts', `Conditions: ${conditionsStr} • Allergies: ${allergies} • Meds: ${medications}`);
   safeSet('summary-insurance-care', `${hmo}${hmoId ? ' (' + hmoId + ')' : ''} • ${anxiety ? 'Gentle Care Requested' : 'Standard Care'} • Reminders via ${reminderPref}`);
+
+  const paymentMethod = document.getElementById('wizard-payment-method')?.value || 'paymongo';
+  const paymentLabel = paymentMethod === 'paymongo'
+    ? 'Pay Online via PayMongo (GCash, Maya, Cards)'
+    : 'Pay at Clinic Front Desk (Cash / Counter POS)';
+  safeSet('summary-payment-method', paymentLabel);
 }
 
 function submitBooking() {
@@ -1516,6 +1560,7 @@ function submitBooking() {
   const anxiety = document.getElementById('wizard-dental-anxiety')?.checked ? 'Yes (Gentle Care)' : 'No';
   const reminderPref = document.getElementById('wizard-reminder-pref')?.value || 'SMS';
   const rawNotes = document.getElementById('wizard-notes').value.trim();
+  const paymentMethod = document.getElementById('wizard-payment-method')?.value || 'paymongo';
 
   // Selected medical conditions
   const conditions = [];
@@ -1525,7 +1570,7 @@ function submitBooking() {
   const conditionsStr = conditions.length > 0 ? conditions.join(', ') : 'None';
 
   // Combine branch, dentist and comprehensive medical details into structured notes string
-  const notes = `[Branch: ${branchVal}] [Dentist: ${dentistName}] [Emergency: ${emergName} (${emergPhone})] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [HMO: ${hmo} / ${hmoId}] [AnxietySupport: ${anxiety}] [ReminderPref: ${reminderPref}] [PatientAddr: ${patientAddr}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`;
+  const notes = `[Branch: ${branchVal}] [Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] [Emergency: ${emergName} (${emergPhone})] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [HMO: ${hmo} / ${hmoId}] [AnxietySupport: ${anxiety}] [ReminderPref: ${reminderPref}] [PatientAddr: ${patientAddr}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`;
 
   // Parse preferred date & time into ISO string
   const [time, modifier] = timeVal.split(' ');
@@ -1547,14 +1592,13 @@ function submitBooking() {
     body: JSON.stringify({
       treatment_id: treatmentId,
       appointment_date: isoDateTime,
-      notes: notes
+      notes: notes,
+      payment_method: paymentMethod
     })
   })
   .then(res => res.json())
   .then(data => {
     if (data.message && !data.id) throw new Error(data.message);
-    
-    showToast('Appointment booked successfully! SMS reminder sent via Twilio.', 'success');
     
     // Reset wizard
     currentStep = 1;
@@ -1563,10 +1607,12 @@ function submitBooking() {
     document.getElementById('wizard-treatment-id').value = '';
     document.getElementById('wizard-dentist-name').value = 'No Preference';
     document.getElementById('wizard-time').value = '';
+    document.getElementById('wizard-payment-method').value = 'paymongo';
     
     // Unselect grids & checkboxes
     document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
     document.querySelectorAll('.dentist-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.payment-choice-card').forEach(c => c.classList.toggle('selected', c.getAttribute('data-method') === 'paymongo'));
     document.querySelectorAll('.slot-btn').forEach(c => {
       c.classList.remove('selected');
       c.disabled = false;
@@ -1574,9 +1620,17 @@ function submitBooking() {
 
     goToStep(1);
     loadAppointments();
-    
-    // Redirect to overview
-    setTimeout(() => switchSection('overview'), 1200);
+    loadInvoices(); // CRITICAL: Updates unpaid balance and pending payments immediately!
+
+    if (paymentMethod === 'paymongo' && data.invoice && data.invoice.id) {
+      showToast('Appointment booked! Opening PayMongo Checkout...', 'success');
+      setTimeout(() => {
+        openPaymongoModal(data.invoice.id);
+      }, 700);
+    } else {
+      showToast('Appointment booked successfully! Settle payment upon arrival at clinic.', 'success');
+      setTimeout(() => switchSection('overview'), 1200);
+    }
   })
   .catch(err => {
     showToast(err.message || 'Failed to book appointment.', 'error');

@@ -225,7 +225,47 @@ const createAppointment = async (req, res) => {
       .single();
 
     if (error) throw error;
-    res.status(201).json(appointment);
+
+    // Auto-generate invoice for this appointment with treatment price
+    let createdInvoice = null;
+    try {
+      let treatmentPrice = 0;
+      if (appointment.treatment?.price) {
+        treatmentPrice = parseFloat(appointment.treatment.price) || 0;
+      } else if (treatment_id || treatmentId) {
+        const { data: tData } = await supabase
+          .from('treatments')
+          .select('price')
+          .eq('id', treatment_id || treatmentId)
+          .maybeSingle();
+        if (tData?.price) treatmentPrice = parseFloat(tData.price) || 0;
+      }
+
+      const isPaidInitial = req.body.is_paid || req.body.payment_status === 'Paid';
+      const { data: inv, error: invErr } = await supabase
+        .from('invoices')
+        .insert([{
+          patient_id: assignedPatientId,
+          appointment_id: appointment.id,
+          amount: treatmentPrice,
+          status: isPaidInitial ? 'Paid' : 'Unpaid',
+          paid_amount: isPaidInitial ? treatmentPrice : 0,
+          paid_at: isPaidInitial ? new Date().toISOString() : null
+        }])
+        .select()
+        .single();
+
+      if (!invErr) {
+        createdInvoice = inv;
+      }
+    } catch (invErr) {
+      console.error('[Auto-Invoice Creation Error]', invErr.message);
+    }
+
+    res.status(201).json({
+      ...appointment,
+      invoice: createdInvoice
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

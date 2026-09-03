@@ -325,7 +325,7 @@
           <div class="card booking-form-card">
             <h3 class="form-heading" style="text-align: center; margin-bottom: 24px;">Book a Dental Appointment</h3>
             
-            <!-- Step Progress Indicator (3 Steps) -->
+            <!-- Step Progress Indicator (4 Steps) -->
             <div class="booking-steps-indicator">
               <div class="step-line">
                 <div class="step-line-active" id="step-progress-line"></div>
@@ -341,6 +341,10 @@
               </div>
               <div class="step-indicator-item" data-step="3">
                 <div class="step-number">3</div>
+                <div class="step-label">Payment</div>
+              </div>
+              <div class="step-indicator-item" data-step="4">
+                <div class="step-number">4</div>
                 <div class="step-label">Confirmation</div>
               </div>
             </div>
@@ -590,8 +594,82 @@
                 <input type="hidden" id="wizard-treatment-id" required>
               </div>
 
-              <!-- STEP 3: CONFIRMATION -->
+              <!-- STEP 3: PAYMENT METHOD -->
               <div class="wizard-step" id="wizard-step-3" style="display: none;">
+                <h4 style="margin: 0 0 6px 0; color: var(--accent); font-weight: 700;">Select Payment Method</h4>
+                <p style="font-size: 0.84rem; color: var(--text-muted); margin: 0 0 18px 0;">
+                  Choose your preferred payment method for this appointment.
+                </p>
+
+                <!-- Fee Summary Box -->
+                <div class="booking-fee-banner">
+                  <div class="fee-banner-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                  </div>
+                  <div class="fee-banner-info">
+                    <span class="fee-service-name" id="wizard-fee-service">Selected Dental Service</span>
+                    <span class="fee-sub">Total service fee to settle</span>
+                  </div>
+                  <div class="fee-banner-amount" id="wizard-fee-amount">
+                    ₱0.00
+                  </div>
+                </div>
+
+                <!-- Selectable Payment Cards -->
+                <div class="payment-method-selector-grid">
+                  <!-- Option 1: Pay Online Now via PayMongo (Default) -->
+                  <div class="payment-choice-card selected" id="choice-paymongo" data-method="paymongo" onclick="selectBookingPaymentMethod('paymongo')">
+                    <div class="choice-radio-wrap">
+                      <span class="choice-radio-dot"></span>
+                    </div>
+                    <div class="choice-card-content">
+                      <div class="choice-header-row">
+                        <span class="choice-title">Pay Online Now with PayMongo</span>
+                        <span class="choice-badge-green">Instant Checkout</span>
+                      </div>
+                      <p class="choice-desc">
+                        Pay securely using your preferred mobile wallet, online bank, or credit/debit card. Your payment receipt is verified instantly.
+                      </p>
+                      <div class="choice-channels-row">
+                        <span class="pms-chip gcash"><i class="fa-solid fa-wallet"></i> GCash</span>
+                        <span class="pms-chip maya"><i class="fa-solid fa-mobile-screen"></i> Maya</span>
+                        <span class="pms-chip cards"><i class="fa-solid fa-credit-card"></i> Visa / Mastercard</span>
+                        <span class="pms-chip billease"><i class="fa-solid fa-calendar-check"></i> BillEase</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Option 2: Pay at Clinic / Front Desk -->
+                  <div class="payment-choice-card" id="choice-clinic" data-method="clinic" onclick="selectBookingPaymentMethod('clinic')">
+                    <div class="choice-radio-wrap">
+                      <span class="choice-radio-dot"></span>
+                    </div>
+                    <div class="choice-card-content">
+                      <div class="choice-header-row">
+                        <span class="choice-title">Pay at Clinic / Front Desk</span>
+                        <span class="choice-badge-gray">Pay on Visit</span>
+                      </div>
+                      <p class="choice-desc">
+                        Settle at the receptionist counter upon arrival for your appointment. We accept Cash, GCash QR, or Clinic POS card swipe.
+                      </p>
+                      <div class="choice-channels-row">
+                        <span class="pms-chip counter"><i class="fa-solid fa-money-bill-wave"></i> Cash at Counter</span>
+                        <span class="pms-chip counter"><i class="fa-solid fa-cash-register"></i> Clinic POS Terminal</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <input type="hidden" id="wizard-payment-method" value="paymongo">
+
+                <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-top: 18px; font-size: 0.78rem; color: #64748b; display: flex; align-items: center; gap: 8px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  <span>Payments are processed in compliance with Bangko Sentral ng Pilipinas (BSP) security standards.</span>
+                </div>
+              </div>
+
+              <!-- STEP 4: CONFIRMATION -->
+              <div class="wizard-step" id="wizard-step-4" style="display: none;">
                 <h4 style="margin: 0 0 16px 0; color: var(--accent); font-weight: 700;">Confirm Appointment Summary</h4>
                 <div style="background: #f8fafc; border-radius: 14px; border: 1px solid var(--border); padding: 22px; margin-bottom: 20px;">
                   
@@ -606,12 +684,16 @@
                       <span id="summary-dentist" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">—</span>
                     </div>
                     <div>
-                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">🦷 Dental Service</strong>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">🦷 Dental Service &amp; Fee</strong>
                       <span id="summary-service" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">—</span>
                     </div>
                     <div>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">💳 Payment Method</strong>
+                      <span id="summary-payment-method" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">Pay Online with PayMongo</span>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
                       <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">📍 Assigned Clinic Branch</strong>
-                      <span id="summary-branch" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">Main Branch, Fano Dental Clinic</span>
+                      <span id="summary-branch" style="font-weight: 700; color: var(--text-primary); font-size: 1.02rem;">Main Branch, Fano Dental Clinic</span>
                     </div>
                   </div>
 
