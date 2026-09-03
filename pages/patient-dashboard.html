@@ -261,17 +261,29 @@
 
           <!-- Right Column: Appointments & Billing Previews -->
           <div class="overview-right-col" style="display: flex; flex-direction: column; gap: 22px;">
-            <!-- Upcoming Appointments Card -->
+            <!-- Upcoming Appointments & Past History Card -->
             <div class="card appointments-preview-card">
-              <div class="card-header">
-                <h3 class="card-title">Upcoming Appointments</h3>
-                <button class="card-action-btn" onclick="switchSection('appointments')">+ Book</button>
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <h3 class="card-title" style="margin: 0;">Visits</h3>
+                  <div class="mini-tab-pill-group">
+                    <button type="button" class="mini-tab-btn active" id="tab-btn-upcoming" onclick="toggleOverviewApptTab('upcoming')">Upcoming</button>
+                    <button type="button" class="mini-tab-btn" id="tab-btn-history" onclick="toggleOverviewApptTab('history')">Past History</button>
+                  </div>
+                </div>
+                <button class="card-action-btn" onclick="switchSection('records')">All Records →</button>
               </div>
               <div id="upcoming-appointments-list">
                 <div class="empty-state-sm">
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   <p>No upcoming appointments</p>
                   <button class="link-btn" onclick="switchSection('appointments')">Schedule one now →</button>
+                </div>
+              </div>
+              <div id="history-appointments-list" style="display: none;">
+                <div class="empty-state-sm">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+                  <p>No past visit history yet</p>
                 </div>
               </div>
             </div>
@@ -759,33 +771,104 @@
 
       </section>
 
-      <!-- ══════════ MY RECORDS SECTION ══════════ -->
+      <!-- ══════════ MY RECORDS & DENTAL HISTORY SECTION ══════════ -->
       <section id="records-section" class="content-section">
         <div class="section-header">
           <div>
-            <h1 class="section-title">Medical Records</h1>
-            <p class="section-subtitle">Your complete dental treatment history.</p>
+            <h1 class="section-title">Dental &amp; Medical History</h1>
+            <p class="section-subtitle">Your complete record of clinic visits, treatments, and clinical procedures.</p>
+          </div>
+          <button class="primary-btn" onclick="switchSection('appointments')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Book Next Visit
+          </button>
+        </div>
+
+        <!-- History Summary Metrics -->
+        <div class="stats-row" style="margin-bottom: 24px;">
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #eff6ff; color: #3b82f6;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Total Appointments</p>
+              <p class="stat-value" id="history-stat-total">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Completed Treatments</p>
+              <p class="stat-value" id="history-stat-completed">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #fdf4ff; color: #a855f7;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Total Treatment Value</p>
+              <p class="stat-value" id="history-stat-value">₱0.00</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #fff7ed; color: #f97316;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Upcoming Visits</p>
+              <p class="stat-value" id="history-stat-upcoming">0</p>
+            </div>
           </div>
         </div>
+
         <div class="card">
+          <!-- Filters & Search Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; gap: 10px; align-items: center; flex: 1; min-width: 260px;">
+              <div class="search-input-wrap" style="position: relative; flex: 1;">
+                <input type="text" id="history-search-input" onkeyup="filterPatientHistory()" placeholder="Search by treatment, dentist, or branch..." style="width: 100%; padding: 10px 14px 10px 36px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.86rem;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <label style="font-size: 0.82rem; font-weight: 700; color: #475569;">Filter Status:</label>
+              <select id="history-status-filter" onchange="filterPatientHistory()" style="padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; background: #fff; font-weight: 600;">
+                <option value="ALL">All Visits</option>
+                <option value="COMPLETED">Completed Only</option>
+                <option value="UPCOMING">Upcoming &amp; Confirmed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+          </div>
+
           <div class="table-wrapper">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Procedure</th>
-                  <th>Dentist</th>
-                  <th>Description</th>
-                  <th>Cost</th>
-                  <th>Status</th>
+                  <th style="width: 160px;">Visit Date &amp; Time</th>
+                  <th>Dental Treatment</th>
+                  <th>Attending Dentist &amp; Branch</th>
+                  <th>Chief Concern &amp; Alerts</th>
+                  <th style="width: 130px;">Treatment Fee</th>
+                  <th style="width: 130px;">Visit Status</th>
+                  <th style="width: 110px;">Action</th>
                 </tr>
               </thead>
               <tbody id="records-table-body">
                 <tr>
-                  <td colspan="6" class="empty-table-row">No medical records found.</td>
+                  <td colspan="7" class="empty-table-row">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Loading treatment history...
+                  </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div style="padding: 14px 18px 0 18px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); font-size: 0.82rem; color: #64748b; flex-wrap: wrap; gap: 8px;">
+            <span id="history-count-info">Showing 0 visits</span>
+            <span>Click "View Details" on any record to view full intake notes &amp; clinical alerts.</span>
           </div>
         </div>
       </section>

@@ -3454,4 +3454,86 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 .pms-chip.billease { background: #fef3c7; color: #92400e; border-color: #fde68a; }
 .pms-chip.counter { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
 
+/* ═════════════════════ DENTAL & MEDICAL HISTORY ═════════════════════ */
+.mini-tab-pill-group {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.mini-tab-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 11px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #64748b;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mini-tab-btn.active {
+  background: #ffffff;
+  color: var(--accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.history-treatment-title {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.history-dentist-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-dentist-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.history-branch-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.history-fee-amount {
+  font-weight: 800;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.history-payment-status {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.history-payment-status.paid { color: #16a34a; }
+.history-payment-status.unpaid { color: #dc2626; }
+
+.history-concern-tag {
+  display: inline-block;
+  background: #f8fafc;
+  border: 1px solid var(--border-light);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  color: #475569;
+}
+
 

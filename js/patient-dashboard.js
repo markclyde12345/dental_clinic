@@ -283,7 +283,10 @@ function loadAppointments() {
     allAppointments = data;
     renderAppointmentStats();
     renderUpcomingPreview();
+    renderOverviewHistoryPreview();
     renderAppointmentsFullList();
+    renderPatientHistoryRecords();
+    updateHistoryStats();
   })
   .catch(err => console.error('Appointments error:', err));
 }
@@ -352,6 +355,228 @@ function renderUpcomingPreview() {
   }).join('');
 }
 
+// ─── Overview Appointments Tab Toggle (Upcoming vs Past History) ───
+function toggleOverviewApptTab(tab) {
+  const btnUpcoming = document.getElementById('tab-btn-upcoming');
+  const btnHistory = document.getElementById('tab-btn-history');
+  const listUpcoming = document.getElementById('upcoming-appointments-list');
+  const listHistory = document.getElementById('history-appointments-list');
+
+  if (tab === 'upcoming') {
+    btnUpcoming?.classList.add('active');
+    btnHistory?.classList.remove('active');
+    if (listUpcoming) listUpcoming.style.display = 'block';
+    if (listHistory) listHistory.style.display = 'none';
+  } else {
+    btnHistory?.classList.add('active');
+    btnUpcoming?.classList.remove('active');
+    if (listUpcoming) listUpcoming.style.display = 'none';
+    if (listHistory) listHistory.style.display = 'block';
+    renderOverviewHistoryPreview();
+  }
+}
+
+function renderOverviewHistoryPreview() {
+  const container = document.getElementById('history-appointments-list');
+  if (!container) return;
+
+  const now = new Date();
+  const pastAppts = allAppointments
+    .filter(a => a.status === 'Completed' || new Date(a.appointment_date || a.dateTime) <= now)
+    .sort((a, b) => new Date(b.appointment_date || b.dateTime) - new Date(a.appointment_date || a.dateTime))
+    .slice(0, 3);
+
+  if (pastAppts.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state-sm">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        <p>No past visit history yet</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = pastAppts.map(appt => {
+    const d = new Date(appt.appointment_date || appt.dateTime);
+    const month = d.toLocaleString('en-US', { month: 'short' });
+    const day = d.getDate();
+    const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const treatmentName = appt.treatment?.name || appt.reason || 'Dental Visit';
+    const statusClass = (appt.status || 'completed').toLowerCase();
+
+    return `
+      <div class="appt-preview-item" onclick="openAppointmentDetailsModal('${appt.id}')" title="Click to view full visit details">
+        <div class="appt-date-block">
+          <span class="adb-month">${month}</span>
+          <span class="adb-day">${day}</span>
+        </div>
+        <div class="appt-info">
+          <div class="appt-treatment">${escapeHTML(treatmentName)}</div>
+          <div class="appt-time">${time}</div>
+        </div>
+        <span class="status-pill ${statusClass}">${appt.status || 'Completed'}</span>
+        <button type="button" class="btn-view-appt" onclick="event.stopPropagation(); openAppointmentDetailsModal('${appt.id}')">
+          View →
+        </button>
+      </div>`;
+  }).join('');
+}
+
+// ─── Dental & Medical History (My Records) ───────────────────────────
+function updateHistoryStats() {
+  const total = allAppointments.length;
+  const completed = allAppointments.filter(a => a.status === 'Completed').length;
+  const upcoming = allAppointments.filter(a => a.status !== 'Cancelled' && new Date(a.appointment_date || a.dateTime) > new Date()).length;
+  
+  let totalValue = 0;
+  allAppointments.forEach(a => {
+    if (a.status !== 'Cancelled') {
+      const price = a.treatment?.price ? parseFloat(a.treatment.price) : 0;
+      totalValue += price;
+    }
+  });
+
+  safeSet('history-stat-total', total);
+  safeSet('history-stat-completed', completed);
+  safeSet('history-stat-upcoming', upcoming);
+  safeSet('history-stat-value', `₱${totalValue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`);
+}
+
+function filterPatientHistory() {
+  const query = (document.getElementById('history-search-input')?.value || '').toLowerCase().trim();
+  const statusFilter = document.getElementById('history-status-filter')?.value || 'ALL';
+
+  const filtered = allAppointments.filter(appt => {
+    const treatmentName = (appt.treatment?.name || appt.reason || '').toLowerCase();
+    const notes = (appt.notes || '').toLowerCase();
+    const status = (appt.status || '').toUpperCase();
+
+    if (query) {
+      if (!treatmentName.includes(query) && !notes.includes(query)) return false;
+    }
+
+    if (statusFilter === 'COMPLETED' && status !== 'COMPLETED') return false;
+    if (statusFilter === 'CANCELLED' && status !== 'CANCELLED') return false;
+    if (statusFilter === 'UPCOMING') {
+      const isFuture = new Date(appt.appointment_date || appt.dateTime) > new Date();
+      if (!isFuture || status === 'CANCELLED' || status === 'COMPLETED') return false;
+    }
+
+    return true;
+  });
+
+  renderPatientHistoryRecords(filtered);
+}
+
+function renderPatientHistoryRecords(list = null) {
+  const tbody = document.getElementById('records-table-body');
+  const countInfo = document.getElementById('history-count-info');
+  if (!tbody) return;
+
+  const dataset = list !== null ? list : allAppointments;
+
+  if (!dataset || dataset.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="empty-table-row">
+          <div style="padding: 28px; text-align: center;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 8px; color: #94a3b8;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <p style="margin: 0; font-weight: 600; color: #64748b;">No dental visit records found.</p>
+          </div>
+        </td>
+      </tr>`;
+    if (countInfo) countInfo.textContent = 'Showing 0 visits';
+    return;
+  }
+
+  const sorted = [...dataset].sort((a, b) => 
+    new Date(b.appointment_date || b.dateTime) - new Date(a.appointment_date || a.dateTime)
+  );
+
+  tbody.innerHTML = sorted.map(appt => {
+    const d = new Date(appt.appointment_date || appt.dateTime);
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const treatmentName = appt.treatment?.name || appt.reason || 'Dental Consultation';
+    const priceVal = appt.treatment?.price ? parseFloat(appt.treatment.price) : 0;
+    const priceStr = `₱${priceVal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
+
+    const rawNotes = appt.notes || '';
+    let dentistName = 'Staff Specialist';
+    let branchName = 'Main Branch';
+    let concern = 'General Dental Care';
+
+    const branchMatch = rawNotes.match(/\[Branch:\s*([^\]]+)\]/i);
+    if (branchMatch) branchName = branchMatch[1].split('—')[0].trim();
+
+    const dentistMatch = rawNotes.match(/\[Dentist:\s*([^\]]+)\]/i);
+    if (dentistMatch && dentistMatch[1] !== 'No Preference') dentistName = dentistMatch[1];
+
+    const concernMatch = rawNotes.match(/\[Concern:\s*([^\]]+)\]/i);
+    if (concernMatch) concern = concernMatch[1];
+
+    const inv = (allInvoices || []).find(i => i.appointment_id === appt.id);
+    let paymentBadge = '';
+    if (inv) {
+      if (inv.status === 'Paid') {
+        paymentBadge = `<span class="history-payment-status paid"><i class="fa-solid fa-check"></i> Paid</span>`;
+      } else if (inv.status === 'Written Off') {
+        paymentBadge = `<span class="history-payment-status" style="color: #64748b;"><i class="fa-solid fa-ban"></i> Written Off</span>`;
+      } else {
+        paymentBadge = `<span class="history-payment-status unpaid"><i class="fa-solid fa-clock"></i> Unpaid</span>`;
+      }
+    } else {
+      paymentBadge = `<span class="history-payment-status" style="color: #64748b;">Pending Invoice</span>`;
+    }
+
+    const s = appt.status || 'Pending';
+    let statusClass = 'pending';
+    if (s === 'Completed') statusClass = 'completed';
+    else if (s === 'Cancelled') statusClass = 'cancelled';
+    else if (s === 'Approved' || s === 'Confirmed') statusClass = 'approved';
+    else if (s === 'In Progress' || s === 'Checked In') statusClass = 'in-progress';
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight: 700; color: var(--text-primary); font-size: 0.88rem;">${dateStr}</div>
+          <div style="font-size: 0.76rem; color: #64748b;"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
+        </td>
+        <td>
+          <div class="history-treatment-title">
+            <i class="fa-solid fa-tooth" style="color: var(--primary-color);"></i>
+            <span>${escapeHTML(treatmentName)}</span>
+          </div>
+          <span class="ref-pill" style="font-size: 0.7rem; margin-top: 3px; display: inline-block;">#${appt.id ? appt.id.substring(0, 8).toUpperCase() : '--'}</span>
+        </td>
+        <td>
+          <div class="history-dentist-row">
+            <span class="history-dentist-name"><i class="fa-solid fa-user-doctor" style="color: #0284c7; font-size: 0.75rem;"></i> ${escapeHTML(dentistName)}</span>
+            <span class="history-branch-pill"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(branchName)}</span>
+          </div>
+        </td>
+        <td>
+          <span class="history-concern-tag">${escapeHTML(concern)}</span>
+        </td>
+        <td>
+          <div class="history-fee-amount">${priceStr}</div>
+          ${paymentBadge}
+        </td>
+        <td>
+          <span class="status-pill ${statusClass}">${s}</span>
+        </td>
+        <td>
+          <button type="button" class="btn-view-appt" onclick="openAppointmentDetailsModal('${appt.id}')" title="View appointment clinical sheet and details" style="padding: 5px 10px; font-size: 0.78rem;">
+            Details →
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  if (countInfo) {
+    countInfo.textContent = `Showing ${sorted.length} visit record${sorted.length !== 1 ? 's' : ''}`;
+  }
+}
+
 function renderAppointmentsFullList() {
   const container = document.getElementById('appointments-list-full');
   if (!container) return;
@@ -408,6 +633,7 @@ function loadInvoices() {
     renderFinancialWidgets();
     renderInvoicesPreview();
     renderInvoicesTable();
+    renderPatientHistoryRecords();
     checkDelinquentBookingLock();
   })
   .catch(err => console.error('Invoices error:', err));
