@@ -66,6 +66,7 @@ function initDashboard() {
   loadTreatments();
   setupBookingWizard();
   setupSettings();
+  checkPaymentReturnStatus();
 }
 
 // ─── Settings ────────────────────────────────────────────────
@@ -558,9 +559,11 @@ function renderInvoicesPreview() {
           <div class="inv-id">#${inv.id.slice(0, 8).toUpperCase()}</div>
           <div class="inv-date">${date}</div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
           <span class="inv-amount">₱${amount}</span>
-          <span class="status-pill ${isPaid ? 'confirmed' : 'pending'}">${isPaid ? 'Paid' : 'Unpaid'}</span>
+          ${isPaid 
+            ? `<span class="status-pill confirmed">Paid</span>` 
+            : `<button class="btn-paymongo-mini" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, Card)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Pay</button>`}
         </div>
       </div>`;
   }).join('');
@@ -571,7 +574,7 @@ function renderInvoicesTable() {
   if (!tbody) return;
 
   if (allInvoices.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-table-row">No invoices found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-table-row">No invoices found.</td></tr>`;
     return;
   }
 
@@ -586,17 +589,188 @@ function renderInvoicesTable() {
     const paidAt = inv.paid_at ? new Date(inv.paid_at).toLocaleDateString() : '—';
     const statusClass = isPaid ? 'confirmed' : 'pending';
     const statusLabel = inv.status || (isPaid ? 'Paid' : 'Unpaid');
-    const service = inv.appointment?.treatment?.name || '—';
+    const service = inv.appointment?.treatment?.name || inv.treatment_name || 'Dental Consultation';
+    const refId = inv.id.slice(0, 8).toUpperCase();
+
+    let actionButton = '';
+    if (!isPaid) {
+      actionButton = `
+        <button class="btn-paymongo" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, GrabPay, Card)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <span>Pay with PayMongo</span>
+        </button>
+      `;
+    } else {
+      actionButton = `
+        <button class="btn-receipt-view" onclick="viewInvoiceReceipt('${inv.id}')" title="View & Print Official Receipt">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          <span>Receipt</span>
+        </button>
+      `;
+    }
+
     return `
       <tr>
-        <td><strong>#${inv.id.slice(0, 8).toUpperCase()}</strong></td>
+        <td><strong>#${refId}</strong></td>
         <td>${issued}</td>
-        <td>${service}</td>
-        <td style="font-weight:700;">₱${amount}</td>
+        <td>${escapeHTML(service)}</td>
+        <td style="font-weight:700; color: #0b3c4d;">₱${amount}</td>
         <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
         <td>${paidAt}</td>
+        <td style="text-align: right;">${actionButton}</td>
       </tr>`;
   }).join('');
+}
+
+// ─── PayMongo Payment Integration ──────────────────────────────
+let activePaymentInvoice = null;
+
+function openPaymongoModal(invoiceId) {
+  const inv = allInvoices.find(i => i.id === invoiceId);
+  if (!inv) {
+    showToast('Invoice not found', 'error');
+    return;
+  }
+
+  activePaymentInvoice = inv;
+  const amount = parseFloat(inv.amount || inv.total_amount || 0).toFixed(2);
+  const refId = inv.id.slice(0, 8).toUpperCase();
+  const serviceName = inv.appointment?.treatment?.name || inv.treatment_name || 'Dental Consultation / Service';
+
+  safeSet('pm-invoice-ref', `Invoice #${refId}`);
+  safeSet('pm-invoice-service', serviceName);
+  safeSet('pm-invoice-amount', `₱${amount}`);
+  safeSet('pm-active-invoice-id', inv.id);
+
+  const modal = document.getElementById('modal-paymongo-checkout');
+  if (modal) {
+    modal.classList.add('active');
+  }
+}
+
+function closePaymongoModal() {
+  const modal = document.getElementById('modal-paymongo-checkout');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+  activePaymentInvoice = null;
+}
+
+function executePayMongoCheckout() {
+  if (!activePaymentInvoice) return;
+
+  const btn = document.getElementById('btn-proceed-paymongo');
+  const btnText = document.getElementById('btn-paymongo-text');
+  const originalText = btnText ? btnText.textContent : 'Proceed to Checkout';
+
+  if (btn) btn.disabled = true;
+  if (btnText) btnText.textContent = 'Connecting to PayMongo...';
+
+  apiFetch('/payments/paymongo/checkout', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      invoice_id: activePaymentInvoice.id
+    })
+  })
+  .then(data => {
+    if (data.mode === 'live' && data.checkout_url) {
+      // Live PayMongo Checkout Session
+      showToast('Redirecting to PayMongo secure payment page...', 'success');
+      closePaymongoModal();
+      window.location.href = data.checkout_url;
+    } else {
+      // Sandbox mode simulation
+      showToast('PayMongo Gateway connected! Confirming payment...', 'success');
+      return apiFetch('/payments/paymongo/verify', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          invoice_id: activePaymentInvoice.id,
+          checkout_id: data.checkout_id || 'sandbox_test'
+        })
+      });
+    }
+  })
+  .then(res => {
+    if (res && res.success) {
+      showToast('Payment verified successfully!', 'success');
+      const paidInvId = activePaymentInvoice.id;
+      closePaymongoModal();
+      loadInvoices();
+      viewInvoiceReceipt(paidInvId);
+    }
+  })
+  .catch(err => {
+    console.error('[PayMongo Checkout Error]', err);
+    showToast(err.message || 'Error communicating with PayMongo gateway.', 'error');
+  })
+  .finally(() => {
+    if (btn) btn.disabled = false;
+    if (btnText) btnText.textContent = originalText;
+  });
+}
+
+function viewInvoiceReceipt(invoiceId) {
+  const inv = allInvoices.find(i => i.id === invoiceId);
+  if (!inv) return;
+
+  const amount = parseFloat(inv.amount || inv.total_amount || 0).toFixed(2);
+  const refId = inv.id.slice(0, 8).toUpperCase();
+  const dateStr = inv.paid_at 
+    ? new Date(inv.paid_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  safeSet('receipt-inv-id', `#${refId}`);
+  safeSet('receipt-inv-amount', `₱${amount}`);
+  safeSet('receipt-inv-date', dateStr);
+
+  const modal = document.getElementById('modal-payment-receipt');
+  if (modal) {
+    modal.classList.add('active');
+  }
+}
+
+function closeReceiptModal() {
+  const modal = document.getElementById('modal-payment-receipt');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+}
+
+function checkPaymentReturnStatus() {
+  const params = new URLSearchParams(window.location.search);
+  const paymentStatus = params.get('payment');
+  const invoiceId = params.get('invoice_id');
+
+  if (paymentStatus === 'success' && invoiceId) {
+    showToast('PayMongo payment completed! Updating your records...', 'success');
+    apiFetch('/payments/paymongo/verify', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ invoice_id: invoiceId })
+    })
+    .then(res => {
+      loadInvoices();
+      viewInvoiceReceipt(invoiceId);
+    })
+    .catch(err => console.error('[Return Verification Error]', err));
+
+    // Clear URL query parameters cleanly
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (paymentStatus === 'cancelled') {
+    showToast('PayMongo payment session was cancelled. You can complete it anytime.', 'error');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 }
 
 // ─── Load Treatments (for booking wizard) ──────────────────

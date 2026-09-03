@@ -708,11 +708,12 @@
                   <th>Amount</th>
                   <th>Status</th>
                   <th>Paid At</th>
+                  <th style="text-align: right; min-width: 170px;">Payment &amp; Actions</th>
                 </tr>
               </thead>
               <tbody id="invoices-table-body">
                 <tr>
-                  <td colspan="6" class="empty-table-row">No invoices found.</td>
+                  <td colspan="7" class="empty-table-row">No invoices found.</td>
                 </tr>
               </tbody>
             </table>
@@ -1026,6 +1027,135 @@
           <button type="button" class="btn-action-util" onclick="printAppointmentSlip()" title="Print Appointment Voucher">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             Print Slip
+          </button>
+        </div>
+      </div>
+    </div>
+  <!-- ══════════ PAYMONGO PAYMENT CHECKOUT MODAL ══════════ -->
+  <div class="modal-overlay" id="modal-paymongo-checkout">
+    <div class="modal-card paymongo-modal-card">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="paymongo-logo-badge">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title" style="margin: 0; font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">Pay with PayMongo</h3>
+            <span style="font-size: 0.76rem; color: var(--text-muted);">Secure Online Healthcare Payment Gateway</span>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closePaymongoModal()" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-body" id="paymongo-modal-body">
+        <!-- Invoice Summary Card -->
+        <div class="paymongo-bill-card">
+          <div class="pbc-header">
+            <span class="pbc-ref" id="pm-invoice-ref">Invoice #--------</span>
+            <span class="pbc-status-pill">Unpaid</span>
+          </div>
+          <div class="pbc-service" id="pm-invoice-service">Dental Treatment / Consultation</div>
+          <div class="pbc-amount-wrap">
+            <span class="pbc-amount-label">Total Amount Due</span>
+            <span class="pbc-amount-value" id="pm-invoice-amount">₱0.00</span>
+          </div>
+        </div>
+
+        <!-- Accepted Payment Methods Bar -->
+        <div class="payment-methods-showcase">
+          <span class="pms-label">Supported Payment Channels</span>
+          <div class="pms-badges-grid">
+            <div class="pm-channel-badge badge-gcash" title="GCash E-Wallet">
+              <span class="pm-channel-dot"></span>
+              <strong>GCash</strong>
+            </div>
+            <div class="pm-channel-badge badge-maya" title="Maya (PayMaya)">
+              <span class="pm-channel-dot"></span>
+              <strong>Maya</strong>
+            </div>
+            <div class="pm-channel-badge badge-card" title="Visa / Mastercard / JCB">
+              <span class="pm-channel-dot"></span>
+              <strong>Debit / Credit Card</strong>
+            </div>
+            <div class="pm-channel-badge badge-grabpay" title="GrabPay E-Wallet">
+              <span class="pm-channel-dot"></span>
+              <strong>GrabPay</strong>
+            </div>
+            <div class="pm-channel-badge badge-billease" title="BillEase / Buy Now Pay Later">
+              <span class="pm-channel-dot"></span>
+              <strong>BillEase</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security & Compliance Info -->
+        <div class="paymongo-security-note">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div>
+            <strong>BSP-Regulated &amp; 256-bit Encrypted Checkout</strong>
+            <p>You will be securely redirected to PayMongo's official Philippine payment checkout page to select your preferred channel and complete payment.</p>
+          </div>
+        </div>
+
+        <!-- Hidden ID trackers -->
+        <input type="hidden" id="pm-active-invoice-id" value="">
+        <input type="hidden" id="pm-active-checkout-id" value="">
+      </div>
+
+      <div class="modal-actions-footer">
+        <div class="paymongo-action-buttons">
+          <button type="button" class="secondary-btn" onclick="closePaymongoModal()" style="min-width: 110px;">Cancel</button>
+          <button type="button" class="primary-btn btn-paymongo-submit" id="btn-proceed-paymongo" onclick="executePayMongoCheckout()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="btn-paymongo-text">Proceed to Checkout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PAYMENT RECEIPT & SUCCESS MODAL ══════════ -->
+  <div class="modal-overlay" id="modal-payment-receipt">
+    <div class="modal-card receipt-modal-card">
+      <div class="receipt-success-banner">
+        <div class="receipt-check-circle">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3 class="receipt-title">Payment Received!</h3>
+        <p class="receipt-subtitle">Thank you. Your dental appointment invoice has been successfully settled.</p>
+      </div>
+
+      <div class="modal-body" id="receipt-modal-body">
+        <div class="receipt-details-card">
+          <div class="receipt-row">
+            <span class="rc-label">Invoice Number</span>
+            <strong class="rc-val" id="receipt-inv-id">#--------</strong>
+          </div>
+          <div class="receipt-row">
+            <span class="rc-label">Amount Paid</span>
+            <strong class="rc-val text-green" id="receipt-inv-amount">₱0.00</strong>
+          </div>
+          <div class="receipt-row">
+            <span class="rc-label">Payment Gateway</span>
+            <span class="rc-val">PayMongo (Online / E-Wallet)</span>
+          </div>
+          <div class="receipt-row">
+            <span class="rc-label">Payment Date</span>
+            <span class="rc-val" id="receipt-inv-date">—</span>
+          </div>
+          <div class="receipt-row">
+            <span class="rc-label">Status</span>
+            <span class="status-pill confirmed"><i class="fa-solid fa-check"></i> Paid</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions-footer">
+        <div style="display: flex; gap: 10px; width: 100%;">
+          <button type="button" class="secondary-btn" onclick="closeReceiptModal()" style="flex: 1; justify-content: center;">Close</button>
+          <button type="button" class="primary-btn" onclick="window.print()" style="flex: 1; justify-content: center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print Receipt
           </button>
         </div>
       </div>

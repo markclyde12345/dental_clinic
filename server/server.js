@@ -159,6 +159,7 @@ app.use('/api/hmo-claims', require('./routes/hmoRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/dentist', require('./routes/dentistRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
 
 // ─── Static Files ─────────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../')));
