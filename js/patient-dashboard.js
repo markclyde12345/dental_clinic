@@ -66,6 +66,8 @@ function initDashboard() {
   loadTreatments();
   setupBookingWizard();
   setupSettings();
+  setupPatientNotifications();
+  loadPatientNotifications();
   checkPaymentReturnStatus();
 }
 
@@ -2500,3 +2502,195 @@ function logout() {
   sessionStorage.removeItem('userInfo');
   window.location.replace('login.html');
 }
+
+// ═══════════════════════════════════════════════════════════
+//  PATIENT NOTIFICATION CENTER LOGIC
+// ═══════════════════════════════════════════════════════════
+
+let allPatientNotifications = [];
+
+function setupPatientNotifications() {
+  const toggleBtn = document.getElementById('btn-patient-notif');
+  const dropdown = document.getElementById('patient-notif-dropdown');
+
+  if (toggleBtn && dropdown) {
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.hidden = !dropdown.hidden;
+      if (!dropdown.hidden) {
+        loadPatientNotifications();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropdown.hidden && !dropdown.contains(e.target) && !toggleBtn.contains(e.target)) {
+        dropdown.hidden = true;
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !dropdown.hidden) {
+        dropdown.hidden = true;
+      }
+    });
+  }
+}
+
+function getReadNotificationIds() {
+  try {
+    const key = user ? `patient_read_notifs_${user.id}` : 'patient_read_notifs_guest';
+    const stored = localStorage.getItem(key);
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  } catch (_) {
+    return new Set();
+  }
+}
+
+function saveReadNotificationId(id) {
+  try {
+    const key = user ? `patient_read_notifs_${user.id}` : 'patient_read_notifs_guest';
+    const readSet = getReadNotificationIds();
+    readSet.add(id);
+    localStorage.setItem(key, JSON.stringify([...readSet]));
+  } catch (_) {}
+}
+
+function loadPatientNotifications(isManual = false) {
+  const badge = document.getElementById('patient-notif-count');
+  const unreadLabel = document.getElementById('pnd-unread-label');
+  const list = document.getElementById('patient-notif-list');
+
+  apiFetch('/notifications', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+  .then(notifs => {
+    if (!Array.isArray(notifs)) return;
+    allPatientNotifications = notifs;
+    const readSet = getReadNotificationIds();
+    const unreadCount = notifs.filter(n => !readSet.has(n.id)).length;
+
+    // Update badge & header
+    if (badge) {
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    if (unreadLabel) {
+      unreadLabel.textContent = `${unreadCount} New`;
+    }
+
+    // Render list
+    if (list) {
+      if (notifs.length === 0) {
+        list.innerHTML = `
+          <div class="pnd-empty">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <p>You have no notifications right now.</p>
+          </div>
+        `;
+      } else {
+        list.innerHTML = notifs.map(n => {
+          const isUnread = !readSet.has(n.id);
+          const timeStr = formatNotificationTime(n.time);
+          const iconSvg = getNotificationIconSvg(n.icon, n.type);
+
+          return `
+            <div class="pnd-item ${isUnread ? 'unread' : ''}" onclick="onPatientNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.id || ''}', '${n.action?.tab || ''}')">
+              <div class="pnd-icon-wrap type-${n.type || 'info'}">
+                ${iconSvg}
+              </div>
+              <div class="pnd-content">
+                <div class="pnd-title">${escapeHTML(n.title)}</div>
+                <div class="pnd-desc">${escapeHTML(n.message)}</div>
+                <span class="pnd-time">${timeStr}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    if (isManual) {
+      showToast('Notifications refreshed', 'success');
+    }
+  })
+  .catch(err => {
+    console.error('Failed to load notifications:', err);
+  });
+}
+
+function onPatientNotificationClick(notifId, actionType, actionTarget, actionTab) {
+  saveReadNotificationId(notifId);
+
+  // Close dropdown
+  const dropdown = document.getElementById('patient-notif-dropdown');
+  if (dropdown) dropdown.hidden = true;
+
+  // Execute associated action
+  if (actionType === 'view_appointment' && actionTarget) {
+    openAppointmentDetailsModal(actionTarget);
+  } else if (actionType === 'view_receipt' && actionTarget) {
+    viewInvoiceReceipt(actionTarget);
+  } else if (actionType === 'pay_invoice' && actionTarget) {
+    openPaymongoModal(actionTarget);
+  } else if (actionType === 'book_now') {
+    switchSection('appointments');
+  } else if (actionType === 'switch_tab' && actionTab) {
+    switchSection(actionTab);
+  }
+
+  // Refresh badges & read states
+  loadPatientNotifications();
+}
+
+function markAllPatientNotificationsRead() {
+  try {
+    const key = user ? `patient_read_notifs_${user.id}` : 'patient_read_notifs_guest';
+    const allIds = allPatientNotifications.map(n => n.id);
+    localStorage.setItem(key, JSON.stringify(allIds));
+    loadPatientNotifications();
+    showToast('All notifications marked as read', 'success');
+  } catch (_) {}
+}
+
+function formatNotificationTime(isoStr) {
+  if (!isoStr) return 'Just now';
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return 'Recently';
+
+  const now = Date.now();
+  const diffMinutes = Math.floor((now - d.getTime()) / 60000);
+
+  if (diffMinutes < 1) return 'Just now';
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function getNotificationIconSvg(iconName, type) {
+  if (iconName === 'calendar-check' || iconName === 'calendar-plus') {
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>`;
+  }
+  if (iconName === 'receipt' || iconName === 'credit-card') {
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`;
+  }
+  if (iconName === 'circle-check') {
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 10 10 16 7 13"/></svg>`;
+  }
+  if (iconName === 'circle-xmark') {
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+  }
+  if (iconName === 'chair' || iconName === 'user-doctor') {
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  }
+  return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+}
+

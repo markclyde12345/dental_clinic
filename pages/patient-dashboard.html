@@ -120,10 +120,38 @@
         </div>
         <div class="header-right">
           <span class="header-date" id="header-date"></span>
-          <button class="notif-btn" aria-label="Notifications">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            <span class="notif-dot"></span>
-          </button>
+          <!-- Patient Notification Center -->
+          <div class="notif-wrapper" id="patient-notif-wrapper">
+            <button type="button" class="notif-btn" id="btn-patient-notif" aria-label="Notifications" title="View Notifications">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="notif-badge" id="patient-notif-count" style="display: none;">0</span>
+            </button>
+            <div class="patient-notif-dropdown" id="patient-notif-dropdown" hidden>
+              <div class="pnd-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Notifications</h4>
+                  <span class="pnd-unread-pill" id="pnd-unread-label">0 New</span>
+                </div>
+                <button type="button" class="pnd-mark-read-btn" id="patient-mark-all-read" onclick="markAllPatientNotificationsRead()">Mark all read</button>
+              </div>
+              <div class="pnd-list" id="patient-notif-list">
+                <div class="pnd-empty">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  <p>Loading notifications...</p>
+                </div>
+              </div>
+              <div class="pnd-footer">
+                <button type="button" class="pnd-footer-action" onclick="loadPatientNotifications(true)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  <span>Refresh Alerts</span>
+                </button>
+                <button type="button" class="pnd-footer-action" onclick="switchSection('settings')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Preferences</span>
+                </button>
+              </div>
+            </div>
+          </div>
           <button class="quick-book-btn" id="quick-book-btn" style="background: var(--primary-color); color: #ffffff;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Book Appointment

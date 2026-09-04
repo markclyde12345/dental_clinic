@@ -58,6 +58,7 @@ async function initDashboard() {
   // Load initial data
   await loadOverview();
   await loadNotifications();
+  setInterval(() => loadNotifications(), 30000);
 }
 
 // ─── User Profile Setup ──────────────────────────────────────────
@@ -1359,27 +1360,89 @@ function handleSaveProfile(e) {
 window.handleSaveProfile = handleSaveProfile;
 
 // ─── 12. NOTIFICATIONS & QUICK ACTION ───────────────────────────
+let dentistNotificationsList = [];
+const DENTIST_READ_NOTIFS_KEY = 'dentist_read_notif_ids';
+
+function getDentistReadNotifIds() {
+  try {
+    const raw = localStorage.getItem(DENTIST_READ_NOTIFS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function saveDentistReadNotifIds(ids) {
+  try {
+    localStorage.setItem(DENTIST_READ_NOTIFS_KEY, JSON.stringify(ids));
+  } catch (_) {}
+}
+
 async function loadNotifications() {
   try {
     const notifs = await api.getDentistNotifications();
+    dentistNotificationsList = Array.isArray(notifs) ? notifs : [];
     const listEl = document.getElementById('notif-list');
     const badgeEl = document.getElementById('notif-badge-count');
 
-    if (badgeEl) badgeEl.textContent = notifs.filter(n => !n.read).length || '0';
+    const readIds = getDentistReadNotifIds();
+    const unreadCount = dentistNotificationsList.filter(n => !readIds.includes(n.id)).length;
+
+    if (badgeEl) {
+      badgeEl.textContent = unreadCount > 9 ? '9+' : unreadCount;
+      badgeEl.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+    }
+
     if (listEl) {
-      if (!notifs.length) {
-        listEl.innerHTML = `<div class="muted small" style="text-align:center; padding:10px;">No new alerts.</div>`;
+      if (!dentistNotificationsList.length) {
+        listEl.innerHTML = `<div class="muted small" style="text-align:center; padding:16px; color:#94a3b8;">No new clinical alerts.</div>`;
       } else {
-        listEl.innerHTML = notifs.map(n => `
-          <div class="notif-item ${n.read ? '' : 'unread'}">
-            <div class="notif-title">${esc(n.title)}</div>
-            <div>${esc(n.message)}</div>
-            <div class="notif-time">${new Date(n.time).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}</div>
-          </div>
-        `).join('');
+        listEl.innerHTML = dentistNotificationsList.map((n, idx) => {
+          const isUnread = !readIds.includes(n.id);
+          const timeStr = formatDentistNotifTime(n.time);
+          return `
+            <div class="notif-item ${isUnread ? 'unread' : ''}" style="cursor:pointer;" onclick="onDentistNotifClick('${esc(n.id)}', ${idx})">
+              <div class="notif-title" style="font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+                <span>${esc(n.title)}</span>
+                ${isUnread ? '<span style="width:7px;height:7px;border-radius:50%;background:#0284c7;display:inline-block;"></span>' : ''}
+              </div>
+              <div style="font-size:0.82rem; color:#64748b; margin-top:2px;">${esc(n.message)}</div>
+              <div class="notif-time" style="font-size:0.72rem; color:#94a3b8; margin-top:4px;">${timeStr}</div>
+            </div>
+          `;
+        }).join('');
       }
     }
   } catch (_) {}
+}
+window.loadNotifications = loadNotifications;
+
+function onDentistNotifClick(notifId, idx) {
+  const readIds = getDentistReadNotifIds();
+  if (!readIds.includes(notifId)) {
+    readIds.push(notifId);
+    saveDentistReadNotifIds(readIds);
+  }
+
+  const dropdown = document.getElementById('notif-dropdown');
+  if (dropdown) dropdown.hidden = true;
+
+  loadNotifications();
+
+  // Route to clinical schedule tab
+  switchTab('schedule');
+}
+window.onDentistNotifClick = onDentistNotifClick;
+
+function formatDentistNotifTime(timeStr) {
+  if (!timeStr) return 'Just now';
+  const d = new Date(timeStr);
+  if (isNaN(d.getTime())) return 'Recently';
+  const diffSec = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (diffSec < 60) return 'Just now';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function setupNotifDropdown() {
@@ -1391,15 +1454,19 @@ function setupNotifDropdown() {
     toggle.addEventListener('click', (e) => {
       e.stopPropagation();
       dropdown.hidden = !dropdown.hidden;
+      if (!dropdown.hidden) {
+        loadNotifications();
+      }
     });
     document.addEventListener('click', () => { dropdown.hidden = true; });
   }
 
   if (markRead) {
-    markRead.addEventListener('click', () => {
-      document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('unread'));
-      const badgeEl = document.getElementById('notif-badge-count');
-      if (badgeEl) badgeEl.textContent = '0';
+    markRead.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const allIds = dentistNotificationsList.map(n => n.id);
+      saveDentistReadNotifIds(allIds);
+      loadNotifications();
     });
   }
 }

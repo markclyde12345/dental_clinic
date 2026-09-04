@@ -161,6 +161,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/dentist', require('./routes/dentistRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/audit-logs', require('./routes/auditLogRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // ─── Static Files ─────────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../')));

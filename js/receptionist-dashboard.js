@@ -97,13 +97,9 @@ function setupUserInterface() {
     });
   });
 
-  // Set default book date to today
-  const bookDateInput = document.getElementById('book-date');
-  if (bookDateInput) {
-    const today = new Date().toISOString().split('T')[0];
-    bookDateInput.value = today;
-    bookDateInput.min = today;
-  }
+  // Setup Receptionist Notifications
+  setupReceptionistNotifications();
+  loadReceptionistNotifications();
 }
 
 // ─── Tab Switching ────────────────────────────────────────────────────────────
@@ -2471,4 +2467,159 @@ function exportAuditLogsCSV() {
 
   showToast('Audit Trail CSV exported successfully!', 'success');
 }
+
+// ═══════════════════════════════════════════════════════════
+//  RECEPTIONIST NOTIFICATIONS LOGIC
+// ═══════════════════════════════════════════════════════════
+
+let allReceptionistNotifications = [];
+
+function setupReceptionistNotifications() {
+  const toggleBtn = document.getElementById('btn-receptionist-notif');
+  const dropdown = document.getElementById('receptionist-notif-dropdown');
+
+  if (toggleBtn && dropdown) {
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.hidden = !dropdown.hidden;
+      if (!dropdown.hidden) {
+        loadReceptionistNotifications();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropdown.hidden && !dropdown.contains(e.target) && !toggleBtn.contains(e.target)) {
+        dropdown.hidden = true;
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !dropdown.hidden) {
+        dropdown.hidden = true;
+      }
+    });
+  }
+}
+
+function getReceptionistReadNotificationIds() {
+  try {
+    const key = currentUser ? `rec_read_notifs_${currentUser.id}` : 'rec_read_notifs_default';
+    const stored = localStorage.getItem(key);
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  } catch (_) {
+    return new Set();
+  }
+}
+
+function saveReceptionistReadNotificationId(id) {
+  try {
+    const key = currentUser ? `rec_read_notifs_${currentUser.id}` : 'rec_read_notifs_default';
+    const set = getReceptionistReadNotificationIds();
+    set.add(id);
+    localStorage.setItem(key, JSON.stringify([...set]));
+  } catch (_) {}
+}
+
+function loadReceptionistNotifications(isManual = false) {
+  const badge = document.getElementById('receptionist-notif-count');
+  const unreadLabel = document.getElementById('rnd-unread-label');
+  const list = document.getElementById('receptionist-notif-list');
+
+  fetch(`${BASE_ORIGIN}/api/notifications`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+  .then(res => res.json())
+  .then(notifs => {
+    if (!Array.isArray(notifs)) return;
+    allReceptionistNotifications = notifs;
+    const readSet = getReceptionistReadNotificationIds();
+    const unreadCount = notifs.filter(n => !readSet.has(n.id)).length;
+
+    if (badge) {
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    if (unreadLabel) {
+      unreadLabel.textContent = `${unreadCount} New`;
+    }
+
+    if (list) {
+      if (notifs.length === 0) {
+        list.innerHTML = `
+          <div class="rnd-empty">
+            <i class="fa-regular fa-bell-slash" style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 6px;"></i>
+            <p>All caught up! No active clinic alerts.</p>
+          </div>
+        `;
+      } else {
+        list.innerHTML = notifs.map(n => {
+          const isUnread = !readSet.has(n.id);
+          const iconClass = n.icon ? `fa-${n.icon}` : 'fa-bell';
+
+          return `
+            <div class="rnd-item ${isUnread ? 'unread' : ''}" onclick="onReceptionistNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.tab || ''}')">
+              <div class="rnd-icon-wrap type-${n.type || 'info'}">
+                <i class="fa-solid ${iconClass}"></i>
+              </div>
+              <div class="rnd-content">
+                <div class="rnd-title">${escapeHtml(n.title)}</div>
+                <div class="rnd-desc">${escapeHtml(n.message)}</div>
+                <span class="rnd-time">${formatRecTime(n.time)}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    if (isManual) {
+      showToast('Alerts refreshed', 'success');
+    }
+  })
+  .catch(err => {
+    console.error('Failed to load receptionist alerts:', err);
+  });
+}
+
+function onReceptionistNotificationClick(notifId, actionType, actionTab) {
+  saveReceptionistReadNotificationId(notifId);
+  const dropdown = document.getElementById('receptionist-notif-dropdown');
+  if (dropdown) dropdown.hidden = true;
+
+  if (actionType === 'switch_tab' && actionTab) {
+    switchTab(actionTab);
+  }
+
+  loadReceptionistNotifications();
+}
+
+function markAllReceptionistNotificationsRead() {
+  try {
+    const key = currentUser ? `rec_read_notifs_${currentUser.id}` : 'rec_read_notifs_default';
+    const allIds = allReceptionistNotifications.map(n => n.id);
+    localStorage.setItem(key, JSON.stringify(allIds));
+    loadReceptionistNotifications();
+    showToast('All alerts marked as read', 'success');
+  } catch (_) {}
+}
+
+function formatRecTime(isoStr) {
+  if (!isoStr) return 'Just now';
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return 'Recently';
+
+  const now = Date.now();
+  const diffMinutes = Math.floor((now - d.getTime()) / 60000);
+  if (diffMinutes < 1) return 'Just now';
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 

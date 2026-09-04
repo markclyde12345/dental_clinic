@@ -111,6 +111,37 @@
             <span class="clock-divider">|</span>
             <span id="current-date">Loading date...</span>
           </div>
+
+          <!-- Front Desk Notification Center -->
+          <div class="notif-wrapper" id="receptionist-notif-wrapper" style="position: relative;">
+            <button type="button" class="btn btn-outline-secondary" id="btn-receptionist-notif" aria-label="Notifications" title="Front Desk Alerts" style="border: 1px solid var(--border); background: #fff; color: #475569; position: relative; padding: 8px 12px; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-regular fa-bell"></i>
+              <span>Alerts</span>
+              <span class="receptionist-notif-badge" id="receptionist-notif-count" style="display: none;">0</span>
+            </button>
+            <div class="receptionist-notif-dropdown" id="receptionist-notif-dropdown" hidden>
+              <div class="rnd-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #1e293b;">Clinic Alerts</h4>
+                  <span class="rnd-unread-pill" id="rnd-unread-label">0 New</span>
+                </div>
+                <button type="button" class="rnd-mark-read-btn" onclick="markAllReceptionistNotificationsRead()">Mark all read</button>
+              </div>
+              <div class="rnd-list" id="receptionist-notif-list">
+                <div class="rnd-empty">
+                  <i class="fa-regular fa-bell-slash" style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 6px;"></i>
+                  <p>All caught up! No active clinic alerts.</p>
+                </div>
+              </div>
+              <div class="rnd-footer">
+                <button type="button" class="rnd-footer-action" onclick="loadReceptionistNotifications(true)">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                  <span>Refresh Alerts</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <button class="btn btn-outline-secondary" onclick="openAuditLogsModal()" title="View financial and staff activity audit trail" style="border: 1px solid var(--border); background: #fff; color: #475569; display: flex; align-items: center; gap: 6px;">
             <i class="fa-solid fa-clock-rotate-left"></i>
             <span>Audit Trail</span>

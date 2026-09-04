@@ -86,6 +86,9 @@ function initDashboard() {
   setupFilters(); // Attach keypress and select dropdown filters
   initPasswordToggles();
   initSystemLogsListeners(); // Attach live system logs search, filter, and stream controls
+  setupAdminNotifications(); // Attach admin alert center listeners
+  loadAdminNotifications();  // Initial fetch of admin notifications
+  setInterval(() => loadAdminNotifications(), 30000); // Polling every 30s
 
   // Restore the active tab if page is refreshed or accessed via hash link
   const validTabs = ['overview', 'appointments', 'patients', 'billing', 'staff', 'inventory', 'users', 'history', 'logs', 'settings'];
@@ -117,6 +120,22 @@ window.activateTab = function(targetTab, skipDataLoad = false) {
       pane.classList.remove('active');
     }
   });
+
+  // Update breadcrumb label
+  const breadcrumbMap = {
+    overview: 'Dashboard Overview',
+    appointments: 'Appointments Agenda',
+    patients: 'Patients Directory',
+    billing: 'Billing & Invoices',
+    staff: 'Staff Management',
+    inventory: 'Inventory & Supplies',
+    users: 'Manage System Users',
+    history: 'Medical History Records',
+    logs: 'System Logs & Audits',
+    settings: 'Clinic Settings'
+  };
+  const bc = document.getElementById('admin-breadcrumb-label');
+  if (bc) bc.textContent = breadcrumbMap[targetTab] || 'Dashboard Overview';
 
   // Manage live polling for system logs tab
   if (targetTab === 'logs') {
@@ -3336,4 +3355,207 @@ document.getElementById('btn-cancel-mark-paid')?.addEventListener('click', () =>
 window.switchToInventoryTab = function() {
   activateTab('inventory');
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADMIN NOTIFICATION CENTER LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+let adminNotificationsList = [];
+const ADMIN_READ_NOTIFS_KEY = 'admin_read_notif_ids';
+
+function getAdminReadNotifIds() {
+  try {
+    const raw = localStorage.getItem(ADMIN_READ_NOTIFS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function saveAdminReadNotifIds(ids) {
+  try {
+    localStorage.setItem(ADMIN_READ_NOTIFS_KEY, JSON.stringify(ids));
+  } catch (_) {}
+}
+
+function setupAdminNotifications() {
+  const btn = document.getElementById('btn-admin-notif');
+  const dropdown = document.getElementById('admin-notif-dropdown');
+
+  if (!btn || !dropdown) return;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isHidden = dropdown.hidden;
+    dropdown.hidden = !isHidden;
+    if (isHidden) {
+      loadAdminNotifications(false);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+      dropdown.hidden = true;
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !dropdown.hidden) {
+      dropdown.hidden = true;
+    }
+  });
+}
+
+async function loadAdminNotifications(forceRefresh = false) {
+  const listEl = document.getElementById('admin-notif-list');
+  const badgeEl = document.getElementById('admin-notif-count');
+  const labelEl = document.getElementById('and-unread-label');
+
+  if (forceRefresh && listEl) {
+    listEl.innerHTML = `
+      <div class="and-empty">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" class="spin"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        <p>Refreshing clinic alerts...</p>
+      </div>
+    `;
+  }
+
+  try {
+    const authToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const res = await fetch(`${BASE_ORIGIN}/api/notifications`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+
+    if (!res.ok) throw new Error('Failed to fetch notifications');
+    const notifs = await res.json();
+    adminNotificationsList = Array.isArray(notifs) ? notifs : [];
+    renderAdminNotifications(adminNotificationsList);
+  } catch (err) {
+    console.error('Error fetching admin notifications:', err);
+    if (listEl && (!adminNotificationsList || adminNotificationsList.length === 0)) {
+      listEl.innerHTML = `
+        <div class="and-empty">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <p>No active alerts right now.</p>
+        </div>
+      `;
+    }
+  }
+}
+window.loadAdminNotifications = loadAdminNotifications;
+
+function renderAdminNotifications(notifs) {
+  const listEl = document.getElementById('admin-notif-list');
+  const badgeEl = document.getElementById('admin-notif-count');
+  const labelEl = document.getElementById('and-unread-label');
+  if (!listEl) return;
+
+  const readIds = getAdminReadNotifIds();
+  const unreadCount = notifs.filter(n => !readIds.includes(n.id)).length;
+
+  if (badgeEl) {
+    if (unreadCount > 0) {
+      badgeEl.textContent = unreadCount > 9 ? '9+' : unreadCount;
+      badgeEl.style.display = 'inline-block';
+    } else {
+      badgeEl.style.display = 'none';
+    }
+  }
+
+  if (labelEl) {
+    labelEl.textContent = `${unreadCount} New`;
+  }
+
+  if (!notifs.length) {
+    listEl.innerHTML = `
+      <div class="and-empty">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <p>No active alerts. System running smoothly.</p>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = notifs.map((n, idx) => {
+    const isUnread = !readIds.includes(n.id);
+    const typeClass = `type-${n.type || 'info'}`;
+    const timeStr = formatAdminNotifTime(n.time);
+
+    let iconSvg = '';
+    if (n.icon === 'triangle-exclamation') {
+      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    } else if (n.icon === 'calendar-clock' || n.category === 'operations') {
+      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="14" r="3"/><path d="m12 14 1.5 1.5"/></svg>';
+    } else if (n.icon === 'shield-check' || n.type === 'success') {
+      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>';
+    } else {
+      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+    }
+
+    return `
+      <div class="and-item ${isUnread ? 'unread' : ''}" onclick="onAdminNotificationClick('${escapeHtml(n.id)}', ${idx})">
+        <div class="and-icon-box ${typeClass}">
+          ${iconSvg}
+        </div>
+        <div class="and-body">
+          <div class="and-title">${escapeHtml(n.title)}</div>
+          <div class="and-desc">${escapeHtml(n.message)}</div>
+          <div class="and-time">${timeStr}</div>
+        </div>
+        ${isUnread ? '<div class="and-dot"></div>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function onAdminNotificationClick(notifId, index) {
+  const readIds = getAdminReadNotifIds();
+  if (!readIds.includes(notifId)) {
+    readIds.push(notifId);
+    saveAdminReadNotifIds(readIds);
+  }
+
+  const notif = adminNotificationsList[index] || adminNotificationsList.find(n => n.id === notifId);
+  const dropdown = document.getElementById('admin-notif-dropdown');
+  if (dropdown) dropdown.hidden = true;
+
+  renderAdminNotifications(adminNotificationsList);
+
+  if (notif && notif.action) {
+    if (notif.action.type === 'switch_tab' && notif.action.tab) {
+      activateTab(notif.action.tab);
+    }
+  }
+}
+window.onAdminNotificationClick = onAdminNotificationClick;
+
+function markAllAdminNotificationsRead() {
+  const allIds = adminNotificationsList.map(n => n.id);
+  saveAdminReadNotifIds(allIds);
+  renderAdminNotifications(adminNotificationsList);
+}
+window.markAllAdminNotificationsRead = markAllAdminNotificationsRead;
+
+function formatAdminNotifTime(timeStr) {
+  if (!timeStr) return 'Just now';
+  const d = new Date(timeStr);
+  if (isNaN(d.getTime())) return 'Recently';
+  const diffSec = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (diffSec < 60) return 'Just now';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 
