@@ -569,22 +569,32 @@ body {
 }
 
 .quick-book-btn {
-  color: var(--accent-dark);
+  background: linear-gradient(135deg, var(--accent) 0%, #072a37 100%);
+  color: #ffffff !important;
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.86rem;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 12px rgba(11, 60, 77, 0.2);
+  box-shadow: 0 4px 14px rgba(11, 60, 77, 0.25);
+}
+.quick-book-btn svg {
+  stroke: #ffffff !important;
+  stroke-width: 2.5;
 }
 .quick-book-btn:hover {
+  background: #05202a;
+  color: #ffffff !important;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(11, 60, 77, 0.3);
+  box-shadow: 0 6px 20px rgba(11, 60, 77, 0.4);
+}
+.quick-book-btn:active {
+  transform: translateY(0);
 }
 
 .header-user {
