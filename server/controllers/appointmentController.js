@@ -223,6 +223,15 @@ const createAppointment = async (req, res) => {
       }
     }
 
+    // Allow Receptionist, Admin, or Dentist to book for a patient directly; otherwise use logged-in patient
+    const assignedPatientId = (req.user.role !== 'Patient' && (req.body.patient_id || req.body.patientId))
+      ? (req.body.patient_id || req.body.patientId)
+      : req.user.id;
+
+    const initialStatus = (req.user.role !== 'Patient' && req.body.status)
+      ? req.body.status
+      : 'Pending';
+
     const { data: appointment, error } = await supabase
       .from('appointments')
       .insert([{
