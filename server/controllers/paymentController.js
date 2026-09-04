@@ -87,7 +87,7 @@ const createPaymongoCheckout = async (req, res) => {
                 description: `Professional Dental Healthcare Service • Invoice Ref #${invoiceRef}`
               }
             ],
-            payment_method_types: ['gcash', 'paymaya', 'card', 'grab_pay', 'dob', 'billease'],
+            payment_method_types: ['qrph', 'gcash', 'paymaya', 'card', 'grab_pay', 'dob', 'billease'],
             success_url: success_url || defaultSuccessUrl,
             cancel_url: cancel_url || defaultCancelUrl
           }
