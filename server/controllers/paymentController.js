@@ -197,7 +197,6 @@ const verifyPaymongoPayment = async (req, res) => {
       .from('invoices')
       .update({
         status: 'Paid',
-        paid_amount: parseFloat(invoice.amount || 0),
         paid_at: new Date().toISOString()
       })
       .eq('id', invoice_id)
@@ -251,7 +250,6 @@ const handlePaymongoWebhook = async (req, res) => {
             .from('invoices')
             .update({
               status: 'Paid',
-              paid_amount: parseFloat(targetInvoice.amount),
               paid_at: new Date().toISOString()
             })
             .eq('id', targetInvoice.id);

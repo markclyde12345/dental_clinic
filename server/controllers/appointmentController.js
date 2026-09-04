@@ -273,7 +273,6 @@ const createAppointment = async (req, res) => {
           appointment_id: appointment.id,
           amount: treatmentPrice,
           status: isPaidInitial ? 'Paid' : 'Unpaid',
-          paid_amount: isPaidInitial ? treatmentPrice : 0,
           paid_at: isPaidInitial ? new Date().toISOString() : null
         }])
         .select()

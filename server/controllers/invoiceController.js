@@ -111,7 +111,6 @@ const updateInvoice = async (req, res) => {
 
     const updateData = {};
     if (status !== undefined) updateData.status = status;
-    if (paid_amount !== undefined) updateData.paid_amount = parseFloat(paid_amount);
     if (status === 'Paid') updateData.paid_at = new Date().toISOString();
 
     const { data: invoice, error } = await supabase
