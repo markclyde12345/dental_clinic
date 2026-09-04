@@ -282,17 +282,21 @@
     document.getElementById('hmo-bar').style.width = `${hmoPct}%`;
   }
 
-  function getStatusBadge(status, isPaid) {
-    if (isPaid || status === 'Paid') {
-      return `<span class="badge-status badge-paid">✅ Settled & Paid</span>`;
+  function getStatusBadge(status, isPaid, balance = 1) {
+    const s = (status || '').toLowerCase();
+    if (isPaid || s === 'paid') {
+      return `<span class="modern-badge badge-paid"><i class="fa-solid fa-check"></i> Paid</span>`;
     }
-    if (status === 'Partial') {
-      return `<span class="badge-status badge-partial">⚠️ Partially Paid</span>`;
+    if (s === 'written off') {
+      return `<span class="modern-badge badge-baddebt"><i class="fa-solid fa-ban"></i> Bad Debt</span>`;
     }
-    if (status === 'HMO') {
-      return `<span class="badge-status badge-hmo">🏥 HMO Claim</span>`;
+    if (s === 'partial') {
+      return `<span class="modern-badge badge-partial"><i class="fa-solid fa-circle-half-stroke"></i> Partial</span>`;
     }
-    return `<span class="badge-status badge-unpaid">⏳ Pending / Unpaid</span>`;
+    if (s === 'hmo') {
+      return `<span class="modern-badge badge-hmo"><i class="fa-solid fa-hospital"></i> HMO Claim</span>`;
+    }
+    return `<span class="modern-badge badge-unpaid"><i class="fa-regular fa-clock"></i> Unpaid</span>`;
   }
 
   function renderOverviewTable() {
@@ -300,31 +304,41 @@
     if (!tbody) return;
 
     if (allInvoices.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #888; padding: 24px;">No billing invoices recorded yet. Click <strong>+ Create Invoice</strong> to issue one.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state-cell">No billing invoices recorded yet. Click <strong>+ Create Invoice</strong> to issue one.</td></tr>`;
       return;
     }
 
     const recent = allInvoices.slice(0, 6);
     tbody.innerHTML = recent.map(inv => {
-      const invId = inv.id ? (inv.id.length > 8 ? `#INV-${inv.id.slice(0, 8).toUpperCase()}` : `#INV-${inv.id}`) : '#INV-000';
-      const patientName = inv.patient ? (inv.patient.name || 'Patient') : 'Walk-in Patient';
+      const invId = inv.id ? (inv.id.length > 8 ? `INV-${inv.id.slice(0, 8).toUpperCase()}` : `INV-${inv.id.toUpperCase()}`) : 'INV-000';
+      const patientName = inv.patient ? (inv.patient.name || inv.patient.email || 'Walk-in Patient') : 'Walk-in Patient';
+      const initial = patientName.charAt(0).toUpperCase() || 'P';
       const amount = parseFloat(inv.amount || inv.total_amount || 0);
-      const isPaid = inv.status === 'Paid' || inv.is_paid;
+      const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
+      const isWrittenOff = (inv.status || '').toLowerCase() === 'written off';
       const paidAmount = isPaid ? amount : (parseFloat(inv.paid_amount) || 0);
-      const balance = Math.max(0, amount - paidAmount);
+      const balance = isWrittenOff ? 0 : Math.max(0, amount - paidAmount);
 
       return `
-        <tr>
-          <td><strong style="color: var(--primary-color); font-family: monospace;">${invId}</strong></td>
-          <td><strong>${escapeHtml(patientName)}</strong></td>
-          <td>${formatDate(inv.issued_at || inv.created_at)}</td>
-          <td>${formatMoney(amount)}</td>
-          <td style="color: #10b981; font-weight: 600;">${formatMoney(paidAmount)}</td>
-          <td style="color: ${balance > 0 ? '#ef4444' : '#64748b'}; font-weight: 700;">${formatMoney(balance)}</td>
-          <td>${getStatusBadge(inv.status, isPaid)}</td>
+        <tr class="inv-row">
+          <td><span class="inv-pill" onclick="copyInvoiceId('${invId}')">#${invId}</span></td>
+          <td>
+            <div class="patient-cell-compact">
+              <div class="patient-avatar-mini">${initial}</div>
+              <span class="patient-name-title">${escapeHtml(patientName)}</span>
+            </div>
+          </td>
+          <td><span class="date-main">${formatDate(inv.issued_at || inv.created_at)}</span></td>
+          <td><span class="amount-cell amount-billed">${formatMoney(amount)}</span></td>
+          <td><span class="amount-cell amount-paid ${paidAmount > 0 ? 'has-paid' : 'zero-paid'}">${formatMoney(paidAmount)}</span></td>
+          <td><span class="amount-cell amount-balance ${balance > 0 ? 'balance-alert' : 'balance-cleared'}">${formatMoney(balance)}</span></td>
+          <td>${getStatusBadge(inv.status, isPaid, balance)}</td>
           <td style="text-align: right;">
-            ${!isPaid ? `<button type="button" class="btn-text-action" style="color: #10b981;" onclick="openRecordPaymentModal('${inv.id}')">💰 Settle</button>` : ''}
-            <button type="button" class="btn-text-action" onclick="viewReceipt('${inv.id}')">🖨️ Receipt</button>
+            <div class="row-actions-group">
+              ${!isPaid && !isWrittenOff ? `<button type="button" class="btn-action-pill btn-collect" onclick="openRecordPaymentModal('${inv.id}')"><i class="fa-solid fa-cash-register"></i> Settle</button>` : ''}
+              <button type="button" class="btn-action-icon" onclick="viewReceipt('${inv.id}')" title="Receipt"><i class="fa-solid fa-print"></i></button>
+              <button type="button" class="btn-action-icon" onclick="openInvoiceDetailsModal('${inv.id}')" title="Details"><i class="fa-solid fa-eye"></i></button>
+            </div>
           </td>
         </tr>
       `;
@@ -336,42 +350,294 @@
     if (!tbody) return;
 
     if (allInvoices.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #888; padding: 24px;">No invoices found.</td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" class="empty-state-cell">
+            <i class="fa-solid fa-receipt" style="font-size: 2.2rem; color: #94a3b8; display: block; margin-bottom: 10px;"></i>
+            No invoices recorded yet. Click <strong>+ New Invoice</strong> to create one.
+          </td>
+        </tr>`;
       return;
     }
 
     tbody.innerHTML = allInvoices.map(inv => {
-      const invId = inv.id ? (inv.id.length > 8 ? `#INV-${inv.id.slice(0, 8).toUpperCase()}` : `#INV-${inv.id}`) : '#INV-000';
-      const patientName = inv.patient ? (inv.patient.name || 'Patient') : 'Walk-in Patient';
-      const treatmentDesc = inv.appointment && inv.appointment.notes ? inv.appointment.notes : (inv.notes || 'Dental Consultation & Treatment');
+      const invId = inv.id ? (inv.id.length > 8 ? `INV-${inv.id.slice(0, 8).toUpperCase()}` : `INV-${inv.id.toUpperCase()}`) : 'INV-000';
+      const patientName = inv.patient ? (inv.patient.name || inv.patient.email || 'Walk-in Patient') : 'Walk-in Patient';
+      const patientInitial = patientName.charAt(0).toUpperCase() || 'P';
+      const patientContact = inv.patient?.contact_number || inv.patient?.email || '';
+
+      // Clean treatment & structured metadata parsing (NO RAW BRACKET DUMP)
+      let treatmentName = inv.appointment?.treatment?.name || inv.treatment?.name || 'Dental Consultation & Treatment';
+      const rawNotes = inv.appointment?.notes || inv.notes || '';
+      let dentistName = 'Assigned Doctor';
+      let branchName = 'Main Branch';
+      let concern = '';
+      let hasAlerts = false;
+
+      const dentistMatch = rawNotes.match(/\[Dentist:\s*([^\]]+)\]/i);
+      if (dentistMatch && dentistMatch[1] !== 'No Preference' && dentistMatch[1] !== 'N/A') dentistName = dentistMatch[1];
+
+      const branchMatch = rawNotes.match(/\[Branch:\s*([^\]]+)\]/i);
+      if (branchMatch) branchName = branchMatch[1].split('(')[0].replace('Fano Dental Clinic —', '').trim();
+
+      const concernMatch = rawNotes.match(/\[Concern:\s*([^\]]+)\]/i);
+      if (concernMatch && concernMatch[1] !== 'None') concern = concernMatch[1];
+
+      if (/\[(Conditions|Allergies|Meds):\s*(?!None\b)[^\]]+\]/i.test(rawNotes) || /AnxietySupport:\s*Yes/i.test(rawNotes)) {
+        hasAlerts = true;
+      }
+
       const amount = parseFloat(inv.amount || inv.total_amount || 0);
-      const isPaid = inv.status === 'Paid' || inv.is_paid;
+      const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
+      const isWrittenOff = (inv.status || '').toLowerCase() === 'written off';
       const paidAmount = isPaid ? amount : (parseFloat(inv.paid_amount) || 0);
-      const balance = Math.max(0, amount - paidAmount);
+      const balance = isWrittenOff ? 0 : Math.max(0, amount - paidAmount);
+
+      const issuedDate = new Date(inv.issued_at || inv.created_at || Date.now());
+      const dateStr = issuedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const daysOld = Math.max(0, Math.floor((Date.now() - issuedDate.getTime()) / (1000 * 60 * 60 * 24)));
+
+      // Status badge
+      let statusBadge = '';
+      if (isPaid) {
+        statusBadge = `<span class="modern-badge badge-paid"><i class="fa-solid fa-check"></i> Paid</span>`;
+      } else if (isWrittenOff) {
+        statusBadge = `<span class="modern-badge badge-baddebt" title="Written off from active balance"><i class="fa-solid fa-ban"></i> Bad Debt</span>`;
+      } else if (balance > 0 && daysOld > 30) {
+        statusBadge = `<span class="modern-badge badge-overdue" title="${daysOld} days overdue"><i class="fa-solid fa-triangle-exclamation"></i> Overdue (${daysOld}d)</span>`;
+      } else if (paidAmount > 0 && balance > 0) {
+        statusBadge = `<span class="modern-badge badge-partial"><i class="fa-solid fa-circle-half-stroke"></i> Partial</span>`;
+      } else {
+        statusBadge = `<span class="modern-badge badge-unpaid"><i class="fa-regular fa-clock"></i> Unpaid</span>`;
+      }
 
       return `
-        <tr data-inv-id="${inv.id}">
-          <td><strong style="color: var(--primary-color); font-family: monospace;">${invId}</strong></td>
-          <td><strong>${escapeHtml(patientName)}</strong></td>
-          <td style="font-size: 0.82rem; color: #475569; max-width: 200px;">${escapeHtml(treatmentDesc)}</td>
-          <td>${formatDate(inv.issued_at || inv.created_at)}</td>
-          <td style="font-weight: 700;">${formatMoney(amount)}</td>
-          <td style="color: #10b981; font-weight: 600;">${formatMoney(paidAmount)}</td>
-          <td style="color: ${balance > 0 ? '#ef4444' : '#64748b'}; font-weight: 700;">${formatMoney(balance)}</td>
-          <td>${getStatusBadge(inv.status, isPaid)}</td>
-          <td style="text-align: right; white-space: nowrap;">
-            ${!isPaid ? `<button type="button" class="btn-text-action" style="color: #10b981; margin-right: 8px;" onclick="openRecordPaymentModal('${inv.id}')">💰 Settle</button>` : ''}
-            <button type="button" class="btn-text-action" onclick="viewReceipt('${inv.id}')">🖨️ Receipt</button>
+        <tr class="inv-row ${isPaid ? 'is-settled' : 'is-pending'}" data-inv-id="${inv.id}">
+          <!-- Invoice Ref -->
+          <td>
+            <span class="inv-pill" onclick="copyInvoiceId('${invId}')" title="Click to copy ID">
+              #${invId}
+            </span>
+          </td>
+
+          <!-- Patient -->
+          <td>
+            <div class="patient-cell-compact">
+              <div class="patient-avatar-mini">${patientInitial}</div>
+              <div class="patient-info-meta">
+                <span class="patient-name-title">${escapeHtml(patientName)}</span>
+                ${patientContact ? `<span class="patient-sub-contact">${escapeHtml(patientContact)}</span>` : ''}
+              </div>
+            </div>
+          </td>
+
+          <!-- Treatment & Procedure (CLEAN & GORGEOUS) -->
+          <td>
+            <div class="treatment-meta-box">
+              <div class="treatment-name-bold">
+                <i class="fa-solid fa-tooth text-primary"></i>
+                <span>${escapeHtml(treatmentName)}</span>
+              </div>
+              <div class="treatment-pills-row">
+                <span class="info-pill branch-pill"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(branchName)}</span>
+                ${dentistName !== 'Assigned Doctor' ? `<span class="info-pill doctor-pill"><i class="fa-solid fa-user-doctor"></i> ${escapeHtml(dentistName)}</span>` : ''}
+                ${concern ? `<span class="info-pill concern-pill">${escapeHtml(concern)}</span>` : ''}
+                ${hasAlerts ? `<span class="info-pill alert-pill" title="Patient has clinical alerts"><i class="fa-solid fa-heart-pulse"></i> Alerts</span>` : ''}
+              </div>
+            </div>
+          </td>
+
+          <!-- Date Issued -->
+          <td>
+            <div class="date-issued-cell">
+              <span class="date-main">${dateStr}</span>
+              <span class="date-sub">${daysOld === 0 ? 'Today' : `${daysOld}d ago`}</span>
+            </div>
+          </td>
+
+          <!-- Total Billed -->
+          <td>
+            <span class="amount-cell amount-billed">${formatMoney(amount)}</span>
+          </td>
+
+          <!-- Paid Amount -->
+          <td>
+            <span class="amount-cell amount-paid ${paidAmount > 0 ? 'has-paid' : 'zero-paid'}">${formatMoney(paidAmount)}</span>
+          </td>
+
+          <!-- Balance Due -->
+          <td>
+            <span class="amount-cell amount-balance ${balance > 0 ? 'balance-alert' : 'balance-cleared'}">
+              ${formatMoney(balance)}
+            </span>
+          </td>
+
+          <!-- Status -->
+          <td>
+            ${statusBadge}
+          </td>
+
+          <!-- Actions -->
+          <td style="text-align: right;">
+            <div class="row-actions-group">
+              ${!isPaid && !isWrittenOff ? `
+                <button type="button" class="btn-action-pill btn-collect" onclick="openRecordPaymentModal('${inv.id}')" title="Collect payment">
+                  <i class="fa-solid fa-cash-register"></i> Collect
+                </button>
+              ` : ''}
+              <button type="button" class="btn-action-icon" onclick="viewReceipt('${inv.id}')" title="Print Official Receipt">
+                <i class="fa-solid fa-print"></i>
+              </button>
+              <button type="button" class="btn-action-icon" onclick="openInvoiceDetailsModal('${inv.id}')" title="View Full Breakdown & Intake">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
           </td>
         </tr>
       `;
     }).join('');
   }
 
+  window.setStatusChip = function(status) {
+    const hiddenInput = document.getElementById('inv-status-filter');
+    if (hiddenInput) hiddenInput.value = status;
+
+    document.querySelectorAll('.status-chip').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-status') === status);
+    });
+
+    filterInvoices();
+  };
+
+  window.clearInvSearch = function() {
+    const input = document.getElementById('inv-search-input');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('inv-search-clear');
+    if (clearBtn) clearBtn.style.display = 'none';
+    filterInvoices();
+  };
+
+  window.copyInvoiceId = function(invId) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(invId);
+      showToast(`Copied #${invId} to clipboard!`, 'success');
+    }
+  };
+
+  let currentDetailInvoiceId = null;
+
+  window.openInvoiceDetailsModal = function(invId) {
+    const inv = allInvoices.find(i => String(i.id) === String(invId));
+    if (!inv) return;
+    currentDetailInvoiceId = invId;
+
+    const invIdFormatted = inv.id ? (inv.id.length > 8 ? `INV-${inv.id.slice(0, 8).toUpperCase()}` : `INV-${inv.id.toUpperCase()}`) : 'INV-000';
+    const patientName = inv.patient ? (inv.patient.name || inv.patient.email || 'Walk-in Patient') : 'Walk-in Patient';
+    const initial = patientName.charAt(0).toUpperCase() || 'P';
+
+    const amount = parseFloat(inv.amount || inv.total_amount || 0);
+    const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
+    const isWrittenOff = (inv.status || '').toLowerCase() === 'written off';
+    const paidAmount = isPaid ? amount : (parseFloat(inv.paid_amount) || 0);
+    const balance = isWrittenOff ? 0 : Math.max(0, amount - paidAmount);
+
+    // Set modal header & summary
+    const avatarEl = document.getElementById('inv-detail-avatar');
+    if (avatarEl) avatarEl.textContent = initial;
+    const nameEl = document.getElementById('inv-detail-patient-name');
+    if (nameEl) nameEl.textContent = patientName;
+    const refEl = document.getElementById('inv-detail-ref-pill');
+    if (refEl) refEl.textContent = `#${invIdFormatted}`;
+
+    const amtEl = document.getElementById('inv-detail-amount');
+    if (amtEl) amtEl.textContent = formatMoney(amount);
+    const paidEl = document.getElementById('inv-detail-paid');
+    if (paidEl) paidEl.textContent = formatMoney(paidAmount);
+    const balEl = document.getElementById('inv-detail-balance');
+    if (balEl) balEl.textContent = formatMoney(balance);
+
+    // Parse Treatment & Clinic notes
+    let treatmentName = inv.appointment?.treatment?.name || inv.treatment?.name || 'Dental Consultation & Procedure';
+    const rawNotes = inv.appointment?.notes || inv.notes || '';
+    let branchName = 'Main Branch';
+    let dentistName = 'Staff Doctor';
+    let concern = 'Routine Dental Care';
+    let hmo = 'Self-pay / Cash';
+    let allergies = 'None';
+    let emergency = 'None';
+
+    const branchMatch = rawNotes.match(/\[Branch:\s*([^\]]+)\]/i);
+    if (branchMatch) branchName = branchMatch[1];
+
+    const dentistMatch = rawNotes.match(/\[Dentist:\s*([^\]]+)\]/i);
+    if (dentistMatch && dentistMatch[1] !== 'No Preference') dentistName = dentistMatch[1];
+
+    const concernMatch = rawNotes.match(/\[Concern:\s*([^\]]+)\]/i);
+    if (concernMatch) concern = concernMatch[1];
+
+    const hmoMatch = rawNotes.match(/\[HMO:\s*([^\]]+)\]/i);
+    if (hmoMatch && hmoMatch[1] !== 'N/A') hmo = hmoMatch[1];
+
+    const allergyMatch = rawNotes.match(/\[Allergies:\s*([^\]]+)\]/i);
+    if (allergyMatch && allergyMatch[1] !== 'None') allergies = allergyMatch[1];
+
+    const emerMatch = rawNotes.match(/\[Emergency:\s*([^\]]+)\]/i);
+    if (emerMatch && emerMatch[1] !== 'None') emergency = emerMatch[1];
+
+    const issuedDate = new Date(inv.issued_at || inv.created_at || Date.now());
+    const dateStr = issuedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    safeSetText('inv-detail-treatment-name', treatmentName);
+    safeSetText('inv-detail-branch', `📍 ${branchName}`);
+    safeSetText('inv-detail-dentist', `👨‍⚕️ ${dentistName}`);
+    safeSetText('inv-detail-date', `📅 Issued: ${dateStr}`);
+    safeSetText('inv-detail-concern', concern);
+    safeSetText('inv-detail-hmo', hmo);
+    safeSetText('inv-detail-allergies', allergies);
+    safeSetText('inv-detail-emergency', emergency);
+
+    const statusBadgeContainer = document.getElementById('inv-detail-status-badge');
+    if (statusBadgeContainer) {
+      statusBadgeContainer.innerHTML = getStatusBadge(inv.status, isPaid, balance);
+    }
+
+    // Toggle settle button
+    const settleBtn = document.getElementById('inv-detail-btn-settle');
+    if (settleBtn) {
+      settleBtn.style.display = (!isPaid && !isWrittenOff) ? 'inline-flex' : 'none';
+    }
+
+    const modal = document.getElementById('modal-invoice-details');
+    if (modal) modal.classList.add('open');
+  };
+
+  window.printModalReceipt = function() {
+    if (currentDetailInvoiceId) {
+      closeModal('modal-invoice-details');
+      window.viewReceipt(currentDetailInvoiceId);
+    }
+  };
+
+  window.settleModalInvoice = function() {
+    if (currentDetailInvoiceId) {
+      closeModal('modal-invoice-details');
+      window.openRecordPaymentModal(currentDetailInvoiceId);
+    }
+  };
+
+  function safeSetText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
   window.filterInvoices = function() {
-    const query = (document.getElementById('inv-search-input').value || '').toLowerCase().trim();
-    const statusFilter = document.getElementById('inv-status-filter').value;
-    const rows = document.querySelectorAll('#full-invoices-body tr');
+    const input = document.getElementById('inv-search-input');
+    const query = (input?.value || '').toLowerCase().trim();
+    const clearBtn = document.getElementById('inv-search-clear');
+    if (clearBtn) clearBtn.style.display = query ? 'inline-block' : 'none';
+
+    const statusFilter = document.getElementById('inv-status-filter')?.value || 'all';
+    const rows = document.querySelectorAll('#full-invoices-body tr.inv-row');
 
     rows.forEach(row => {
       const text = row.textContent.toLowerCase();
@@ -381,7 +647,7 @@
       if (statusFilter === 'Unpaid') {
         matchesStatus = text.includes('unpaid') || text.includes('pending');
       } else if (statusFilter === 'Paid') {
-        matchesStatus = text.includes('paid') || text.includes('settled');
+        matchesStatus = text.includes('paid') && !text.includes('unpaid');
       } else if (statusFilter === 'Partial') {
         matchesStatus = text.includes('partial');
       } else if (statusFilter === 'HMO') {
