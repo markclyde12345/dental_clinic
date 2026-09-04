@@ -1704,19 +1704,39 @@ function checkAvailableSlots() {
 
     if (Array.isArray(occupiedList)) {
       occupiedList.forEach(appt => {
-        const apptDateObj = new Date(appt.appointment_date);
-        const year = apptDateObj.getFullYear();
-        const month = String(apptDateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(apptDateObj.getDate()).padStart(2, '0');
-        const localDateStr = `${year}-${month}-${day}`;
+        // 1. Direct match from server-provided date & time
+        if (appt.date === dateVal && appt.time) {
+          occupiedTimes.add(appt.time.toUpperCase().trim());
+        }
 
-        if (appt.date === dateVal || localDateStr === dateVal) {
-          const formattedTime = apptDateObj.toLocaleTimeString('en-US', {
-            hour: '2-digit', minute: '2-digit', hour12: true
-          });
-          occupiedTimes.add(formattedTime.toUpperCase().trim());
-          if (appt.time) {
-            occupiedTimes.add(appt.time.toUpperCase().trim());
+        // 2. Parse raw wall-clock time string (e.g. "2026-09-05T09:00:00...")
+        const raw = appt.appointment_date;
+        if (raw && raw.includes('T')) {
+          const [rawD, rawT] = raw.split('T');
+          if (rawD === dateVal && rawT) {
+            const [hStr, mStr] = rawT.substring(0, 5).split(':');
+            const h = parseInt(hStr, 10);
+            const m = parseInt(mStr, 10) || 0;
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            const time12 = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+            occupiedTimes.add(time12.toUpperCase().trim());
+          }
+        }
+
+        // 3. Date object parsing for UTC timestamps
+        const apptDateObj = new Date(raw || appt.dateTime);
+        if (!isNaN(apptDateObj.getTime())) {
+          const year = apptDateObj.getFullYear();
+          const month = String(apptDateObj.getMonth() + 1).padStart(2, '0');
+          const day = String(apptDateObj.getDate()).padStart(2, '0');
+          const localDateStr = `${year}-${month}-${day}`;
+
+          if (localDateStr === dateVal) {
+            const formattedTime = apptDateObj.toLocaleTimeString('en-US', {
+              hour: '2-digit', minute: '2-digit', hour12: true
+            });
+            occupiedTimes.add(formattedTime.toUpperCase().trim());
           }
         }
       });
@@ -1728,32 +1748,68 @@ function checkAvailableSlots() {
       const normTime = time ? time.trim().toUpperCase() : '';
       const noZeroTime = normTime.startsWith('0') ? normTime.substring(1) : ('0' + normTime);
 
-      if (occupiedTimes.has(normTime) || occupiedTimes.has(noZeroTime)) {
+      const isOccupied = occupiedTimes.has(normTime) || occupiedTimes.has(noZeroTime);
+
+      if (isOccupied) {
         btn.classList.add('occupied');
         btn.classList.remove('selected');
         btn.disabled = true;
-        btn.title = 'This time slot is already booked';
+        btn.title = 'This time slot is already booked and unavailable';
         btn.innerHTML = `
           <span>${time}</span>
-          <span class="slot-badge-occupied">Occupied</span>
+          <span class="slot-badge-occupied">Unavailable</span>
+        `;
+      } else {
+        btn.classList.remove('occupied');
+        btn.disabled = false;
+        btn.title = 'Click to select this time slot';
+        btn.innerHTML = `
+          <span>${time}</span>
+          <span class="slot-badge-available">Available</span>
         `;
       }
     });
   })
   .catch(err => {
     console.error('Error fetching occupied slots:', err);
-    // Fallback: check cached allAppointments — slots already shown as Available above
-    const selectedDateStr = new Date(dateVal).toDateString();
+    // Fallback: check cached allAppointments
     slotButtons.forEach(btn => {
       const time = btn.getAttribute('data-time');
+      const normTime = time ? time.trim().toUpperCase() : '';
+      const noZeroTime = normTime.startsWith('0') ? normTime.substring(1) : ('0' + normTime);
       let isOccupied = false;
-      allAppointments.forEach(appt => {
-        const apptDate = new Date(appt.appointment_date || appt.dateTime);
-        if (apptDate.toDateString() === selectedDateStr && appt.status !== 'Cancelled') {
-          const apptTimeFormatted = apptDate.toLocaleTimeString('en-US', {
-            hour: '2-digit', minute: '2-digit'
-          });
-          if (apptTimeFormatted === time) isOccupied = true;
+
+      (allAppointments || []).forEach(appt => {
+        if (appt.status === 'Cancelled') return;
+        const raw = appt.appointment_date || appt.dateTime;
+        if (!raw) return;
+
+        // Raw string match
+        if (raw.includes('T')) {
+          const [rawD, rawT] = raw.split('T');
+          if (rawD === dateVal && rawT) {
+            const [hStr, mStr] = rawT.substring(0, 5).split(':');
+            const h = parseInt(hStr, 10);
+            const m = parseInt(mStr, 10) || 0;
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            const time12 = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`.toUpperCase();
+            if (time12 === normTime || time12 === noZeroTime) isOccupied = true;
+          }
+        }
+
+        // Date object match
+        const apptDate = new Date(raw);
+        if (!isNaN(apptDate.getTime())) {
+          const y = apptDate.getFullYear();
+          const mo = String(apptDate.getMonth() + 1).padStart(2, '0');
+          const dy = String(apptDate.getDate()).padStart(2, '0');
+          if (`${y}-${mo}-${dy}` === dateVal) {
+            const apptTimeFormatted = apptDate.toLocaleTimeString('en-US', {
+              hour: '2-digit', minute: '2-digit', hour12: true
+            }).toUpperCase();
+            if (apptTimeFormatted === normTime || apptTimeFormatted === noZeroTime) isOccupied = true;
+          }
         }
       });
 
@@ -1763,7 +1819,7 @@ function checkAvailableSlots() {
         btn.disabled = true;
         btn.innerHTML = `
           <span>${time}</span>
-          <span class="slot-badge-occupied">Occupied</span>
+          <span class="slot-badge-occupied">Unavailable</span>
         `;
       }
     });

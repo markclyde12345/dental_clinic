@@ -131,41 +131,66 @@ const getOccupiedSlots = async (req, res) => {
 
     let query = supabase
       .from('appointments')
-      .select('id, appointment_date, status')
+      .select('id, appointment_date, status, notes')
       .neq('status', 'Cancelled');
 
-    // If a specific date is provided, filter server-side for much faster results
+    // If date is provided, use broad window (accounting for UTC and timezone offsets)
     if (date) {
-      // Build UTC range for the requested local date
-      const startUTC = new Date(`${date}T00:00:00.000Z`);
-      const endUTC   = new Date(`${date}T23:59:59.999Z`);
+      const prevDay = new Date(`${date}T00:00:00.000Z`);
+      prevDay.setDate(prevDay.getDate() - 1);
+      const nextDay = new Date(`${date}T23:59:59.999Z`);
+      nextDay.setDate(nextDay.getDate() + 1);
+
       query = query
-        .gte('appointment_date', startUTC.toISOString())
-        .lte('appointment_date', endUTC.toISOString());
+        .gte('appointment_date', prevDay.toISOString())
+        .lte('appointment_date', nextDay.toISOString());
     }
 
     const { data: appointments, error } = await query;
-
     if (error) throw error;
 
-    const occupied = (appointments || []).map(appt => {
-      const d = new Date(appt.appointment_date);
-      const timeStr = d.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      });
-      const year  = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day   = String(d.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
+    const occupied = [];
+    (appointments || []).forEach(appt => {
+      const raw = appt.appointment_date;
+      if (!raw) return;
 
-      return {
-        id: appt.id,
-        appointment_date: appt.appointment_date,
-        date: dateStr,
-        time: timeStr
-      };
+      // 1. Raw wall-clock extraction (e.g. "2026-09-05T09:00:00")
+      if (raw.includes('T')) {
+        const [rawDate, timePart] = raw.split('T');
+        const [hStr, mStr] = timePart.substring(0, 5).split(':');
+        const h = parseInt(hStr, 10);
+        const m = parseInt(mStr, 10) || 0;
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        const time12 = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+
+        occupied.push({
+          id: appt.id,
+          appointment_date: appt.appointment_date,
+          date: rawDate,
+          time: time12
+        });
+      }
+
+      // 2. Date object local conversion in case client relies on local time
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) {
+        const localTimeStr = d.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+        const y = d.getFullYear();
+        const mo = String(d.getMonth() + 1).padStart(2, '0');
+        const dy = String(d.getDate()).padStart(2, '0');
+
+        occupied.push({
+          id: appt.id,
+          appointment_date: appt.appointment_date,
+          date: `${y}-${mo}-${dy}`,
+          time: localTimeStr
+        });
+      }
     });
 
     res.json(occupied);
@@ -186,16 +211,33 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'Appointment date and time are required.' });
     }
 
-    // Check if slot is already occupied
-    const { data: conflict, error: conflictErr } = await supabase
+    // Check if slot is already occupied (prevent double booking)
+    const targetDateStr = targetDate.includes('T') ? targetDate.split('T')[0] : targetDate.substring(0, 10);
+    const targetTimeStr = targetDate.includes('T') ? targetDate.split('T')[1].substring(0, 5) : '';
+
+    const { data: activeAppts, error: conflictErr } = await supabase
       .from('appointments')
       .select('id, appointment_date, status')
-      .eq('appointment_date', targetDate)
-      .neq('status', 'Cancelled')
-      .maybeSingle();
+      .neq('status', 'Cancelled');
 
     if (conflictErr) throw conflictErr;
-    if (conflict) {
+
+    const hasConflict = (activeAppts || []).some(a => {
+      if (!a.appointment_date) return false;
+      // Direct string exact match or prefix
+      if (a.appointment_date === targetDate || a.appointment_date.startsWith(targetDate)) return true;
+
+      // Match wall-clock Date and Hour:Minute
+      if (a.appointment_date.includes('T') && targetDate.includes('T')) {
+        const aDate = a.appointment_date.split('T')[0];
+        const aTime = a.appointment_date.split('T')[1].substring(0, 5);
+        if (aDate === targetDateStr && aTime === targetTimeStr) return true;
+      }
+
+      return false;
+    });
+
+    if (hasConflict) {
       return res.status(400).json({ message: 'This time slot is already occupied. Please choose another time.' });
     }
 
@@ -466,16 +508,29 @@ const updateAppointment = async (req, res) => {
   try {
     if (targetDate) {
       // Check if target slot is already taken by another active appointment
-      const { data: conflict, error: conflictErr } = await supabase
+      const targetDateStr = targetDate.includes('T') ? targetDate.split('T')[0] : targetDate.substring(0, 10);
+      const targetTimeStr = targetDate.includes('T') ? targetDate.split('T')[1].substring(0, 5) : '';
+
+      const { data: activeAppts, error: conflictErr } = await supabase
         .from('appointments')
         .select('id, appointment_date, status')
-        .eq('appointment_date', targetDate)
         .neq('id', id)
-        .neq('status', 'Cancelled')
-        .maybeSingle();
+        .neq('status', 'Cancelled');
 
       if (conflictErr) throw conflictErr;
-      if (conflict) {
+
+      const hasConflict = (activeAppts || []).some(a => {
+        if (!a.appointment_date) return false;
+        if (a.appointment_date === targetDate || a.appointment_date.startsWith(targetDate)) return true;
+        if (a.appointment_date.includes('T') && targetDate.includes('T')) {
+          const aDate = a.appointment_date.split('T')[0];
+          const aTime = a.appointment_date.split('T')[1].substring(0, 5);
+          if (aDate === targetDateStr && aTime === targetTimeStr) return true;
+        }
+        return false;
+      });
+
+      if (hasConflict) {
         return res.status(400).json({ message: 'This time slot is already occupied. Please choose another time.' });
       }
     }
