@@ -1020,31 +1020,167 @@
   /* ═══════════════════════════════════════════════════════════
      7. SETTINGS FORM
      ═══════════════════════════════════════════════════════════ */
-  function initSettingsForm() {
-    const form = document.getElementById('accounting-settings-form');
-    if (!form) return;
+  /* ═══════════════════════════════════════════════════════════
+     7. FINANCIAL SETTINGS ACCORDION & FORMS
+     ═══════════════════════════════════════════════════════════ */
+  window.toggleSettingsAccordion = function(itemId) {
+    const allItems = document.querySelectorAll('.settings-accordion-item');
+    const targetItem = document.getElementById(`acc-item-${itemId}`);
+    if (!targetItem) return;
 
-    // Load existing settings
-    const savedCurrency = localStorage.getItem('acc-currency') || '₱';
-    const savedVat = localStorage.getItem('acc-vat') || '0';
-    const savedPrefix = localStorage.getItem('acc-or-prefix') || 'OR-2026-';
-    const savedFooter = localStorage.getItem('acc-receipt-footer') || 'Thank you for choosing Fano Dental Clinic! For inquiries, contact info@fanoclinic.com';
+    const wasActive = targetItem.classList.contains('active');
 
-    document.getElementById('setting-currency').value = savedCurrency;
-    document.getElementById('setting-vat').value = savedVat;
-    document.getElementById('setting-or-prefix').value = savedPrefix;
-    document.getElementById('setting-receipt-footer').value = savedFooter;
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      localStorage.setItem('acc-currency', document.getElementById('setting-currency').value);
-      localStorage.setItem('acc-vat', document.getElementById('setting-vat').value);
-      localStorage.setItem('acc-or-prefix', document.getElementById('setting-or-prefix').value.trim());
-      localStorage.setItem('acc-receipt-footer', document.getElementById('setting-receipt-footer').value.trim());
-
-      showToast('Accounting settings saved successfully!', 'success');
-      renderAllViews();
+    // Collapse all items and reset arrows to ▶
+    allItems.forEach(item => {
+      item.classList.remove('active');
+      const arrow = item.querySelector('.accordion-arrow');
+      if (arrow) arrow.textContent = '▶';
     });
+
+    // If it wasn't already active, expand it and set arrow to ▼
+    if (!wasActive) {
+      targetItem.classList.add('active');
+      const targetArrow = document.getElementById(`arrow-${itemId}`);
+      if (targetArrow) targetArrow.textContent = '▼';
+    }
+  };
+
+  // Section Save Handlers
+  window.saveAccountingSection = function(e) {
+    e.preventDefault();
+    localStorage.setItem('acc-currency', document.getElementById('setting-currency').value);
+    localStorage.setItem('acc-vat', document.getElementById('setting-vat').value);
+    localStorage.setItem('acc-fiscal-year', document.getElementById('setting-fiscal-year').value);
+    localStorage.setItem('acc-rounding', document.getElementById('setting-rounding').value);
+    showToast('Accounting & Currency settings saved successfully!', 'success');
+    renderAllViews();
+  };
+
+  window.saveInvoiceSection = function(e) {
+    e.preventDefault();
+    const prefix = document.getElementById('setting-inv-prefix').value.trim() || 'INV-';
+    const dueDays = document.getElementById('setting-inv-due-days').value;
+    const autoGen = document.getElementById('setting-inv-auto-gen').checked;
+    const notes = document.getElementById('setting-inv-notes').value.trim();
+
+    localStorage.setItem('acc-inv-prefix', prefix);
+    localStorage.setItem('acc-inv-due-days', dueDays);
+    localStorage.setItem('acc-inv-auto-gen', autoGen ? 'true' : 'false');
+    localStorage.setItem('acc-inv-notes', notes);
+    showToast('Invoice settings saved successfully!', 'success');
+  };
+
+  window.saveReceiptSection = function(e) {
+    e.preventDefault();
+    const orPrefix = document.getElementById('setting-or-prefix').value.trim() || 'OR-2026-';
+    const tin = document.getElementById('setting-clinic-tin').value.trim();
+    const birPermit = document.getElementById('setting-bir-permit').value.trim();
+    const autoReceipt = document.getElementById('setting-auto-issue-receipt').value;
+    const footer = document.getElementById('setting-receipt-footer').value.trim();
+
+    localStorage.setItem('acc-or-prefix', orPrefix);
+    localStorage.setItem('acc-clinic-tin', tin);
+    localStorage.setItem('acc-bir-permit', birPermit);
+    localStorage.setItem('acc-auto-receipt', autoReceipt);
+    localStorage.setItem('acc-receipt-footer', footer);
+    showToast('Receipt & Tax settings saved successfully!', 'success');
+  };
+
+  window.savePaymentSection = function(e) {
+    e.preventDefault();
+    const cash = document.getElementById('pay-method-cash').checked;
+    const paymongo = document.getElementById('pay-method-paymongo').checked;
+    const bank = document.getElementById('pay-method-bank').checked;
+    const check = document.getElementById('pay-method-check').checked;
+    const pos = document.getElementById('pay-method-pos').checked;
+
+    localStorage.setItem('acc-pay-cash', cash ? 'true' : 'false');
+    localStorage.setItem('acc-pay-paymongo', paymongo ? 'true' : 'false');
+    localStorage.setItem('acc-pay-bank', bank ? 'true' : 'false');
+    localStorage.setItem('acc-pay-check', check ? 'true' : 'false');
+    localStorage.setItem('acc-pay-pos', pos ? 'true' : 'false');
+    showToast('Payment Methods updated successfully!', 'success');
+  };
+
+  window.saveHMOSection = function(e) {
+    e.preventDefault();
+    localStorage.setItem('acc-hmo-active', document.getElementById('setting-hmo-active').value);
+    localStorage.setItem('acc-hmo-copay', document.getElementById('setting-hmo-copay').value);
+    localStorage.setItem('acc-hmo-providers', document.getElementById('setting-hmo-providers').value.trim());
+    showToast('HMO & Insurance preferences saved!', 'success');
+  };
+
+  window.saveControlsSection = function(e) {
+    e.preventDefault();
+    localStorage.setItem('acc-overdue-lock', document.getElementById('setting-overdue-lock').value);
+    localStorage.setItem('acc-cash-cap', document.getElementById('setting-cash-cap').value.trim());
+    localStorage.setItem('acc-approval-writeoff', document.getElementById('setting-require-approval-writeoff').checked ? 'true' : 'false');
+    showToast('Financial Controls saved successfully!', 'success');
+  };
+
+  window.saveNotificationsSection = function(e) {
+    e.preventDefault();
+    localStorage.setItem('acc-notif-sms', document.getElementById('notif-sms-receipt').checked ? 'true' : 'false');
+    localStorage.setItem('acc-notif-email', document.getElementById('notif-email-receipt').checked ? 'true' : 'false');
+    localStorage.setItem('acc-notif-overdue', document.getElementById('notif-overdue-reminder').checked ? 'true' : 'false');
+    showToast('Notification preferences saved!', 'success');
+  };
+
+  window.savePermissionsSection = function(e) {
+    e.preventDefault();
+    localStorage.setItem('acc-perm-receptionist-settle', document.getElementById('perm-receptionist-settle').value);
+    localStorage.setItem('acc-perm-writeoff-role', document.getElementById('perm-writeoff-role').value);
+    showToast('Financial role permissions updated!', 'success');
+  };
+
+  function initSettingsForm() {
+    // Load persisted settings
+    safeSetVal('setting-currency', localStorage.getItem('acc-currency') || '₱');
+    safeSetVal('setting-vat', localStorage.getItem('acc-vat') || '0');
+    safeSetVal('setting-fiscal-year', localStorage.getItem('acc-fiscal-year') || 'calendar');
+    safeSetVal('setting-rounding', localStorage.getItem('acc-rounding') || '2');
+
+    safeSetVal('setting-inv-prefix', localStorage.getItem('acc-inv-prefix') || 'INV-');
+    safeSetVal('setting-inv-due-days', localStorage.getItem('acc-inv-due-days') || '30');
+    safeSetChecked('setting-inv-auto-gen', localStorage.getItem('acc-inv-auto-gen') !== 'false');
+    if (localStorage.getItem('acc-inv-notes')) safeSetVal('setting-inv-notes', localStorage.getItem('acc-inv-notes'));
+
+    safeSetVal('setting-or-prefix', localStorage.getItem('acc-or-prefix') || 'OR-2026-');
+    safeSetVal('setting-clinic-tin', localStorage.getItem('acc-clinic-tin') || '123-456-789-000');
+    safeSetVal('setting-bir-permit', localStorage.getItem('acc-bir-permit') || 'BIR-FP-2026-0041');
+    safeSetVal('setting-auto-issue-receipt', localStorage.getItem('acc-auto-receipt') || 'yes');
+    if (localStorage.getItem('acc-receipt-footer')) safeSetVal('setting-receipt-footer', localStorage.getItem('acc-receipt-footer'));
+
+    safeSetChecked('pay-method-cash', localStorage.getItem('acc-pay-cash') !== 'false');
+    safeSetChecked('pay-method-paymongo', localStorage.getItem('acc-pay-paymongo') !== 'false');
+    safeSetChecked('pay-method-bank', localStorage.getItem('acc-pay-bank') !== 'false');
+    safeSetChecked('pay-method-check', localStorage.getItem('acc-pay-check') !== 'false');
+    safeSetChecked('pay-method-pos', localStorage.getItem('acc-pay-pos') === 'true');
+
+    safeSetVal('setting-hmo-active', localStorage.getItem('acc-hmo-active') || 'enabled');
+    safeSetVal('setting-hmo-copay', localStorage.getItem('acc-hmo-copay') || '0');
+    if (localStorage.getItem('acc-hmo-providers')) safeSetVal('setting-hmo-providers', localStorage.getItem('acc-hmo-providers'));
+
+    safeSetVal('setting-overdue-lock', localStorage.getItem('acc-overdue-lock') || '30');
+    if (localStorage.getItem('acc-cash-cap')) safeSetVal('setting-cash-cap', localStorage.getItem('acc-cash-cap'));
+    safeSetChecked('setting-require-approval-writeoff', localStorage.getItem('acc-approval-writeoff') !== 'false');
+
+    safeSetChecked('notif-sms-receipt', localStorage.getItem('acc-notif-sms') !== 'false');
+    safeSetChecked('notif-email-receipt', localStorage.getItem('acc-notif-email') !== 'false');
+    safeSetChecked('notif-overdue-reminder', localStorage.getItem('acc-notif-overdue') !== 'false');
+
+    safeSetVal('perm-receptionist-settle', localStorage.getItem('acc-perm-receptionist-settle') || 'allowed');
+    safeSetVal('perm-writeoff-role', localStorage.getItem('acc-perm-writeoff-role') || 'admin');
+  }
+
+  function safeSetVal(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  }
+
+  function safeSetChecked(id, checked) {
+    const el = document.getElementById(id);
+    if (el) el.checked = checked;
   }
 
   /* ═══════════════════════════════════════════════════════════

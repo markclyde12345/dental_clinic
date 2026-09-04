@@ -76,7 +76,7 @@
           <li>
             <a href="#" class="nav-tab" data-tab="settings">
               <span class="nav-icon">⚙️</span>
-              <span>Billing Settings</span>
+              <span>Financial Settings</span>
             </a>
           </li>
         </ul>
@@ -705,45 +705,426 @@
           </div>
         </div>
 
-        <!-- ══════════════ TAB 6: BILLING SETTINGS ══════════════ -->
+        <!-- ══════════════ TAB 6: FINANCIAL SETTINGS ══════════════ -->
         <div id="tab-settings" class="tab-pane">
-          <div class="section-card" style="max-width: 680px;">
-            <div class="section-card-header">
-              <h3>Accounting & Invoice Preferences</h3>
-              <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">Configure clinic currency, default taxes, and official receipt vouchers</p>
+          <div style="margin-bottom: 22px;">
+            <h2 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--primary-color); margin: 0 0 4px 0;">Financial Settings</h2>
+            <p style="font-size: 0.88rem; color: #64748b; margin: 0;">Comprehensive clinic accounting policies, automated invoicing, payment gateways, and financial controls.</p>
+          </div>
+
+          <div class="settings-accordion-container" id="financial-settings-accordion">
+            
+            <!-- 1. Accounting & Currency (▼ Expanded by default) -->
+            <div class="settings-accordion-item active" id="acc-item-accounting">
+              <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('accounting')">
+                <div class="accordion-title-group">
+                  <span class="accordion-arrow" id="arrow-accounting">▼</span>
+                  <span class="accordion-title-text">Accounting &amp; Currency</span>
+                  <span class="accordion-subtitle-text">• Base currency, fiscal periods &amp; tax rules</span>
+                </div>
+                <span class="accordion-badge">Default</span>
+              </button>
+              <div class="settings-accordion-content">
+                <form id="form-settings-accounting" onsubmit="saveAccountingSection(event)">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Clinic Currency Symbol</label>
+                      <select id="setting-currency" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="₱">₱ (PHP - Philippine Peso)</option>
+                        <option value="$">$ (USD - US Dollar)</option>
+                        <option value="€">€ (EUR - Euro)</option>
+                        <option value="¥">¥ (JPY - Japanese Yen)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Tax / VAT Preference</label>
+                      <select id="setting-vat" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="0">VAT Exempt (0%) - Medical / Dental Services</option>
+                        <option value="12">Standard 12% Value Added Tax</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Fiscal Year Cycle</label>
+                      <select id="setting-fiscal-year" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="calendar">January 1 – December 31 (Calendar Year)</option>
+                        <option value="midyear">July 1 – June 30 (Mid-Year Cycle)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Rounding &amp; Centavos</label>
+                      <select id="setting-rounding" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="2">2 Decimal Places (e.g. ₱250.00)</option>
+                        <option value="0">Round to Nearest Peso (e.g. ₱250)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn-primary-action">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Accounting &amp; Currency
+                  </button>
+                </form>
+              </div>
             </div>
 
-            <form id="accounting-settings-form" style="display: flex; flex-direction: column; gap: 18px; margin-top: 16px;">
-              <div>
-                <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600;">Clinic Currency Symbol</label>
-                <select id="setting-currency" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.9rem;">
-                  <option value="₱">₱ (PHP - Philippine Peso)</option>
-                  <option value="$">$ (USD - US Dollar)</option>
-                  <option value="€">€ (EUR - Euro)</option>
-                  <option value="¥">¥ (JPY - Japanese Yen)</option>
-                </select>
-              </div>
+            <!-- 2. Invoice Settings (▶) -->
+            <div class="settings-accordion-item" id="acc-item-invoice">
+              <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('invoice')">
+                <div class="accordion-title-group">
+                  <span class="accordion-arrow" id="arrow-invoice">▶</span>
+                  <span class="accordion-title-text">Invoice Settings</span>
+                  <span class="accordion-subtitle-text">• Prefixes, auto-numbering &amp; payment terms</span>
+                </div>
+                <span class="accordion-badge">Invoicing</span>
+              </button>
+              <div class="settings-accordion-content">
+                <form id="form-settings-invoice" onsubmit="saveInvoiceSection(event)">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Invoice Prefix</label>
+                      <input type="text" id="setting-inv-prefix" value="INV-" placeholder="INV-" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">
+                    </div>
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Default Due Date</label>
+                      <select id="setting-inv-due-days" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="7">7 Days from treatment</option>
+                        <option value="15">15 Days from treatment</option>
+                        <option value="30" selected>30 Days from treatment</option>
+                        <option value="60">60 Days from treatment</option>
+                        <option value="due-on-receipt">Due upon receipt (Immediate)</option>
+                      </select>
+                    </div>
+                  </div>
 
-              <div>
-                <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600;">Tax / VAT Preference</label>
-                <select id="setting-vat" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.9rem;">
-                  <option value="0">VAT Exempt (0%)</option>
-                  <option value="12">Standard 12% Value Added Tax</option>
-                </select>
-              </div>
+                  <!-- Auto Generate Numbers switch -->
+                  <div class="setting-switch-row" style="margin-bottom: 16px;">
+                    <div class="setting-switch-info">
+                      <span class="setting-switch-title">Auto Generate Numbers</span>
+                      <span class="setting-switch-desc">Automatically assign sequential uppercase IDs (e.g. INV-A2511F1D)</span>
+                    </div>
+                    <label class="custom-switch">
+                      <input type="checkbox" id="setting-inv-auto-gen" checked>
+                      <span class="custom-slider"></span>
+                    </label>
+                  </div>
 
-              <div>
-                <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600;">Official Receipt Number Prefix</label>
-                <input type="text" id="setting-or-prefix" value="OR-2026-" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; box-sizing: border-box;">
-              </div>
+                  <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Invoice Notes / Payment Terms</label>
+                    <textarea id="setting-inv-notes" rows="3" placeholder="Enter standard payment instructions, clinic bank account details, or terms..." style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">Payment is due within 30 days of treatment. Unpaid balances older than 30 days will require settlement prior to booking new dental appointments.</textarea>
+                  </div>
 
-              <div>
-                <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600;">Receipt Footer Policy Note</label>
-                <textarea id="setting-receipt-footer" rows="2" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; box-sizing: border-box;">Thank you for choosing Fano Dental Clinic! For inquiries, contact info@fanoclinic.com</textarea>
+                  <button type="submit" class="btn-primary-action">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Invoice Settings
+                  </button>
+                </form>
               </div>
+            </div>
 
-              <button type="submit" class="btn-create-inv" style="align-self: flex-start; padding: 12px 24px;">Save Settings</button>
-            </form>
+            <!-- 3. Receipt Settings (▶) -->
+            <div class="settings-accordion-item" id="acc-item-receipt">
+              <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('receipt')">
+                <div class="accordion-title-group">
+                  <span class="accordion-arrow" id="arrow-receipt">▶</span>
+                  <span class="accordion-title-text">Receipt Settings</span>
+                  <span class="accordion-subtitle-text">• BIR permit numbers, tax IDs &amp; printable receipts</span>
+                </div>
+                <span class="accordion-badge">Tax &amp; Receipts</span>
+              </button>
+              <div class="settings-accordion-content">
+                <form id="form-settings-receipt" onsubmit="saveReceiptSection(event)">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Official Receipt (OR) Prefix</label>
+                      <input type="text" id="setting-or-prefix" value="OR-2026-" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">
+                    </div>
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Clinic Tax Identification Number (TIN)</label>
+                      <input type="text" id="setting-clinic-tin" value="123-456-789-000" placeholder="123-456-789-000" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">
+                    </div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">BIR Permit / Authority to Print (ATP)</label>
+                      <input type="text" id="setting-bir-permit" value="BIR-FP-2026-0041" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">
+                    </div>
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Auto-Issue Receipt on Settle</label>
+                      <select id="setting-auto-issue-receipt" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="yes">Yes - Open Printable Receipt Automatically</option>
+                        <option value="no">No - Generate on demand</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Receipt Footer Policy Note</label>
+                    <textarea id="setting-receipt-footer" rows="2" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">Thank you for choosing Fano Dental Clinic! For inquiries, contact info@fanoclinic.com</textarea>
+                  </div>
+
+                  <button type="submit" class="btn-primary-action">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Receipt Settings
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- 4. Payment Methods (▶) -->
+            <div class="settings-accordion-item" id="acc-item-payment">
+              <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('payment')">
+                <div class="accordion-title-group">
+                  <span class="accordion-arrow" id="arrow-payment">▶</span>
+                  <span class="accordion-title-text">Payment Methods</span>
+                  <span class="accordion-subtitle-text">• Gateway channels, cash desks &amp; bank accounts</span>
+                </div>
+                <span class="accordion-badge">Gateways</span>
+              </button>
+              <div class="settings-accordion-content">
+                <form id="form-settings-payment" onsubmit="savePaymentSection(event)">
+                  <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    <div class="setting-switch-row">
+                      <div class="setting-switch-info">
+                        <span class="setting-switch-title">💵 Cash Payments</span>
+                        <span class="setting-switch-desc">Allow receptionist to collect cash at front counter</span>
+                      </div>
+                      <label class="custom-switch">
+                        <input type="checkbox" id="pay-method-cash" checked>
+                        <span class="custom-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="setting-switch-row">
+                      <div class="setting-switch-info">
+                        <span class="setting-switch-title">📱 PayMongo Online Gateway (GCash, Maya, Cards, BillEase)</span>
+                        <span class="setting-switch-desc">Direct Philippine payment rails with instant automated reconciliation</span>
+                      </div>
+                      <label class="custom-switch">
+                        <input type="checkbox" id="pay-method-paymongo" checked>
+                        <span class="custom-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="setting-switch-row">
+                      <div class="setting-switch-info">
+                        <span class="setting-switch-title">🏦 Bank Wire / Online Transfer (BDO, BPI, UnionBank)</span>
+                        <span class="setting-switch-desc">Accept direct bank transfers with receptionist deposit confirmation</span>
+                      </div>
+                      <label class="custom-switch">
+                        <input type="checkbox" id="pay-method-bank" checked>
+                        <span class="custom-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="setting-switch-row">
+                      <div class="setting-switch-info">
+                        <span class="setting-switch-title">📄 Check / Cheque Acceptance</span>
+                        <span class="setting-switch-desc">Accept corporate and personal checks with verification</span>
+                      </div>
+                      <label class="custom-switch">
+                        <input type="checkbox" id="pay-method-check" checked>
+                        <span class="custom-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="setting-switch-row">
+                      <div class="setting-switch-info">
+                        <span class="setting-switch-title">💳 Physical POS Card Terminal</span>
+                        <span class="setting-switch-desc">Countertop swipe/tap terminal integration</span>
+                      </div>
+                      <label class="custom-switch">
+                        <input type="checkbox" id="pay-method-pos">
+                        <span class="custom-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn-primary-action">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Payment Methods
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- 5. HMO & Insurance (▶) -->
+            <div class="settings-accordion-item" id="acc-item-hmo">
+              <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('hmo')">
+                <div class="accordion-title-group">
+                  <span class="accordion-arrow" id="arrow-hmo">▶</span>
+                  <span class="accordion-title-text">HMO &amp; Insurance</span>
+                  <span class="accordion-subtitle-text">• Accreditations, co-pay ratios &amp; claim submissions</span>
+                </div>
+                <span class="accordion-badge">Insurance</span>
+              </button>
+              <div class="settings-accordion-content">
+                <form id="form-settings-hmo" onsubmit="saveHMOSection(event)">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Direct HMO Accreditation</label>
+                      <select id="setting-hmo-active" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="enabled">Enabled - Accept Accredited HMOs</option>
+                        <option value="disabled">Disabled - Cash Only</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Standard Patient Co-Pay Default</label>
+                      <select id="setting-hmo-copay" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="0">0% (Full HMO Coverage)</option>
+                        <option value="10">10% Patient Co-Pay</option>
+                        <option value="20">20% Patient Co-Pay</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Active Accredited Providers</label>
+                    <input type="text" id="setting-hmo-providers" value="Maxicare, Intellicare, PhilCare, Medicard, Caritas Health Shield, PhilHealth" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">
+                  </div>
+
+                  <button type="submit" class="btn-primary-action">
+                    <i class="fa-solid fa-floppy-disk"></i> Save HMO &amp; Insurance
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- 6. Financial Controls (▶) -->
+            <div class="settings-accordion-item" id="acc-item-controls">
+              <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('controls')">
+                <div class="accordion-title-group">
+                  <span class="accordion-arrow" id="arrow-controls">▶</span>
+                  <span class="accordion-title-text">Financial Controls</span>
+                  <span class="accordion-subtitle-text">• Delinquent locks, drawer caps &amp; discount limits</span>
+                </div>
+                <span class="accordion-badge">Security</span>
+              </button>
+              <div class="settings-accordion-content">
+                <form id="form-settings-controls" onsubmit="saveControlsSection(event)">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Overdue Booking Lock Threshold</label>
+                      <select id="setting-overdue-lock" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="30" selected>30 Days Overdue (Strict)</option>
+                        <option value="45">45 Days Overdue</option>
+                        <option value="60">60 Days Overdue</option>
+                        <option value="disabled">Disabled (No Booking Lock)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Daily Cash Drawer Cap</label>
+                      <input type="text" id="setting-cash-cap" value="₱50,000.00" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">
+                    </div>
+                  </div>
+
+                  <div class="setting-switch-row" style="margin-bottom: 20px;">
+                    <div class="setting-switch-info">
+                      <span class="setting-switch-title">Manager Approval for Bad Debt Write-Off</span>
+                      <span class="setting-switch-desc">Require administrator credentials before an invoice can be written off</span>
+                    </div>
+                    <label class="custom-switch">
+                      <input type="checkbox" id="setting-require-approval-writeoff" checked>
+                      <span class="custom-slider"></span>
+                    </label>
+                  </div>
+
+                  <button type="submit" class="btn-primary-action">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Financial Controls
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- 7. Notifications (▶) -->
+            <div class="settings-accordion-item" id="acc-item-notifications">
+              <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('notifications')">
+                <div class="accordion-title-group">
+                  <span class="accordion-arrow" id="arrow-notifications">▶</span>
+                  <span class="accordion-title-text">Notifications</span>
+                  <span class="accordion-subtitle-text">• SMS payment receipts, billing alerts &amp; reminders</span>
+                </div>
+                <span class="accordion-badge">Alerts</span>
+              </button>
+              <div class="settings-accordion-content">
+                <form id="form-settings-notifications" onsubmit="saveNotificationsSection(event)">
+                  <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    <div class="setting-switch-row">
+                      <div class="setting-switch-info">
+                        <span class="setting-switch-title">📱 SMS Instant Payment Receipts (Twilio)</span>
+                        <span class="setting-switch-desc">Send automated SMS confirmation to patient upon payment</span>
+                      </div>
+                      <label class="custom-switch">
+                        <input type="checkbox" id="notif-sms-receipt" checked>
+                        <span class="custom-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="setting-switch-row">
+                      <div class="setting-switch-info">
+                        <span class="setting-switch-title">✉️ Email E-Receipts &amp; PDF Invoices</span>
+                        <span class="setting-switch-desc">Email official statement to patient inbox</span>
+                      </div>
+                      <label class="custom-switch">
+                        <input type="checkbox" id="notif-email-receipt" checked>
+                        <span class="custom-slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="setting-switch-row">
+                      <div class="setting-switch-info">
+                        <span class="setting-switch-title">⏰ Automated Overdue Payment Reminders</span>
+                        <span class="setting-switch-desc">Send gentle reminder SMS/email at 7, 15, and 30 days past due</span>
+                      </div>
+                      <label class="custom-switch">
+                        <input type="checkbox" id="notif-overdue-reminder" checked>
+                        <span class="custom-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn-primary-action">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Notifications
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- 8. Permissions (▶) -->
+            <div class="settings-accordion-item" id="acc-item-permissions">
+              <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('permissions')">
+                <div class="accordion-title-group">
+                  <span class="accordion-arrow" id="arrow-permissions">▶</span>
+                  <span class="accordion-title-text">Permissions</span>
+                  <span class="accordion-subtitle-text">• Role-based access for receptionists, accountants &amp; admins</span>
+                </div>
+                <span class="accordion-badge">Access</span>
+              </button>
+              <div class="settings-accordion-content">
+                <form id="form-settings-permissions" onsubmit="savePermissionsSection(event)">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Receptionist Settle Invoices</label>
+                      <select id="perm-receptionist-settle" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="allowed">Allowed (Cash, GCash &amp; POS)</option>
+                        <option value="restricted">Restricted (Accountant only)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Invoice Write-Off Authority</label>
+                      <select id="perm-writeoff-role" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
+                        <option value="admin">Administrator &amp; Head Accountant Only</option>
+                        <option value="all">All Accounting Staff</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn-primary-action">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Permissions
+                  </button>
+                </form>
+              </div>
+            </div>
+
           </div>
         </div>
 
