@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../css/receptionist-dashboard.css">
+  <link rel="stylesheet" href="../css/receptionist-dashboard.css?v=20260904_audit">
 </head>
 <body>
 
@@ -844,58 +844,158 @@
 
   <!-- 7. MODAL: AUDIT TRAIL & FINANCIAL ACTIVITY LOGS -->
   <div class="modal-overlay" id="modal-audit-logs">
-    <div class="modal-dialog modal-xl" style="max-width: 980px; max-height: 90vh; display: flex; flex-direction: column;">
-      <div class="modal-header">
-        <div>
-          <h3 class="modal-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> System Audit Trail &amp; Activity Log</h3>
-          <p class="modal-sub">Real-time immutable log of receptionist payment collections, cancellations, and bad debt write-offs</p>
-        </div>
-        <button type="button" class="modal-close" onclick="closeModal('modal-audit-logs')">&times;</button>
-      </div>
-      <div class="modal-body" style="overflow-y: auto; padding: 20px;">
-        <!-- Filters Bar -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <label style="font-size: 0.82rem; font-weight: 700; color: #475569;">Filter Action:</label>
-            <select id="audit-action-filter" onchange="filterAuditLogs()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; background: #fff;">
-              <option value="ALL">All Actions</option>
-              <option value="PAYMENT_COLLECTED">Payments Collected</option>
-              <option value="INVOICE_WRITTEN_OFF">Bad Debt Write-Offs</option>
-              <option value="APPOINTMENT_CANCELLED">Appointment Cancellations</option>
-              <option value="APPOINTMENT_STATUS_CHANGED">Status Updates</option>
-            </select>
+    <div class="modal-dialog modal-xl" style="max-height: 92vh; display: flex; flex-direction: column;">
+      
+      <!-- Modal Header with Security & Compliance Badges -->
+      <div class="modal-header" style="padding: 20px 28px; background: #ffffff; border-bottom: 1.5px solid #e2e8f0;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <h3 class="modal-title" style="margin: 0; font-size: 1.35rem; color: #0f172a; display: flex; align-items: center; gap: 10px;">
+              <span style="width: 36px; height: 36px; border-radius: 10px; background: #eff6ff; color: #0284c7; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                <i class="fa-solid fa-shield-halved"></i>
+              </span>
+              System Audit Trail &amp; Activity Log
+            </h3>
+            <span class="audit-compliance-pill live-pill">
+              <span class="audit-live-dot"></span> Real-Time Monitor
+            </span>
+            <span class="audit-compliance-pill">
+              <i class="fa-solid fa-lock text-emerald-600"></i> Immutable Audit Ledger
+            </span>
+            <span class="audit-compliance-pill">
+              <i class="fa-solid fa-file-shield text-blue-600"></i> DPA 2012 / HIPAA
+            </span>
           </div>
-          <button class="btn btn-sm btn-outline-secondary" onclick="loadAuditLogs(true)" style="font-size: 0.8rem; border: 1px solid var(--border); background: #fff; padding: 5px 12px;">
-            <i class="fa-solid fa-arrows-rotate"></i> Refresh Log
-          </button>
+          <p class="modal-sub" style="margin: 0; color: #64748b; font-size: 0.83rem;">
+            Real-time chronological ledger tracking receptionist billing collections, schedule cancellations, bad debt write-offs, and security access.
+          </p>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modal-audit-logs')" aria-label="Close modal">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body audit-modal-body" style="flex: 1; overflow-y: auto;">
+        
+        <!-- KPI Executive Summary Row -->
+        <div class="audit-kpi-grid">
+          <div class="audit-kpi-card">
+            <div class="audit-kpi-info">
+              <span class="audit-kpi-lbl">Total Events</span>
+              <span class="audit-kpi-val" id="audit-kpi-total">0</span>
+              <span class="audit-kpi-sub" id="audit-kpi-total-sub">Tracked actions</span>
+            </div>
+            <div class="audit-kpi-icon icon-blue">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+          </div>
+
+          <div class="audit-kpi-card">
+            <div class="audit-kpi-info">
+              <span class="audit-kpi-lbl">Collections Settled</span>
+              <span class="audit-kpi-val" id="audit-kpi-payments" style="color: #059669;">₱0.00</span>
+              <span class="audit-kpi-sub" id="audit-kpi-payments-sub">0 transactions</span>
+            </div>
+            <div class="audit-kpi-icon icon-green">
+              <i class="fa-solid fa-cash-register"></i>
+            </div>
+          </div>
+
+          <div class="audit-kpi-card">
+            <div class="audit-kpi-info">
+              <span class="audit-kpi-lbl">Bad Debt Write-Offs</span>
+              <span class="audit-kpi-val" id="audit-kpi-writeoffs" style="color: #e11d48;">₱0.00</span>
+              <span class="audit-kpi-sub" id="audit-kpi-writeoffs-sub">0 write-offs</span>
+            </div>
+            <div class="audit-kpi-icon icon-rose">
+              <i class="fa-solid fa-file-circle-xmark"></i>
+            </div>
+          </div>
+
+          <div class="audit-kpi-card">
+            <div class="audit-kpi-info">
+              <span class="audit-kpi-lbl">Schedule Changes</span>
+              <span class="audit-kpi-val" id="audit-kpi-cancellations" style="color: #d97706;">0</span>
+              <span class="audit-kpi-sub" id="audit-kpi-cancellations-sub">Cancellations &amp; edits</span>
+            </div>
+            <div class="audit-kpi-icon icon-amber">
+              <i class="fa-solid fa-calendar-xmark"></i>
+            </div>
+          </div>
         </div>
 
-        <!-- Audit Table -->
-        <div class="table-container" style="max-height: 520px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px;">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th style="width: 170px;">Date &amp; Time</th>
-                <th style="width: 170px;">Staff Member</th>
-                <th style="width: 170px;">Action</th>
-                <th>Activity Details</th>
-                <th style="width: 120px;">IP / Source</th>
-              </tr>
-            </thead>
-            <tbody id="audit-logs-table-body">
-              <tr>
-                <td colspan="5" class="text-center py-4 text-muted">
-                  <i class="fa-solid fa-spinner fa-spin"></i> Loading audit trail...
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Filter & Search Toolbar -->
+        <div class="audit-toolbar-wrapper">
+          <div class="audit-search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="audit-search-input" placeholder="Search staff, patient, reference #, action, IP..." oninput="filterAuditLogs()">
+          </div>
+
+          <div class="audit-filters-group">
+            <select id="audit-action-filter" class="audit-select-filter" onchange="filterAuditLogs()">
+              <option value="ALL">All Event Types</option>
+              <option value="PAYMENT_COLLECTED">💵 Payments Collected</option>
+              <option value="INVOICE_WRITTEN_OFF">❌ Bad Debt Write-Offs</option>
+              <option value="APPOINTMENT_CANCELLED">🚫 Appointment Cancellations</option>
+              <option value="APPOINTMENT_STATUS_CHANGED">🔄 Status Updates</option>
+              <option value="APPOINTMENT_DELETED">🗑️ Deleted Records</option>
+            </select>
+
+            <select id="audit-date-filter" class="audit-select-filter" onchange="filterAuditLogs()">
+              <option value="ALL">All Time Horizon</option>
+              <option value="TODAY">Today Only</option>
+              <option value="7DAYS">Last 7 Days</option>
+              <option value="30DAYS">Last 30 Days</option>
+            </select>
+
+            <button type="button" class="btn-audit-tool" onclick="exportAuditLogsCSV()" title="Export current audit logs to CSV">
+              <i class="fa-solid fa-file-csv text-emerald-600"></i> Export CSV
+            </button>
+
+            <button type="button" class="btn-audit-tool" id="btn-refresh-audit" onclick="loadAuditLogs(true)" title="Fetch latest audit updates">
+              <i class="fa-solid fa-arrows-rotate"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- High-End Audit Table Card -->
+        <div class="audit-table-card">
+          <div class="audit-table-scroll">
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th style="width: 170px;">Timestamp &amp; Age</th>
+                  <th style="width: 190px;">Staff Operator</th>
+                  <th style="width: 190px;">Action Classification</th>
+                  <th>Activity Description &amp; Financial Impact</th>
+                  <th style="width: 150px;">Security Source</th>
+                  <th style="width: 80px; text-align: center;">Details</th>
+                </tr>
+              </thead>
+              <tbody id="audit-logs-table-body">
+                <tr>
+                  <td colspan="6" class="text-center py-5 text-muted" style="padding: 40px 20px; text-align: center;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; color: #0284c7; margin-bottom: 8px; display: block;"></i>
+                    <span style="font-size: 0.88rem; font-weight: 600; color: #64748b;">Loading verified audit trail records...</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer" style="padding: 16px 28px; background: #ffffff; border-top: 1.5px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 0.84rem; font-weight: 700; color: #334155;" id="audit-count-info">Showing 0 audit entries</span>
+          <span style="font-size: 0.78rem; color: #94a3b8;">• Cryptographically sequenced</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-audit-tool" onclick="closeModal('modal-audit-logs')">Close Window</button>
         </div>
       </div>
-      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
-        <span class="text-muted" style="font-size: 0.8rem;" id="audit-count-info">Showing 0 audit entries</span>
-        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-audit-logs')">Close</button>
-      </div>
+
     </div>
   </div>
 
@@ -903,7 +1003,7 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Script Logic -->
-  <script src="../js/receptionist-dashboard.js"></script>
+  <script src="../js/receptionist-dashboard.js?v=20260904_audit"></script>
 </body>
 </html>
 

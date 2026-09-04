@@ -569,12 +569,11 @@ body {
 }
 
 .quick-book-btn {
+  color: var(--accent-dark);
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
-  background: linear-gradient(135deg, var(--accent) 0%, #082d3b 100%);
-  color: #ffffff;
   border: none;
   border-radius: 12px;
   font-weight: 700;
@@ -584,7 +583,6 @@ body {
   box-shadow: 0 4px 12px rgba(11, 60, 77, 0.2);
 }
 .quick-book-btn:hover {
-  background: var(--accent-dark);
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(11, 60, 77, 0.3);
 }
