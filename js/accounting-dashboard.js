@@ -1036,7 +1036,7 @@
       const arrow = item.querySelector('.accordion-arrow');
       if (arrow) arrow.textContent = '▶';
       const content = item.querySelector('.settings-accordion-content');
-      if (content) content.style.display = 'none';
+      if (content) content.style.setProperty('display', 'none', 'important');
     });
 
     // If it wasn't already active, expand it and set arrow to ▼
@@ -1045,8 +1045,30 @@
       const targetArrow = document.getElementById(`arrow-${itemId}`);
       if (targetArrow) targetArrow.textContent = '▼';
       const targetContent = targetItem.querySelector('.settings-accordion-content');
-      if (targetContent) targetContent.style.display = 'block';
+      if (targetContent) targetContent.style.setProperty('display', 'block', 'important');
     }
+  };
+
+  window.expandAllSettings = function() {
+    const allItems = document.querySelectorAll('.settings-accordion-item');
+    allItems.forEach(item => {
+      item.classList.add('active');
+      const arrow = item.querySelector('.accordion-arrow');
+      if (arrow) arrow.textContent = '▼';
+      const content = item.querySelector('.settings-accordion-content');
+      if (content) content.style.setProperty('display', 'block', 'important');
+    });
+  };
+
+  window.collapseAllSettings = function() {
+    const allItems = document.querySelectorAll('.settings-accordion-item');
+    allItems.forEach(item => {
+      item.classList.remove('active');
+      const arrow = item.querySelector('.accordion-arrow');
+      if (arrow) arrow.textContent = '▶';
+      const content = item.querySelector('.settings-accordion-content');
+      if (content) content.style.setProperty('display', 'none', 'important');
+    });
   };
 
   // Section Save Handlers

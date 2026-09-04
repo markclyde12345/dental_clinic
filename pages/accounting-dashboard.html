@@ -6,7 +6,7 @@
   <title>Accounting & Financial Control — Fano Dental Clinic</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/accounting-dashboard.css">
+  <link rel="stylesheet" href="../css/accounting-dashboard.css?v=20260904_03">
 </head>
 <body>
 
@@ -712,7 +712,13 @@
               <h2 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--primary-color); margin: 0 0 4px 0;">Financial Settings</h2>
               <p style="font-size: 0.88rem; color: #64748b; margin: 0;">Comprehensive clinic accounting policies, automated invoicing, payment gateways, and financial controls.</p>
             </div>
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="btn-outline-util" style="height: 38px; padding: 0 14px; font-size: 0.82rem;" onclick="expandAllSettings()">
+                <i class="fa-solid fa-up-right-and-down-left-from-center"></i> Expand All
+              </button>
+              <button type="button" class="btn-outline-util" style="height: 38px; padding: 0 14px; font-size: 0.82rem;" onclick="collapseAllSettings()">
+                <i class="fa-solid fa-down-left-and-up-right-to-center"></i> Collapse All
+              </button>
               <button type="button" class="btn-secondary-action" style="height: 38px; padding: 0 14px; font-size: 0.82rem;" onclick="toggleSettingsAccordion('invoice')">
                 <i class="fa-solid fa-file-invoice-dollar"></i> Invoice Settings
               </button>
@@ -721,6 +727,64 @@
               </button>
             </div>
           </div>
+
+          <script>
+            function toggleSettingsAccordion(itemId) {
+              const allItems = document.querySelectorAll('.settings-accordion-item');
+              const targetItem = document.getElementById('acc-item-' + itemId);
+              if (!targetItem) return;
+
+              const isCurrentlyActive = targetItem.classList.contains('active');
+
+              // Accordion single-expansion rule: close others
+              allItems.forEach(item => {
+                item.classList.remove('active');
+                const arrow = item.querySelector('.accordion-arrow');
+                if (arrow) arrow.textContent = '▶';
+                const content = item.querySelector('.settings-accordion-content');
+                if (content) {
+                  content.style.setProperty('display', 'none', 'important');
+                }
+              });
+
+              // If it was not active before, expand it
+              if (!isCurrentlyActive) {
+                targetItem.classList.add('active');
+                const targetArrow = document.getElementById('arrow-' + itemId);
+                if (targetArrow) targetArrow.textContent = '▼';
+                const targetContent = targetItem.querySelector('.settings-accordion-content');
+                if (targetContent) {
+                  targetContent.style.setProperty('display', 'block', 'important');
+                }
+              }
+            }
+
+            function expandAllSettings() {
+              const allItems = document.querySelectorAll('.settings-accordion-item');
+              allItems.forEach(item => {
+                item.classList.add('active');
+                const arrow = item.querySelector('.accordion-arrow');
+                if (arrow) arrow.textContent = '▼';
+                const content = item.querySelector('.settings-accordion-content');
+                if (content) {
+                  content.style.setProperty('display', 'block', 'important');
+                }
+              });
+            }
+
+            function collapseAllSettings() {
+              const allItems = document.querySelectorAll('.settings-accordion-item');
+              allItems.forEach(item => {
+                item.classList.remove('active');
+                const arrow = item.querySelector('.accordion-arrow');
+                if (arrow) arrow.textContent = '▶';
+                const content = item.querySelector('.settings-accordion-content');
+                if (content) {
+                  content.style.setProperty('display', 'none', 'important');
+                }
+              });
+            }
+          </script>
 
           <div class="settings-accordion-container" id="financial-settings-accordion">
             
@@ -1564,7 +1628,7 @@
   <!-- Toast Container -->
   <div id="toast-container" class="toast-container"></div>
 
-  <script src="../js/accounting-dashboard.js"></script>
+  <script src="../js/accounting-dashboard.js?v=20260904_03"></script>
 </body>
 </html>
 
