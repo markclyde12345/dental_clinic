@@ -53,8 +53,13 @@ const createPaymongoCheckout = async (req, res) => {
     const isLiveKey = secretKey && !secretKey.includes('PLACEHOLDER') && secretKey.startsWith('sk_');
 
     const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
-    const defaultSuccessUrl = `${origin}/pages/patient-dashboard.html?payment=success&invoice_id=${invoice.id}`;
-    const defaultCancelUrl = `${origin}/pages/patient-dashboard.html?payment=cancelled&invoice_id=${invoice.id}`;
+    const refererBase = req.headers.referer ? req.headers.referer.split('?')[0] : null;
+    const defaultSuccessUrl = refererBase
+      ? `${refererBase}?payment=success&invoice_id=${invoice.id}`
+      : `${origin}/pages/patient-dashboard.html?payment=success&invoice_id=${invoice.id}`;
+    const defaultCancelUrl = refererBase
+      ? `${refererBase}?payment=cancelled&invoice_id=${invoice.id}`
+      : `${origin}/pages/patient-dashboard.html?payment=cancelled&invoice_id=${invoice.id}`;
 
     // 2. If valid PayMongo secret key is configured, invoke PayMongo Checkout API
     if (isLiveKey) {

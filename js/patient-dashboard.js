@@ -945,6 +945,8 @@ function executePayMongoCheckout() {
   if (btn) btn.disabled = true;
   if (btnText) btnText.textContent = 'Connecting to PayMongo...';
 
+  const currentPageUrl = window.location.href.split('?')[0];
+
   apiFetch('/payments/paymongo/checkout', {
     method: 'POST',
     headers: {
@@ -952,7 +954,9 @@ function executePayMongoCheckout() {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      invoice_id: activePaymentInvoice.id
+      invoice_id: activePaymentInvoice.id,
+      success_url: `${currentPageUrl}?payment=success&invoice_id=${activePaymentInvoice.id}`,
+      cancel_url: `${currentPageUrl}?payment=cancelled&invoice_id=${activePaymentInvoice.id}`
     })
   })
   .then(data => {
