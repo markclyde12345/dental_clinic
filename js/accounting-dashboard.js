@@ -1035,6 +1035,8 @@
       item.classList.remove('active');
       const arrow = item.querySelector('.accordion-arrow');
       if (arrow) arrow.textContent = '▶';
+      const content = item.querySelector('.settings-accordion-content');
+      if (content) content.style.display = 'none';
     });
 
     // If it wasn't already active, expand it and set arrow to ▼
@@ -1042,6 +1044,8 @@
       targetItem.classList.add('active');
       const targetArrow = document.getElementById(`arrow-${itemId}`);
       if (targetArrow) targetArrow.textContent = '▼';
+      const targetContent = targetItem.querySelector('.settings-accordion-content');
+      if (targetContent) targetContent.style.display = 'block';
     }
   };
 

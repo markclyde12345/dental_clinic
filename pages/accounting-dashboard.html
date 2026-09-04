@@ -707,18 +707,28 @@
 
         <!-- ══════════════ TAB 6: FINANCIAL SETTINGS ══════════════ -->
         <div id="tab-settings" class="tab-pane">
-          <div style="margin-bottom: 22px;">
-            <h2 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--primary-color); margin: 0 0 4px 0;">Financial Settings</h2>
-            <p style="font-size: 0.88rem; color: #64748b; margin: 0;">Comprehensive clinic accounting policies, automated invoicing, payment gateways, and financial controls.</p>
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 22px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--primary-color); margin: 0 0 4px 0;">Financial Settings</h2>
+              <p style="font-size: 0.88rem; color: #64748b; margin: 0;">Comprehensive clinic accounting policies, automated invoicing, payment gateways, and financial controls.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn-secondary-action" style="height: 38px; padding: 0 14px; font-size: 0.82rem;" onclick="toggleSettingsAccordion('invoice')">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Invoice Settings
+              </button>
+              <button type="button" class="btn-secondary-action" style="height: 38px; padding: 0 14px; font-size: 0.82rem;" onclick="toggleSettingsAccordion('payment')">
+                <i class="fa-solid fa-credit-card"></i> Payment Methods
+              </button>
+            </div>
           </div>
 
           <div class="settings-accordion-container" id="financial-settings-accordion">
             
-            <!-- 1. Accounting & Currency (▼ Expanded by default) -->
-            <div class="settings-accordion-item active" id="acc-item-accounting">
+            <!-- 1. Accounting & Currency (▶) -->
+            <div class="settings-accordion-item" id="acc-item-accounting">
               <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('accounting')">
                 <div class="accordion-title-group">
-                  <span class="accordion-arrow" id="arrow-accounting">▼</span>
+                  <span class="accordion-arrow" id="arrow-accounting">▶</span>
                   <span class="accordion-title-text">Accounting &amp; Currency</span>
                   <span class="accordion-subtitle-text">• Base currency, fiscal periods &amp; tax rules</span>
                 </div>
@@ -769,17 +779,17 @@
               </div>
             </div>
 
-            <!-- 2. Invoice Settings (▶) -->
-            <div class="settings-accordion-item" id="acc-item-invoice">
+            <!-- 2. Invoice Settings (▼ EXPANDED BY DEFAULT) -->
+            <div class="settings-accordion-item active" id="acc-item-invoice">
               <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('invoice')">
                 <div class="accordion-title-group">
-                  <span class="accordion-arrow" id="arrow-invoice">▶</span>
+                  <span class="accordion-arrow" id="arrow-invoice">▼</span>
                   <span class="accordion-title-text">Invoice Settings</span>
                   <span class="accordion-subtitle-text">• Prefixes, auto-numbering &amp; payment terms</span>
                 </div>
                 <span class="accordion-badge">Invoicing</span>
               </button>
-              <div class="settings-accordion-content">
+              <div class="settings-accordion-content" style="display: block;">
                 <form id="form-settings-invoice" onsubmit="saveInvoiceSection(event)">
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                     <div>
