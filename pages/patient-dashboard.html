@@ -1107,7 +1107,7 @@
   </div>
 
   <!-- ══════════ APPOINTMENT DETAILS & ACTIONS MODAL ══════════ -->
-  <div class="modal-overlay" id="appointment-details-modal">
+  <div class="modal-overlay" id="appointment-details-modal" onclick="if(event.target === this) closeAppointmentModal()">
     <div class="modal-card appointment-modal-card">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
@@ -1215,8 +1215,10 @@
         </div>
       </div>
     </div>
+  </div>
+
   <!-- ══════════ PAYMONGO PAYMENT CHECKOUT MODAL ══════════ -->
-  <div class="modal-overlay" id="modal-paymongo-checkout">
+  <div class="modal-overlay" id="modal-paymongo-checkout" onclick="if(event.target === this) closePaymongoModal()">
     <div class="modal-card paymongo-modal-card">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
@@ -1299,7 +1301,7 @@
   </div>
 
   <!-- ══════════ PAYMENT RECEIPT & SUCCESS MODAL ══════════ -->
-  <div class="modal-overlay" id="modal-payment-receipt">
+  <div class="modal-overlay" id="modal-payment-receipt" onclick="if(event.target === this) closeReceiptModal()">
     <div class="modal-card receipt-modal-card">
       <div class="receipt-success-banner">
         <div class="receipt-check-circle">
