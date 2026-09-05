@@ -4029,5 +4029,22 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   }
 }
 
+@media (max-width: 420px) {
+  .taskbar-item {
+    padding: 4px 1px !important;
+  }
+  .taskbar-item .taskbar-icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .taskbar-item .taskbar-icon svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+  .taskbar-item .taskbar-label {
+    font-size: 0.62rem !important;
+  }
+}
+
 
 

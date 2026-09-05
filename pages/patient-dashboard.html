@@ -68,6 +68,12 @@
               Billing &amp; Invoices
             </a>
           </li>
+          <li>
+            <a href="#" class="nav-item" data-section="finances" id="nav-finances">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              Financial Summary
+            </a>
+          </li>
         </ul>
 
         <p class="nav-label" style="margin-top:24px;">PERSONAL</p>
@@ -897,6 +903,60 @@
         </div>
       </section>
 
+      <!-- ══════════ FINANCIAL SUMMARY SECTION ══════════ -->
+      <section id="finances-section" class="content-section">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Financial Summary &amp; Analytics</h1>
+            <p class="section-subtitle">Track your billed treatment amounts, payments, and insurance claims.</p>
+          </div>
+          <div class="balance-summary">
+            <button type="button" class="primary-btn" onclick="switchSection('billing')" style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              <span>View Invoices &amp; Pay</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Financial Summary Widgets -->
+        <div class="financial-widgets-row" id="financial-widgets-row">
+          <div class="widget-card widget-financial">
+            <h3 class="widget-title">Total Billed</h3>
+            <p class="widget-value" id="total-billed-val">₱0.00</p>
+            <p class="widget-trend positive" id="total-billed-trend">+0% vs last month</p>
+          </div>
+          <div class="widget-card widget-financial">
+            <h3 class="widget-title">Pending Payments</h3>
+            <p class="widget-value" id="pending-payments-val">₱0.00</p>
+            <p class="widget-trend neutral" id="pending-payments-trend">0 invoices pending</p>
+          </div>
+          <div class="widget-card widget-financial">
+            <h3 class="widget-title">Paid This Month</h3>
+            <p class="widget-value" id="paid-month-val">₱0.00</p>
+            <p class="widget-trend positive" id="paid-month-trend">+0% vs last month</p>
+          </div>
+          <div class="widget-card widget-financial">
+            <h3 class="widget-title">Insurance Claims</h3>
+            <p class="widget-value" id="insurance-claims-val">0</p>
+            <p class="widget-trend neutral" id="insurance-claims-trend">0 pending review</p>
+          </div>
+        </div>
+
+        <!-- Financial Activity Log Card -->
+        <div class="card financial-activity-card" style="margin-top: 20px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 class="card-title">Financial &amp; Payment Activity</h3>
+            <button class="card-action-btn" onclick="switchSection('billing')">View All Invoices &rarr;</button>
+          </div>
+          <div id="financial-activity-list" style="padding: 16px;">
+            <div class="empty-state-sm">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9"/><circle cx="12" cy="12" r="3"/></svg>
+              <p>No financial activity recorded yet.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ══════════ PROFILE SECTION ══════════ -->
       <section id="profile-section" class="content-section">
         <div class="section-header">
@@ -1365,6 +1425,12 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
       </div>
       <span class="taskbar-label">Billing</span>
+    </button>
+    <button type="button" class="taskbar-item" data-section="finances" onclick="switchSection('finances')">
+      <div class="taskbar-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <span class="taskbar-label">Finances</span>
     </button>
     <button type="button" class="taskbar-item" data-section="profile" onclick="switchSection('profile')">
       <div class="taskbar-icon">

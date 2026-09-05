@@ -633,6 +633,7 @@ function loadInvoices() {
     allInvoices = data;
     renderInvoiceStats();
     renderFinancialWidgets();
+    renderFinancialActivity();
     renderInvoicesPreview();
     renderInvoicesTable();
     renderPatientHistoryRecords();
@@ -2436,10 +2437,16 @@ function switchSection(sectionId) {
     appointments: 'Book Appointment',
     records:      'My Records',
     billing:      'Billing & Invoices',
+    finances:     'Financial Summary',
     profile:      'My Profile',
     settings:     'Settings'
   };
   safeSet('breadcrumb-current', labels[sectionId] || 'Dashboard');
+
+  if (sectionId === 'finances') {
+    renderFinancialWidgets();
+    renderFinancialActivity();
+  }
 
   // Scroll to top
   window.scrollTo({ top: 0, behavior: 'smooth' });
