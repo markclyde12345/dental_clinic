@@ -1,5 +1,39 @@
 [
   {
+    "id": "0b43d89f-ddc3-4cc8-9e1d-04226f994939",
+    "timestamp": "2026-09-05T16:55:00.889Z",
+    "action": "APPOINTMENT_STATUS_CHANGED",
+    "entity_type": "appointment",
+    "entity_id": "076c6fe3-5fa3-4221-a134-df77e35d5d4b",
+    "user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Sarah Clerk updated appointment #076C6FE3 for mark clyde Castillote to status 'In Progress'",
+    "metadata": {
+      "appointment_id": "076c6fe3-5fa3-4221-a134-df77e35d5d4b",
+      "status": "In Progress"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "2c7e8f10-0953-4e26-ad0a-700538e4470b",
+    "timestamp": "2026-09-05T16:54:50.680Z",
+    "action": "APPOINTMENT_STATUS_CHANGED",
+    "entity_type": "appointment",
+    "entity_id": "076c6fe3-5fa3-4221-a134-df77e35d5d4b",
+    "user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Sarah Clerk updated appointment #076C6FE3 for mark clyde Castillote to status 'Checked In'",
+    "metadata": {
+      "appointment_id": "076c6fe3-5fa3-4221-a134-df77e35d5d4b",
+      "status": "Checked In"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
     "id": "7dc24d2f-80fa-4eff-b44b-d3a0257b58b8",
     "timestamp": "2026-09-03T18:46:21.895Z",
     "action": "INVOICE_WRITTEN_OFF",

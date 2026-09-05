@@ -337,8 +337,70 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;       /* ← never shrink or wrap the right side */
-  flex-wrap: nowrap;
+  flex-shrink: 0;       /* ← never shrink or wrap the right side on desktop */
+  flex-wrap: wrap;
+}
+
+.header-utility-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-action-grid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-header-notif {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  color: #475569;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-header-notif:hover {
+  background: #f8fafc;
+  color: var(--primary-color);
+  border-color: #cbd5e1;
+}
+
+.btn-outline-primary {
+  background: #ffffff;
+  color: var(--primary-color);
+  border: 1.5px solid var(--primary-color);
+  font-weight: 700;
+}
+
+.btn-outline-primary:hover {
+  background: #f0fdfa;
+  border-color: var(--primary-light);
+  color: var(--primary-light);
+}
+
+.btn-outline-secondary {
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+}
+
+.btn-outline-secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e293b;
 }
 
 .live-clock-card {
@@ -2083,29 +2145,195 @@ body {
     width: 100%;
   }
 
+  /* 4. Top Header & Action Controls (Thin, Symmetrical & Clear) */
   .top-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 14px 16px;
+    align-items: stretch;
+    gap: 12px;
+    padding: 4px 0 12px 0;
+    margin-bottom: 14px;
+  }
+
+  .header-title-block h2 {
+    font-size: 1.35rem;
+    line-height: 1.25;
+    margin: 0 0 3px 0;
+    white-space: normal;
+  }
+
+  .header-title-block .header-subtitle {
+    font-size: 0.8rem;
+    line-height: 1.35;
+    white-space: normal;
+    color: var(--text-muted, #64748b);
   }
 
   .header-actions {
-    flex-wrap: wrap;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  /* Thin & sleek utility bar: Live Clock (left) + Alerts (right) */
+  .header-utility-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
     gap: 8px;
   }
 
   .live-clock-card {
-    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
     justify-content: center;
+    padding: 0 10px;
+    height: 36px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .header-actions .btn {
-    flex: 1 1 calc(50% - 6px);
-    justify-content: center;
+  .live-clock-card i {
+    font-size: 0.82rem;
+    margin-right: 3px;
+    color: var(--primary-color, #0b3c4d);
+  }
+
+  #current-time {
+    min-width: unset;
+    text-align: center;
+  }
+
+  #current-date {
+    min-width: unset;
+  }
+
+  .header-utility-bar .notif-wrapper {
+    flex: 0 0 auto;
+    position: relative;
+  }
+
+  .btn-header-notif {
+    height: 36px;
+    padding: 0 12px;
     font-size: 0.8rem;
-    padding: 8px 10px;
+    font-weight: 600;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .receptionist-notif-dropdown {
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    right: 0;
+    top: calc(100% + 6px);
+  }
+
+  /* Clear 2x2 Grid for Action Buttons */
+  .header-action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .header-action-grid .btn {
+    width: 100%;
+    height: 38px;
+    padding: 0 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    margin: 0;
+  }
+
+  .header-action-grid .btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .btn-book-action {
+    order: 1;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-walkin-action {
+    order: 2;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-qr-action {
+    order: 3;
+    background: #ffffff !important;
+    border: 1.5px solid var(--primary-color, #0b3c4d) !important;
+    color: var(--primary-color, #0b3c4d) !important;
+    font-weight: 700 !important;
+  }
+
+  .btn-audit-action {
+    order: 4;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+  }
+
+  @media (max-width: 420px) {
+    .live-clock-card {
+      font-size: 0.72rem;
+      padding: 0 6px;
+      gap: 4px;
+    }
+    .header-utility-bar {
+      gap: 6px;
+    }
+    .header-action-grid {
+      gap: 6px;
+    }
+    .header-action-grid .btn {
+      font-size: 0.76rem;
+      padding: 0 4px;
+      gap: 4px;
+      height: 36px;
+    }
+    .btn-header-notif {
+      padding: 0 8px;
+      font-size: 0.76rem;
+      gap: 4px;
+      height: 36px;
+    }
   }
 
   .form-row, .form-row-3 {

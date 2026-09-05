@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../css/receptionist-dashboard.css?v=20260906_mobile">
+  <link rel="stylesheet" href="../css/receptionist-dashboard.css?v=20260906_mobile_header_clean">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
@@ -125,64 +125,70 @@
     <main class="main-content">
       <!-- Top Header -->
       <header class="top-header">
-        <div>
+        <div class="header-title-block">
           <h2 id="page-title">Front Desk Overview</h2>
           <p class="header-subtitle" id="page-subtitle">Manage daily appointments, walk-in arrivals, and patient check-ins</p>
         </div>
         <div class="header-actions">
-          <div class="live-clock-card">
-            <i class="fa-regular fa-clock"></i>
-            <span id="current-time">--:-- --</span>
-            <span class="clock-divider">|</span>
-            <span id="current-date">Loading date...</span>
-          </div>
+          <!-- Utility Row: Live Clock & Clinic Alerts -->
+          <div class="header-utility-bar">
+            <div class="live-clock-card">
+              <i class="fa-regular fa-clock"></i>
+              <span id="current-time">--:-- --</span>
+              <span class="clock-divider">|</span>
+              <span id="current-date">Loading date...</span>
+            </div>
 
-          <!-- Front Desk Notification Center -->
-          <div class="notif-wrapper" id="receptionist-notif-wrapper" style="position: relative;">
-            <button type="button" class="btn btn-outline-secondary" id="btn-receptionist-notif" aria-label="Notifications" title="Front Desk Alerts" style="border: 1px solid var(--border); background: #fff; color: #475569; position: relative; padding: 8px 12px; display: flex; align-items: center; gap: 6px;">
-              <i class="fa-regular fa-bell"></i>
-              <span>Alerts</span>
-              <span class="receptionist-notif-badge" id="receptionist-notif-count" style="display: none;">0</span>
-            </button>
-            <div class="receptionist-notif-dropdown" id="receptionist-notif-dropdown" hidden>
-              <div class="rnd-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #1e293b;">Clinic Alerts</h4>
-                  <span class="rnd-unread-pill" id="rnd-unread-label">0 New</span>
+            <!-- Front Desk Notification Center -->
+            <div class="notif-wrapper" id="receptionist-notif-wrapper">
+              <button type="button" class="btn btn-outline-secondary btn-header-notif" id="btn-receptionist-notif" aria-label="Notifications" title="Front Desk Alerts">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notif-btn-text">Alerts</span>
+                <span class="receptionist-notif-badge" id="receptionist-notif-count" style="display: none;">0</span>
+              </button>
+              <div class="receptionist-notif-dropdown" id="receptionist-notif-dropdown" hidden>
+                <div class="rnd-header">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #1e293b;">Clinic Alerts</h4>
+                    <span class="rnd-unread-pill" id="rnd-unread-label">0 New</span>
+                  </div>
+                  <button type="button" class="rnd-mark-read-btn" onclick="markAllReceptionistNotificationsRead()">Mark all read</button>
                 </div>
-                <button type="button" class="rnd-mark-read-btn" onclick="markAllReceptionistNotificationsRead()">Mark all read</button>
-              </div>
-              <div class="rnd-list" id="receptionist-notif-list">
-                <div class="rnd-empty">
-                  <i class="fa-regular fa-bell-slash" style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 6px;"></i>
-                  <p>All caught up! No active clinic alerts.</p>
+                <div class="rnd-list" id="receptionist-notif-list">
+                  <div class="rnd-empty">
+                    <i class="fa-regular fa-bell-slash" style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 6px;"></i>
+                    <p>All caught up! No active clinic alerts.</p>
+                  </div>
                 </div>
-              </div>
-              <div class="rnd-footer">
-                <button type="button" class="rnd-footer-action" onclick="loadReceptionistNotifications(true)">
-                  <i class="fa-solid fa-arrows-rotate"></i>
-                  <span>Refresh Alerts</span>
-                </button>
+                <div class="rnd-footer">
+                  <button type="button" class="rnd-footer-action" onclick="loadReceptionistNotifications(true)">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>Refresh Alerts</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <button class="btn btn-outline-secondary" onclick="openAuditLogsModal()" title="View financial and staff activity audit trail" style="border: 1px solid var(--border); background: #fff; color: #475569; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            <span>Audit Trail</span>
-          </button>
-          <button class="btn btn-outline-primary" id="btn-clinic-qr" onclick="openClinicQrModal()" title="Clinic QR Standee for Walk-in Booking & Check-in" style="border: 1.5px solid var(--primary); color: var(--primary); background: #ffffff; display: flex; align-items: center; gap: 6px; font-weight: 700;">
-            <i class="fa-solid fa-qrcode"></i>
-            <span>Clinic QR Standee</span>
-          </button>
-          <button class="btn btn-primary" onclick="openBookAppointmentModal()">
-            <i class="fa-solid fa-plus"></i>
-            <span>Book Appointment</span>
-          </button>
-          <button class="btn btn-secondary" onclick="openRegisterPatientModal()">
-            <i class="fa-solid fa-user-plus"></i>
-            <span>New Walk-In</span>
-          </button>
+          <!-- Action Buttons Grid -->
+          <div class="header-action-grid">
+            <button class="btn btn-primary btn-book-action" onclick="openBookAppointmentModal()" title="Book New Appointment">
+              <i class="fa-solid fa-plus"></i>
+              <span>Book Appointment</span>
+            </button>
+            <button class="btn btn-secondary btn-walkin-action" onclick="openRegisterPatientModal()" title="Register Walk-In Patient">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>New Walk-In</span>
+            </button>
+            <button class="btn btn-outline-primary btn-qr-action" id="btn-clinic-qr" onclick="openClinicQrModal()" title="Clinic QR Standee for Walk-in Booking & Check-in">
+              <i class="fa-solid fa-qrcode"></i>
+              <span>Clinic QR Standee</span>
+            </button>
+            <button class="btn btn-outline-secondary btn-audit-action" onclick="openAuditLogsModal()" title="View financial and staff activity audit trail">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>Audit Trail</span>
+            </button>
+          </div>
         </div>
       </header>
 
