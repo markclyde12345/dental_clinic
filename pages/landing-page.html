@@ -7,7 +7,7 @@
   <meta name="description" content="Experience advanced, comfortable, and professional dental services designed for every smile. Where science meets artistry at Fano Dental Clinic.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/style.css?v=10">
+  <link rel="stylesheet" href="../css/style.css?v=11">
 </head>
 <body>
 
@@ -21,12 +21,20 @@
 
 <!-- ===== MOBILE MENU ===== -->
 <div class="mobile-menu" id="mobileMenu">
-  <button class="mobile-close" id="mobileClose">✕</button>
-  <a href="#hero" onclick="closeMobileMenu()">Home</a>
-  <a href="#about" onclick="closeMobileMenu()">About</a>
-  <a href="#services" onclick="closeMobileMenu()">Services</a>
-  <a href="#dentist" onclick="closeMobileMenu()">Dentist</a>
-  <a href="#booking" onclick="closeMobileMenu()" style="color:var(--purple)">Book Now</a>
+  <div class="mobile-menu-header">
+    <a href="#hero" class="nav-logo" onclick="closeMobileMenu()">
+      <img src="../Resources/logo.png" alt="Fano Dental Clinic Logo" class="nav-logo-img">
+      <span class="nav-logo-text">Fano Dental</span>
+    </a>
+    <button class="mobile-close" id="mobileClose" aria-label="Close menu">✕</button>
+  </div>
+  <div class="mobile-menu-links">
+    <a href="#hero" onclick="closeMobileMenu()">Home</a>
+    <a href="#about" onclick="closeMobileMenu()">About</a>
+    <a href="#services" onclick="closeMobileMenu()">Services</a>
+    <a href="#dentist" onclick="closeMobileMenu()">Dentist</a>
+    <a href="#booking" onclick="closeMobileMenu()" class="mobile-cta">Book Now</a>
+  </div>
 </div>
 
 <!-- ===== NAVBAR ===== -->
