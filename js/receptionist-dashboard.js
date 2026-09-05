@@ -1412,18 +1412,25 @@ function cancelAppointmentPrompt(appointmentId) {
 // ─── Modals: Open & Close ─────────────────────────────────────────────────────
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
-  if (modal) modal.classList.add('open');
+  if (modal) {
+    modal.classList.add('open');
+    modal.style.display = 'flex';
+  }
 }
 
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
-  if (modal) modal.classList.remove('open');
+  if (modal) {
+    modal.classList.remove('open');
+    modal.style.display = 'none';
+  }
 }
 
 // Close on backdrop click
 window.addEventListener('click', (e) => {
   if (e.target.classList.contains('modal-overlay')) {
     e.target.classList.remove('open');
+    e.target.style.display = 'none';
   }
 });
 
@@ -2629,38 +2636,56 @@ function formatRecTime(isoStr) {
 let qrStandeeInstance = null;
 
 function openClinicQrModal() {
-  const modal = document.getElementById('modal-clinic-qr');
-  if (modal) {
-    modal.style.display = 'flex';
-    setTimeout(updateStandeeQr, 100);
-  }
+  openModal('modal-clinic-qr');
+  setTimeout(updateStandeeQr, 50);
+}
+
+function closeClinicQrModal() {
+  closeModal('modal-clinic-qr');
+}
+
+function getStandeeTargetUrl() {
+  const branchSelect = document.getElementById('qr-standee-branch');
+  const branchName = branchSelect ? branchSelect.value : 'Main Clinic - Naga City';
+  const origin = window.location.origin && window.location.origin !== 'null'
+    ? window.location.origin
+    : 'https://dental-clinic-bxfb.vercel.app';
+  const pathname = window.location.pathname || '';
+  const basePath = pathname.substring(0, pathname.lastIndexOf('/pages'));
+  return `${origin}${basePath}/pages/book-qr.html?branch=${encodeURIComponent(branchName)}`;
 }
 
 function updateStandeeQr() {
   const branchSelect = document.getElementById('qr-standee-branch');
-  const branchName = branchSelect ? branchSelect.value : 'Makati Main Clinic';
+  const branchName = branchSelect ? branchSelect.value : 'Main Clinic - Naga City';
   const previewBranchEl = document.getElementById('standee-preview-branch');
   if (previewBranchEl) previewBranchEl.textContent = branchName;
+
+  const urlInput = document.getElementById('qr-standee-url-input');
+  const targetUrl = getStandeeTargetUrl();
+  if (urlInput) urlInput.value = targetUrl;
+
+  const colorSelect = document.getElementById('qr-color-theme');
+  const qrColor = colorSelect ? colorSelect.value : '#0b3c4d';
 
   const targetContainer = document.getElementById('standee-qr-target');
   if (!targetContainer) return;
 
   targetContainer.innerHTML = '';
 
-  const origin = window.location.origin && window.location.origin !== 'null'
-    ? window.location.origin
-    : 'https://dental-clinic-bxfb.vercel.app';
-  const targetUrl = `${origin}/pages/book-qr.html?branch=${encodeURIComponent(branchName)}`;
-
   try {
-    qrStandeeInstance = new QRCode(targetContainer, {
-      text: targetUrl,
-      width: 180,
-      height: 180,
-      colorDark: '#0b3c4d',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H
-    });
+    if (typeof QRCode !== 'undefined') {
+      qrStandeeInstance = new QRCode(targetContainer, {
+        text: targetUrl,
+        width: 180,
+        height: 180,
+        colorDark: qrColor,
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    } else {
+      targetContainer.innerHTML = `<p style="color:#64748b; font-size:0.85rem; padding: 20px;">QR Generator ready.<br><a href="${targetUrl}" target="_blank" style="color:#0d9488; font-weight:700;">Open Direct Link</a></p>`;
+    }
   } catch (err) {
     console.warn('QR Standee generation error:', err);
     targetContainer.innerHTML = `<p style="color:#ef4444; font-size:0.8rem;">Could not render QR code canvas.</p>`;
@@ -2668,28 +2693,57 @@ function updateStandeeQr() {
 }
 
 function copyStandeeUrl() {
-  const branchSelect = document.getElementById('qr-standee-branch');
-  const branchName = branchSelect ? branchSelect.value : 'Makati Main Clinic';
-  const origin = window.location.origin && window.location.origin !== 'null'
-    ? window.location.origin
-    : 'https://dental-clinic-bxfb.vercel.app';
-  const targetUrl = `${origin}/pages/book-qr.html?branch=${encodeURIComponent(branchName)}`;
+  const targetUrl = getStandeeTargetUrl();
+  const copyBtn = document.getElementById('btn-copy-standee-link');
+  const copyText = document.getElementById('btn-copy-standee-text');
 
   navigator.clipboard.writeText(targetUrl).then(() => {
-    showToast('Direct QR Booking link copied to clipboard!', 'success');
+    if (copyText) copyText.textContent = 'Copied!';
+    if (copyBtn) copyBtn.classList.add('btn-success');
+    showToast('Direct booking link copied to clipboard!', 'success');
+    setTimeout(() => {
+      if (copyText) copyText.textContent = 'Copy';
+      if (copyBtn) copyBtn.classList.remove('btn-success');
+    }, 2000);
   }).catch(() => {
-    prompt('Copy direct booking URL:', targetUrl);
+    const input = document.getElementById('qr-standee-url-input');
+    if (input) {
+      input.select();
+      document.execCommand('copy');
+      showToast('Link copied to clipboard!', 'success');
+    }
   });
 }
 
-function openStandeeKiosk() {
+function shareStandeeViaMsg() {
   const branchSelect = document.getElementById('qr-standee-branch');
-  const branchName = branchSelect ? branchSelect.value : 'Makati Main Clinic';
-  const origin = window.location.origin && window.location.origin !== 'null'
-    ? window.location.origin
-    : 'https://dental-clinic-bxfb.vercel.app';
-  const targetUrl = `${origin}/pages/book-qr.html?branch=${encodeURIComponent(branchName)}`;
+  const branchName = branchSelect ? branchSelect.value : 'Main Clinic - Naga City';
+  const targetUrl = getStandeeTargetUrl();
+  const msgText = `Hello! You can book an appointment or check in directly at Fano Dental Clinic (${branchName}) via our patient portal: ${targetUrl}`;
+
+  if (navigator.share) {
+    navigator.share({
+      title: `Fano Dental Clinic Booking - ${branchName}`,
+      text: msgText,
+      url: targetUrl
+    }).catch(() => {});
+  } else {
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(msgText)}`;
+    window.open(waUrl, '_blank');
+    navigator.clipboard.writeText(msgText).then(() => {
+      showToast('Formatted clinic booking invitation copied to clipboard!', 'success');
+    }).catch(() => {});
+  }
+}
+
+function openStandeePortalTab() {
+  const targetUrl = getStandeeTargetUrl();
   window.open(targetUrl, '_blank');
+}
+
+function openStandeeKiosk() {
+  const targetUrl = getStandeeTargetUrl();
+  window.open(targetUrl, 'FanoDentalKiosk', 'width=1024,height=768,menubar=no,toolbar=no,location=no,status=no');
 }
 
 function downloadStandeeQrPng() {
@@ -2724,7 +2778,7 @@ function downloadStandeeQrPng() {
 
 function printStandeeCard() {
   const branchSelect = document.getElementById('qr-standee-branch');
-  const branchName = branchSelect ? branchSelect.value : 'Makati Main Clinic';
+  const branchName = branchSelect ? branchSelect.value : 'Main Clinic - Naga City';
   const targetContainer = document.getElementById('standee-qr-target');
   const canvas = targetContainer?.querySelector('canvas');
   const qrImgSrc = canvas ? canvas.toDataURL('image/png') : '';
@@ -2795,5 +2849,15 @@ function printStandeeCard() {
   `);
   printWindow.document.close();
 }
+
+// Global Keyboard Listener for Modal Escape Key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const qrModal = document.getElementById('modal-clinic-qr');
+    if (qrModal && (qrModal.classList.contains('open') || qrModal.style.display === 'flex')) {
+      closeClinicQrModal();
+    }
+  }
+});
 
 
