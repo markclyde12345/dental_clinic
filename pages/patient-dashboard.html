@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260905_mobilefix">
+  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260906_taskbar">
   <link rel="stylesheet" href="../css/ai-chat.css">
 </head>
 <body>
@@ -212,29 +212,6 @@
           </div>
         </div>
 
-        <!-- Financial Summary Widgets (Accounting Dashboard Style) -->
-        <div class="financial-widgets-row" id="financial-widgets-row">
-          <div class="widget-card widget-financial">
-            <h3 class="widget-title">Total Billed</h3>
-            <p class="widget-value" id="total-billed-val">₱0.00</p>
-            <p class="widget-trend positive" id="total-billed-trend">+0% vs last month</p>
-          </div>
-          <div class="widget-card widget-financial">
-            <h3 class="widget-title">Pending Payments</h3>
-            <p class="widget-value" id="pending-payments-val">₱0.00</p>
-            <p class="widget-trend neutral" id="pending-payments-trend">0 invoices pending</p>
-          </div>
-          <div class="widget-card widget-financial">
-            <h3 class="widget-title">Paid This Month</h3>
-            <p class="widget-value" id="paid-month-val">₱0.00</p>
-            <p class="widget-trend positive" id="paid-month-trend">+0% vs last month</p>
-          </div>
-          <div class="widget-card widget-financial">
-            <h3 class="widget-title">Insurance Claims</h3>
-            <p class="widget-value" id="insurance-claims-val">0</p>
-            <p class="widget-trend neutral" id="insurance-claims-trend">0 pending review</p>
-          </div>
-        </div>
 
         <!-- Overview Main Grid -->
         <div class="overview-grid">
@@ -330,19 +307,6 @@
               </div>
             </div>
 
-            <!-- Financial Activity Log Card -->
-            <div class="card financial-activity-card">
-              <div class="card-header">
-                <h3 class="card-title">Financial Activity</h3>
-                <button class="card-action-btn" onclick="switchSection('billing')">View All</button>
-              </div>
-              <div id="financial-activity-list">
-                <div class="empty-state-sm">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9"/><circle cx="12" cy="12" r="3"/></svg>
-                  <p>No financial activity</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -1375,6 +1339,40 @@
       </div>
     </div>
   </div>
+
+  <!-- ═════════════════ MOBILE BOTTOM TASKBAR (<= 768px) ═════════════════ -->
+  <nav class="mobile-bottom-taskbar" id="patient-bottom-taskbar" aria-label="Mobile navigation bar">
+    <button type="button" class="taskbar-item active" data-section="overview" onclick="switchSection('overview')">
+      <div class="taskbar-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <span class="taskbar-label">Overview</span>
+    </button>
+    <button type="button" class="taskbar-item" data-section="appointments" onclick="switchSection('appointments')">
+      <div class="taskbar-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <span class="taskbar-label">Book Appt</span>
+    </button>
+    <button type="button" class="taskbar-item" data-section="records" onclick="switchSection('records')">
+      <div class="taskbar-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <span class="taskbar-label">Records</span>
+    </button>
+    <button type="button" class="taskbar-item" data-section="billing" onclick="switchSection('billing')">
+      <div class="taskbar-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <span class="taskbar-label">Billing</span>
+    </button>
+    <button type="button" class="taskbar-item" data-section="profile" onclick="switchSection('profile')">
+      <div class="taskbar-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <span class="taskbar-label">Profile</span>
+    </button>
+  </nav>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="../js/patient-dashboard.js"></script>

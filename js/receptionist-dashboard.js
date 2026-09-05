@@ -142,7 +142,7 @@ window.addEventListener('resize', () => {
 // ─── Tab Switching ────────────────────────────────────────────────────────────
 function switchTab(tabName) {
   // Update nav menu active state
-  document.querySelectorAll('.sidebar-menu .nav-tab').forEach(tab => {
+  document.querySelectorAll('.sidebar-menu .nav-tab, .mobile-bottom-taskbar .taskbar-item').forEach(tab => {
     if (tab.getAttribute('data-tab') === tabName) {
       tab.classList.add('active');
     } else {
@@ -250,7 +250,7 @@ function renderMetrics() {
   document.getElementById('stat-completed-count').textContent = completedCount;
   document.getElementById('stat-unpaid-invoices').textContent = unpaidInvoices;
 
-  // Update badge counters in sidebar
+  // Update badge counters in sidebar & mobile taskbar
   const badgeAppts = document.getElementById('nav-badge-appts');
   const badgeQueue = document.getElementById('nav-badge-queue');
   const badgeBilling = document.getElementById('nav-badge-billing');
@@ -258,6 +258,23 @@ function renderMetrics() {
   if (badgeAppts) badgeAppts.textContent = todayAppts.length;
   if (badgeQueue) badgeQueue.textContent = waitingCount;
   if (badgeBilling) badgeBilling.textContent = unpaidInvoices;
+
+  const mBadgeAppts = document.getElementById('mobile-taskbar-badge-appts');
+  const mBadgeQueue = document.getElementById('mobile-taskbar-badge-queue');
+  const mBadgeBilling = document.getElementById('mobile-taskbar-badge-billing');
+
+  if (mBadgeAppts) {
+    mBadgeAppts.textContent = todayAppts.length;
+    mBadgeAppts.style.display = todayAppts.length > 0 ? 'flex' : 'none';
+  }
+  if (mBadgeQueue) {
+    mBadgeQueue.textContent = waitingCount;
+    mBadgeQueue.style.display = waitingCount > 0 ? 'flex' : 'none';
+  }
+  if (mBadgeBilling) {
+    mBadgeBilling.textContent = unpaidInvoices;
+    mBadgeBilling.style.display = unpaidInvoices > 0 ? 'flex' : 'none';
+  }
 }
 
 // ─── Overview Queue & Appointments ────────────────────────────────────────────

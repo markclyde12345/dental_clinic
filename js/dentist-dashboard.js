@@ -79,6 +79,8 @@ function setupUserProfile(user) {
 
   if (nameEl) nameEl.textContent = cleanName;
   if (avatarEl) avatarEl.textContent = initial;
+  const mobileAvatarEl = document.getElementById('mobile-dentist-avatar');
+  if (mobileAvatarEl) mobileAvatarEl.textContent = initial;
   if (profNameEl) profNameEl.textContent = cleanName;
   if (profAvatarEl) profAvatarEl.textContent = initial;
   if (profEmailEl) profEmailEl.textContent = user.email || 'dentist@fanoclinic.com';
@@ -86,6 +88,33 @@ function setupUserProfile(user) {
   if (editNameEl) editNameEl.value = cleanName;
   if (editPhoneEl) editPhoneEl.value = user.contact_number || '';
 }
+
+// ─── Mobile Sidebar Drawer Controller ─────────────────────────────
+function toggleDentistMobileSidebar(forceState) {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (!sidebar) return;
+
+  const isOpen = sidebar.classList.contains('drawer-open');
+  const shouldOpen = typeof forceState === 'boolean' ? forceState : !isOpen;
+
+  if (shouldOpen) {
+    sidebar.classList.add('drawer-open');
+    if (backdrop) backdrop.classList.add('active');
+    document.body.classList.add('sidebar-drawer-locked');
+  } else {
+    sidebar.classList.remove('drawer-open');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.classList.remove('sidebar-drawer-locked');
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') toggleDentistMobileSidebar(false);
+});
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) toggleDentistMobileSidebar(false);
+});
 
 // ─── Tab Navigation Routing ─────────────────────────────────────
 function setupTabs() {
@@ -116,6 +145,13 @@ function switchTab(tabName) {
   if (!tabName) return;
   const menuLinks = document.querySelectorAll('.sidebar-menu a');
   menuLinks.forEach(l => l.classList.toggle('active', l.getAttribute('data-tab') === tabName));
+
+  const taskbarItems = document.querySelectorAll('.mobile-bottom-taskbar .taskbar-item');
+  taskbarItems.forEach(item => item.classList.toggle('active', item.getAttribute('data-tab') === tabName));
+
+  if (window.innerWidth <= 768) {
+    toggleDentistMobileSidebar(false);
+  }
 
   const panels = document.querySelectorAll('.tab-panel');
   panels.forEach(p => p.hidden = true);
@@ -174,6 +210,12 @@ async function loadOverview() {
     setVal('stat-followups', stats.upcomingFollowUps || 0);
     setVal('stat-month-total', stats.totalPatientsSeenThisMonth || 0);
     setVal('nav-queue-count', stats.patientsWaiting || 0);
+    const mQueueBadge = document.getElementById('mobile-dentist-badge-queue');
+    if (mQueueBadge) {
+      const qCount = stats.patientsWaiting || 0;
+      mQueueBadge.textContent = qCount;
+      mQueueBadge.style.display = qCount > 0 ? 'flex' : 'none';
+    }
 
     // Today's Schedule Table
     const todaySchedule = stats.todaysSchedule || [];

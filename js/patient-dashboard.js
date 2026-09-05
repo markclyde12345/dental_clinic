@@ -2421,8 +2421,8 @@ document.querySelectorAll('[data-section]').forEach(link => {
 });
 
 function switchSection(sectionId) {
-  // Update active nav
-  document.querySelectorAll('.nav-item').forEach(item => {
+  // Update active nav & taskbar
+  document.querySelectorAll('.nav-item, .taskbar-item').forEach(item => {
     item.classList.toggle('active', item.getAttribute('data-section') === sectionId);
   });
 

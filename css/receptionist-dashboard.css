@@ -3099,3 +3099,116 @@ body {
   }
 }
 
+/* ═════════════════ MOBILE BOTTOM TASKBAR (<= 768px) ═════════════════ */
+.mobile-bottom-taskbar {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 58px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -3px 18px rgba(11, 60, 77, 0.08);
+    display: flex !important;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 1100;
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    box-sizing: border-box;
+  }
+
+  .taskbar-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 100%;
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 6px 2px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .taskbar-item .taskbar-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+  }
+
+  .taskbar-item .taskbar-icon i {
+    font-size: 1.05rem;
+  }
+
+  .taskbar-item .taskbar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
+  .taskbar-badge {
+    position: absolute;
+    top: -4px;
+    right: -7px;
+    background: var(--primary-color, #0b3c4d);
+    color: #ffffff;
+    font-size: 0.6rem;
+    font-weight: 800;
+    min-width: 15px;
+    height: 15px;
+    border-radius: 8px;
+    padding: 0 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .taskbar-badge.alert {
+    background: #ef4444;
+  }
+
+  .taskbar-badge.warning {
+    background: #f59e0b;
+  }
+
+  .taskbar-item:hover,
+  .taskbar-item:focus {
+    color: var(--primary-color, #0b3c4d);
+  }
+
+  .taskbar-item.active {
+    color: var(--primary-color, #0b3c4d);
+  }
+
+  .taskbar-item.active .taskbar-icon {
+    transform: translateY(-2px);
+  }
+
+  .taskbar-item.active .taskbar-label {
+    font-weight: 700;
+  }
+
+  /* Safe padding so bottom content is never hidden behind bottom taskbar */
+  body, .main-content {
+    padding-bottom: 74px !important;
+  }
+}
+
+
