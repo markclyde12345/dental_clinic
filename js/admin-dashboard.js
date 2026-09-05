@@ -76,9 +76,49 @@ startAdminApp();
 
 function renderAdminSidebar() {
   const displayName = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Admin';
+  const initial = displayName.charAt(0).toUpperCase();
   document.getElementById('user-name').textContent = displayName;
-  document.getElementById('user-avatar').textContent = displayName.charAt(0).toUpperCase();
+  document.getElementById('user-avatar').textContent = initial;
+  const mobileAvatar = document.getElementById('mobile-admin-avatar');
+  if (mobileAvatar) mobileAvatar.textContent = initial;
 }
+
+// ─── Mobile Sidebar Drawer Controller ──────────────────────────────────────────
+function toggleAdminMobileSidebar(forceState) {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const hamburgerBtn = document.getElementById('mobile-hamburger-btn');
+  if (!sidebar) return;
+
+  const isOpen = sidebar.classList.contains('drawer-open');
+  const shouldOpen = typeof forceState === 'boolean' ? forceState : !isOpen;
+
+  if (shouldOpen) {
+    sidebar.classList.add('drawer-open');
+    backdrop?.classList.add('active');
+    document.body.classList.add('sidebar-drawer-locked');
+    hamburgerBtn?.setAttribute('aria-expanded', 'true');
+  } else {
+    sidebar.classList.remove('drawer-open');
+    backdrop?.classList.remove('active');
+    document.body.classList.remove('sidebar-drawer-locked');
+    hamburgerBtn?.setAttribute('aria-expanded', 'false');
+  }
+}
+
+// Auto-close drawer on desktop resize (> 768px)
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) {
+    toggleAdminMobileSidebar(false);
+  }
+});
+
+// Escape key closes mobile drawer
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    toggleAdminMobileSidebar(false);
+  }
+});
 
 // ─── Initialize Dashboard Features ──────────────────────────────────────────
 function initDashboard() {
@@ -140,13 +180,14 @@ window.activateTab = function(targetTab, skipDataLoad = false) {
   // Manage live polling for system logs tab
   if (targetTab === 'logs') {
     loadSystemLogs();
-    if (!logsPollingInterval) {
-      logsPollingInterval = setInterval(loadSystemLogs, 4000);
-    }
+    startSystemLogsStream();
   } else {
-    if (logsPollingInterval) {
-      clearInterval(logsPollingInterval);
-      logsPollingInterval = null;
+    stopSystemLogsStream();
+    const pauseBtn = document.getElementById('btn-pause-stream');
+    if (pauseBtn) {
+      pauseBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause Stream';
+      pauseBtn.classList.remove('btn-primary');
+      pauseBtn.classList.add('btn-secondary');
     }
   }
 
@@ -192,6 +233,10 @@ function setupTabs() {
       e.preventDefault();
       const targetTab = tab.getAttribute('data-tab');
       activateTab(targetTab);
+      // Auto-close mobile drawer when user taps a nav item on mobile
+      if (window.innerWidth <= 768) {
+        toggleAdminMobileSidebar(false);
+      }
     });
   });
 
@@ -201,6 +246,9 @@ function setupTabs() {
     const validTabs = ['overview', 'appointments', 'patients', 'billing', 'staff', 'inventory', 'users', 'history', 'logs', 'settings'];
     if (hash && validTabs.includes(hash)) {
       activateTab(hash);
+      if (window.innerWidth <= 768) {
+        toggleAdminMobileSidebar(false);
+      }
     }
   });
 }

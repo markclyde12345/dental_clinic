@@ -81,19 +81,26 @@ if (!token) {
 function setupUserInterface() {
   const nameEl = document.getElementById('user-name');
   const avatarEl = document.getElementById('user-avatar');
+  const mobileAvatarEl = document.getElementById('mobile-user-avatar');
   const roleEl = document.getElementById('user-role');
 
   const fullName = currentUser.name || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || 'Receptionist';
   if (nameEl) nameEl.textContent = fullName;
   if (roleEl) roleEl.textContent = currentUser.role === 'Admin' ? 'Admin / Front Desk' : 'Receptionist';
-  if (avatarEl) avatarEl.textContent = fullName.charAt(0).toUpperCase();
+  const initial = fullName.charAt(0).toUpperCase();
+  if (avatarEl) avatarEl.textContent = initial;
+  if (mobileAvatarEl) mobileAvatarEl.textContent = initial;
 
   // Setup tab navigation
   document.querySelectorAll('.sidebar-menu .nav-tab').forEach(tab => {
     tab.addEventListener('click', (e) => {
       e.preventDefault();
       const tabName = tab.getAttribute('data-tab');
-      switchTab(tabName);
+      if (tabName) switchTab(tabName);
+      // Auto-close mobile drawer when user picks a nav item
+      if (window.innerWidth <= 768) {
+        toggleMobileSidebar(false);
+      }
     });
   });
 
@@ -101,6 +108,36 @@ function setupUserInterface() {
   setupReceptionistNotifications();
   loadReceptionistNotifications();
 }
+
+// ─── Mobile Sidebar Drawer Controller ──────────────────────────────────────────
+function toggleMobileSidebar(forceState) {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const hamburgerBtn = document.getElementById('mobile-hamburger-btn');
+  if (!sidebar) return;
+
+  const isOpen = sidebar.classList.contains('drawer-open');
+  const shouldOpen = typeof forceState === 'boolean' ? forceState : !isOpen;
+
+  if (shouldOpen) {
+    sidebar.classList.add('drawer-open');
+    backdrop?.classList.add('active');
+    document.body.classList.add('sidebar-drawer-locked');
+    hamburgerBtn?.setAttribute('aria-expanded', 'true');
+  } else {
+    sidebar.classList.remove('drawer-open');
+    backdrop?.classList.remove('active');
+    document.body.classList.remove('sidebar-drawer-locked');
+    hamburgerBtn?.setAttribute('aria-expanded', 'false');
+  }
+}
+
+// Close drawer automatically if viewport is resized to desktop width (> 768px)
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) {
+    toggleMobileSidebar(false);
+  }
+});
 
 // ─── Tab Switching ────────────────────────────────────────────────────────────
 function switchTab(tabName) {
@@ -2850,9 +2887,10 @@ function printStandeeCard() {
   printWindow.document.close();
 }
 
-// Global Keyboard Listener for Modal Escape Key
+// Global Keyboard Listener for Modal & Drawer Escape Key
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
+    toggleMobileSidebar(false);
     const qrModal = document.getElementById('modal-clinic-qr');
     if (qrModal && (qrModal.classList.contains('open') || qrModal.style.display === 'flex')) {
       closeClinicQrModal();

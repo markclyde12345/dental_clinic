@@ -8,19 +8,43 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../css/receptionist-dashboard.css?v=20260906_qr">
+  <link rel="stylesheet" href="../css/receptionist-dashboard.css?v=20260906_mobile">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
+  <!-- ═════════════════ MOBILE TOP BAR (<= 768px) ═════════════════ -->
+  <div class="mobile-topbar" id="mobile-topbar">
+    <div class="mobile-topbar-left">
+      <button type="button" class="mobile-hamburger-btn" id="mobile-hamburger-btn" onclick="toggleMobileSidebar()" aria-label="Toggle navigation menu" title="Open Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <a href="../pages/landing-page.html" class="mobile-topbar-brand">
+        <img src="../Resources/logo.png" alt="Fano Dental Logo" class="mobile-topbar-logo">
+        <span class="mobile-topbar-name">Fano Dental</span>
+      </a>
+    </div>
+    <div class="mobile-topbar-right">
+      <div class="mobile-user-avatar-pill" id="mobile-user-avatar">R</div>
+    </div>
+  </div>
+
+  <!-- Sidebar Backdrop Overlay for Mobile Drawer -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
+
   <div class="dashboard-layout">
     <!-- ═════════════════════ SIDEBAR ═════════════════════ -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div>
-        <a href="../pages/landing-page.html" class="sidebar-logo">
-          <img src="../Resources/logo.png" alt="Fano Clinic Logo">
-          <span>Fano Dental</span>
-        </a>
+        <div class="sidebar-header-row">
+          <a href="../pages/landing-page.html" class="sidebar-logo">
+            <img src="../Resources/logo.png" alt="Fano Clinic Logo">
+            <span>Fano Dental</span>
+          </a>
+          <button type="button" class="sidebar-drawer-close" id="sidebar-drawer-close" onclick="toggleMobileSidebar(false)" aria-label="Close navigation drawer" title="Close Menu">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
 
         <!-- Clinic Info Badge Card -->
         <div class="sidebar-clinic-card">
@@ -73,7 +97,7 @@
             </a>
           </li>
           <li>
-            <a href="#" class="nav-tab" onclick="openAuditLogsModal(); return false;">
+            <a href="#" class="nav-tab" onclick="openAuditLogsModal(); toggleMobileSidebar(false); return false;">
               <i class="fa-solid fa-clock-rotate-left"></i>
               <span>Audit Trail</span>
             </a>
@@ -1159,7 +1183,7 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Script Logic -->
-  <script src="../js/receptionist-dashboard.js?v=20260906_qr2"></script>
+  <script src="../js/receptionist-dashboard.js?v=20260906_mobile"></script>
 </body>
 </html>
 
