@@ -872,9 +872,46 @@ body {
 /* Overview Grid */
 .overview-grid {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 22px;
-  align-items: start;
+  align-items: stretch;
+}
+
+/* Account Details Card (in Settings) */
+.account-details-card {
+  grid-column: 1 / -1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+
+.account-details-card .patient-info-header {
+  border-bottom: none;
+  margin-bottom: 14px;
+  padding: 0;
+}
+
+.account-details-card .patient-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  background: var(--bg-base);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+@media (max-width: 900px) {
+  .account-details-card .patient-detail-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .account-details-card .patient-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .patient-detail-card {
@@ -1887,8 +1924,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 1200px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
-  .overview-grid { grid-template-columns: 1fr 1fr; }
-  .patient-detail-card { grid-row: span 1; grid-column: span 2; }
+  .overview-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 900px) {
@@ -1906,7 +1942,6 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 
   .stats-row { grid-template-columns: 1fr; gap: 12px; }
   .overview-grid { grid-template-columns: 1fr; }
-  .patient-detail-card { grid-column: auto; }
   
   .booking-form-card { padding: 24px 18px; }
   .booking-steps-indicator { margin: 16px 0 24px; }
@@ -2549,7 +2584,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
     gap: 16px !important;
   }
   .overview-grid {
-    grid-template-columns: 320px 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 20px !important;
   }
 }
@@ -2559,11 +2594,6 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   .overview-grid {
     grid-template-columns: 1fr !important;
     gap: 22px !important;
-  }
-  .patient-detail-card {
-    grid-row: auto !important;
-    grid-column: auto !important;
-    height: auto !important;
   }
   .two-col-layout {
     display: flex !important;

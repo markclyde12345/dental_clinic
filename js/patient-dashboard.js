@@ -2439,7 +2439,7 @@ function switchSection(sectionId) {
     billing:      'Billing & Invoices',
     finances:     'Financial Summary',
     profile:      'My Profile',
-    settings:     'Settings'
+    settings:     'Account & Settings'
   };
   safeSet('breadcrumb-current', labels[sectionId] || 'Dashboard');
 
