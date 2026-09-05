@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Appointment &amp; Walk-In Check-In — Fano Dental Clinic</title>
+  <meta name="description" content="Quickly book your dental appointment or check-in at Fano Dental Clinic by scanning our clinic QR code or accessing our online portal.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/book-qr.css?v=20260906">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="qr-nav">
+    <a href="landing-page.html" class="qr-nav-brand">
+      <img src="../Resources/logo.png" alt="Fano Dental Clinic Logo" class="qr-nav-logo">
+      <span class="qr-nav-title">Fano Dental</span>
+    </a>
+    <div class="qr-badge-pill" id="active-branch-pill">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span id="active-branch-name">Makati Main Clinic</span>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="qr-container">
+
+    <!-- Welcome Banner -->
+    <div class="qr-banner">
+      <span class="qr-banner-tag">Use Case 015 • Book via QR / Portal</span>
+      <h1>Book Your Visit</h1>
+      <p>Instant mobile scheduling for walk-ins &amp; portal patients. Real-time time slots, zero waiting lines, and instant digital check-in passes.</p>
+    </div>
+
+    <!-- Booking Card Form -->
+    <div class="qr-card" id="booking-wizard-card">
+
+      <!-- Step Indicator -->
+      <div class="booking-progress">
+        <div class="progress-track">
+          <div class="progress-bar" id="progress-bar-fill"></div>
+        </div>
+        <div class="progress-step active" id="pstep-1">
+          <div class="step-circle">1</div>
+          <span class="step-title">Patient Info</span>
+        </div>
+        <div class="progress-step" id="pstep-2">
+          <div class="step-circle">2</div>
+          <span class="step-title">Service</span>
+        </div>
+        <div class="progress-step" id="pstep-3">
+          <div class="step-circle">3</div>
+          <span class="step-title">Schedule</span>
+        </div>
+        <div class="progress-step" id="pstep-4">
+          <div class="step-circle">4</div>
+          <span class="step-title">Payment</span>
+        </div>
+      </div>
+
+      <form id="qr-booking-form" onsubmit="return false;">
+
+        <!-- ──────── STEP 1: PATIENT INFO ──────── -->
+        <div class="wizard-pane active" id="wizard-pane-1">
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary-color); margin-bottom: 16px;">1. Patient Information</h3>
+          
+          <div class="form-group">
+            <label class="form-label" for="patient-name">Full Name <span class="req">*</span></label>
+            <input type="text" id="patient-name" class="form-input" placeholder="e.g. Maria Santos" required autocomplete="name">
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="patient-phone">Mobile / Contact Number <span class="req">*</span></label>
+              <input type="tel" id="patient-phone" class="form-input" placeholder="0917-XXX-XXXX" required autocomplete="tel">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="patient-email">Email Address <span class="req">*</span></label>
+              <input type="email" id="patient-email" class="form-input" placeholder="maria@example.com" required autocomplete="email">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="clinic-branch">Preferred Clinic Branch</label>
+            <select id="clinic-branch" class="form-select">
+              <option value="Makati Main Clinic">Makati Main Clinic (Ayala Ave)</option>
+              <option value="Quezon City Branch">Quezon City Branch (Katipunan Ave)</option>
+              <option value="BGC Taguig Branch">BGC Taguig Branch (High Street)</option>
+              <option value="Alabang Muntinlupa Branch">Alabang Muntinlupa Branch (Filinvest)</option>
+            </select>
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn-primary" onclick="goToStep(2)">
+              <span>Next: Select Service &amp; Doctor</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ──────── STEP 2: SERVICE & DENTIST ──────── -->
+        <div class="wizard-pane" id="wizard-pane-2" style="display: none;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary-color); margin-bottom: 14px;">2. Choose Dental Treatment</h3>
+          
+          <div class="service-options-grid" id="service-options-container">
+            <!-- Dynamically populated or sensible defaults -->
+            <div class="service-choice-card selected" data-id="" data-name="Routine Cleaning &amp; General Checkup" data-price="800">
+              <div>
+                <div class="service-name">Routine Cleaning &amp; Checkup</div>
+                <div class="service-meta">Preventive oral care • 45 mins</div>
+              </div>
+              <div class="service-price">₱800.00</div>
+            </div>
+
+            <div class="service-choice-card" data-id="" data-name="Teeth Whitening" data-price="3500">
+              <div>
+                <div class="service-name">Teeth Whitening</div>
+                <div class="service-meta">Cosmetic brightening • 60 mins</div>
+              </div>
+              <div class="service-price">₱3,500.00</div>
+            </div>
+
+            <div class="service-choice-card" data-id="" data-name="Tooth Extraction" data-price="1200">
+              <div>
+                <div class="service-name">Tooth Extraction</div>
+                <div class="service-meta">Gentle tooth removal • 45 mins</div>
+              </div>
+              <div class="service-price">₱1,200.00</div>
+            </div>
+
+            <div class="service-choice-card" data-id="" data-name="Orthodontic Consultation (Braces/Invisalign)" data-price="1000">
+              <div>
+                <div class="service-name">Orthodontic Consultation</div>
+                <div class="service-meta">Braces / Invisalign evaluation • 30 mins</div>
+              </div>
+              <div class="service-price">₱1,000.00</div>
+            </div>
+          </div>
+
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary-color); margin: 20px 0 14px;">Choose Preferred Specialist</h3>
+          <div class="dentist-options-grid" id="dentist-options-container">
+            <div class="dentist-choice-card selected" data-dentist="Dr. Ana Reyes">
+              <img src="../Resources/doctor4.png" alt="Dr. Ana Reyes" class="dentist-choice-avatar">
+              <div class="dentist-choice-info">
+                <h4>Dr. Ana Reyes</h4>
+                <p>Lead Dentist &amp; Cosmetic</p>
+              </div>
+            </div>
+
+            <div class="dentist-choice-card" data-dentist="Dr. Sara Haile">
+              <img src="../Resources/doctor3.webp" alt="Dr. Sara Haile" class="dentist-choice-avatar">
+              <div class="dentist-choice-info">
+                <h4>Dr. Sara Haile</h4>
+                <p>Orthodontic Specialist</p>
+              </div>
+            </div>
+
+            <div class="dentist-choice-card" data-dentist="Dr. Marcus Tesfaye">
+              <img src="../Resources/doctor 2.png" alt="Dr. Marcus Tesfaye" class="dentist-choice-avatar">
+              <div class="dentist-choice-info">
+                <h4>Dr. Marcus Tesfaye</h4>
+                <p>Implant &amp; Oral Surgeon</p>
+              </div>
+            </div>
+
+            <div class="dentist-choice-card" data-dentist="Dr. Liya Girma">
+              <img src="../Resources/doctor1.webp" alt="Dr. Liya Girma" class="dentist-choice-avatar">
+              <div class="dentist-choice-info">
+                <h4>Dr. Liya Girma</h4>
+                <p>Pediatric &amp; General</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn-secondary" onclick="goToStep(1)">Back</button>
+            <button type="button" class="btn-primary" onclick="goToStep(3)">
+              <span>Next: Pick Date &amp; Time</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ──────── STEP 3: SCHEDULE & LIVE SLOTS ──────── -->
+        <div class="wizard-pane" id="wizard-pane-3" style="display: none;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary-color); margin-bottom: 14px;">3. Date &amp; Live Time Slot</h3>
+          
+          <div class="form-group">
+            <label class="form-label" for="appointment-date">Select Appointment Date <span class="req">*</span></label>
+            <input type="date" id="appointment-date" class="form-input" required>
+          </div>
+
+          <div class="slots-container">
+            <label class="form-label">Available Time Slots <span class="req">*</span> <small style="font-weight: normal; color: var(--text-muted);">(Real-time double-booking protection)</small></label>
+            <div class="slots-grid" id="slots-grid-container">
+              <button type="button" class="slot-button" data-time="09:00 AM">09:00 AM</button>
+              <button type="button" class="slot-button" data-time="10:00 AM">10:00 AM</button>
+              <button type="button" class="slot-button" data-time="11:00 AM">11:00 AM</button>
+              <button type="button" class="slot-button" data-time="01:00 PM">01:00 PM</button>
+              <button type="button" class="slot-button" data-time="02:00 PM">02:00 PM</button>
+              <button type="button" class="slot-button" data-time="03:00 PM">03:00 PM</button>
+              <button type="button" class="slot-button" data-time="04:00 PM">04:00 PM</button>
+              <button type="button" class="slot-button" data-time="05:00 PM">05:00 PM</button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px;">
+            <label class="form-label" for="patient-notes">Notes or Symptoms (Optional)</label>
+            <textarea id="patient-notes" class="form-input" rows="3" placeholder="Tell us if you are experiencing tooth pain, sensitivity, or if you're a walk-in at the lobby..."></textarea>
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn-secondary" onclick="goToStep(2)">Back</button>
+            <button type="button" class="btn-primary" onclick="goToStep(4)">
+              <span>Next: Review &amp; Payment</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ──────── STEP 4: PAYMENT & CONFIRMATION ──────── -->
+        <div class="wizard-pane" id="wizard-pane-4" style="display: none;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary-color); margin-bottom: 14px;">4. Review &amp; Payment Preference</h3>
+          
+          <!-- Summary Review Box -->
+          <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 18px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: var(--text-muted); font-size: 0.82rem;">Patient:</span>
+              <strong id="summary-patient-name" style="font-size: 0.86rem;">—</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: var(--text-muted); font-size: 0.82rem;">Branch:</span>
+              <span id="summary-branch" style="font-weight: 600; font-size: 0.86rem;">—</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: var(--text-muted); font-size: 0.82rem;">Service:</span>
+              <strong id="summary-service" style="color: var(--primary-color); font-size: 0.86rem;">—</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: var(--text-muted); font-size: 0.82rem;">Doctor:</span>
+              <span id="summary-doctor" style="font-weight: 600; font-size: 0.86rem;">—</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px dashed var(--border);">
+              <span style="color: var(--text-muted); font-size: 0.82rem;">Scheduled Time:</span>
+              <strong id="summary-datetime" style="color: #0d9488; font-size: 0.88rem;">—</strong>
+            </div>
+          </div>
+
+          <label class="form-label">Select Payment Method</label>
+          <div class="payment-grid">
+            <div class="payment-card selected" data-method="cash" onclick="selectPaymentMethod('cash')">
+              <div class="payment-card-icon">🏥</div>
+              <div>
+                <h4>Pay at Clinic Counter</h4>
+                <p>Cash, GCash, or Card upon arrival</p>
+              </div>
+            </div>
+            <div class="payment-card" data-method="paymongo" onclick="selectPaymentMethod('paymongo')">
+              <div class="payment-card-icon">💳</div>
+              <div>
+                <h4>Pay Online (PayMongo)</h4>
+                <p>GCash, Maya, Debit/Credit Card</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn-secondary" onclick="goToStep(3)">Back</button>
+            <button type="button" class="btn-primary" id="btn-submit-qr-booking" onclick="submitQrBooking()">
+              <span>Confirm &amp; Get Digital Pass</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- ──────── DIGITAL APPOINTMENT PASS / QUEUE TICKET ──────── -->
+    <div class="pass-card" id="digital-pass-card" style="display: none;">
+      <div class="pass-header">
+        <div class="pass-header-check">✓</div>
+        <h2 style="font-size: 1.35rem; font-weight: 700;">Appointment Confirmed!</h2>
+        <p style="font-size: 0.85rem; opacity: 0.9; margin-top: 4px;">Your digital appointment slip &amp; check-in pass has been generated.</p>
+        <span class="pass-ref" id="pass-ref-code">APT-QR-108291</span>
+      </div>
+
+      <div class="pass-body">
+        <!-- QR Canvas to show at clinic reception desk -->
+        <div class="pass-qr-wrap">
+          <p style="font-size: 0.78rem; font-weight: 700; color: var(--primary-color); text-transform: uppercase; letter-spacing: 0.04em;">Show this QR Code to Front Desk</p>
+          <div id="ticket-qr-canvas"></div>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">Instant counter scan &amp; queue number verification</p>
+        </div>
+
+        <div class="pass-details-list">
+          <div class="pass-detail-row">
+            <span class="pass-label">Patient Name</span>
+            <span class="pass-val" id="pass-patient-name">—</span>
+          </div>
+          <div class="pass-detail-row">
+            <span class="pass-label">Clinic Location</span>
+            <span class="pass-val" id="pass-branch">—</span>
+          </div>
+          <div class="pass-detail-row">
+            <span class="pass-label">Treatment</span>
+            <span class="pass-val" id="pass-service" style="color: var(--primary-color);">—</span>
+          </div>
+          <div class="pass-detail-row">
+            <span class="pass-label">Assigned Dentist</span>
+            <span class="pass-val" id="pass-dentist">—</span>
+          </div>
+          <div class="pass-detail-row">
+            <span class="pass-label">Date &amp; Time</span>
+            <span class="pass-val" id="pass-datetime" style="color: #0d9488;">—</span>
+          </div>
+          <div class="pass-detail-row">
+            <span class="pass-label">Payment Status</span>
+            <span class="pass-val" id="pass-payment-status">Pay at Clinic Counter</span>
+          </div>
+        </div>
+
+        <div class="pass-actions">
+          <button type="button" class="btn-primary" onclick="window.print()" style="background: #0d9488;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            <span>Print / Save Check-In Pass</span>
+          </button>
+          <a href="landing-page.html" class="btn-secondary" style="text-align: center; text-decoration: none; display: block;">Return to Home</a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="../js/book-qr.js?v=20260906"></script>
+</body>
+</html>

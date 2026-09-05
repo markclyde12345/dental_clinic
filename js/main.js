@@ -129,3 +129,91 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 });
+
+/* ===== LANDING QR MODAL CONTROLLER ===== */
+let landingQrInstance = null;
+
+function getLandingPortalUrl() {
+  const branchSelect = document.getElementById('landingBranchSelect');
+  const branch = branchSelect ? branchSelect.value : 'Main Clinic - Naga City';
+  const origin = window.location.origin && window.location.origin !== 'null' ? window.location.origin : '';
+  const pathname = window.location.pathname || '';
+  const basePath = pathname.substring(0, pathname.lastIndexOf('/pages'));
+  
+  if (origin && !origin.startsWith('file')) {
+    return `${origin}${basePath}/pages/book-qr.html?branch=${encodeURIComponent(branch)}`;
+  }
+  return `book-qr.html?branch=${encodeURIComponent(branch)}`;
+}
+
+function generateLandingQr() {
+  const qrBox = document.getElementById('landingQrBox');
+  const urlInput = document.getElementById('landingQrUrlText');
+  const directLink = document.getElementById('landingQrDirectLink');
+  if (!qrBox) return;
+
+  const targetUrl = getLandingPortalUrl();
+  if (urlInput) urlInput.value = targetUrl;
+  if (directLink) directLink.href = targetUrl;
+
+  qrBox.innerHTML = '';
+  if (typeof QRCode !== 'undefined') {
+    landingQrInstance = new QRCode(qrBox, {
+      text: targetUrl,
+      width: 170,
+      height: 170,
+      colorDark: '#042f2e',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } else {
+    qrBox.innerHTML = `<div style="padding:20px;text-align:center;color:#64748b;font-size:0.85rem;">QR Code ready.<br><a href="${targetUrl}" target="_blank" style="color:#0d9488;font-weight:700;">Open Portal</a></div>`;
+  }
+}
+
+function openLandingQrModal() {
+  const modal = document.getElementById('landingQrModal');
+  if (!modal) return;
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  generateLandingQr();
+}
+
+function closeLandingQrModal() {
+  const modal = document.getElementById('landingQrModal');
+  if (!modal) return;
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function copyLandingQrUrl() {
+  const urlInput = document.getElementById('landingQrUrlText');
+  const copyBtn = document.getElementById('landingQrCopyBtn');
+  if (!urlInput) return;
+
+  navigator.clipboard.writeText(urlInput.value).then(() => {
+    if (copyBtn) {
+      const originalText = copyBtn.textContent;
+      copyBtn.textContent = '✓ Copied!';
+      copyBtn.style.background = '#dcfce7';
+      copyBtn.style.color = '#166534';
+      setTimeout(() => {
+        copyBtn.textContent = originalText;
+        copyBtn.style.background = '';
+        copyBtn.style.color = '';
+      }, 2000);
+    }
+  }).catch(err => {
+    console.error('Clipboard copy failed:', err);
+    urlInput.select();
+    document.execCommand('copy');
+  });
+}
+
+// Close on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeLandingQrModal();
+  }
+});
+

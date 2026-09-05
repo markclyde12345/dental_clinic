@@ -7,7 +7,8 @@
   <meta name="description" content="Experience advanced, comfortable, and professional dental services designed for every smile. Where science meets artistry at Fano Dental Clinic.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/style.css?v=12">
+  <link rel="stylesheet" href="../css/style.css?v=13">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -439,22 +440,27 @@
     <div class="booking-label reveal">Ready to Transform Your Smile?</div>
     <h2 class="booking-title reveal">Book Your <br>Free Consultation</h2>
     <p class="booking-text reveal">Take the first step toward your dream smile. Schedule a free, no-obligation consultation with our expert dental team today.</p>
-    <a href="tel:+251911000000" class="booking-btn reveal">
-      📅 Book Appointment Now
-    </a>
+    <div class="booking-cta-buttons reveal" style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 24px;">
+      <a href="book-qr.html" class="booking-btn" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+        <span>📅 Book Online via Portal</span>
+      </a>
+      <button type="button" class="booking-btn-qr" onclick="openLandingQrModal()" style="display: inline-flex; align-items: center; gap: 8px;">
+        <span>📱 Scan QR on Phone</span>
+      </button>
+    </div>
     <div class="booking-contacts reveal">
       <div class="booking-contact">
         <div class="booking-contact-icon">📞</div>
         <div>
           <h4>Call Us</h4>
-          <p>+251 911 000 000</p>
+          <p>+63 917 123 4567</p>
         </div>
       </div>
       <div class="booking-contact">
         <div class="booking-contact-icon">📍</div>
         <div>
           <h4>Location</h4>
-          <p>Bole, Addis Ababa</p>
+          <p>City of Naga, Cebu</p>
         </div>
       </div>
       <div class="booking-contact">
@@ -523,8 +529,35 @@
   </div>
 </footer>
 
-  <script src="../js/main.js"></script>
+  <!-- ===== MODAL: SCAN QR ON PHONE ===== -->
+  <div id="landingQrModal" class="landing-qr-overlay" onclick="if(event.target===this)closeLandingQrModal()">
+    <div class="landing-qr-card">
+      <button type="button" class="landing-qr-close" onclick="closeLandingQrModal()" aria-label="Close">✕</button>
+      <div class="landing-qr-header">
+        <span class="landing-qr-badge">📱 Mobile Direct Booking</span>
+        <h3 class="landing-qr-title">Scan with Phone Camera</h3>
+        <p class="landing-qr-desc">Point your phone's camera or QR scanner at the code below to open our interactive booking portal on your phone.</p>
+      </div>
+      
+      <div class="landing-qr-body">
+        <div id="landingQrBox" class="landing-qr-code-box"></div>
+        <div class="landing-qr-branch-picker">
+          <label for="landingBranchSelect">Preferred Branch:</label>
+          <select id="landingBranchSelect" onchange="generateLandingQr()">
+            <option value="Main Clinic - Naga City">Main Clinic - Naga City</option>
+            <option value="Talisay Branch">Talisay Branch</option>
+            <option value="Cebu City Branch">Cebu City Branch</option>
+          </select>
+        </div>
+        <div class="landing-qr-url-row">
+          <input type="text" id="landingQrUrlText" readonly>
+          <button type="button" id="landingQrCopyBtn" class="landing-qr-btn-copy" onclick="copyLandingQrUrl()">Copy Link</button>
+        </div>
+        <a href="book-qr.html" id="landingQrDirectLink" class="landing-qr-btn-launch">Open Portal on this Device →</a>
+      </div>
+    </div>
+  </div>
 
-
+  <script src="../js/main.js?v=20260906_qr"></script>
 </body>
 </html>

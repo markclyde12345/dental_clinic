@@ -2622,4 +2622,178 @@ function formatRecTime(isoStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  USE CASE NO. 015: CLINIC QR STANDEE & KIOSK GENERATOR
+// ═══════════════════════════════════════════════════════════════
+
+let qrStandeeInstance = null;
+
+function openClinicQrModal() {
+  const modal = document.getElementById('modal-clinic-qr');
+  if (modal) {
+    modal.style.display = 'flex';
+    setTimeout(updateStandeeQr, 100);
+  }
+}
+
+function updateStandeeQr() {
+  const branchSelect = document.getElementById('qr-standee-branch');
+  const branchName = branchSelect ? branchSelect.value : 'Makati Main Clinic';
+  const previewBranchEl = document.getElementById('standee-preview-branch');
+  if (previewBranchEl) previewBranchEl.textContent = branchName;
+
+  const targetContainer = document.getElementById('standee-qr-target');
+  if (!targetContainer) return;
+
+  targetContainer.innerHTML = '';
+
+  const origin = window.location.origin && window.location.origin !== 'null'
+    ? window.location.origin
+    : 'https://dental-clinic-bxfb.vercel.app';
+  const targetUrl = `${origin}/pages/book-qr.html?branch=${encodeURIComponent(branchName)}`;
+
+  try {
+    qrStandeeInstance = new QRCode(targetContainer, {
+      text: targetUrl,
+      width: 180,
+      height: 180,
+      colorDark: '#0b3c4d',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } catch (err) {
+    console.warn('QR Standee generation error:', err);
+    targetContainer.innerHTML = `<p style="color:#ef4444; font-size:0.8rem;">Could not render QR code canvas.</p>`;
+  }
+}
+
+function copyStandeeUrl() {
+  const branchSelect = document.getElementById('qr-standee-branch');
+  const branchName = branchSelect ? branchSelect.value : 'Makati Main Clinic';
+  const origin = window.location.origin && window.location.origin !== 'null'
+    ? window.location.origin
+    : 'https://dental-clinic-bxfb.vercel.app';
+  const targetUrl = `${origin}/pages/book-qr.html?branch=${encodeURIComponent(branchName)}`;
+
+  navigator.clipboard.writeText(targetUrl).then(() => {
+    showToast('Direct QR Booking link copied to clipboard!', 'success');
+  }).catch(() => {
+    prompt('Copy direct booking URL:', targetUrl);
+  });
+}
+
+function openStandeeKiosk() {
+  const branchSelect = document.getElementById('qr-standee-branch');
+  const branchName = branchSelect ? branchSelect.value : 'Makati Main Clinic';
+  const origin = window.location.origin && window.location.origin !== 'null'
+    ? window.location.origin
+    : 'https://dental-clinic-bxfb.vercel.app';
+  const targetUrl = `${origin}/pages/book-qr.html?branch=${encodeURIComponent(branchName)}`;
+  window.open(targetUrl, '_blank');
+}
+
+function downloadStandeeQrPng() {
+  const targetContainer = document.getElementById('standee-qr-target');
+  if (!targetContainer) return;
+
+  const canvas = targetContainer.querySelector('canvas');
+  const img = targetContainer.querySelector('img');
+
+  let dataUrl = '';
+  if (canvas) {
+    dataUrl = canvas.toDataURL('image/png');
+  } else if (img && img.src) {
+    dataUrl = img.src;
+  }
+
+  if (!dataUrl) {
+    showToast('QR Code is still rendering, please try again.', 'warning');
+    return;
+  }
+
+  const branchSelect = document.getElementById('qr-standee-branch');
+  const branchClean = (branchSelect ? branchSelect.value : 'Clinic').replace(/[^a-zA-Z0-9]/g, '_');
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = `Fano_Dental_QR_Standee_${branchClean}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('High-res QR Code downloaded successfully.', 'success');
+}
+
+function printStandeeCard() {
+  const branchSelect = document.getElementById('qr-standee-branch');
+  const branchName = branchSelect ? branchSelect.value : 'Makati Main Clinic';
+  const targetContainer = document.getElementById('standee-qr-target');
+  const canvas = targetContainer?.querySelector('canvas');
+  const qrImgSrc = canvas ? canvas.toDataURL('image/png') : '';
+
+  const printWindow = window.open('', '_blank', 'width=800,height=900');
+  if (!printWindow) {
+    showToast('Pop-up blocked. Please allow pop-ups to print the desk standee.', 'warning');
+    return;
+  }
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Fano Dental Clinic — QR Counter Standee (${branchName})</title>
+      <style>
+        body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; margin: 0; padding: 40px; display: flex; justify-content: center; align-items: center; min-height: 90vh; background: #f8fafc; }
+        .standee-card { width: 440px; border: 4px solid #0b3c4d; border-radius: 28px; padding: 36px 30px; text-align: center; background: #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .logo-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px; }
+        .clinic-title { font-size: 26px; font-weight: 800; color: #0b3c4d; margin: 0; }
+        .branch-tag { font-size: 13px; font-weight: 700; color: #0d9488; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+        .headline { font-size: 22px; font-weight: 800; color: #0b131e; margin: 20px 0 6px; }
+        .subhead { font-size: 14px; color: #64748b; margin-bottom: 24px; line-height: 1.4; }
+        .qr-box { padding: 18px; border: 2.5px solid #e2e8f0; border-radius: 22px; display: inline-block; background: #ffffff; margin-bottom: 24px; }
+        .steps-row { display: flex; justify-content: space-around; font-size: 13px; font-weight: 700; color: #334155; margin-top: 10px; }
+        .step-pill { background: #eef6f8; color: #0b3c4d; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; margin-bottom: 4px; display: inline-block; }
+        @media print {
+          body { background: #ffffff; padding: 0; }
+          .standee-card { box-shadow: none; margin: 40px auto; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="standee-card">
+        <div class="logo-row">
+          <div>
+            <h1 class="clinic-title">Fano Dental Clinic</h1>
+            <div class="branch-tag">${branchName}</div>
+          </div>
+        </div>
+        <div class="headline">📱 Scan to Book &amp; Check-In</div>
+        <div class="subhead">Skip front desk queues. Book your dental visit or check in directly from your phone in 60 seconds.</div>
+        <div class="qr-box">
+          <img src="${qrImgSrc}" width="220" height="220" style="display:block;" />
+        </div>
+        <div class="steps-row">
+          <div>
+            <div class="step-pill">STEP 1</div>
+            <div>Scan QR</div>
+          </div>
+          <div>
+            <div class="step-pill">STEP 2</div>
+            <div>Pick Service</div>
+          </div>
+          <div>
+            <div class="step-pill">STEP 3</div>
+            <div>Get Ticket</div>
+          </div>
+        </div>
+      </div>
+      <script>
+        window.onload = () => {
+          setTimeout(() => { window.print(); window.close(); }, 300);
+        };
+      <\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
 

@@ -902,3 +902,208 @@ footer {
   width: auto;
   object-fit: contain;
 }
+
+/* ===== LANDING QR BOOKING MODAL & CTA BUTTONS ===== */
+.booking-btn-qr {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition, 0.3s ease);
+}
+.booking-btn-qr:hover {
+  background: #fff;
+  color: #042f2e;
+  border-color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.landing-qr-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(8, 15, 26, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 16px;
+}
+.landing-qr-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.landing-qr-card {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 440px;
+  padding: 30px 26px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  position: relative;
+  text-align: center;
+  transform: translateY(20px) scale(0.96);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.landing-qr-overlay.active .landing-qr-card {
+  transform: translateY(0) scale(1);
+}
+
+.landing-qr-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.landing-qr-close:hover {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #fca5a5;
+}
+
+.landing-qr-badge {
+  display: inline-block;
+  background: #e6fffa;
+  color: #0d9488;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.landing-qr-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.landing-qr-desc {
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0 0 18px 0;
+}
+
+.landing-qr-code-box {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 190px;
+  margin: 0 auto 16px auto;
+  width: 212px;
+}
+.landing-qr-code-box img,
+.landing-qr-code-box canvas {
+  border-radius: 8px;
+  display: block;
+}
+
+.landing-qr-branch-picker {
+  text-align: left;
+  margin-bottom: 12px;
+}
+.landing-qr-branch-picker label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 4px;
+}
+.landing-qr-branch-picker select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1e293b;
+  background: #fff;
+  outline: none;
+}
+
+.landing-qr-url-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.landing-qr-url-row input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.78rem;
+  outline: none;
+}
+.landing-qr-btn-copy {
+  padding: 8px 14px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.landing-qr-btn-copy:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.landing-qr-btn-launch {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 11px 16px;
+  background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border-radius: 10px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+  transition: all 0.2s ease;
+}
+.landing-qr-btn-launch:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.4);
+}
+

@@ -657,6 +657,202 @@ const deleteAppointment = async (req, res) => {
   }
 };
 
+// @desc    Create appointment from Public QR Standee or Public Portal Link
+// @route   POST /api/appointments/qr-book
+// @access  Public
+const createQrAppointment = async (req, res) => {
+  const {
+    name,
+    contact_number,
+    phone,
+    email,
+    branch,
+    dentist_name,
+    treatment_id,
+    appointment_date,
+    appointmentDate,
+    dateTime,
+    date,
+    time,
+    payment_method,
+    notes
+  } = req.body;
+
+  let targetDate = appointment_date || appointmentDate || dateTime;
+  if (!targetDate && date && time) {
+    try {
+      const [rawTime, modifier] = time.trim().split(' ');
+      let [hours, minutes] = rawTime.split(':');
+      if (modifier === 'PM' && hours !== '12') hours = String(parseInt(hours, 10) + 12);
+      if (modifier === 'AM' && hours === '12') hours = '00';
+      targetDate = `${date}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`;
+    } catch (_) {}
+  }
+  const patientPhone = contact_number || phone || '';
+  const patientName = (name || '').trim();
+  const patientEmail = (email || '').trim().toLowerCase();
+
+  try {
+    if (!targetDate) {
+      return res.status(400).json({ message: 'Appointment date and time are required.' });
+    }
+    if (!patientName) {
+      return res.status(400).json({ message: 'Patient full name is required.' });
+    }
+    if (!patientPhone && !patientEmail) {
+      return res.status(400).json({ message: 'Please provide either a mobile contact number or email address.' });
+    }
+
+    // 1. Check double booking / slot conflict
+    const { data: activeAppts, error: conflictErr } = await supabase
+      .from('appointments')
+      .select('id, appointment_date, status')
+      .neq('status', 'Cancelled');
+
+    if (conflictErr) throw conflictErr;
+
+    const hasConflict = (activeAppts || []).some(a => {
+      if (!a.appointment_date) return false;
+      if (a.appointment_date === targetDate || a.appointment_date.startsWith(targetDate)) return true;
+      const d1 = new Date(a.appointment_date);
+      const d2 = new Date(targetDate);
+      return !isNaN(d1.getTime()) && !isNaN(d2.getTime()) && Math.abs(d1.getTime() - d2.getTime()) < 25 * 60 * 1000;
+    });
+
+    if (hasConflict) {
+      return res.status(409).json({
+        message: 'This time slot was just booked. Please select an alternate available time.'
+      });
+    }
+
+    // 2. Find or create patient record in users table
+    let patientId = null;
+    let existingUser = null;
+
+    if (patientEmail) {
+      const { data: userByEmail } = await supabase
+        .from('users')
+        .select('id, name, email, contact_number')
+        .eq('email', patientEmail)
+        .maybeSingle();
+      if (userByEmail) existingUser = userByEmail;
+    }
+
+    if (!existingUser && patientPhone) {
+      const { data: userByPhone } = await supabase
+        .from('users')
+        .select('id, name, email, contact_number')
+        .eq('contact_number', patientPhone)
+        .maybeSingle();
+      if (userByPhone) existingUser = userByPhone;
+    }
+
+    if (existingUser) {
+      patientId = existingUser.id;
+    } else {
+      // Auto-create lightweight patient profile
+      const bcrypt = require('bcryptjs');
+      const tempPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(tempPassword, salt);
+      const generatedEmail = patientEmail || `walkin.${Date.now()}@fanodental.local`;
+
+      const { data: newUser, error: createErr } = await supabase
+        .from('users')
+        .insert([{
+          name: patientName,
+          email: generatedEmail,
+          password: hashedPassword,
+          contact_number: patientPhone,
+          role: 'Patient',
+          is_active: true,
+          email_verified: false
+        }])
+        .select()
+        .single();
+
+      if (createErr) throw createErr;
+      patientId = newUser.id;
+    }
+
+    // 3. Prepare notes & reference code
+    const refCode = 'APT-QR-' + Math.floor(100000 + Math.random() * 900000);
+    const combinedNotes = [
+      `[QR Standee / Portal Booking • Ref: ${refCode}]`,
+      branch ? `Branch: ${branch}` : null,
+      dentist_name ? `Requested Dentist: ${dentist_name}` : null,
+      notes ? `Notes: ${notes}` : null
+    ].filter(Boolean).join(' | ');
+
+    // 4. Insert appointment
+    const { data: appointment, error: apptErr } = await supabase
+      .from('appointments')
+      .insert([{
+        patient_id: patientId,
+        treatment_id: treatment_id || treatmentId || null,
+        appointment_date: targetDate,
+        notes: combinedNotes,
+        status: 'Pending'
+      }])
+      .select(`
+        id, appointment_date, status, notes, created_at,
+        patient:patient_id ( id, name, email, contact_number ),
+        treatment:treatment_id ( id, name, price, duration_minutes )
+      `)
+      .single();
+
+    if (apptErr) throw apptErr;
+
+    // 5. Generate invoice if treatment selected
+    let createdInvoice = null;
+    let treatmentPrice = 0;
+    if (appointment.treatment?.price) {
+      treatmentPrice = parseFloat(appointment.treatment.price) || 0;
+    } else if (treatment_id || treatmentId) {
+      const { data: tData } = await supabase
+        .from('treatments')
+        .select('price')
+        .eq('id', treatment_id || treatmentId)
+        .maybeSingle();
+      if (tData?.price) treatmentPrice = parseFloat(tData.price) || 0;
+    }
+
+    try {
+      const { data: inv, error: invErr } = await supabase
+        .from('invoices')
+        .insert([{
+          patient_id: patientId,
+          appointment_id: appointment.id,
+          amount: treatmentPrice,
+          status: 'Unpaid',
+          paid_at: null
+        }])
+        .select()
+        .single();
+
+      if (!invErr) createdInvoice = inv;
+    } catch (invErr) {
+      console.error('[QR Auto-Invoice Error]', invErr.message);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Appointment booked successfully via QR / Portal.',
+      reference_code: refCode,
+      appointment: {
+        ...appointment,
+        reference_code: refCode,
+        branch: branch || 'Main Clinic',
+        dentist_name: dentist_name || 'Assigned on arrival',
+        invoice: createdInvoice
+      }
+    });
+  } catch (error) {
+    console.error('[createQrAppointment Error]', error);
+    res.status(500).json({ message: error.message || 'Failed to book appointment via QR.' });
+  }
+};
+
 module.exports = {
   getMyAppointments,
   startAppointment,
@@ -664,6 +860,7 @@ module.exports = {
   getAppointments,
   getOccupiedSlots,
   createAppointment,
+  createQrAppointment,
   updateAppointment,
   deleteAppointment
 };

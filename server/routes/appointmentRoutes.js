@@ -7,10 +7,15 @@ const {
   getAppointments,
   getOccupiedSlots,
   createAppointment,
+  createQrAppointment,
   updateAppointment,
   deleteAppointment
 } = require('../controllers/appointmentController');
 const { protect, authorize } = require('../middleware/auth');
+
+// Public endpoints for QR Code scan / Portal booking (no token required)
+router.get('/public-slots', getOccupiedSlots);
+router.post('/qr-book', createQrAppointment);
 
 router.get('/occupied', protect, getOccupiedSlots);
 

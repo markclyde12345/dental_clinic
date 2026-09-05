@@ -1,0 +1,669 @@
+/* ═══════════════════════════════════════════════════════════════
+   Fano Dental Clinic — Use Case No. 015: Book via QR / Portal
+   Modern, Mobile-First Editorial Dental Design
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --primary-color: #0b3c4d;
+  --accent: #0b3c4d;
+  --accent-light: #155368;
+  --accent-subtle: #eef6f8;
+  --gold-color: #c59b27;
+  --text-primary: #0b131e;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --bg-base: #f8fafc;
+  --bg-card: #ffffff;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --border-focus: #0b3c4d;
+  --green: #10b981;
+  --green-bg: #ecfdf5;
+  --green-border: #a7f3d0;
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --shadow-sm: 0 1px 3px rgba(11, 60, 77, 0.05);
+  --shadow-md: 0 4px 16px -2px rgba(11, 60, 77, 0.08);
+  --shadow-lg: 0 12px 28px -4px rgba(11, 60, 77, 0.12);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Top Bar ── */
+.qr-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.qr-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.qr-nav-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+}
+
+.qr-nav-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  letter-spacing: -0.01em;
+}
+
+.qr-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--accent-subtle);
+  border: 1px solid rgba(11, 60, 77, 0.12);
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.qr-badge-pill svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Main Container ── */
+.qr-container {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  flex: 1;
+}
+
+/* ── Welcome Banner ── */
+.qr-banner {
+  background: linear-gradient(135deg, #0b3c4d 0%, #155368 100%);
+  color: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.qr-banner::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  bottom: -30px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(197, 155, 39, 0.25) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.qr-banner-tag {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.16);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.qr-banner h1 {
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+
+.qr-banner p {
+  font-size: 0.86rem;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+/* ── Card Container ── */
+.qr-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 24px 20px;
+  margin-bottom: 20px;
+}
+
+/* ── Step Indicators ── */
+.booking-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.progress-track {
+  position: absolute;
+  top: 16px;
+  left: 30px;
+  right: 30px;
+  height: 2px;
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.progress-step {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+  padding: 0 4px;
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 2px solid #cbd5e1;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.progress-step.active .step-circle {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(11, 60, 77, 0.15);
+}
+
+.progress-step.completed .step-circle {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+}
+
+.step-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.progress-step.active .step-title {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* ── Form Inputs ── */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.form-label span.req {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.form-input, .form-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3.5px rgba(11, 60, 77, 0.1);
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 520px) {
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Service / Treatment Card Picker ── */
+.service-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 460px) {
+  .service-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.service-choice-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.service-choice-card:hover {
+  border-color: rgba(11, 60, 77, 0.35);
+  transform: translateY(-2px);
+}
+
+.service-choice-card.selected {
+  border-color: var(--primary-color);
+  background: var(--accent-subtle);
+  box-shadow: 0 4px 14px rgba(11, 60, 77, 0.1);
+}
+
+.service-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 4px;
+}
+
+.service-meta {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.service-price {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0b3c4d;
+  margin-top: 8px;
+}
+
+/* ── Dentist Picker Cards ── */
+.dentist-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 520px) {
+  .dentist-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dentist-choice-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dentist-choice-card:hover {
+  border-color: rgba(11, 60, 77, 0.35);
+}
+
+.dentist-choice-card.selected {
+  border-color: var(--primary-color);
+  background: var(--accent-subtle);
+}
+
+.dentist-choice-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #e2e8f0;
+}
+
+.dentist-choice-info h4 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dentist-choice-info p {
+  font-size: 0.74rem;
+  color: var(--gold-color);
+  font-weight: 600;
+}
+
+/* ── Slots Picker ── */
+.slots-container {
+  margin-top: 14px;
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.slot-button {
+  padding: 11px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.18s ease;
+}
+
+.slot-button:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  background: #f0f9fb;
+}
+
+.slot-button.selected {
+  background: var(--primary-color) !important;
+  color: #ffffff !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 4px 12px rgba(11, 60, 77, 0.25);
+}
+
+.slot-button:disabled {
+  background: #f8fafc;
+  color: #cbd5e1;
+  border-color: #f1f5f9;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+
+/* ── Payment Options ── */
+.payment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+@media (max-width: 480px) {
+  .payment-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payment-card {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  cursor: pointer;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.payment-card.selected {
+  border-color: var(--primary-color);
+  background: var(--accent-subtle);
+}
+
+.payment-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.payment-card h4 {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.payment-card p {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+/* ── Buttons ── */
+.btn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 14px 22px;
+  background: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(11, 60, 77, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background: #082d3b;
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  padding: 14px 20px;
+  background: #ffffff;
+  color: #475569;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+  color: var(--text-primary);
+}
+
+/* ── Digital Pass / Confirmation Ticket ── */
+.pass-card {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  border: 2px solid rgba(11, 60, 77, 0.12);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  position: relative;
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pass-header {
+  background: linear-gradient(135deg, #0b3c4d 0%, #155368 100%);
+  color: #ffffff;
+  padding: 22px 20px;
+  text-align: center;
+}
+
+.pass-header-check {
+  width: 52px;
+  height: 52px;
+  background: #10b981;
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin: 0 auto 10px;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+}
+
+.pass-ref {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin-top: 6px;
+}
+
+.pass-body {
+  padding: 24px 20px;
+}
+
+.pass-qr-wrap {
+  text-align: center;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+}
+
+#ticket-qr-canvas {
+  display: flex;
+  justify-content: center;
+  margin: 10px auto;
+}
+
+.pass-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.pass-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.pass-detail-row:last-child {
+  border-bottom: none;
+}
+
+.pass-label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.pass-val {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  font-weight: 700;
+  text-align: right;
+}
+
+.pass-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
