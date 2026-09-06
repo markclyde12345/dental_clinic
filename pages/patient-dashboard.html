@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260906_settings_v2">
+  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260906_settings_v3">
   <link rel="stylesheet" href="../css/ai-chat.css">
 </head>
 <body>
@@ -991,115 +991,162 @@
 
         <div class="settings-grid">
           <!-- ─── 1. ACCOUNT ─── -->
-          <div class="card settings-card account-details-card" id="settings-group-account" data-settings-category="account" style="grid-column: 1 / -1;">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 14px; margin-bottom: 8px;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="settings-card-icon settings-icon-account" style="background: rgba(37, 99, 235, 0.1); color: #2563eb; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 0;">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <div class="card settings-card account-details-card luxury-account-card" id="settings-group-account" style="grid-column: 1 / -1;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <div class="settings-card-icon settings-icon-account" style="background: linear-gradient(135deg, rgba(37,99,235,0.15), rgba(2,132,199,0.2)); color: #0284c7; width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(2,132,199,0.12);">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </div>
                 <div>
-                  <h3 class="settings-card-title" style="margin: 0; font-size: 1.15rem; font-weight: 700;">Account</h3>
-                  <p class="settings-desc" style="margin: 2px 0 0; font-size: 0.82rem;">Your official registration profile, verified email, phone, credentials, and recent login history.</p>
+                  <div class="settings-cat-pill">ACCOUNT &amp; IDENTITY</div>
+                  <h3 class="settings-card-title" style="margin: 2px 0 0; font-size: 1.25rem; font-weight: 800;">Account</h3>
+                  <p class="settings-desc" style="margin: 2px 0 0; font-size: 0.84rem;">Your verified patient registration profile, contact credentials, and session logs.</p>
                 </div>
               </div>
-              <button type="button" class="card-action-btn" onclick="switchSection('profile')" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; font-weight: 600; font-size: 0.82rem; border-radius: 8px;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                <span>Edit Profile</span>
+              <button type="button" class="card-action-btn luxury-edit-profile-btn" onclick="switchSection('profile')" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; font-weight: 700; font-size: 0.84rem; border-radius: 10px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span>Edit Full Profile</span>
               </button>
             </div>
 
-            <!-- Patient Identity Banner -->
-            <div class="patient-info-header" style="padding-top: 0; border-bottom: none; margin-bottom: 12px;">
-              <div class="patient-avatar-lg" id="patient-avatar-lg">P</div>
-              <div>
-                <h2 class="patient-name" id="patient-full-name">Loading...</h2>
-                <span class="patient-id" id="patient-id-tag">PT-2026-0001</span>
-                <div class="patient-status-badge">
-                  <span class="status-dot"></span>
-                  Active Patient
+            <!-- Patient Identity Hero Banner -->
+            <div class="patient-hero-banner">
+              <div class="patient-avatar-wrap">
+                <div class="patient-avatar-lg" id="patient-avatar-lg">P</div>
+                <span class="avatar-online-ring" title="Active Patient Account"></span>
+              </div>
+              <div class="patient-hero-info">
+                <div class="patient-name-row">
+                  <h2 class="patient-name" id="patient-full-name">Loading Patient...</h2>
+                  <span class="pill-badge pill-verified"><i class="fa-solid fa-circle-check"></i> Verified Patient</span>
+                </div>
+                <div class="patient-tags-row">
+                  <button type="button" class="patient-id-badge-btn" onclick="copyToClipboard(document.getElementById('patient-id-tag').textContent, 'Patient ID')" title="Click to copy Patient ID">
+                    <span class="pib-label">PATIENT ID</span>
+                    <strong id="patient-id-tag">PT-2026-0001</strong>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </button>
+                  <span class="chip-registered-badge">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    Member Since <span id="detail-since">2026</span>
+                  </span>
+                  <span class="chip-status-active">
+                    <span class="pulsing-green-dot"></span>
+                    Active Status
+                  </span>
                 </div>
               </div>
             </div>
 
-            <!-- Sub-items: Email, Phone, Password, Login Activity -->
+            <!-- 4 Interactive Contact & Credential Tiles -->
             <div class="account-submodules-grid">
-              <!-- Email Row -->
-              <div class="account-submodule-item">
-                <div class="asm-header">
-                  <span class="asm-label">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                    Email Address
-                  </span>
-                  <span class="pill-badge pill-success"><i class="fa-solid fa-check"></i> Verified</span>
-                </div>
-                <div class="asm-val" id="detail-email">patient@fanoclinic.com</div>
-                <div class="asm-sub">Primary channel for appointments &amp; billing statements</div>
-              </div>
-
-              <!-- Phone Row -->
-              <div class="account-submodule-item">
-                <div class="asm-header">
-                  <span class="asm-label">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9c1.48 2.56 3.57 4.65 6.13 6.13l.75-.75a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    Phone Number
-                  </span>
-                  <span class="pill-badge pill-info">SMS Enabled</span>
-                </div>
-                <div class="asm-val" id="detail-phone">+63 917 000 0000</div>
-                <div class="asm-sub">Used for urgent reminders &amp; verification OTP</div>
-              </div>
-
-              <!-- Password Row -->
-              <div class="account-submodule-item">
-                <div class="asm-header">
-                  <span class="asm-label">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Password
-                  </span>
-                  <span class="pill-badge pill-neutral">Protected</span>
-                </div>
-                <div class="asm-val">••••••••••••</div>
-                <div style="margin-top: 8px;">
-                  <button type="button" class="btn-asm-action" onclick="openChangePasswordModal()">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    <span>Change Password</span>
+              <!-- Email Tile -->
+              <div class="account-tile">
+                <div class="tile-top-row">
+                  <div class="tile-label-wrap">
+                    <div class="tile-icon-dot bg-blue">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    </div>
+                    <span class="tile-label">Email Address</span>
+                  </div>
+                  <button type="button" class="btn-tile-copy" onclick="copyToClipboard(document.getElementById('detail-email').textContent, 'Email Address')" title="Copy Email">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   </button>
                 </div>
+                <div class="tile-value-text" id="detail-email">patient@fanoclinic.com</div>
+                <div class="tile-footer-note">
+                  <span class="pill-badge pill-success"><i class="fa-solid fa-check"></i> Primary Email</span>
+                  <span class="tile-subtext">Appointment notices &amp; receipts</span>
+                </div>
               </div>
 
-              <!-- Member Since & Address Row -->
-              <div class="account-submodule-item">
-                <div class="asm-header">
-                  <span class="asm-label">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Member Since &amp; Address
-                  </span>
-                  <span class="pill-badge pill-neutral" id="detail-since">2026</span>
+              <!-- Phone Tile -->
+              <div class="account-tile">
+                <div class="tile-top-row">
+                  <div class="tile-label-wrap">
+                    <div class="tile-icon-dot bg-green">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9c1.48 2.56 3.57 4.65 6.13 6.13l.75-.75a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </div>
+                    <span class="tile-label">Phone Number</span>
+                  </div>
+                  <button type="button" class="btn-tile-copy" onclick="copyToClipboard(document.getElementById('detail-phone').textContent, 'Phone Number')" title="Copy Phone Number">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </button>
                 </div>
-                <div class="asm-val" id="detail-address" style="font-size: 0.88rem; font-weight: 600;">City of Naga, Cebu</div>
-                <div class="asm-sub">Registered patient at Fano Dental Clinic</div>
+                <div class="tile-value-text" id="detail-phone">+63 917 000 0000</div>
+                <div class="tile-footer-note">
+                  <span class="pill-badge pill-info">SMS Verified</span>
+                  <span class="tile-subtext">Urgent dental &amp; schedule alerts</span>
+                </div>
+              </div>
+
+              <!-- Password Tile -->
+              <div class="account-tile">
+                <div class="tile-top-row">
+                  <div class="tile-label-wrap">
+                    <div class="tile-icon-dot bg-amber">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <span class="tile-label">Password &amp; Security</span>
+                  </div>
+                  <button type="button" class="btn-asm-action" onclick="openChangePasswordModal()" title="Change Password">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Change</span>
+                  </button>
+                </div>
+                <div class="tile-value-dots">••••••••••••</div>
+                <div class="tile-footer-note">
+                  <span class="pill-badge pill-neutral">Encrypted</span>
+                  <span class="tile-subtext">Last updated 30 days ago</span>
+                </div>
+              </div>
+
+              <!-- Registered Address Tile -->
+              <div class="account-tile">
+                <div class="tile-top-row">
+                  <div class="tile-label-wrap">
+                    <div class="tile-icon-dot bg-teal">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    </div>
+                    <span class="tile-label">Clinic Location / Address</span>
+                  </div>
+                  <span class="pill-badge pill-neutral">Branch Patient</span>
+                </div>
+                <div class="tile-value-text" id="detail-address">City of Naga, Cebu</div>
+                <div class="tile-footer-note">
+                  <span class="tile-subtext">Registered at Fano Dental Clinic</span>
+                </div>
               </div>
             </div>
 
-            <!-- Login Activity Section -->
+            <!-- Login Activity Feed with Live Session Pulse -->
             <div class="login-activity-wrap">
-              <div class="law-title">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                <span>Login Activity</span>
+              <div class="law-title-bar">
+                <div class="law-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  <span>Active Login Sessions</span>
+                </div>
+                <span class="law-sub">Real-time session auditing</span>
               </div>
               <div class="login-sessions-list">
-                <div class="login-session-item">
-                  <div class="lsi-device-icon">💻</div>
-                  <div class="lsi-info">
-                    <div class="lsi-name">Google Chrome on Windows PC <span class="pill-badge pill-success" style="margin-left: 6px;">Active Now</span></div>
-                    <div class="lsi-meta">Balirong, City of Naga, Cebu · IP: 112.198.88.24 · Current Browser Session</div>
+                <div class="login-session-card current-session">
+                  <div class="session-device-badge">💻</div>
+                  <div class="session-details">
+                    <div class="session-name">
+                      <strong>Google Chrome · Windows PC</strong>
+                      <span class="session-active-pill"><span class="pulsing-green-dot"></span> Active Now · Current Device</span>
+                    </div>
+                    <div class="session-meta">Balirong, City of Naga, Cebu · IP: 112.198.88.24 · HTTPS Secure Session</div>
                   </div>
                 </div>
-                <div class="login-session-item">
-                  <div class="lsi-device-icon">📱</div>
-                  <div class="lsi-info">
-                    <div class="lsi-name">Safari on iPhone 14 <span class="pill-badge pill-neutral" style="margin-left: 6px;">Recent</span></div>
-                    <div class="lsi-meta">Minglanilla, Cebu · Yesterday at 06:42 PM</div>
+                <div class="login-session-card">
+                  <div class="session-device-badge">📱</div>
+                  <div class="session-details">
+                    <div class="session-name">
+                      <strong>Safari Mobile · Apple iPhone 14</strong>
+                      <span class="session-recent-pill">Recent</span>
+                    </div>
+                    <div class="session-meta">Minglanilla, Cebu · Yesterday at 06:42 PM · Safari 17.4</div>
                   </div>
                 </div>
               </div>
@@ -1107,42 +1154,74 @@
           </div>
 
           <!-- ─── 2. NOTIFICATIONS ─── -->
-          <div class="card settings-card" id="settings-group-notifications" data-settings-category="notifications">
-            <div class="settings-card-icon settings-icon-notif" style="background: rgba(245, 158, 11, 0.12); color: #d97706;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="card settings-card" id="settings-group-notifications">
+            <div class="card-top-identity">
+              <div class="settings-card-icon settings-icon-notif" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.2)); color: #d97706; width: 44px; height: 44px; border-radius: 12px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </div>
+              <div>
+                <div class="settings-cat-pill">ALERTS &amp; REMINDERS</div>
+                <h3 class="settings-card-title">Notifications</h3>
+                <p class="settings-desc">Choose which dental care alerts and clinic notices you receive.</p>
+              </div>
             </div>
-            <div>
-              <h3 class="settings-card-title">Notifications</h3>
-              <p class="settings-desc" style="margin: 2px 0 0; font-size: 0.82rem;">Manage your active alert preferences for appointments, billing, and clinic notices.</p>
-            </div>
-            <div class="toggle-group">
+
+            <div class="toggle-group luxury-toggle-group">
               <!-- Appointment Alerts -->
-              <div class="toggle-item">
-                <div>
-                  <p class="toggle-label">Appointment Alerts</p>
-                  <p class="toggle-desc">Automated SMS &amp; email reminders 24 hours and 2 hours prior to scheduled visits</p>
+              <div class="toggle-card">
+                <div class="toggle-card-body">
+                  <div class="toggle-item-title-row">
+                    <div class="toggle-title-icon"><i class="fa-solid fa-calendar-check text-blue"></i></div>
+                    <div>
+                      <p class="toggle-label">Appointment Alerts</p>
+                      <p class="toggle-desc">Automated SMS &amp; email notices 24 hours and 2 hours before appointments</p>
+                    </div>
+                  </div>
+                  <div class="channel-tags-row">
+                    <span class="channel-tag"><i class="fa-solid fa-comment-dots"></i> SMS Alert</span>
+                    <span class="channel-tag"><i class="fa-solid fa-envelope"></i> Email Reminder</span>
+                  </div>
                 </div>
                 <label class="toggle-switch">
                   <input type="checkbox" id="notify-appt-alerts" checked>
                   <span class="toggle-slider"></span>
                 </label>
               </div>
+
               <!-- Billing Alerts -->
-              <div class="toggle-item">
-                <div>
-                  <p class="toggle-label">Billing Alerts</p>
-                  <p class="toggle-desc">Instant alerts for newly generated clinic invoices, receipts, and payment confirmations</p>
+              <div class="toggle-card">
+                <div class="toggle-card-body">
+                  <div class="toggle-item-title-row">
+                    <div class="toggle-title-icon"><i class="fa-solid fa-receipt text-green"></i></div>
+                    <div>
+                      <p class="toggle-label">Billing Alerts</p>
+                      <p class="toggle-desc">Instant alerts for newly generated clinic invoices, payments, and receipts</p>
+                    </div>
+                  </div>
+                  <div class="channel-tags-row">
+                    <span class="channel-tag"><i class="fa-solid fa-bell"></i> Instant Push</span>
+                    <span class="channel-tag"><i class="fa-solid fa-file-invoice"></i> PayMongo Receipt</span>
+                  </div>
                 </div>
                 <label class="toggle-switch">
                   <input type="checkbox" id="notify-billing-alerts" checked>
                   <span class="toggle-slider"></span>
                 </label>
               </div>
+
               <!-- Clinic Updates -->
-              <div class="toggle-item">
-                <div>
-                  <p class="toggle-label">Clinic Updates</p>
-                  <p class="toggle-desc">Notices regarding holiday hours, specialist schedules, and preventive dental tips</p>
+              <div class="toggle-card">
+                <div class="toggle-card-body">
+                  <div class="toggle-item-title-row">
+                    <div class="toggle-title-icon"><i class="fa-solid fa-bullhorn text-amber"></i></div>
+                    <div>
+                      <p class="toggle-label">Clinic Updates</p>
+                      <p class="toggle-desc">Notices regarding holiday hours, specialist rotations, and dental health tips</p>
+                    </div>
+                  </div>
+                  <div class="channel-tags-row">
+                    <span class="channel-tag"><i class="fa-solid fa-newspaper"></i> Health Bulletin</span>
+                  </div>
                 </div>
                 <label class="toggle-switch">
                   <input type="checkbox" id="notify-clinic-updates" checked>
@@ -1153,23 +1232,46 @@
           </div>
 
           <!-- ─── 3. PRIVACY & SECURITY ─── -->
-          <div class="card settings-card" id="settings-group-privacy" data-settings-category="privacy">
-            <div class="settings-card-icon settings-icon-security" style="background: rgba(16, 185, 129, 0.12); color: #059669;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div class="card settings-card" id="settings-group-privacy">
+            <div class="card-top-identity">
+              <div class="settings-card-icon settings-icon-security" style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.2)); color: #059669; width: 44px; height: 44px; border-radius: 12px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <div>
+                <div class="settings-cat-pill">PROTECTION &amp; CREDENTIALS</div>
+                <h3 class="settings-card-title">Privacy &amp; Security</h3>
+                <p class="settings-desc">Protect your patient portal identity and control data access and active sessions.</p>
+              </div>
             </div>
-            <div>
-              <h3 class="settings-card-title">Privacy &amp; Security</h3>
-              <p class="settings-desc" style="margin: 2px 0 0; font-size: 0.82rem;">Protect your patient portal identity and control data access and active sessions.</p>
+
+            <!-- Security Health Score Meter -->
+            <div class="security-score-card">
+              <div class="ssc-top">
+                <div class="ssc-title-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <strong>Security Rating</strong>
+                </div>
+                <span class="ssc-score-pill" id="security-health-badge">85% · STRONG</span>
+              </div>
+              <div class="ssc-progress-track">
+                <div class="ssc-progress-bar" id="security-health-bar" style="width: 85%;"></div>
+              </div>
+              <div class="ssc-checklist">
+                <span class="ssc-check-item"><i class="fa-solid fa-check text-green"></i> AES-256 Medical Encryption</span>
+                <span class="ssc-check-item"><i class="fa-solid fa-check text-green"></i> Session Guard</span>
+                <span class="ssc-check-item"><i class="fa-solid fa-check text-green"></i> Verified Account</span>
+              </div>
             </div>
-            <div class="toggle-group">
+
+            <div class="toggle-group luxury-toggle-group">
               <!-- 2FA -->
-              <div class="toggle-item">
-                <div>
+              <div class="toggle-card">
+                <div class="toggle-card-body">
                   <p class="toggle-label">Two-Factor Authentication (2FA)</p>
-                  <p class="toggle-desc">Require a one-time OTP verification code on your mobile phone upon login</p>
+                  <p class="toggle-desc">Require a one-time SMS verification code on your mobile phone upon login</p>
                 </div>
                 <label class="toggle-switch">
-                  <input type="checkbox" id="enable-2fa">
+                  <input type="checkbox" id="enable-2fa" onchange="updateSecurityHealthScore()">
                   <span class="toggle-slider"></span>
                 </label>
               </div>
@@ -1178,96 +1280,180 @@
             <!-- Active Devices -->
             <div class="privacy-sub-box">
               <div class="psb-header">
-                <span class="psb-title">Active Devices</span>
-                <span class="pill-badge pill-info">2 Devices Connected</span>
+                <span class="psb-title"><i class="fa-solid fa-laptop-medical"></i> Authorized Devices</span>
+                <span class="pill-badge pill-info">2 Active Tokens</span>
               </div>
               <p class="psb-desc">Windows 11 (Google Chrome) and iPhone 14 (Safari Mobile) currently hold active authentication tokens.</p>
             </div>
 
             <!-- Action Buttons: Download Data & Logout All Devices -->
             <div class="privacy-actions-grid">
-              <button type="button" class="secondary-btn" onclick="downloadPatientData()" style="justify-content: center;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                <span>Download Data</span>
+              <button type="button" class="secondary-btn btn-export-data" onclick="downloadPatientData()" style="justify-content: center;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Download Patient Data (JSON)</span>
               </button>
               <button type="button" class="danger-outline-btn" onclick="logoutAllDevices()" style="justify-content: center;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 <span>Logout All Devices</span>
               </button>
             </div>
           </div>
 
           <!-- ─── 4. PATIENT PREFERENCES ─── -->
-          <div class="card settings-card" id="settings-group-preferences" data-settings-category="preferences">
-            <div class="settings-card-icon" style="background: rgba(99, 102, 241, 0.12); color: #4f46e5;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <div class="card settings-card" id="settings-group-preferences">
+            <div class="card-top-identity">
+              <div class="settings-card-icon" style="background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(79,70,229,0.2)); color: #4f46e5; width: 44px; height: 44px; border-radius: 12px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </div>
+              <div>
+                <div class="settings-cat-pill">BOOKING &amp; CARE DEFAULTS</div>
+                <h3 class="settings-card-title">Patient Preferences</h3>
+                <p class="settings-desc">Customize your default treatment specialist, clinic branch, and reminders.</p>
+              </div>
             </div>
-            <div>
-              <h3 class="settings-card-title">Patient Preferences</h3>
-              <p class="settings-desc" style="margin: 2px 0 0; font-size: 0.82rem;">Set default preferences for appointment booking and treatment consultations.</p>
-            </div>
+
+            <!-- Styled Dropdowns for Dentist & Branch -->
             <div class="form-group">
-              <label for="pref-dentist" class="form-label">Preferred Dentist</label>
-              <select id="pref-dentist" class="form-input">
-                <option value="any">No Preference (First Available Dentist)</option>
+              <label for="pref-dentist" class="form-label luxury-label">
+                <i class="fa-solid fa-user-doctor text-indigo"></i>
+                Preferred Dentist
+              </label>
+              <select id="pref-dentist" class="form-input luxury-select">
+                <option value="any">No Preference (First Available Specialist)</option>
                 <option value="dr-maria">Dr. Maria Santos, DDM (Cosmetic &amp; General)</option>
                 <option value="dr-juan">Dr. Juan Reyes, DDM (Orthodontics &amp; Surgery)</option>
                 <option value="dr-sarah">Dr. Sarah Lopez, DDM (Pediatric &amp; Preventive)</option>
               </select>
             </div>
+
             <div class="form-group">
-              <label for="pref-branch" class="form-label">Preferred Branch</label>
-              <select id="pref-branch" class="form-input">
+              <label for="pref-branch" class="form-label luxury-label">
+                <i class="fa-solid fa-hospital text-indigo"></i>
+                Preferred Branch
+              </label>
+              <select id="pref-branch" class="form-input luxury-select">
                 <option value="main-balirong">Main Branch — Balirong Highway, Naga City</option>
                 <option value="minglanilla">Minglanilla Branch — Poblacion Ward II</option>
                 <option value="san-fernando">San Fernando Branch — South Highway</option>
               </select>
             </div>
+
+            <!-- Interactive Visual Pills: Preferred Contact Method -->
             <div class="form-group">
-              <label for="pref-contact-method" class="form-label">Preferred Contact Method</label>
-              <select id="pref-contact-method" class="form-input">
-                <option value="sms">SMS Text Message (Fastest)</option>
-                <option value="email">Email</option>
-                <option value="viber">WhatsApp / Viber</option>
-                <option value="phone">Direct Voice Call</option>
-              </select>
+              <label class="form-label luxury-label">
+                <i class="fa-solid fa-address-book text-indigo"></i>
+                Preferred Contact Method
+              </label>
+              <input type="hidden" id="pref-contact-method" value="sms">
+              <div class="visual-pill-grid" id="contact-method-pills">
+                <button type="button" class="visual-pill active" data-val="sms" onclick="selectContactMethodPill('sms')">
+                  <span class="vp-icon">💬</span>
+                  <div class="vp-text">
+                    <strong>SMS Text</strong>
+                    <small>Fastest response</small>
+                  </div>
+                </button>
+                <button type="button" class="visual-pill" data-val="email" onclick="selectContactMethodPill('email')">
+                  <span class="vp-icon">✉️</span>
+                  <div class="vp-text">
+                    <strong>Email</strong>
+                    <small>Statements &amp; PDF</small>
+                  </div>
+                </button>
+                <button type="button" class="visual-pill" data-val="viber" onclick="selectContactMethodPill('viber')">
+                  <span class="vp-icon">🟢</span>
+                  <div class="vp-text">
+                    <strong>WhatsApp/Viber</strong>
+                    <small>Instant chat</small>
+                  </div>
+                </button>
+                <button type="button" class="visual-pill" data-val="phone" onclick="selectContactMethodPill('phone')">
+                  <span class="vp-icon">📞</span>
+                  <div class="vp-text">
+                    <strong>Voice Call</strong>
+                    <small>Direct phone line</small>
+                  </div>
+                </button>
+              </div>
             </div>
+
+            <!-- Interactive Visual Pills: Preferred Schedule -->
             <div class="form-group">
-              <label for="pref-schedule" class="form-label">Preferred Schedule</label>
-              <select id="pref-schedule" class="form-input">
-                <option value="morning">Morning (8:00 AM – 12:00 PM)</option>
-                <option value="afternoon">Afternoon (1:00 PM – 5:00 PM)</option>
-                <option value="weekend">Weekends Only (Saturday)</option>
-              </select>
+              <label class="form-label luxury-label">
+                <i class="fa-solid fa-clock text-indigo"></i>
+                Preferred Schedule Window
+              </label>
+              <input type="hidden" id="pref-schedule" value="morning">
+              <div class="visual-pill-grid schedule-grid" id="schedule-pills">
+                <button type="button" class="visual-pill active" data-val="morning" onclick="selectSchedulePill('morning')">
+                  <span class="vp-icon">☀️</span>
+                  <div class="vp-text">
+                    <strong>Morning Window</strong>
+                    <small>8:00 AM – 12:00 PM</small>
+                  </div>
+                </button>
+                <button type="button" class="visual-pill" data-val="afternoon" onclick="selectSchedulePill('afternoon')">
+                  <span class="vp-icon">🌤️</span>
+                  <div class="vp-text">
+                    <strong>Afternoon Window</strong>
+                    <small>1:00 PM – 5:00 PM</small>
+                  </div>
+                </button>
+                <button type="button" class="visual-pill" data-val="weekend" onclick="selectSchedulePill('weekend')">
+                  <span class="vp-icon">🗓️</span>
+                  <div class="vp-text">
+                    <strong>Weekends Only</strong>
+                    <small>Saturday clinic hours</small>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
 
           <!-- ─── 5. ACCESSIBILITY ─── -->
-          <div class="card settings-card" id="settings-group-accessibility" data-settings-category="accessibility">
-            <div class="settings-card-icon" style="background: rgba(14, 165, 233, 0.12); color: #0284c7;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
-            </div>
-            <div>
-              <h3 class="settings-card-title">Accessibility</h3>
-              <p class="settings-desc" style="margin: 2px 0 0; font-size: 0.82rem;">Personalize interface scaling, visual clarity, and motion behavior.</p>
-            </div>
-
-            <!-- Text Size -->
-            <div class="accessibility-submodule">
-              <label class="form-label" style="margin-bottom: 6px; display: block;">Text Size</label>
-              <div class="text-size-pills">
-                <button type="button" class="btn-size-pill active" id="btn-size-normal" onclick="setTextSize('normal')">Normal (100%)</button>
-                <button type="button" class="btn-size-pill" id="btn-size-medium" onclick="setTextSize('medium')">Medium (115%)</button>
-                <button type="button" class="btn-size-pill" id="btn-size-large" onclick="setTextSize('large')">Large (130%)</button>
+          <div class="card settings-card" id="settings-group-accessibility">
+            <div class="card-top-identity">
+              <div class="settings-card-icon" style="background: linear-gradient(135deg, rgba(14,165,233,0.15), rgba(2,132,199,0.2)); color: #0284c7; width: 44px; height: 44px; border-radius: 12px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+              </div>
+              <div>
+                <div class="settings-cat-pill">COMFORT &amp; ACCESSIBILITY</div>
+                <h3 class="settings-card-title">Accessibility</h3>
+                <p class="settings-desc">Personalize interface scaling, visual clarity, and motion behavior.</p>
               </div>
             </div>
 
-            <div class="toggle-group" style="margin-top: 6px;">
+            <!-- Text Size Segmented Control & Live Preview -->
+            <div class="accessibility-submodule luxury-access-box">
+              <div class="asb-top">
+                <label class="form-label luxury-label" style="margin-bottom: 0;">Portal Font Scaling</label>
+                <span class="pill-badge pill-info" id="current-size-badge">100% Scale</span>
+              </div>
+              <div class="text-size-pills luxury-size-pills">
+                <button type="button" class="btn-size-pill active" id="btn-size-normal" onclick="setTextSize('normal')">
+                  <strong>A</strong> Normal (100%)
+                </button>
+                <button type="button" class="btn-size-pill" id="btn-size-medium" onclick="setTextSize('medium')">
+                  <strong>A+</strong> Medium (115%)
+                </button>
+                <button type="button" class="btn-size-pill" id="btn-size-large" onclick="setTextSize('large')">
+                  <strong>A++</strong> Large (130%)
+                </button>
+              </div>
+
+              <!-- Interactive Live Preview Box -->
+              <div class="accessibility-preview-card" id="accessibility-preview-card">
+                <div class="apc-badge"><i class="fa-solid fa-eye"></i> Live Text Preview</div>
+                <p class="apc-text" id="accessibility-preview-text">"Gentle, modern, and compassionate dental care at Fano Dental Clinic."</p>
+              </div>
+            </div>
+
+            <div class="toggle-group luxury-toggle-group" style="margin-top: 6px;">
               <!-- High Contrast -->
-              <div class="toggle-item">
-                <div>
-                  <p class="toggle-label">High Contrast</p>
-                  <p class="toggle-desc">Enhance border lines and text contrast for maximum visual legibility</p>
+              <div class="toggle-card">
+                <div class="toggle-card-body">
+                  <p class="toggle-label">High Contrast Mode</p>
+                  <p class="toggle-desc">Enhance border lines and text contrast for maximum visual clarity</p>
                 </div>
                 <label class="toggle-switch">
                   <input type="checkbox" id="pref-high-contrast" onchange="toggleHighContrast(this.checked)">
@@ -1275,10 +1461,10 @@
                 </label>
               </div>
               <!-- Reduce Motion -->
-              <div class="toggle-item">
-                <div>
+              <div class="toggle-card">
+                <div class="toggle-card-body">
                   <p class="toggle-label">Reduce Motion</p>
-                  <p class="toggle-desc">Turn off sliding animations and decorative transitions</p>
+                  <p class="toggle-desc">Turn off sliding animations and decorative transitions across the dashboard</p>
                 </div>
                 <label class="toggle-switch">
                   <input type="checkbox" id="pref-reduce-motion" onchange="toggleReduceMotion(this.checked)">
@@ -1289,38 +1475,53 @@
           </div>
 
           <!-- ─── 6. SUPPORT ─── -->
-          <div class="card settings-card" id="settings-group-support" data-settings-category="support">
-            <div class="settings-card-icon" style="background: rgba(13, 148, 136, 0.12); color: #0d9488;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div class="card settings-card" id="settings-group-support">
+            <div class="card-top-identity">
+              <div class="settings-card-icon" style="background: linear-gradient(135deg, rgba(13,148,136,0.15), rgba(15,118,110,0.2)); color: #0d9488; width: 44px; height: 44px; border-radius: 12px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div>
+                <div class="settings-cat-pill">PATIENT CARE &amp; ASSISTANCE</div>
+                <h3 class="settings-card-title">Support</h3>
+                <p class="settings-desc">Access patient guide resources, reach clinic staff, or submit a bug report.</p>
+              </div>
             </div>
-            <div>
-              <h3 class="settings-card-title">Support</h3>
-              <p class="settings-desc" style="margin: 2px 0 0; font-size: 0.82rem;">Access patient guide resources, reach clinic staff, or submit a bug report.</p>
-            </div>
+
             <div class="support-actions-list">
               <!-- Help Center -->
-              <div class="support-item" onclick="openHelpCenterModal()">
-                <div class="si-icon"><i class="fa-solid fa-book-medical"></i></div>
+              <div class="support-item luxury-support-item" onclick="openHelpCenterModal()">
+                <div class="si-icon" style="background: rgba(37,99,235,0.1); color: #2563eb;"><i class="fa-solid fa-book-medical"></i></div>
                 <div class="si-content">
-                  <div class="si-title">Help Center &amp; FAQs</div>
-                  <div class="si-desc">Browse appointment policies, dental record guidance &amp; billing questions</div>
+                  <div class="si-title-row">
+                    <span class="si-title">Help Center &amp; Patient FAQs</span>
+                    <span class="pill-badge pill-info">12 Guides Available</span>
+                  </div>
+                  <div class="si-desc">Browse appointment policies, dental record guidance &amp; online billing FAQs</div>
                 </div>
-                <button type="button" class="card-action-btn" onclick="event.stopPropagation(); openHelpCenterModal()">Read →</button>
+                <button type="button" class="card-action-btn" onclick="event.stopPropagation(); openHelpCenterModal()">Explore →</button>
               </div>
+
               <!-- Contact Clinic -->
-              <div class="support-item" onclick="openContactClinicPrompt()">
-                <div class="si-icon"><i class="fa-solid fa-phone-volume"></i></div>
+              <div class="support-item luxury-support-item" onclick="openContactClinicPrompt()">
+                <div class="si-icon" style="background: rgba(16,185,129,0.1); color: #10b981;"><i class="fa-solid fa-phone-volume"></i></div>
                 <div class="si-content">
-                  <div class="si-title">Contact Clinic Directly</div>
-                  <div class="si-desc">Reception Desk: (032) 489-1200 · Emergency Hotline: +63 917 489 1200</div>
+                  <div class="si-title-row">
+                    <span class="si-title">Contact Clinic Directly</span>
+                    <span class="status-live-chip"><span class="pulsing-green-dot"></span> Reception Desk Open (8AM - 6PM)</span>
+                  </div>
+                  <div class="si-desc">Reception Desk: (032) 489-1200 · Emergency On-Call: +63 917 489 1200</div>
                 </div>
-                <button type="button" class="card-action-btn" onclick="event.stopPropagation(); openContactClinicPrompt()">Call →</button>
+                <button type="button" class="card-action-btn" onclick="event.stopPropagation(); openContactClinicPrompt()">Call Hotline →</button>
               </div>
+
               <!-- Report Issue -->
-              <div class="support-item" onclick="openReportIssueModal()">
-                <div class="si-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div class="support-item luxury-support-item" onclick="openReportIssueModal()">
+                <div class="si-icon" style="background: rgba(220,38,38,0.1); color: #dc2626;"><i class="fa-solid fa-triangle-exclamation"></i></div>
                 <div class="si-content">
-                  <div class="si-title">Report an Issue</div>
+                  <div class="si-title-row">
+                    <span class="si-title">Report an Issue / Discrepancy</span>
+                    <span class="pill-badge pill-neutral">Direct Support Ticket</span>
+                  </div>
                   <div class="si-desc">Found a bug or billing discrepancy? Send a quick alert to our support team</div>
                 </div>
                 <button type="button" class="card-action-btn" onclick="event.stopPropagation(); openReportIssueModal()">Report →</button>
@@ -1329,28 +1530,32 @@
           </div>
 
           <!-- Danger Zone Card -->
-          <div class="card settings-card danger-zone-card" style="grid-column: 1 / -1;">
+          <div class="card settings-card danger-zone-card luxury-danger-card" style="grid-column: 1 / -1;">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="settings-card-icon settings-icon-danger">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <div class="settings-card-icon settings-icon-danger" style="width: 44px; height: 44px; border-radius: 12px;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 </div>
                 <div>
-                  <h3 class="settings-card-title danger-title" style="margin: 0;">Account Deactivation</h3>
-                  <p class="settings-desc" style="margin: 2px 0 0;">Temporarily disable your patient account and portal login credentials.</p>
+                  <h3 class="settings-card-title danger-title" style="margin: 0; font-size: 1.05rem;">Account Deactivation</h3>
+                  <p class="settings-desc" style="margin: 2px 0 0;">Temporarily suspend your patient portal login credentials. All medical records remain safely archived.</p>
                 </div>
               </div>
-              <button type="button" class="danger-btn" onclick="if(confirm('Are you sure you want to deactivate your account? Your records will be preserved but login will be suspended.')) alert('Account deactivated. Contact clinic reception to reactivate.')">
+              <button type="button" class="danger-btn" onclick="if(confirm('Are you sure you want to deactivate your account? Your medical records will remain safely preserved in clinic archives, but portal access will be suspended.')) alert('Account deactivated. Contact clinic reception to reactivate.')">
                 Deactivate My Account
               </button>
             </div>
           </div>
 
-          <!-- Save Settings Button Bar -->
-          <div class="settings-save-row">
-            <button class="primary-btn" id="save-settings-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Save All Settings
+          <!-- Save Settings Action Bar -->
+          <div class="settings-save-row luxury-save-bar">
+            <div class="save-status-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Settings automatically sync with your browser profile</span>
+            </div>
+            <button class="primary-btn btn-save-luxury" id="save-settings-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Save All Settings</span>
             </button>
           </div>
         </div>

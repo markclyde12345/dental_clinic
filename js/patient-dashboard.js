@@ -164,18 +164,21 @@ function setupSettings() {
 
   // 2. Privacy & 2FA
   const tfaCheck = document.getElementById('enable-2fa');
-  if (tfaCheck) tfaCheck.checked = localStorage.getItem('pd-2fa') === 'true';
+  if (tfaCheck) {
+    tfaCheck.checked = localStorage.getItem('pd-2fa') === 'true';
+    updateSecurityHealthScore();
+  }
 
   // 3. Patient Preferences
   const prefDentist = document.getElementById('pref-dentist');
   const prefBranch  = document.getElementById('pref-branch');
-  const prefContact = document.getElementById('pref-contact-method');
-  const prefSched   = document.getElementById('pref-schedule');
+  const savedContact = localStorage.getItem('pd-pref-contact') || 'sms';
+  const savedSched   = localStorage.getItem('pd-pref-sched')   || 'morning';
 
   if (prefDentist) prefDentist.value = localStorage.getItem('pd-pref-dentist') || 'any';
   if (prefBranch)  prefBranch.value  = localStorage.getItem('pd-pref-branch')  || 'main-balirong';
-  if (prefContact) prefContact.value = localStorage.getItem('pd-pref-contact') || 'sms';
-  if (prefSched)   prefSched.value   = localStorage.getItem('pd-pref-sched')   || 'morning';
+  selectContactMethodPill(savedContact);
+  selectSchedulePill(savedSched);
 
   // 4. Accessibility
   const savedSize     = localStorage.getItem('pd-text-size') || 'normal';
@@ -207,29 +210,114 @@ function setupSettings() {
     // Save preferences
     if (prefDentist) localStorage.setItem('pd-pref-dentist', prefDentist.value);
     if (prefBranch)  localStorage.setItem('pd-pref-branch',  prefBranch.value);
-    if (prefContact) localStorage.setItem('pd-pref-contact', prefContact.value);
-    if (prefSched)   localStorage.setItem('pd-pref-sched',   prefSched.value);
+
+    const contactVal = document.getElementById('pref-contact-method')?.value || 'sms';
+    const schedVal   = document.getElementById('pref-schedule')?.value || 'morning';
+    localStorage.setItem('pd-pref-contact', contactVal);
+    localStorage.setItem('pd-pref-sched',   schedVal);
 
     // Save accessibility
     if (contrastCheck) localStorage.setItem('pd-high-contrast', contrastCheck.checked);
     if (motionCheck)   localStorage.setItem('pd-reduce-motion', motionCheck.checked);
 
-    showToast('✓ Settings saved successfully!', 'success');
+    showToast('✓ All settings saved successfully!', 'success');
   });
 }
 
+// ─── Clipboard Helper ────────────────────────────────────────
+function copyToClipboard(text, label) {
+  if (!text) return;
+  const cleanText = text.trim();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(cleanText)
+      .then(() => showToast(`✓ ${label} copied to clipboard!`, 'success'))
+      .catch(() => fallbackCopy(cleanText, label));
+  } else {
+    fallbackCopy(cleanText, label);
+  }
+}
+
+function fallbackCopy(text, label) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast(`✓ ${label} copied to clipboard!`, 'success');
+  } catch (err) {
+    showToast(`Could not copy ${label}`, 'error');
+  }
+}
+
+// ─── Preference Pill Selectors ───────────────────────────────
+function selectContactMethodPill(val) {
+  const hiddenInput = document.getElementById('pref-contact-method');
+  if (hiddenInput) hiddenInput.value = val;
+
+  const container = document.getElementById('contact-method-pills');
+  if (container) {
+    container.querySelectorAll('.visual-pill').forEach(pill => {
+      pill.classList.toggle('active', pill.getAttribute('data-val') === val);
+    });
+  }
+  localStorage.setItem('pd-pref-contact', val);
+}
+
+function selectSchedulePill(val) {
+  const hiddenInput = document.getElementById('pref-schedule');
+  if (hiddenInput) hiddenInput.value = val;
+
+  const container = document.getElementById('schedule-pills');
+  if (container) {
+    container.querySelectorAll('.visual-pill').forEach(pill => {
+      pill.classList.toggle('active', pill.getAttribute('data-val') === val);
+    });
+  }
+  localStorage.setItem('pd-pref-sched', val);
+}
+
+// ─── Security Health Score Meter ─────────────────────────────
+function updateSecurityHealthScore() {
+  const tfa = document.getElementById('enable-2fa');
+  const bar = document.getElementById('security-health-bar');
+  const badge = document.getElementById('security-health-badge');
+  const is2fa = tfa ? tfa.checked : false;
+
+  if (bar) {
+    bar.style.width = is2fa ? '100%' : '85%';
+  }
+  if (badge) {
+    badge.textContent = is2fa ? '100% · MAXIMUM' : '85% · STRONG';
+    badge.style.background = is2fa ? 'rgba(16,185,129,0.18)' : 'rgba(37,99,235,0.12)';
+    badge.style.color = is2fa ? '#059669' : '#2563eb';
+    badge.style.borderColor = is2fa ? 'rgba(16,185,129,0.3)' : 'rgba(37,99,235,0.25)';
+  }
+}
 
 // ─── Accessibility Controls ──────────────────────────────────
 function setTextSize(size) {
   document.querySelectorAll('.btn-size-pill').forEach(b => b.classList.remove('active'));
   document.getElementById(`btn-size-${size}`)?.classList.add('active');
 
+  const previewText = document.getElementById('accessibility-preview-text');
+  const sizeBadge = document.getElementById('current-size-badge');
+
   if (size === 'medium') {
     document.documentElement.style.fontSize = '16px';
+    if (previewText) previewText.style.fontSize = '1.15rem';
+    if (sizeBadge) sizeBadge.textContent = '115% Scale';
   } else if (size === 'large') {
     document.documentElement.style.fontSize = '17.5px';
+    if (previewText) previewText.style.fontSize = '1.3rem';
+    if (sizeBadge) sizeBadge.textContent = '130% Scale';
   } else {
     document.documentElement.style.fontSize = '';
+    if (previewText) previewText.style.fontSize = '1rem';
+    if (sizeBadge) sizeBadge.textContent = '100% Scale';
   }
   localStorage.setItem('pd-text-size', size);
 }
