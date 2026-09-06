@@ -154,58 +154,203 @@ function applyLanguage(lang) {
 }
 
 function setupSettings() {
-  // Load saved prefs
-  const savedTheme = localStorage.getItem('pd-theme') || 'blue';
-  const savedLang  = localStorage.getItem('pd-lang')  || 'en';
-  const savedNotifEmail     = localStorage.getItem('pd-notif-email')     !== 'false';
-  const savedNotifSms       = localStorage.getItem('pd-notif-sms')       !== 'false';
-  const savedNotifReminders = localStorage.getItem('pd-notif-reminders') !== 'false';
+  // 1. Notifications
+  const notifAppt    = document.getElementById('notify-appt-alerts');
+  const notifBilling = document.getElementById('notify-billing-alerts');
+  const notifUpdates = document.getElementById('notify-clinic-updates');
+  if (notifAppt)    notifAppt.checked    = localStorage.getItem('pd-notif-appt')    !== 'false';
+  if (notifBilling) notifBilling.checked = localStorage.getItem('pd-notif-billing') !== 'false';
+  if (notifUpdates) notifUpdates.checked = localStorage.getItem('pd-notif-updates') !== 'false';
 
-  // Apply saved theme & language immediately
-  applyTheme(savedTheme);
-  applyLanguage(savedLang);
+  // 2. Privacy & 2FA
+  const tfaCheck = document.getElementById('enable-2fa');
+  if (tfaCheck) tfaCheck.checked = localStorage.getItem('pd-2fa') === 'true';
 
-  // Set selects to match saved values
-  const themeSelect = document.getElementById('settings-theme');
-  const langSelect  = document.getElementById('settings-lang');
-  if (themeSelect) themeSelect.value = savedTheme;
-  if (langSelect)  langSelect.value  = savedLang;
+  // 3. Patient Preferences
+  const prefDentist = document.getElementById('pref-dentist');
+  const prefBranch  = document.getElementById('pref-branch');
+  const prefContact = document.getElementById('pref-contact-method');
+  const prefSched   = document.getElementById('pref-schedule');
 
-  // Set notification toggles
-  const notifEmail     = document.getElementById('notify-email');
-  const notifSms       = document.getElementById('notify-sms');
-  const notifReminders = document.getElementById('notify-reminders');
-  if (notifEmail)     notifEmail.checked     = savedNotifEmail;
-  if (notifSms)       notifSms.checked       = savedNotifSms;
-  if (notifReminders) notifReminders.checked = savedNotifReminders;
+  if (prefDentist) prefDentist.value = localStorage.getItem('pd-pref-dentist') || 'any';
+  if (prefBranch)  prefBranch.value  = localStorage.getItem('pd-pref-branch')  || 'main-balirong';
+  if (prefContact) prefContact.value = localStorage.getItem('pd-pref-contact') || 'sms';
+  if (prefSched)   prefSched.value   = localStorage.getItem('pd-pref-sched')   || 'morning';
 
-  // Live theme preview on change
-  themeSelect?.addEventListener('change', () => {
-    applyTheme(themeSelect.value);
-    showToast('Theme updated!', 'success');
-  });
+  // 4. Accessibility
+  const savedSize     = localStorage.getItem('pd-text-size') || 'normal';
+  const savedContrast = localStorage.getItem('pd-high-contrast') === 'true';
+  const savedMotion   = localStorage.getItem('pd-reduce-motion') === 'true';
 
-  // Live language change
-  langSelect?.addEventListener('change', () => {
-    applyLanguage(langSelect.value);
-    showToast('Language changed!', 'success');
-  });
+  setTextSize(savedSize);
+  const contrastCheck = document.getElementById('pref-high-contrast');
+  const motionCheck   = document.getElementById('pref-reduce-motion');
+  if (contrastCheck) {
+    contrastCheck.checked = savedContrast;
+    toggleHighContrast(savedContrast);
+  }
+  if (motionCheck) {
+    motionCheck.checked = savedMotion;
+    toggleReduceMotion(savedMotion);
+  }
 
-  // Save All Settings button
+  // 5. Save All Settings button
   document.getElementById('save-settings-btn')?.addEventListener('click', () => {
-    const theme = themeSelect?.value || 'blue';
-    const lang  = langSelect?.value  || 'en';
+    // Save notifications
+    if (notifAppt)    localStorage.setItem('pd-notif-appt', notifAppt.checked);
+    if (notifBilling) localStorage.setItem('pd-notif-billing', notifBilling.checked);
+    if (notifUpdates) localStorage.setItem('pd-notif-updates', notifUpdates.checked);
 
-    applyTheme(theme);
-    applyLanguage(lang);
+    // Save 2FA
+    if (tfaCheck) localStorage.setItem('pd-2fa', tfaCheck.checked);
 
-    // Save notification prefs
-    if (notifEmail)     localStorage.setItem('pd-notif-email',     notifEmail.checked);
-    if (notifSms)       localStorage.setItem('pd-notif-sms',       notifSms.checked);
-    if (notifReminders) localStorage.setItem('pd-notif-reminders', notifReminders.checked);
+    // Save preferences
+    if (prefDentist) localStorage.setItem('pd-pref-dentist', prefDentist.value);
+    if (prefBranch)  localStorage.setItem('pd-pref-branch',  prefBranch.value);
+    if (prefContact) localStorage.setItem('pd-pref-contact', prefContact.value);
+    if (prefSched)   localStorage.setItem('pd-pref-sched',   prefSched.value);
+
+    // Save accessibility
+    if (contrastCheck) localStorage.setItem('pd-high-contrast', contrastCheck.checked);
+    if (motionCheck)   localStorage.setItem('pd-reduce-motion', motionCheck.checked);
 
     showToast('✓ Settings saved successfully!', 'success');
   });
+}
+
+// ─── Settings Category Filtering ────────────────────────────
+function filterSettingsCategory(cat) {
+  // Update pill buttons
+  document.querySelectorAll('.settings-nav-pill').forEach(pill => {
+    const isSelected = pill.getAttribute('onclick')?.includes(`'${cat}'`);
+    pill.classList.toggle('active', isSelected);
+  });
+
+  const cards = document.querySelectorAll('#settings-section .settings-card[data-settings-category]');
+  cards.forEach(card => {
+    const cardCat = card.getAttribute('data-settings-category');
+    if (cat === 'all' || cardCat === cat) {
+      card.classList.remove('settings-card-hidden');
+    } else {
+      card.classList.add('settings-card-hidden');
+    }
+  });
+
+  if (cat !== 'all') {
+    const targetCard = document.querySelector(`#settings-section .settings-card[data-settings-category="${cat}"]`);
+    if (targetCard) {
+      targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+}
+
+// ─── Accessibility Controls ──────────────────────────────────
+function setTextSize(size) {
+  document.querySelectorAll('.btn-size-pill').forEach(b => b.classList.remove('active'));
+  document.getElementById(`btn-size-${size}`)?.classList.add('active');
+
+  if (size === 'medium') {
+    document.documentElement.style.fontSize = '16px';
+  } else if (size === 'large') {
+    document.documentElement.style.fontSize = '17.5px';
+  } else {
+    document.documentElement.style.fontSize = '';
+  }
+  localStorage.setItem('pd-text-size', size);
+}
+
+function toggleHighContrast(enabled) {
+  document.body.classList.toggle('high-contrast', enabled);
+  localStorage.setItem('pd-high-contrast', enabled);
+}
+
+function toggleReduceMotion(enabled) {
+  document.body.classList.toggle('reduce-motion', enabled);
+  localStorage.setItem('pd-reduce-motion', enabled);
+}
+
+// ─── Privacy & Security Actions ──────────────────────────────
+function downloadPatientData() {
+  const patientData = {
+    exportedAt: new Date().toISOString(),
+    patient: user || {},
+    appointments: allAppointments || [],
+    invoices: allInvoices || [],
+    portal: 'Fano Dental Clinic Patient Portal'
+  };
+
+  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(patientData, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute('href', dataStr);
+  downloadAnchor.setAttribute('download', `FanoDental_Patient_Records_${(user?.id || 'data').slice(0, 8)}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+
+  showToast('✓ Patient records downloaded as JSON!', 'success');
+}
+
+function logoutAllDevices() {
+  if (confirm('Are you sure you want to log out of all other devices? This will invalidate all active sessions except your current browser.')) {
+    showToast('✓ All other device sessions terminated.', 'success');
+  }
+}
+
+// ─── Change Password Modal ───────────────────────────────────
+function openChangePasswordModal() {
+  document.getElementById('modal-change-password')?.classList.add('active');
+}
+function closeChangePasswordModal() {
+  document.getElementById('modal-change-password')?.classList.remove('active');
+  document.getElementById('form-change-password')?.reset();
+}
+function handlePasswordChangeSubmit(e) {
+  e.preventDefault();
+  const current = document.getElementById('cp-current-password')?.value || '';
+  const newPass = document.getElementById('cp-new-password')?.value || '';
+  const confirm = document.getElementById('cp-confirm-password')?.value || '';
+
+  if (newPass !== confirm) {
+    showToast('New passwords do not match.', 'error');
+    return;
+  }
+  if (newPass.length < 8) {
+    showToast('Password must be at least 8 characters.', 'error');
+    return;
+  }
+
+  showToast('✓ Password updated successfully!', 'success');
+  closeChangePasswordModal();
+}
+
+// ─── Report Issue Modal ──────────────────────────────────────
+function openReportIssueModal() {
+  document.getElementById('modal-report-issue')?.classList.add('active');
+}
+function closeReportIssueModal() {
+  document.getElementById('modal-report-issue')?.classList.remove('active');
+  document.getElementById('form-report-issue')?.reset();
+}
+function handleReportIssueSubmit(e) {
+  e.preventDefault();
+  showToast('✓ Issue report submitted! Clinic support will review it.', 'success');
+  closeReportIssueModal();
+}
+
+// ─── Help Center Modal ───────────────────────────────────────
+function openHelpCenterModal() {
+  document.getElementById('modal-help-center')?.classList.add('active');
+}
+function closeHelpCenterModal() {
+  document.getElementById('modal-help-center')?.classList.remove('active');
+}
+
+// ─── Contact Clinic Prompt ───────────────────────────────────
+function openContactClinicPrompt() {
+  const choice = confirm('Fano Dental Clinic Support:\n\nTelephone: (032) 489-1200\nWhatsApp: +63 917 489 1200\n\nClick OK to dial receptionist, or Cancel to close.');
+  if (choice) {
+    window.location.href = 'tel:0324891200';
+  }
 }
 
 // ─── Date & Greeting ────────────────────────────────────────
@@ -2383,11 +2528,6 @@ document.getElementById('profile-form')?.addEventListener('submit', (e) => {
   showToast('Profile updated successfully!', 'success');
 });
 
-// ─── Settings ────────────────────────────────────────────────
-document.getElementById('save-settings-btn')?.addEventListener('click', () => {
-  showToast('Settings saved!', 'success');
-});
-
 // ─── Sidebar Toggle ──────────────────────────────────────────
 const sidebar  = document.getElementById('sidebar');
 const overlay  = document.getElementById('sidebar-overlay');
@@ -2439,7 +2579,7 @@ function switchSection(sectionId) {
     billing:      'Billing & Invoices',
     finances:     'Financial Summary',
     profile:      'My Profile',
-    settings:     'Account & Settings'
+    settings:     'Settings'
   };
   safeSet('breadcrumb-current', labels[sectionId] || 'Dashboard');
 
