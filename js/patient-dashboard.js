@@ -218,31 +218,6 @@ function setupSettings() {
   });
 }
 
-// ─── Settings Category Filtering ────────────────────────────
-function filterSettingsCategory(cat) {
-  // Update pill buttons
-  document.querySelectorAll('.settings-nav-pill').forEach(pill => {
-    const isSelected = pill.getAttribute('onclick')?.includes(`'${cat}'`);
-    pill.classList.toggle('active', isSelected);
-  });
-
-  const cards = document.querySelectorAll('#settings-section .settings-card[data-settings-category]');
-  cards.forEach(card => {
-    const cardCat = card.getAttribute('data-settings-category');
-    if (cat === 'all' || cardCat === cat) {
-      card.classList.remove('settings-card-hidden');
-    } else {
-      card.classList.add('settings-card-hidden');
-    }
-  });
-
-  if (cat !== 'all') {
-    const targetCard = document.querySelector(`#settings-section .settings-card[data-settings-category="${cat}"]`);
-    if (targetCard) {
-      targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-}
 
 // ─── Accessibility Controls ──────────────────────────────────
 function setTextSize(size) {

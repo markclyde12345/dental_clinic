@@ -1833,54 +1833,6 @@ textarea.form-input { resize: vertical; min-height: 90px; }
 /* ═══════════════════════════════════════════════════════════════
    SETTINGS — 6-MODULE ARCHITECTURE
 ═══════════════════════════════════════════════════════════════ */
-.settings-nav-bar {
-  margin-bottom: 22px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-.settings-nav-bar::-webkit-scrollbar { height: 4px; }
-.settings-nav-bar::-webkit-scrollbar-thumb { background: rgba(11,60,77,0.1); border-radius: 4px; }
-
-.settings-nav-pills {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: nowrap;
-}
-
-.settings-nav-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  color: var(--text-secondary);
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: var(--shadow-xs);
-}
-.settings-nav-pill:hover {
-  background: var(--accent-subtle);
-  color: var(--accent);
-  border-color: rgba(11, 60, 77, 0.18);
-}
-.settings-nav-pill.active {
-  background: var(--primary-color);
-  color: #ffffff;
-  border-color: var(--primary-color);
-  box-shadow: 0 3px 10px rgba(11, 60, 77, 0.2);
-}
-.settings-nav-pill svg {
-  flex-shrink: 0;
-  opacity: 0.85;
-}
-.settings-nav-pill.active svg { opacity: 1; }
-
 .settings-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1897,9 +1849,6 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-.settings-card.settings-card-hidden {
-  display: none !important;
 }
 
 .settings-card-icon {
