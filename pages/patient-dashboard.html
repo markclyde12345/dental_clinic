@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260906_taskbar">
+  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260906_overview_redesign">
   <link rel="stylesheet" href="../css/ai-chat.css">
 </head>
 <body>
@@ -42,30 +42,34 @@
 
       <!-- Navigation -->
       <nav class="sidebar-nav">
-        <p class="nav-label">MAIN</p>
+        <p class="nav-label">OVERVIEW</p>
         <ul class="sidebar-menu">
           <li>
             <a href="#" class="nav-item active" data-section="overview" id="nav-overview">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-              Dashboard
+              Overview
             </a>
           </li>
           <li>
             <a href="#" class="nav-item" data-section="appointments" id="nav-appointments">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              Book Appointment
+              Appointments
             </a>
           </li>
           <li>
             <a href="#" class="nav-item" data-section="records" id="nav-records">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              My Records
+              Records
             </a>
           </li>
+        </ul>
+
+        <p class="nav-label" style="margin-top:20px;">FINANCIAL</p>
+        <ul class="sidebar-menu">
           <li>
             <a href="#" class="nav-item" data-section="billing" id="nav-billing">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-              Billing &amp; Invoices
+              Invoices
             </a>
           </li>
           <li>
@@ -76,18 +80,24 @@
           </li>
         </ul>
 
-        <p class="nav-label" style="margin-top:24px;">PERSONAL</p>
+        <p class="nav-label" style="margin-top:20px;">ACCOUNT</p>
         <ul class="sidebar-menu">
           <li>
             <a href="#" class="nav-item" data-section="profile" id="nav-profile">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              My Profile
+              Profile
             </a>
           </li>
           <li>
             <a href="#" class="nav-item" data-section="settings" id="nav-settings">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              Account &amp; Settings
+              Settings
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item" data-section="settings" id="nav-support">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Support
             </a>
           </li>
         </ul>
@@ -173,95 +183,138 @@
       <section id="overview-section" class="content-section active">
         <div class="section-header">
           <div>
-            <h1 class="section-title">Patient Overview</h1>
-            <p class="section-subtitle" id="greeting-text">Good morning! Here's your health summary.</p>
+            <h1 class="section-title">Overview</h1>
+            <p class="section-subtitle" id="greeting-text">Good morning! Here's your dental health summary.</p>
           </div>
         </div>
 
-        <!-- Stats Row -->
-        <div class="stats-row">
-          <div class="stat-card stat-primary">
-            <div class="stat-icon">
+        <!-- ─── Level 1: Critical (Primary Focus) ─── -->
+        <div class="overview-level-1">
+
+          <!-- Upcoming Appointment Card -->
+          <div class="card ov1-card ov1-appt-card" id="ov1-appt-card">
+            <div class="ov1-card-icon-wrap appt-icon-wrap">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
-            <div class="stat-content">
-              <p class="stat-label">Next Appointment</p>
-              <p class="stat-value" id="next-appt-val">None Scheduled</p>
+            <div class="ov1-card-label">Upcoming Appointment</div>
+            <div class="ov1-appt-date" id="ov1-appt-date">—</div>
+            <div class="ov1-appt-treatment" id="ov1-appt-treatment">No appointment scheduled</div>
+            <div class="ov1-appt-actions" id="ov1-appt-actions">
+              <button type="button" class="ov1-action-btn ov1-view-btn" id="ov1-view-btn" onclick="openAppointmentDetailsModal(window._ov1ApptId)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                View
+              </button>
+              <button type="button" class="ov1-action-btn ov1-reschedule-btn" id="ov1-reschedule-btn" onclick="switchSection('appointments')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Reschedule
+              </button>
+              <button type="button" class="ov1-action-btn ov1-cancel-btn" id="ov1-cancel-btn" onclick="openAppointmentDetailsModal(window._ov1ApptId)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Cancel
+              </button>
+            </div>
+            <div class="ov1-empty-state" id="ov1-appt-empty" style="display:none;">
+              <p>No appointments scheduled</p>
+              <button class="link-btn" onclick="switchSection('appointments')">Book your first appointment →</button>
             </div>
           </div>
-          <div class="stat-card stat-success">
-            <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <div class="stat-content">
-              <p class="stat-label">Total Visits</p>
-              <p class="stat-value" id="total-visits-val">0</p>
-            </div>
-          </div>
-          <div class="stat-card stat-warning">
-            <div class="stat-icon">
+
+          <!-- Outstanding Balance Card -->
+          <div class="card ov1-card ov1-balance-card" id="ov1-balance-card">
+            <div class="ov1-card-icon-wrap balance-icon-wrap">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
             </div>
-            <div class="stat-content">
-              <p class="stat-label">Unpaid Balance</p>
-              <p class="stat-value" id="unpaid-val">₱0.00</p>
+            <div class="ov1-card-label">Outstanding Balance</div>
+            <div class="ov1-balance-amount" id="ov1-balance-amount">₱0.00</div>
+            <div class="ov1-balance-status" id="ov1-balance-status">No outstanding balance</div>
+            <button type="button" class="ov1-pay-now-btn" id="ov1-pay-now-btn" onclick="switchSection('billing')" style="display:none;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              Pay Now
+            </button>
+          </div>
+
+          <!-- Notifications Card -->
+          <div class="card ov1-card ov1-notif-card">
+            <div class="ov1-card-icon-wrap notif-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <div class="ov1-card-label" style="display:flex; align-items:center; gap:8px;">
+              Notifications
+              <span class="ov1-notif-count-pill" id="ov1-notif-count-pill" style="display:none;">0 new</span>
+            </div>
+            <div class="ov1-notif-preview-list" id="ov1-notif-preview-list">
+              <div class="ov1-notif-empty">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <p>You're all caught up!</p>
+              </div>
+            </div>
+            <button type="button" class="ov1-notif-view-all" onclick="document.getElementById('btn-patient-notif')?.click()">View all notifications →</button>
+          </div>
+        </div>
+
+        <!-- ─── Level 2: Important ─── -->
+        <div class="overview-level-2">
+
+          <!-- Recent Treatments -->
+          <div class="card ov2-card ov2-treatment-card">
+            <div class="card-header">
+              <h3 class="card-title">Recent Treatments</h3>
+              <button class="card-action-btn" onclick="switchSection('records')">View →</button>
+            </div>
+            <div id="ov2-treatment-content">
+              <div class="ov2-empty-state">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <p>No treatment history yet</p>
+              </div>
             </div>
           </div>
-          <div class="stat-card stat-info">
-            <div class="stat-icon">
+
+          <!-- Recent Payments -->
+          <div class="card ov2-card ov2-payment-card">
+            <div class="card-header">
+              <h3 class="card-title">Recent Payments</h3>
+              <button class="card-action-btn" onclick="switchSection('billing')">View →</button>
+            </div>
+            <div id="ov2-payment-content">
+              <div class="ov2-empty-state">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <p>No payment history</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Level 3: Reference ─── -->
+        <div class="overview-level-3">
+          <div class="ov3-chip">
+            <div class="ov3-chip-icon ov3-visits-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="ov3-chip-content">
+              <div class="ov3-chip-label">Total Visits</div>
+              <div class="ov3-chip-value" id="total-visits-val">0</div>
+            </div>
+          </div>
+          <div class="ov3-chip">
+            <div class="ov3-chip-icon ov3-health-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
-            <div class="stat-content">
-              <p class="stat-label">Health Status</p>
-              <p class="stat-value" id="health-status-val">Good</p>
+            <div class="ov3-chip-content">
+              <div class="ov3-chip-label">Health Status</div>
+              <div class="ov3-chip-value" id="health-status-val">Good</div>
+            </div>
+          </div>
+          <div class="ov3-chip" style="cursor:pointer;" onclick="switchSection('finances')">
+            <div class="ov3-chip-icon ov3-finance-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="ov3-chip-content">
+              <div class="ov3-chip-label">Financial Analytics</div>
+              <div class="ov3-chip-value ov3-link-val">View Details</div>
             </div>
           </div>
         </div>
 
-
-        <!-- Overview Main Grid -->
-        <div class="overview-grid">
-          <!-- Upcoming Appointments & Past History Card -->
-          <div class="card appointments-preview-card">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <h3 class="card-title" style="margin: 0;">Visits</h3>
-                <div class="mini-tab-pill-group">
-                  <button type="button" class="mini-tab-btn active" id="tab-btn-upcoming" onclick="toggleOverviewApptTab('upcoming')">Upcoming</button>
-                  <button type="button" class="mini-tab-btn" id="tab-btn-history" onclick="toggleOverviewApptTab('history')">Past History</button>
-                </div>
-              </div>
-              <button class="card-action-btn" onclick="switchSection('records')">All Records →</button>
-            </div>
-            <div id="upcoming-appointments-list">
-              <div class="empty-state-sm">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <p>No upcoming appointments</p>
-                <button class="link-btn" onclick="switchSection('appointments')">Schedule one now →</button>
-              </div>
-            </div>
-            <div id="history-appointments-list" style="display: none;">
-              <div class="empty-state-sm">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
-                <p>No past visit history yet</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent Invoices Card -->
-          <div class="card invoices-preview-card">
-            <div class="card-header">
-              <h3 class="card-title">Recent Billing</h3>
-              <button class="card-action-btn" onclick="switchSection('billing')">View All</button>
-            </div>
-            <div id="recent-invoices-list">
-              <div class="empty-state-sm">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                <p>No billing history</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
 
       <!-- ══════════ BOOK APPOINTMENT SECTION ══════════ -->
@@ -1434,12 +1487,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
       </div>
       <span class="taskbar-label">Billing</span>
-    </button>
-    <button type="button" class="taskbar-item" data-section="finances" onclick="switchSection('finances')">
-      <div class="taskbar-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      </div>
-      <span class="taskbar-label">Finances</span>
     </button>
     <button type="button" class="taskbar-item" data-section="profile" onclick="switchSection('profile')">
       <div class="taskbar-icon">

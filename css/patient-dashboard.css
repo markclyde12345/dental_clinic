@@ -869,13 +869,364 @@ body {
   line-height: 1.2;
 }
 
-/* Overview Grid */
-.overview-grid {
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OVERVIEW — 3-TIER PRIORITY SYSTEM
+═══════════════════════════════════════════════════════════════ */
+
+/* Level 1 — Critical (3-col large cards) */
+.overview-level-1 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.ov1-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px;
+  min-height: 200px;
+}
+
+/* Icon wraps */
+.ov1-card-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+.ov1-card-icon-wrap svg { width: 20px; height: 20px; }
+
+.appt-icon-wrap   { background: var(--accent-subtle); color: var(--accent); }
+.balance-icon-wrap { background: var(--yellow-bg); color: var(--yellow); }
+.notif-icon-wrap  { background: #f0f9ff; color: #0284c7; }
+
+.ov1-card-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Appointment card specifics */
+.ov1-appt-date {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.ov1-appt-treatment {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  flex: 1;
+}
+.ov1-appt-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+.ov1-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 13px;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.17s ease;
+}
+.ov1-view-btn {
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border-color: rgba(11, 60, 77, 0.12);
+}
+.ov1-view-btn:hover { background: var(--accent); color: #fff; }
+
+.ov1-reschedule-btn {
+  background: var(--yellow-bg);
+  color: var(--yellow);
+  border-color: var(--yellow-border);
+}
+.ov1-reschedule-btn:hover { background: var(--yellow); color: #fff; }
+
+.ov1-cancel-btn {
+  background: var(--red-bg);
+  color: var(--red);
+  border-color: var(--red-border);
+}
+.ov1-cancel-btn:hover { background: var(--red); color: #fff; }
+
+.ov1-empty-state {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  margin-top: 4px;
+}
+.ov1-empty-state p {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+/* Balance card specifics */
+.ov1-balance-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.ov1-balance-card.overdue .ov1-balance-amount { color: var(--red); }
+.ov1-balance-card.overdue { border-color: var(--red-border); }
+
+.ov1-balance-status {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  flex: 1;
+}
+.ov1-pay-now-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  padding: 11px 18px;
+  background: linear-gradient(135deg, var(--accent), #082d3b);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: auto;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(11, 60, 77, 0.25);
+}
+.ov1-pay-now-btn:hover {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(11, 60, 77, 0.35);
+}
+.ov1-balance-card.overdue .ov1-pay-now-btn {
+  background: linear-gradient(135deg, var(--red), #b91c1c);
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+}
+
+/* Notification card specifics */
+.ov1-notif-count-pill {
+  display: inline-block;
+  background: #0284c7;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.ov1-notif-preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow: hidden;
+}
+.ov1-notif-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 0;
+  color: var(--text-muted);
+}
+.ov1-notif-empty p { font-size: 0.82rem; font-weight: 500; }
+
+.ov1-notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 12px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ov1-notif-item:hover { background: var(--accent-subtle); border-color: rgba(11,60,77,0.12); }
+.ov1-notif-item.unread { border-left: 3px solid #0284c7; background: #f0f9ff; }
+.ov1-notif-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #0284c7;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.ov1-notif-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.ov1-notif-msg {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.ov1-notif-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+.ov1-notif-view-all {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  transition: opacity 0.15s;
+  margin-top: auto;
+}
+.ov1-notif-view-all:hover { opacity: 0.75; text-decoration: underline; }
+
+/* Level 2 — Important (2-col medium cards) */
+.overview-level-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
-  align-items: stretch;
+  gap: 18px;
+  margin-bottom: 20px;
 }
+.ov2-card {
+  padding: 22px;
+}
+.ov2-treatment-item,
+.ov2-payment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border-light);
+  transition: background 0.15s;
+}
+.ov2-treatment-item:last-child,
+.ov2-payment-item:last-child { border-bottom: none; }
+
+.ov2-treatment-name,
+.ov2-payment-amount {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.ov2-treatment-meta,
+.ov2-payment-meta {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.ov2-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 0;
+  color: var(--text-muted);
+}
+.ov2-empty-state p { font-size: 0.84rem; font-weight: 500; }
+
+/* Level 3 — Reference (3-chip compact row) */
+.overview-level-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.ov3-chip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-xs);
+  transition: all 0.18s;
+}
+.ov3-chip:hover { box-shadow: var(--shadow-sm); border-color: rgba(11,60,77,0.12); }
+
+.ov3-chip-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ov3-chip-icon svg { width: 18px; height: 18px; }
+
+.ov3-visits-icon  { background: var(--green-bg);   color: var(--green); }
+.ov3-health-icon  { background: var(--blue-bg);    color: var(--accent); }
+.ov3-finance-icon { background: var(--yellow-bg);  color: var(--yellow); }
+
+.ov3-chip-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+.ov3-chip-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.ov3-link-val {
+  font-size: 0.86rem;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.ov3-link-val:hover { text-decoration: underline; }
+
+/* ─── Overview Responsive ──────────────────────────────────── */
+@media (max-width: 1024px) {
+  .overview-level-1 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ov1-notif-card { grid-column: 1 / -1; min-height: auto; }
+}
+
+@media (max-width: 768px) {
+  .overview-level-1 { grid-template-columns: 1fr; }
+  .overview-level-2 { grid-template-columns: 1fr; }
+  .overview-level-3 { grid-template-columns: repeat(3, 1fr); }
+  .ov1-notif-card { grid-column: auto; }
+}
+
+@media (max-width: 480px) {
+  .overview-level-3 { grid-template-columns: 1fr; }
+  .ov1-balance-amount { font-size: 1.6rem; }
+}
+
 
 /* Account Details Card (in Settings) */
 .account-details-card {
