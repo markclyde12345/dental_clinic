@@ -286,7 +286,6 @@ function loadAppointments() {
     renderAppointmentStats();
     renderUpcomingPreview();
     renderOverviewHistoryPreview();
-    renderOverviewLevel2Treatment();
     renderAppointmentsFullList();
     renderPatientHistoryRecords();
     updateHistoryStats();
@@ -298,6 +297,12 @@ function renderAppointmentStats() {
   const upcoming = allAppointments.find(a =>
     a.status !== 'Cancelled' && new Date(a.appointment_date || a.dateTime) > new Date()
   );
+  if (upcoming) {
+    const dateStr = new Date(upcoming.appointment_date || upcoming.dateTime).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    safeSet('next-appt-val', dateStr);
+  }
 
   const completed = allAppointments.filter(a => a.status === 'Completed').length;
   safeSet('total-visits-val', completed);
@@ -305,212 +310,7 @@ function renderAppointmentStats() {
 
   // Count badge
   safeSet('appt-count-badge', allAppointments.length);
-
-  // Level 1: Update Upcoming Appointment card
-  renderOverviewLevel1Appt(upcoming);
 }
-
-// ─── Overview Level 1: Upcoming Appointment Card ───────────
-function renderOverviewLevel1Appt(upcoming) {
-  const dateEl    = document.getElementById('ov1-appt-date');
-  const treatEl   = document.getElementById('ov1-appt-treatment');
-  const actionsEl = document.getElementById('ov1-appt-actions');
-  const emptyEl   = document.getElementById('ov1-appt-empty');
-
-  if (!dateEl) return;
-
-  if (!upcoming) {
-    dateEl.textContent    = '—';
-    treatEl.textContent   = '';
-    if (actionsEl) actionsEl.style.display = 'none';
-    if (emptyEl)   emptyEl.style.display   = 'flex';
-    window._ov1ApptId = null;
-    return;
-  }
-
-  const d = new Date(upcoming.appointment_date || upcoming.dateTime);
-  const dateStr = d.toLocaleString('en-US', {
-    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-  });
-  const treatmentName = upcoming.treatment?.name || upcoming.reason || 'Dental Visit';
-
-  dateEl.textContent  = dateStr;
-  treatEl.textContent = treatmentName;
-  if (actionsEl) actionsEl.style.display = 'flex';
-  if (emptyEl)   emptyEl.style.display   = 'none';
-
-  window._ov1ApptId = upcoming.id;
-}
-
-// ─── Overview Level 1: Balance Card ───────────────────────
-function renderOverviewLevel1Balance() {
-  const amountEl = document.getElementById('ov1-balance-amount');
-  const statusEl = document.getElementById('ov1-balance-status');
-  const payBtn   = document.getElementById('ov1-pay-now-btn');
-  const card     = document.getElementById('ov1-balance-card');
-
-  if (!amountEl) return;
-
-  const unpaidInvoices = allInvoices.filter(inv =>
-    (inv.status === 'Unpaid' || !inv.is_paid) && inv.status !== 'Written Off'
-  );
-  const total = unpaidInvoices.reduce((sum, inv) =>
-    sum + parseFloat(inv.amount || inv.total_amount || 0), 0
-  );
-
-  // Check if overdue (any invoice > 30 days old and unpaid)
-  const now = Date.now();
-  const hasOverdue = unpaidInvoices.some(inv => {
-    const issuedDate = new Date(inv.issued_at || inv.created_at || now);
-    return Math.floor((now - issuedDate.getTime()) / 86400000) > 30;
-  });
-
-  amountEl.textContent = `₱${total.toFixed(2)}`;
-
-  if (total === 0) {
-    statusEl.textContent = 'No outstanding balance';
-    if (payBtn) payBtn.style.display = 'none';
-    card?.classList.remove('overdue');
-  } else if (hasOverdue) {
-    statusEl.textContent = 'Overdue — payment required';
-    if (payBtn) payBtn.style.display = 'inline-flex';
-    card?.classList.add('overdue');
-  } else {
-    statusEl.textContent = `${unpaidInvoices.length} invoice${unpaidInvoices.length !== 1 ? 's' : ''} pending`;
-    if (payBtn) payBtn.style.display = 'inline-flex';
-    card?.classList.remove('overdue');
-  }
-
-  // Keep legacy elements in sync (used in billing section)
-  safeSet('unpaid-val', `₱${total.toFixed(2)}`);
-  safeSet('balance-display', `₱${total.toFixed(2)}`);
-  safeSet('pstat-balance', `₱${total.toFixed(0)}`);
-  safeSet('pstat-invoices', allInvoices.length);
-}
-
-// ─── Overview Level 1: Notifications Preview ───────────────
-function renderOverviewLevel1Notifs(notifs) {
-  const listEl    = document.getElementById('ov1-notif-preview-list');
-  const countPill = document.getElementById('ov1-notif-count-pill');
-
-  if (!listEl) return;
-
-  if (!notifs || notifs.length === 0) {
-    listEl.innerHTML = `
-      <div class="ov1-notif-empty">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <p>You're all caught up!</p>
-      </div>`;
-    if (countPill) countPill.style.display = 'none';
-    return;
-  }
-
-  const readSet = getReadNotificationIds();
-  const unread  = notifs.filter(n => !readSet.has(n.id));
-
-  if (countPill) {
-    if (unread.length > 0) {
-      countPill.textContent   = `${unread.length} new`;
-      countPill.style.display = 'inline-block';
-    } else {
-      countPill.style.display = 'none';
-    }
-  }
-
-  // Show top 3 notifications
-  const preview = notifs.slice(0, 3);
-  listEl.innerHTML = preview.map(n => {
-    const isUnread  = !readSet.has(n.id);
-    const timeStr   = formatNotificationTime(n.time);
-    return `
-      <div class="ov1-notif-item ${isUnread ? 'unread' : ''}"
-           onclick="onPatientNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.id || ''}', '${n.action?.tab || ''}')">
-        ${isUnread ? '<div class="ov1-notif-dot"></div>' : ''}
-        <div>
-          <div class="ov1-notif-title">${escapeHTML(n.title)}</div>
-          <div class="ov1-notif-msg">${escapeHTML(n.message)}</div>
-          <div class="ov1-notif-time">${timeStr}</div>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-// ─── Overview Level 2: Recent Treatments Card ──────────────
-function renderOverviewLevel2Treatment() {
-  const container = document.getElementById('ov2-treatment-content');
-  if (!container) return;
-
-  const completed = allAppointments
-    .filter(a => a.status === 'Completed')
-    .sort((a, b) => new Date(b.appointment_date || b.dateTime) - new Date(a.appointment_date || a.dateTime))
-    .slice(0, 3);
-
-  if (completed.length === 0) {
-    container.innerHTML = `
-      <div class="ov2-empty-state">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <p>No treatment history yet</p>
-      </div>`;
-    return;
-  }
-
-  container.innerHTML = completed.map(appt => {
-    const d = new Date(appt.appointment_date || appt.dateTime);
-    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const treatName = appt.treatment?.name || appt.reason || 'Dental Visit';
-    const rawNotes  = appt.notes || '';
-    let dentistName = 'Staff Specialist';
-    const dentistMatch = rawNotes.match(/\[Dentist:\s*([^\]]+)\]/i);
-    if (dentistMatch && dentistMatch[1] !== 'No Preference') dentistName = dentistMatch[1];
-
-    return `
-      <div class="ov2-treatment-item" onclick="openAppointmentDetailsModal('${appt.id}')" style="cursor:pointer;">
-        <div>
-          <div class="ov2-treatment-name">${escapeHTML(treatName)}</div>
-          <div class="ov2-treatment-meta">${escapeHTML(dentistName)} · ${dateStr}</div>
-        </div>
-        <button type="button" class="card-action-btn" onclick="event.stopPropagation(); openAppointmentDetailsModal('${appt.id}')">View</button>
-      </div>`;
-  }).join('');
-}
-
-// ─── Overview Level 2: Recent Payments Card ───────────────
-function renderOverviewLevel2Payment() {
-  const container = document.getElementById('ov2-payment-content');
-  if (!container) return;
-
-  const paid = allInvoices
-    .filter(inv => inv.status === 'Paid' || inv.is_paid)
-    .sort((a, b) => new Date(b.paid_at || b.issued_at || b.created_at) - new Date(a.paid_at || a.issued_at || a.created_at))
-    .slice(0, 3);
-
-  if (paid.length === 0) {
-    container.innerHTML = `
-      <div class="ov2-empty-state">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        <p>No payment history</p>
-      </div>`;
-    return;
-  }
-
-  container.innerHTML = paid.map(inv => {
-    const amount  = parseFloat(inv.amount || inv.total_amount || 0).toFixed(2);
-    const date    = new Date(inv.paid_at || inv.issued_at || inv.created_at)
-                      .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const service = inv.appointment?.treatment?.name || inv.treatment_name || 'Dental Consultation';
-    const refId   = inv.id.slice(0, 8).toUpperCase();
-
-    return `
-      <div class="ov2-payment-item" onclick="viewInvoiceReceipt('${inv.id}')" style="cursor:pointer;">
-        <div>
-          <div class="ov2-payment-amount">₱${amount}</div>
-          <div class="ov2-payment-meta">${escapeHTML(service)} · ${date} · #${refId}</div>
-        </div>
-        <span class="status-pill confirmed">Paid</span>
-      </div>`;
-  }).join('');
-}
-
 
 function renderUpcomingPreview() {
   const container = document.getElementById('upcoming-appointments-list');
@@ -832,9 +632,6 @@ function loadInvoices() {
     if (!Array.isArray(data)) return;
     allInvoices = data;
     renderInvoiceStats();
-    renderOverviewLevel1Balance();
-    renderOverviewLevel2Payment();
-    renderOverviewLevel2Treatment();
     renderFinancialWidgets();
     renderFinancialActivity();
     renderInvoicesPreview();
@@ -846,8 +643,15 @@ function loadInvoices() {
 }
 
 function renderInvoiceStats() {
-  // renderOverviewLevel1Balance() handles the real logic & keeps legacy IDs in sync
-  renderOverviewLevel1Balance();
+  const unpaid = allInvoices
+    .filter(inv => (inv.status === 'Unpaid' || !inv.is_paid) && inv.status !== 'Written Off')
+    .reduce((sum, inv) => sum + parseFloat(inv.amount || inv.total_amount || 0), 0);
+
+  const unpaidStr = `₱${unpaid.toFixed(2)}`;
+  safeSet('unpaid-val', unpaidStr);
+  safeSet('balance-display', unpaidStr);
+  safeSet('pstat-balance', `₱${unpaid.toFixed(0)}`);
+  safeSet('pstat-invoices', allInvoices.length);
 }
 
 function checkDelinquentBookingLock() {
@@ -2816,9 +2620,6 @@ function loadPatientNotifications(isManual = false) {
         }).join('');
       }
     }
-
-    // Update overview Level 1 notification card
-    renderOverviewLevel1Notifs(notifs);
 
     if (isManual) {
       showToast('Notifications refreshed', 'success');
