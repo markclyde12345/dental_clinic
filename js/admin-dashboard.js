@@ -130,11 +130,10 @@ function initDashboard() {
   loadAdminNotifications();  // Initial fetch of admin notifications
   setInterval(() => loadAdminNotifications(), 30000); // Polling every 30s
 
-  // Restore the active tab if page is refreshed or accessed via hash link
+  // Open to 'overview' by default unless accessed via a specific #hash link
   const validTabs = ['overview', 'appointments', 'patients', 'billing', 'staff', 'inventory', 'users', 'history', 'logs', 'settings'];
   const hashTab = (window.location.hash || '').replace('#', '').trim();
-  const savedTab = localStorage.getItem('admin_active_tab');
-  const initialTab = validTabs.includes(hashTab) ? hashTab : (validTabs.includes(savedTab) ? savedTab : 'overview');
+  const initialTab = validTabs.includes(hashTab) ? hashTab : 'overview';
 
   activateTab(initialTab);
 }
@@ -2476,6 +2475,7 @@ function escapeHTML(str) {
 function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('userInfo');
+  localStorage.removeItem('admin_active_tab');
   sessionStorage.removeItem('token');
   sessionStorage.removeItem('userInfo');
   window.location.replace('login.html');
