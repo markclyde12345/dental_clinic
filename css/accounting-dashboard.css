@@ -13,6 +13,15 @@
   --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
 }
 
+@keyframes ti-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.ti-spin {
+  display: inline-block;
+  animation: ti-spin 1s linear infinite;
+}
+
 body {
   background-color: var(--light-bg);
   color: var(--dark-color);

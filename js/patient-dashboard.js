@@ -148,7 +148,7 @@ function applyLanguage(lang) {
   // Save button
   const saveBtn = document.getElementById('save-settings-btn');
   if (saveBtn) saveBtn.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    <i class="ti ti-check" style="font-size: 16px;"></i>
     ${s.saveSettings}
   `;
 }
@@ -229,7 +229,7 @@ const OS_SETTINGS_META = {
     title: 'Security & privacy',
     desc: 'Protect your patient credentials, two-factor authentication, and active sessions.',
     badgeClass: 'os-badge-blue',
-    iconHtml: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+    iconHtml: '<i class="ti ti-shield" style="font-size: 22px;"></i>'
   },
   safety: {
     title: 'Safety & emergency',
@@ -241,25 +241,25 @@ const OS_SETTINGS_META = {
     title: 'Notifications',
     desc: 'Appointment SMS reminders, email confirmations, and clinic advisories.',
     badgeClass: 'os-badge-emerald',
-    iconHtml: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+    iconHtml: '<i class="ti ti-bell" style="font-size: 22px;"></i>'
   },
   account: {
     title: 'Users & accounts',
     desc: 'Official patient registration, identity details, and login history.',
     badgeClass: 'os-badge-user',
-    iconHtml: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+    iconHtml: '<i class="ti ti-user" style="font-size: 22px;"></i>'
   },
   support: {
     title: 'Help & feedback',
     desc: 'Patient guides, FAQs, direct clinic telephone desk, and issue reporting.',
     badgeClass: 'os-badge-help',
-    iconHtml: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>'
+    iconHtml: '<i class="ti ti-help" style="font-size: 22px;"></i>'
   },
   danger: {
     title: 'Account deactivation',
     desc: 'Temporarily suspend portal credentials while preserving medical records.',
     badgeClass: 'os-badge-danger',
-    iconHtml: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+    iconHtml: '<i class="ti ti-alert-triangle" style="font-size: 22px;"></i>'
   }
 };
 
@@ -847,7 +847,7 @@ function renderUpcomingPreview() {
   if (upcoming.length === 0) {
     container.innerHTML = `
       <div class="empty-state-sm">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <i class="ti ti-calendar" style="font-size: 32px;"></i>
         <p>No upcoming appointments</p>
         <button class="link-btn" onclick="switchSection('appointments')">Schedule one now →</button>
       </div>`;
@@ -914,7 +914,7 @@ function renderOverviewHistoryPreview() {
   if (pastAppts.length === 0) {
     container.innerHTML = `
       <div class="empty-state-sm">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        <i class="ti ti-clock" style="font-size: 32px;"></i>
         <p>No past visit history yet</p>
       </div>`;
     return;
@@ -1004,7 +1004,7 @@ function renderPatientHistoryRecords(list = null) {
       <tr>
         <td colspan="7" class="empty-table-row">
           <div style="padding: 28px; text-align: center;">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 8px; color: #94a3b8;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <i class="ti ti-calendar" style="font-size: 40px; margin-bottom: 8px; color: #94a3b8; display: inline-block;"></i>
             <p style="margin: 0; font-weight: 600; color: #64748b;">No dental visit records found.</p>
           </div>
         </td>
@@ -1043,11 +1043,11 @@ function renderPatientHistoryRecords(list = null) {
     let paymentBadge = '';
     if (inv) {
       if (inv.status === 'Paid') {
-        paymentBadge = `<span class="history-payment-status paid"><i class="fa-solid fa-check"></i> Paid</span>`;
+        paymentBadge = `<span class="history-payment-status paid"><i class="ti ti-check"></i> Paid</span>`;
       } else if (inv.status === 'Written Off') {
-        paymentBadge = `<span class="history-payment-status" style="color: #64748b;"><i class="fa-solid fa-ban"></i> Written Off</span>`;
+        paymentBadge = `<span class="history-payment-status" style="color: #64748b;"><i class="ti ti-ban"></i> Written Off</span>`;
       } else {
-        paymentBadge = `<span class="history-payment-status unpaid"><i class="fa-solid fa-clock"></i> Unpaid</span>`;
+        paymentBadge = `<span class="history-payment-status unpaid"><i class="ti ti-clock"></i> Unpaid</span>`;
       }
     } else {
       paymentBadge = `<span class="history-payment-status" style="color: #64748b;">Pending Invoice</span>`;
@@ -1064,19 +1064,19 @@ function renderPatientHistoryRecords(list = null) {
       <tr>
         <td>
           <div style="font-weight: 700; color: var(--text-primary); font-size: 0.88rem;">${dateStr}</div>
-          <div style="font-size: 0.76rem; color: #64748b;"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
+          <div style="font-size: 0.76rem; color: #64748b;"><i class="ti ti-clock"></i> ${timeStr}</div>
         </td>
         <td>
           <div class="history-treatment-title">
-            <i class="fa-solid fa-tooth" style="color: var(--primary-color);"></i>
+            <i class="ti ti-tooth" style="color: var(--primary-color);"></i>
             <span>${escapeHTML(treatmentName)}</span>
           </div>
           <span class="ref-pill" style="font-size: 0.7rem; margin-top: 3px; display: inline-block;">#${appt.id ? appt.id.substring(0, 8).toUpperCase() : '--'}</span>
         </td>
         <td>
           <div class="history-dentist-row">
-            <span class="history-dentist-name"><i class="fa-solid fa-user-doctor" style="color: #0284c7; font-size: 0.75rem;"></i> ${escapeHTML(dentistName)}</span>
-            <span class="history-branch-pill"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(branchName)}</span>
+            <span class="history-dentist-name"><i class="ti ti-stethoscope" style="color: #0284c7; font-size: 0.75rem;"></i> ${escapeHTML(dentistName)}</span>
+            <span class="history-branch-pill"><i class="ti ti-map-pin"></i> ${escapeHTML(branchName)}</span>
           </div>
         </td>
         <td>
@@ -1109,7 +1109,7 @@ function renderAppointmentsFullList() {
   if (allAppointments.length === 0) {
     container.innerHTML = `
       <div class="empty-state-sm">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <i class="ti ti-calendar" style="font-size: 40px; color: var(--text-muted); display: block; margin-bottom: 8px;"></i>
         <p>No appointments yet</p>
       </div>`;
     return;
@@ -1310,7 +1310,7 @@ function renderFinancialActivity() {
   if (activities.length === 0) {
     container.innerHTML = `
       <div class="empty-state-sm">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9"/><circle cx="12" cy="12" r="3"/></svg>
+        <i class="ti ti-activity" style="font-size: 32px;"></i>
         <p>No financial activity</p>
       </div>`;
     return;
@@ -1346,7 +1346,7 @@ function renderInvoicesPreview() {
   if (recent.length === 0) {
     container.innerHTML = `
       <div class="empty-state-sm">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        <i class="ti ti-credit-card" style="font-size: 32px;"></i>
         <p>No billing history</p>
       </div>`;
     return;
@@ -1368,7 +1368,7 @@ function renderInvoicesPreview() {
           <span class="inv-amount">₱${amount}</span>
           ${isPaid
         ? `<span class="status-pill confirmed">Paid</span>`
-        : `<button class="btn-paymongo-mini" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, Card)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Pay</button>`}
+        : `<button class="btn-paymongo-mini" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, Card)"><i class="ti ti-credit-card" style="font-size: 12px;"></i> Pay</button>`}
         </div>
       </div>`;
   }).join('');
@@ -1401,14 +1401,14 @@ function renderInvoicesTable() {
     if (!isPaid) {
       actionButton = `
         <button class="btn-paymongo" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, GrabPay, Card)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <i class="ti ti-credit-card" style="font-size: 14px;"></i>
           <span>Pay with PayMongo</span>
         </button>
       `;
     } else {
       actionButton = `
         <button class="btn-receipt-view" onclick="viewInvoiceReceipt('${inv.id}')" title="View & Print Official Receipt">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          <i class="ti ti-printer" style="font-size: 13px;"></i>
           <span>Receipt</span>
         </button>
       `;
@@ -2995,14 +2995,8 @@ function showToast(message, type = 'success') {
     animation: slideInToast 0.3s ease;
     max-width: 380px;
   `;
-  toast.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-      ${type === 'success'
-      ? '<polyline points="20 6 9 17 4 12"/>'
-      : (type === 'info' ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
-        : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>')}
-    </svg>
-    ${message}`;
+  const toastIcon = type === 'success' ? 'ti-check' : (type === 'info' ? 'ti-info-circle' : 'ti-alert-triangle');
+  toast.innerHTML = `<i class="ti ${toastIcon}" style="font-size: 16px;"></i> ${message}`;
 
   const style = document.createElement('style');
   style.textContent = `@keyframes slideInToast { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }`;
@@ -3115,7 +3109,7 @@ function loadPatientNotifications(isManual = false) {
         if (notifs.length === 0) {
           list.innerHTML = `
           <div class="pnd-empty">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <i class="ti ti-bell-off" style="font-size: 32px; color: #94a3b8;"></i>
             <p>You have no notifications right now.</p>
           </div>
         `;
@@ -3204,20 +3198,20 @@ function formatNotificationTime(isoStr) {
 
 function getNotificationIconSvg(iconName, type) {
   if (iconName === 'calendar-check' || iconName === 'calendar-plus') {
-    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>`;
+    return '<i class="ti ti-calendar-check" style="font-size: 18px;"></i>';
   }
   if (iconName === 'receipt' || iconName === 'credit-card') {
-    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`;
+    return '<i class="ti ti-credit-card" style="font-size: 18px;"></i>';
   }
   if (iconName === 'circle-check') {
-    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 10 10 16 7 13"/></svg>`;
+    return '<i class="ti ti-circle-check" style="font-size: 18px;"></i>';
   }
   if (iconName === 'circle-xmark') {
-    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+    return '<i class="ti ti-circle-x" style="font-size: 18px;"></i>';
   }
   if (iconName === 'chair' || iconName === 'user-doctor') {
-    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    return '<i class="ti ti-stethoscope" style="font-size: 18px;"></i>';
   }
-  return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+  return '<i class="ti ti-info-circle" style="font-size: 18px;"></i>';
 }
 

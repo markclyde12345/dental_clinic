@@ -185,7 +185,7 @@ window.activateTab = function(targetTab, skipDataLoad = false) {
     stopSystemLogsStream();
     const pauseBtn = document.getElementById('btn-pause-stream');
     if (pauseBtn) {
-      pauseBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause Stream';
+      pauseBtn.innerHTML = '<i class="ti ti-player-pause" style="font-size: 14px;"></i> Pause Stream';
       pauseBtn.classList.remove('btn-primary');
       pauseBtn.classList.add('btn-secondary');
     }
@@ -3121,19 +3121,9 @@ function initPasswordToggles() {
       input.setAttribute('type', isPassword ? 'text' : 'password');
 
       if (isPassword) {
-        button.innerHTML = `
-          <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-            <line x1="1" y1="1" x2="23" y2="23"></line>
-          </svg>
-        `;
+        button.innerHTML = '<i class="ti ti-eye-off eye-icon" style="font-size: 18px;"></i>';
       } else {
-        button.innerHTML = `
-          <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-        `;
+        button.innerHTML = '<i class="ti ti-eye eye-icon" style="font-size: 18px;"></i>';
       }
     });
   });
@@ -3461,7 +3451,7 @@ async function loadAdminNotifications(forceRefresh = false) {
   if (forceRefresh && listEl) {
     listEl.innerHTML = `
       <div class="and-empty">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" class="spin"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        <i class="ti ti-loader-2 ti-spin" style="font-size: 24px; color: #94a3b8;"></i>
         <p>Refreshing clinic alerts...</p>
       </div>
     `;
@@ -3484,7 +3474,7 @@ async function loadAdminNotifications(forceRefresh = false) {
     if (listEl && (!adminNotificationsList || adminNotificationsList.length === 0)) {
       listEl.innerHTML = `
         <div class="and-empty">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <i class="ti ti-bell-off" style="font-size: 28px; color: #94a3b8;"></i>
           <p>No active alerts right now.</p>
         </div>
       `;
@@ -3518,7 +3508,7 @@ function renderAdminNotifications(notifs) {
   if (!notifs.length) {
     listEl.innerHTML = `
       <div class="and-empty">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <i class="ti ti-bell-off" style="font-size: 28px; color: #94a3b8;"></i>
         <p>No active alerts. System running smoothly.</p>
       </div>
     `;
@@ -3532,13 +3522,13 @@ function renderAdminNotifications(notifs) {
 
     let iconSvg = '';
     if (n.icon === 'triangle-exclamation') {
-      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      iconSvg = '<i class="ti ti-alert-triangle" style="font-size: 18px;"></i>';
     } else if (n.icon === 'calendar-clock' || n.category === 'operations') {
-      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="14" r="3"/><path d="m12 14 1.5 1.5"/></svg>';
+      iconSvg = '<i class="ti ti-calendar-time" style="font-size: 18px;"></i>';
     } else if (n.icon === 'shield-check' || n.type === 'success') {
-      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>';
+      iconSvg = '<i class="ti ti-shield-check" style="font-size: 18px;"></i>';
     } else {
-      iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+      iconSvg = '<i class="ti ti-info-circle" style="font-size: 18px;"></i>';
     }
 
     return `

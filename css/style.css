@@ -484,7 +484,7 @@ section { position: relative; }
   margin-top: auto;
   padding-top: 14px;
 }
-.social-icon img {
+.social-icon {
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -492,9 +492,21 @@ section { position: relative; }
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--primary-color);
+  font-size: 1.15rem;
+  text-decoration: none;
   transition: all var(--transition);
 }
-.social-icon:hover { transform: scale(1.1); }
+.social-icon img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+.social-icon:hover {
+  transform: scale(1.1);
+  background: var(--primary-color);
+  color: #ffffff;
+}
 
 /* ===== WHY CHOOSE US ===== */
 #why {

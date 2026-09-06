@@ -69,6 +69,15 @@
   --font-display:   'Playfair Display', Georgia, serif;
 }
 
+@keyframes ti-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.ti-spin {
+  display: inline-block;
+  animation: ti-spin 1s linear infinite;
+}
+
 /* ─── Theme: Classic Light ───────────────────────────────── */
 [data-theme="light"] {
   --bg-base:        #f8fafc;

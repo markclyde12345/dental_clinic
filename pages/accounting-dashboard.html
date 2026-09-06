@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/accounting-dashboard.css?v=20260904_03">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 </head>
 <body>
 
@@ -286,7 +287,7 @@
           <!-- 50x Better Toolbar -->
           <div class="invoices-toolbar">
             <div class="search-box-modern">
-              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <i class="ti ti-search search-icon"></i>
               <input type="text" id="inv-search-input" placeholder="Search by patient name, reference, procedure..." oninput="filterInvoices()">
               <span class="search-clear-btn" id="inv-search-clear" onclick="clearInvSearch()" style="display:none;">&times;</span>
             </div>
@@ -303,10 +304,10 @@
 
               <div class="action-buttons-group">
                 <button type="button" class="btn-primary-action" onclick="openCreateInvoiceModal()">
-                  <i class="fa-solid fa-plus"></i> New Invoice
+                  <i class="ti ti-plus"></i> New Invoice
                 </button>
                 <button type="button" class="btn-secondary-action" onclick="exportInvoicesCSV()">
-                  <i class="fa-solid fa-file-csv"></i> Export CSV
+                  <i class="ti ti-file-spreadsheet"></i> Export CSV
                 </button>
               </div>
             </div>
@@ -332,7 +333,7 @@
                 <tbody id="full-invoices-body">
                   <tr>
                     <td colspan="9" class="empty-state-cell">
-                      <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; color: #94a3b8; display: block; margin-bottom: 8px;"></i>
+                      <i class="ti ti-loader-2 ti-spin" style="font-size: 1.5rem; color: #94a3b8; display: block; margin-bottom: 8px;"></i>
                       Loading invoice records...
                     </td>
                   </tr>
@@ -714,16 +715,16 @@
             </div>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
               <button type="button" class="btn-outline-util" style="height: 38px; padding: 0 14px; font-size: 0.82rem;" onclick="expandAllSettings()">
-                <i class="fa-solid fa-up-right-and-down-left-from-center"></i> Expand All
+                <i class="ti ti-arrows-maximize"></i> Expand All
               </button>
               <button type="button" class="btn-outline-util" style="height: 38px; padding: 0 14px; font-size: 0.82rem;" onclick="collapseAllSettings()">
-                <i class="fa-solid fa-down-left-and-up-right-to-center"></i> Collapse All
+                <i class="ti ti-arrows-minimize"></i> Collapse All
               </button>
               <button type="button" class="btn-secondary-action" style="height: 38px; padding: 0 14px; font-size: 0.82rem;" onclick="toggleSettingsAccordion('invoice')">
-                <i class="fa-solid fa-file-invoice-dollar"></i> Invoice Settings
+                <i class="ti ti-file-invoice"></i> Invoice Settings
               </button>
               <button type="button" class="btn-secondary-action" style="height: 38px; padding: 0 14px; font-size: 0.82rem;" onclick="toggleSettingsAccordion('payment')">
-                <i class="fa-solid fa-credit-card"></i> Payment Methods
+                <i class="ti ti-credit-card"></i> Payment Methods
               </button>
             </div>
           </div>
@@ -837,7 +838,7 @@
                   </div>
 
                   <button type="submit" class="btn-primary-action">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Accounting &amp; Currency
+                    <i class="ti ti-device-floppy"></i> Save Accounting &amp; Currency
                   </button>
                 </form>
               </div>
@@ -890,7 +891,7 @@
                   </div>
 
                   <button type="submit" class="btn-primary-action">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Invoice Settings
+                    <i class="ti ti-device-floppy"></i> Save Invoice Settings
                   </button>
                 </form>
               </div>
@@ -939,7 +940,7 @@
                   </div>
 
                   <button type="submit" class="btn-primary-action">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Receipt Settings
+                    <i class="ti ti-device-floppy"></i> Save Receipt Settings
                   </button>
                 </form>
               </div>
@@ -1015,7 +1016,7 @@
                   </div>
 
                   <button type="submit" class="btn-primary-action">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Payment Methods
+                    <i class="ti ti-device-floppy"></i> Save Payment Methods
                   </button>
                 </form>
               </div>
@@ -1057,7 +1058,7 @@
                   </div>
 
                   <button type="submit" class="btn-primary-action">
-                    <i class="fa-solid fa-floppy-disk"></i> Save HMO &amp; Insurance
+                    <i class="ti ti-device-floppy"></i> Save HMO &amp; Insurance
                   </button>
                 </form>
               </div>
@@ -1103,7 +1104,7 @@
                   </div>
 
                   <button type="submit" class="btn-primary-action">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Financial Controls
+                    <i class="ti ti-device-floppy"></i> Save Financial Controls
                   </button>
                 </form>
               </div>
@@ -1157,7 +1158,7 @@
                   </div>
 
                   <button type="submit" class="btn-primary-action">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Notifications
+                    <i class="ti ti-device-floppy"></i> Save Notifications
                   </button>
                 </form>
               </div>
@@ -1193,7 +1194,7 @@
                   </div>
 
                   <button type="submit" class="btn-primary-action">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Permissions
+                    <i class="ti ti-device-floppy"></i> Save Permissions
                   </button>
                 </form>
               </div>
@@ -1581,9 +1582,9 @@
             <span id="inv-detail-status-badge"></span>
           </div>
           <div style="display: flex; gap: 12px; font-size: 0.8rem; color: #64748b; flex-wrap: wrap;">
-            <span id="inv-detail-branch"><i class="fa-solid fa-location-dot"></i> Main Branch</span>
-            <span id="inv-detail-dentist"><i class="fa-solid fa-user-doctor"></i> Dr. Specialist</span>
-            <span id="inv-detail-date"><i class="fa-regular fa-calendar"></i> Issued: Date</span>
+            <span id="inv-detail-branch"><i class="ti ti-map-pin"></i> Main Branch</span>
+            <span id="inv-detail-dentist"><i class="ti ti-stethoscope"></i> Dr. Specialist</span>
+            <span id="inv-detail-date"><i class="ti ti-calendar"></i> Issued: Date</span>
           </div>
         </div>
 
@@ -1615,10 +1616,10 @@
         <button type="button" class="btn-outline-util" onclick="closeModal('modal-invoice-details')">Close</button>
         <div style="display: flex; gap: 8px;">
           <button type="button" class="btn-secondary-action" id="inv-detail-btn-receipt" onclick="printModalReceipt()">
-            <i class="fa-solid fa-print"></i> Official Receipt
+            <i class="ti ti-printer"></i> Official Receipt
           </button>
           <button type="button" class="btn-primary-action" id="inv-detail-btn-settle" onclick="settleModalInvoice()">
-            <i class="fa-solid fa-cash-register"></i> Collect Payment
+            <i class="ti ti-cash"></i> Collect Payment
           </button>
         </div>
       </div>

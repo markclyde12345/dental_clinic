@@ -290,7 +290,7 @@ function renderOverviewQueue() {
   if (!waitingPatients.length) {
     container.innerHTML = `
       <div class="empty-state">
-        <i class="fa-solid fa-mug-hot"></i>
+        <i class="ti ti-coffee"></i>
         <p>Waiting lounge is empty right now.</p>
         <span>Check in arriving patients from today's schedule.</span>
       </div>
@@ -309,13 +309,13 @@ function renderOverviewQueue() {
         <div class="queue-patient-info">
           <h4>${escapeHtml(patientName)}</h4>
           <div class="queue-patient-meta">
-            <span><i class="fa-regular fa-clock"></i> Arrived: ${apptTime}</span>
-            <span><i class="fa-solid fa-tooth"></i> ${escapeHtml(treatmentName)}</span>
+            <span><i class="ti ti-clock"></i> Arrived: ${apptTime}</span>
+            <span><i class="ti ti-tooth"></i> ${escapeHtml(treatmentName)}</span>
           </div>
         </div>
         <div class="queue-actions">
           <button class="btn btn-sm btn-success" onclick="updateAppointmentStatus('${appt.id}', 'In Progress', 'Patient seated in dental chair')">
-            <i class="fa-solid fa-chair"></i>
+            <i class="ti ti-armchair"></i>
             <span>Seat in Chair</span>
           </button>
         </div>
@@ -335,7 +335,7 @@ function renderOverviewAppointments() {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="text-center py-4 text-muted">
-          <i class="fa-regular fa-calendar-xmark" style="font-size: 1.5rem; margin-bottom: 6px; display: block;"></i>
+          <i class="ti ti-calendar-x" style="font-size: 1.5rem; margin-bottom: 6px; display: block;"></i>
           No appointments scheduled for today yet.
         </td>
       </tr>
@@ -354,21 +354,21 @@ function renderOverviewAppointments() {
     if (appt.status === 'Pending' || appt.status === 'Approved') {
       actionButton = `
         <button class="btn btn-sm btn-gold" onclick="updateAppointmentStatus('${appt.id}', 'Checked In', 'Patient arrived and checked in')">
-          <i class="fa-solid fa-user-check"></i>
+          <i class="ti ti-user-check"></i>
           <span>Check In</span>
         </button>
       `;
     } else if (appt.status === 'Checked In') {
       actionButton = `
         <button class="btn btn-sm btn-success" onclick="updateAppointmentStatus('${appt.id}', 'In Progress', 'Seated with doctor')">
-          <i class="fa-solid fa-chair"></i>
+          <i class="ti ti-armchair"></i>
           <span>Call / Seat</span>
         </button>
       `;
     } else if (appt.status === 'In Progress') {
       actionButton = `
         <button class="btn btn-sm btn-primary" onclick="updateAppointmentStatus('${appt.id}', 'Completed', 'Treatment completed')">
-          <i class="fa-solid fa-check-double"></i>
+          <i class="ti ti-checks"></i>
           <span>Complete Visit</span>
         </button>
       `;
@@ -396,7 +396,7 @@ function renderOverviewDentists() {
   if (!allDentists.length) {
     container.innerHTML = `
       <div class="empty-state">
-        <i class="fa-solid fa-user-doctor"></i>
+        <i class="ti ti-stethoscope"></i>
         <p>No dentists registered in clinic database.</p>
       </div>
     `;
@@ -416,7 +416,7 @@ function renderOverviewDentists() {
           </div>
         </div>
         <button class="btn btn-sm btn-outline" onclick="openBookWithDentist('${d.id}')">
-          <i class="fa-solid fa-plus"></i> Book
+          <i class="ti ti-plus"></i> Book
         </button>
       </div>
     `;
@@ -566,7 +566,7 @@ function renderAppointmentsTable(list) {
       <tr>
         <td colspan="5" class="text-center py-5 text-muted">
           <div class="empty-state-box">
-            <i class="fa-regular fa-calendar-xmark" style="font-size: 2.2rem; color: #cbd5e1; margin-bottom: 10px;"></i>
+            <i class="ti ti-calendar-x" style="font-size: 2.2rem; color: #cbd5e1; margin-bottom: 10px;"></i>
             <h4 style="margin: 0 0 4px 0; color: #475569;">No appointments match your filters</h4>
             <p style="margin: 0; font-size: 0.84rem;">Try resetting your search, status tab, or date range.</p>
           </div>
@@ -598,25 +598,25 @@ function renderAppointmentsTable(list) {
     // Build intelligent chips
     let chipsHtml = '';
     if (parsedNotes.concern && parsedNotes.concern !== 'None' && parsedNotes.concern !== 'N/A') {
-      chipsHtml += `<span class="notes-chip chip-concern" title="Chief Concern"><i class="fa-solid fa-tooth"></i> ${escapeHtml(parsedNotes.concern)}</span>`;
+      chipsHtml += `<span class="notes-chip chip-concern" title="Chief Concern"><i class="ti ti-tooth"></i> ${escapeHtml(parsedNotes.concern)}</span>`;
     }
     if (parsedNotes.hmo && parsedNotes.hmo !== 'None' && parsedNotes.hmo !== 'N/A') {
-      chipsHtml += `<span class="notes-chip chip-hmo" title="HMO / Insurance"><i class="fa-solid fa-shield-halved"></i> ${escapeHtml(parsedNotes.hmo)}</span>`;
+      chipsHtml += `<span class="notes-chip chip-hmo" title="HMO / Insurance"><i class="ti ti-shield-check"></i> ${escapeHtml(parsedNotes.hmo)}</span>`;
     }
     if (parsedNotes.allergies && parsedNotes.allergies.toLowerCase() !== 'none' && parsedNotes.allergies.toLowerCase() !== 'n/a') {
-      chipsHtml += `<span class="notes-chip chip-alert" title="Allergies"><i class="fa-solid fa-triangle-exclamation"></i> ${escapeHtml(parsedNotes.allergies)}</span>`;
+      chipsHtml += `<span class="notes-chip chip-alert" title="Allergies"><i class="ti ti-alert-triangle"></i> ${escapeHtml(parsedNotes.allergies)}</span>`;
     }
 
     let freeNoteHtml = '';
     if (parsedNotes.freeNotes) {
-      freeNoteHtml = `<div class="notes-custom-preview"><i class="fa-regular fa-comment-dots"></i> "${escapeHtml(parsedNotes.freeNotes)}"</div>`;
+      freeNoteHtml = `<div class="notes-custom-preview"><i class="ti ti-message-dots"></i> "${escapeHtml(parsedNotes.freeNotes)}"</div>`;
     } else if (!chipsHtml) {
       chipsHtml = `<span class="notes-chip chip-default">Standard Consultation</span>`;
     }
 
     // Doctor info badge
     const dentistBadge = (parsedNotes.dentist && parsedNotes.dentist !== 'N/A' && parsedNotes.dentist !== 'No Preference')
-      ? `<span class="doctor-badge" title="Assigned Doctor"><i class="fa-solid fa-user-doctor"></i> ${escapeHtml(parsedNotes.dentist)}</span>`
+      ? `<span class="doctor-badge" title="Assigned Doctor"><i class="ti ti-stethoscope"></i> ${escapeHtml(parsedNotes.dentist)}</span>`
       : '';
 
     // Front Desk Action Buttons
@@ -624,41 +624,41 @@ function renderAppointmentsTable(list) {
     if (appt.status === 'Pending') {
       mainActionBtn = `
         <button class="btn-action-main btn-action-confirm" onclick="updateAppointmentStatus('${appt.id}', 'Approved', 'Appointment confirmed')">
-          <i class="fa-solid fa-check"></i>
+          <i class="ti ti-check"></i>
           <span>Confirm</span>
         </button>
       `;
     } else if (appt.status === 'Approved' || appt.status === 'Confirmed') {
       mainActionBtn = `
         <button class="btn-action-main btn-action-checkin" onclick="updateAppointmentStatus('${appt.id}', 'Checked In', 'Patient arrived and checked in')">
-          <i class="fa-solid fa-user-check"></i>
+          <i class="ti ti-user-check"></i>
           <span>Check In</span>
         </button>
       `;
     } else if (appt.status === 'Checked In') {
       mainActionBtn = `
         <button class="btn-action-main btn-action-seat" onclick="updateAppointmentStatus('${appt.id}', 'In Progress', 'Patient seated with doctor')">
-          <i class="fa-solid fa-chair"></i>
+          <i class="ti ti-armchair"></i>
           <span>Seat Patient</span>
         </button>
       `;
     } else if (appt.status === 'In Progress') {
       mainActionBtn = `
         <button class="btn-action-main btn-action-complete" onclick="updateAppointmentStatus('${appt.id}', 'Completed', 'Visit marked completed')">
-          <i class="fa-solid fa-circle-check"></i>
+          <i class="ti ti-circle-check"></i>
           <span>Complete</span>
         </button>
       `;
     } else if (appt.status === 'Cancelled') {
       mainActionBtn = `
         <button class="btn-action-main btn-action-rebook" onclick="openBookForPatient('${appt.patient_id}')">
-          <i class="fa-solid fa-rotate-right"></i>
+          <i class="ti ti-rotate-clockwise"></i>
           <span>Rebook</span>
         </button>
       `;
     } else {
       mainActionBtn = `
-        <span class="action-finished-label"><i class="fa-solid fa-check"></i> Finished</span>
+        <span class="action-finished-label"><i class="ti ti-check"></i> Finished</span>
       `;
     }
 
@@ -667,16 +667,16 @@ function renderAppointmentsTable(list) {
     if (appt.status !== 'Completed' && appt.status !== 'Cancelled') {
       secondaryActions = `
         <button class="btn-action-icon btn-icon-resched" title="Reschedule Date/Time" onclick="openRescheduleModal('${appt.id}')">
-          <i class="fa-solid fa-clock-rotate-left"></i>
+          <i class="ti ti-clock-hour-3"></i>
         </button>
         <button class="btn-action-icon btn-icon-cancel" title="Cancel Appointment" onclick="cancelAppointmentPrompt('${appt.id}')">
-          <i class="fa-solid fa-xmark"></i>
+          <i class="ti ti-x"></i>
         </button>
       `;
     }
     secondaryActions += `
       <button class="btn-action-icon btn-icon-view" title="View Full Intake Details" onclick="openApptIntakeDetails('${appt.id}')">
-        <i class="fa-solid fa-eye"></i>
+        <i class="ti ti-eye"></i>
       </button>
     `;
 
@@ -693,7 +693,7 @@ function renderAppointmentsTable(list) {
     if (patientOverdueInvs.length > 0) {
       const maxDays = Math.max(...patientOverdueInvs.map(i => Math.floor((Date.now() - new Date(i.issued_at || i.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24))));
       const totalOverdue = patientOverdueInvs.reduce((sum, i) => sum + (parseFloat(i.amount || i.total_amount) || 0), 0);
-      delinquentTag = `<span class="patient-delinquent-tag" title="Account has ₱${totalOverdue.toFixed(2)} overdue for ${maxDays} days!"><i class="fa-solid fa-triangle-exclamation"></i> Overdue (${maxDays}d)</span>`;
+      delinquentTag = `<span class="patient-delinquent-tag" title="Account has ₱${totalOverdue.toFixed(2)} overdue for ${maxDays} days!"><i class="ti ti-alert-triangle"></i> Overdue (${maxDays}d)</span>`;
     }
 
     return `
@@ -701,9 +701,9 @@ function renderAppointmentsTable(list) {
         <!-- Date & Schedule -->
         <td>
           <div class="appt-time-cell">
-            <div class="appt-date"><i class="fa-regular fa-calendar"></i> ${dateStr}</div>
+            <div class="appt-date"><i class="ti ti-calendar"></i> ${dateStr}</div>
             <div class="appt-time-row">
-              <span class="appt-time-pill"><i class="fa-regular fa-clock"></i> ${timeStr}</span>
+              <span class="appt-time-pill"><i class="ti ti-clock"></i> ${timeStr}</span>
               ${statusBadge}
             </div>
           </div>
@@ -721,7 +721,7 @@ function renderAppointmentsTable(list) {
                 <span class="ref-pill" onclick="copyRefId('${refId}')" title="Click to copy Reference ID">#${refId}</span>
                 ${delinquentTag}
               </div>
-              <span class="patient-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(patientPhone || 'No phone recorded')}</span>
+              <span class="patient-contact"><i class="ti ti-phone"></i> ${escapeHtml(patientPhone || 'No phone recorded')}</span>
             </div>
           </div>
         </td>
@@ -729,7 +729,7 @@ function renderAppointmentsTable(list) {
         <!-- Procedure & Doctor -->
         <td>
           <div class="procedure-cell">
-            <div class="procedure-icon-wrap"><i class="fa-solid fa-tooth"></i></div>
+            <div class="procedure-icon-wrap"><i class="ti ti-tooth"></i></div>
             <div class="procedure-meta">
               <span class="procedure-name">${escapeHtml(treatmentName)}</span>
               <div class="procedure-sub-row">
@@ -748,7 +748,7 @@ function renderAppointmentsTable(list) {
             </div>
             ${freeNoteHtml}
             <button class="btn-open-intake" onclick="openApptIntakeDetails('${appt.id}')">
-              <i class="fa-solid fa-file-waveform"></i>
+              <i class="ti ti-report-medical"></i>
               <span>Intake Details &rarr;</span>
             </button>
           </div>
@@ -861,7 +861,7 @@ function openApptIntakeDetails(apptId) {
       <div class="intake-sheet-grid">
         <!-- Section: Patient Profile -->
         <div class="intake-section-card">
-          <div class="intake-card-title"><i class="fa-solid fa-user text-primary"></i> Patient Identity</div>
+          <div class="intake-card-title"><i class="ti ti-user text-primary"></i> Patient Identity</div>
           <div class="intake-fields-grid">
             <div class="intake-field">
               <span class="intake-lbl">Full Name</span>
@@ -884,7 +884,7 @@ function openApptIntakeDetails(apptId) {
 
         <!-- Section: Dental Procedure & Doctor -->
         <div class="intake-section-card">
-          <div class="intake-card-title"><i class="fa-solid fa-tooth text-primary"></i> Clinical Procedure</div>
+          <div class="intake-card-title"><i class="ti ti-tooth text-primary"></i> Clinical Procedure</div>
           <div class="intake-fields-grid">
             <div class="intake-field">
               <span class="intake-lbl">Treatment</span>
@@ -907,7 +907,7 @@ function openApptIntakeDetails(apptId) {
 
         <!-- Section: Health Intake & Alerts -->
         <div class="intake-section-card intake-card-highlight">
-          <div class="intake-card-title"><i class="fa-solid fa-heart-pulse text-amber"></i> Patient Health &amp; Medical Intake</div>
+          <div class="intake-card-title"><i class="ti ti-heartbeat text-amber"></i> Patient Health &amp; Medical Intake</div>
           <div class="intake-fields-grid">
             <div class="intake-field" style="grid-column: span 2;">
               <span class="intake-lbl">Chief Dental Concern</span>
@@ -934,7 +934,7 @@ function openApptIntakeDetails(apptId) {
 
         <!-- Section: Insurance & Billing -->
         <div class="intake-section-card">
-          <div class="intake-card-title"><i class="fa-solid fa-shield-halved text-blue"></i> HMO &amp; Emergency Contacts</div>
+          <div class="intake-card-title"><i class="ti ti-shield-check text-blue"></i> HMO &amp; Emergency Contacts</div>
           <div class="intake-fields-grid">
             <div class="intake-field">
               <span class="intake-lbl">HMO / Dental Insurance</span>
@@ -954,7 +954,7 @@ function openApptIntakeDetails(apptId) {
         ${parsed.freeNotes ? `
           <!-- Section: Custom Notes -->
           <div class="intake-section-card" style="grid-column: 1 / -1;">
-            <div class="intake-card-title"><i class="fa-regular fa-comment-dots text-primary"></i> Front Desk &amp; Patient Notes</div>
+            <div class="intake-card-title"><i class="ti ti-message-dots text-primary"></i> Front Desk &amp; Patient Notes</div>
             <div style="background: #f8fafc; padding: 12px 16px; border-radius: 10px; font-size: 0.88rem; color: #334155; line-height: 1.6;">
               ${escapeHtml(parsed.freeNotes)}
             </div>
@@ -970,25 +970,25 @@ function openApptIntakeDetails(apptId) {
     if (appt.status === 'Pending') {
       modalActionBtns += `
         <button type="button" class="btn btn-primary" onclick="closeModal('modal-appt-details'); updateAppointmentStatus('${appt.id}', 'Approved', 'Appointment confirmed')">
-          <i class="fa-solid fa-check"></i> Confirm Appointment
+          <i class="ti ti-check"></i> Confirm Appointment
         </button>
       `;
     } else if (appt.status === 'Approved' || appt.status === 'Confirmed') {
       modalActionBtns += `
         <button type="button" class="btn btn-gold" onclick="closeModal('modal-appt-details'); updateAppointmentStatus('${appt.id}', 'Checked In', 'Patient checked in')">
-          <i class="fa-solid fa-user-check"></i> Check In Patient
+          <i class="ti ti-user-check"></i> Check In Patient
         </button>
       `;
     } else if (appt.status === 'Checked In') {
       modalActionBtns += `
         <button type="button" class="btn btn-success" onclick="closeModal('modal-appt-details'); updateAppointmentStatus('${appt.id}', 'In Progress', 'Patient seated in chair')">
-          <i class="fa-solid fa-chair"></i> Seat in Dental Chair
+          <i class="ti ti-armchair"></i> Seat in Dental Chair
         </button>
       `;
     } else if (appt.status === 'In Progress') {
       modalActionBtns += `
         <button type="button" class="btn btn-teal" onclick="closeModal('modal-appt-details'); updateAppointmentStatus('${appt.id}', 'Completed', 'Visit completed')">
-          <i class="fa-solid fa-circle-check"></i> Complete &amp; Bill
+          <i class="ti ti-circle-check"></i> Complete &amp; Bill
         </button>
       `;
     }
@@ -1020,7 +1020,7 @@ function renderPatientQueue() {
     if (!inTreatment.length) {
       inTreatmentList.innerHTML = `
         <div class="empty-state">
-          <i class="fa-solid fa-circle-check"></i>
+          <i class="ti ti-circle-check"></i>
           <p>No active procedures in dental chairs right now.</p>
         </div>
       `;
@@ -1033,18 +1033,18 @@ function renderPatientQueue() {
         return `
           <div class="queue-card-item active-chair">
             <div class="queue-num-pill" style="background: var(--accent-light); color: var(--accent-color);">
-              <i class="fa-solid fa-tooth"></i>
+              <i class="ti ti-tooth"></i>
             </div>
             <div class="queue-patient-info">
               <h4>${escapeHtml(patientName)}</h4>
               <div class="queue-patient-meta">
-                <span><i class="fa-regular fa-clock"></i> Started: ${timeStr}</span>
-                <span><i class="fa-solid fa-stethoscope"></i> ${escapeHtml(treatmentName)}</span>
+                <span><i class="ti ti-clock"></i> Started: ${timeStr}</span>
+                <span><i class="ti ti-stethoscope"></i> ${escapeHtml(treatmentName)}</span>
               </div>
             </div>
             <div class="queue-actions">
               <button class="btn btn-sm btn-primary" onclick="updateAppointmentStatus('${appt.id}', 'Completed', 'Treatment finished')">
-                <i class="fa-solid fa-check"></i> Complete &amp; Bill
+                <i class="ti ti-check"></i> Complete &amp; Bill
               </button>
             </div>
           </div>
@@ -1058,7 +1058,7 @@ function renderPatientQueue() {
     if (!waitingLounge.length) {
       waitingLoungeList.innerHTML = `
         <div class="empty-state">
-          <i class="fa-solid fa-couch"></i>
+          <i class="ti ti-armchair"></i>
           <p>Waiting lounge is empty. Check in arriving patients.</p>
         </div>
       `;
@@ -1074,16 +1074,16 @@ function renderPatientQueue() {
             <div class="queue-patient-info">
               <h4>${escapeHtml(patientName)}</h4>
               <div class="queue-patient-meta">
-                <span><i class="fa-regular fa-clock"></i> Checked In: ${timeStr}</span>
-                <span><i class="fa-solid fa-tooth"></i> ${escapeHtml(treatmentName)}</span>
+                <span><i class="ti ti-clock"></i> Checked In: ${timeStr}</span>
+                <span><i class="ti ti-tooth"></i> ${escapeHtml(treatmentName)}</span>
               </div>
             </div>
             <div class="queue-actions">
               <button class="btn btn-sm btn-success" onclick="updateAppointmentStatus('${appt.id}', 'In Progress', 'Patient seated in chair')">
-                <i class="fa-solid fa-chair"></i> Call &amp; Seat
+                <i class="ti ti-armchair"></i> Call &amp; Seat
               </button>
               <button class="btn btn-sm btn-danger" onclick="cancelAppointmentPrompt('${appt.id}')" title="No-Show">
-                <i class="fa-solid fa-user-xmark"></i>
+                <i class="ti ti-user-x"></i>
               </button>
             </div>
           </div>
@@ -1149,7 +1149,7 @@ function renderPatientsTable(list) {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="text-center py-4 text-muted">
-          <i class="fa-solid fa-users-slash" style="font-size: 1.6rem; margin-bottom: 8px; display: block;"></i>
+          <i class="ti ti-users-group" style="font-size: 1.6rem; margin-bottom: 8px; display: block;"></i>
           No patient records found.
         </td>
       </tr>
@@ -1181,8 +1181,8 @@ function renderPatientsTable(list) {
           <div style="font-size: 0.74rem; color: #64748b;">Chart ID: #${(patientId || '').substring(0, 8)}</div>
         </td>
         <td>
-          <div><i class="fa-solid fa-phone" style="font-size: 0.75rem; color: #94a3b8;"></i> ${escapeHtml(phone)}</div>
-          <div style="font-size: 0.75rem; color: #64748b;"><i class="fa-solid fa-envelope" style="font-size: 0.75rem; color: #94a3b8;"></i> ${escapeHtml(email)}</div>
+          <div><i class="ti ti-phone" style="font-size: 0.75rem; color: #94a3b8;"></i> ${escapeHtml(phone)}</div>
+          <div style="font-size: 0.75rem; color: #64748b;"><i class="ti ti-mail" style="font-size: 0.75rem; color: #94a3b8;"></i> ${escapeHtml(email)}</div>
         </td>
         <td><small>${escapeHtml(address)}</small></td>
         <td>${dob} &bull; ${gender}</td>
@@ -1193,10 +1193,10 @@ function renderPatientsTable(list) {
         <td>
           <div style="display: flex; gap: 6px;">
             <button class="btn btn-sm btn-primary" onclick="openBookForPatient('${patientId}')" title="Book Appointment">
-              <i class="fa-solid fa-calendar-plus"></i> Book
+              <i class="ti ti-calendar-plus"></i> Book
             </button>
             <button class="btn btn-sm btn-outline" onclick="openPatientHistoryModal('${patientId}')" title="View Chart History">
-              <i class="fa-solid fa-file-medical"></i>
+              <i class="ti ti-file-invoice"></i>
             </button>
           </div>
         </td>
@@ -1240,7 +1240,7 @@ function renderDentistsRoster() {
   if (!allDentists.length) {
     container.innerHTML = `
       <div class="empty-state">
-        <i class="fa-solid fa-user-doctor"></i>
+        <i class="ti ti-stethoscope"></i>
         <p>No dentists registered in clinic database.</p>
       </div>
     `;
@@ -1291,7 +1291,7 @@ function renderDentistsRoster() {
         </div>
 
         <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="openBookWithDentist('${d.id}')">
-          <i class="fa-solid fa-calendar-plus"></i>
+          <i class="ti ti-calendar-plus"></i>
           <span>Schedule with Doctor</span>
         </button>
       </div>
@@ -1309,7 +1309,7 @@ function renderBillingTable(list) {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="text-center py-4 text-muted">
-          <i class="fa-solid fa-receipt" style="font-size: 1.6rem; margin-bottom: 8px; display: block;"></i>
+          <i class="ti ti-receipt" style="font-size: 1.6rem; margin-bottom: 8px; display: block;"></i>
           No invoices matched the current filter.
         </td>
       </tr>
@@ -1329,13 +1329,13 @@ function renderBillingTable(list) {
 
     let statusBadge = '';
     if (isPaid) {
-      statusBadge = `<span class="status-badge badge-completed"><i class="fa-solid fa-check"></i> Paid</span>`;
+      statusBadge = `<span class="status-badge badge-completed"><i class="ti ti-check"></i> Paid</span>`;
     } else if (isWrittenOff) {
-      statusBadge = `<span class="status-badge" style="background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1;"><i class="fa-solid fa-ban"></i> Bad Debt (Written Off)</span>`;
+      statusBadge = `<span class="status-badge" style="background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1;"><i class="ti ti-ban"></i> Bad Debt (Written Off)</span>`;
     } else if (isOverdue) {
-      statusBadge = `<span class="status-badge badge-cancelled" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;" title="${daysOld} days past due"><i class="fa-solid fa-triangle-exclamation"></i> Overdue (${daysOld}d)</span>`;
+      statusBadge = `<span class="status-badge badge-cancelled" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;" title="${daysOld} days past due"><i class="ti ti-alert-triangle"></i> Overdue (${daysOld}d)</span>`;
     } else {
-      statusBadge = `<span class="status-badge badge-pending"><i class="fa-solid fa-clock"></i> Unpaid (${daysOld}d)</span>`;
+      statusBadge = `<span class="status-badge badge-pending"><i class="ti ti-clock"></i> Unpaid (${daysOld}d)</span>`;
     }
 
     const dateIssued = inv.issued_at || inv.created_at ? new Date(inv.issued_at || inv.created_at).toLocaleDateString() : 'N/A';
@@ -1344,7 +1344,7 @@ function renderBillingTable(list) {
     let actionBtn = '';
     if (isPaid) {
       actionBtn = `
-        <span class="text-muted" style="font-size: 0.8rem;"><i class="fa-solid fa-circle-check text-green"></i> Settled</span>
+        <span class="text-muted" style="font-size: 0.8rem;"><i class="ti ti-circle-check text-green"></i> Settled</span>
       `;
     } else if (isWrittenOff) {
       actionBtn = `
@@ -1354,11 +1354,11 @@ function renderBillingTable(list) {
       actionBtn = `
         <div style="display: flex; align-items: center; gap: 6px;">
           <button class="btn btn-sm btn-success" onclick="openPaymentModal('${inv.id}', '${escapeHtml(patientName)}', '${inv.amount || inv.total_amount || 0}')" title="Collect payment">
-            <i class="fa-solid fa-cash-register"></i> Collect
+            <i class="ti ti-cash"></i> Collect
           </button>
           ${daysOld >= 60 ? `
             <button class="btn btn-sm" onclick="markInvoiceAsBadDebt('${inv.id}', '${escapeHtml(patientName)}', '${daysOld}')" title="Write off as uncollectible bad debt" style="background: #f1f5f9; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.74rem; padding: 4px 8px;">
-              <i class="fa-solid fa-ban"></i> Write Off
+              <i class="ti ti-ban"></i> Write Off
             </button>
           ` : ''}
         </div>
@@ -1856,7 +1856,7 @@ async function openPatientHistoryModal(patientId) {
   const sub = document.getElementById('history-patient-sub');
   const bookBtn = document.getElementById('btn-book-from-history');
 
-  if (body) body.innerHTML = `<div class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Loading chart history...</div>`;
+  if (body) body.innerHTML = `<div class="text-center py-4 text-muted"><i class="ti ti-loader-2 ti-spin"></i> Loading chart history...</div>`;
 
   try {
     const res = await fetch(`${BASE_ORIGIN}/api/patients/${patientId}/history`, {
@@ -1896,7 +1896,7 @@ async function openPatientHistoryModal(patientId) {
         </div>
       </div>
 
-      <h4 class="form-section-title"><i class="fa-solid fa-clock-rotate-left"></i> Past Clinic Appointments (${appointments.length})</h4>
+      <h4 class="form-section-title"><i class="ti ti-clock-hour-3"></i> Past Clinic Appointments (${appointments.length})</h4>
       ${appointments.length ? `
         <div class="table-responsive" style="margin-bottom: 18px;">
           <table class="medical-table">
@@ -1922,7 +1922,7 @@ async function openPatientHistoryModal(patientId) {
         </div>
       ` : '<p class="text-muted" style="font-size: 0.85rem;">No previous appointment history.</p>'}
 
-      <h4 class="form-section-title"><i class="fa-solid fa-prescription"></i> Prescriptions History (${prescriptions.length})</h4>
+      <h4 class="form-section-title"><i class="ti ti-pill"></i> Prescriptions History (${prescriptions.length})</h4>
       ${prescriptions.length ? `
         <div class="table-responsive">
           <table class="medical-table">
@@ -1949,7 +1949,7 @@ async function openPatientHistoryModal(patientId) {
 
   } catch (err) {
     console.error('[Chart History Error]', err);
-    if (body) body.innerHTML = `<div class="text-center py-4 text-danger"><i class="fa-solid fa-circle-exclamation"></i> Error loading patient chart history.</div>`;
+    if (body) body.innerHTML = `<div class="text-center py-4 text-danger"><i class="ti ti-alert-circle"></i> Error loading patient chart history.</div>`;
   }
 }
 
@@ -1976,17 +1976,17 @@ function getStatusBadge(status) {
   switch (s) {
     case 'Approved':
     case 'Confirmed':
-      return `<span class="status-badge badge-approved"><i class="fa-solid fa-check"></i> Confirmed</span>`;
+      return `<span class="status-badge badge-approved"><i class="ti ti-check"></i> Confirmed</span>`;
     case 'Checked In':
-      return `<span class="status-badge badge-checkedin"><i class="fa-solid fa-user-clock"></i> In Lounge</span>`;
+      return `<span class="status-badge badge-checkedin"><i class="ti ti-user-clock"></i> In Lounge</span>`;
     case 'In Progress':
-      return `<span class="status-badge badge-inprogress"><i class="fa-solid fa-tooth"></i> In Chair</span>`;
+      return `<span class="status-badge badge-inprogress"><i class="ti ti-tooth"></i> In Chair</span>`;
     case 'Completed':
-      return `<span class="status-badge badge-completed"><i class="fa-solid fa-circle-check"></i> Completed</span>`;
+      return `<span class="status-badge badge-completed"><i class="ti ti-circle-check"></i> Completed</span>`;
     case 'Cancelled':
-      return `<span class="status-badge badge-cancelled"><i class="fa-solid fa-ban"></i> Cancelled</span>`;
+      return `<span class="status-badge badge-cancelled"><i class="ti ti-ban"></i> Cancelled</span>`;
     case 'Rescheduled':
-      return `<span class="status-badge badge-pending"><i class="fa-solid fa-clock-rotate-left"></i> Rescheduled</span>`;
+      return `<span class="status-badge badge-pending"><i class="ti ti-clock-hour-3"></i> Rescheduled</span>`;
     default:
       return `<span class="status-badge badge-pending">&bull; ${escapeHtml(s)}</span>`;
   }
@@ -2009,12 +2009,12 @@ function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast-item toast-${type}`;
   
-  let icon = 'fa-info-circle';
-  if (type === 'success') icon = 'fa-circle-check';
-  if (type === 'error') icon = 'fa-circle-exclamation';
-  if (type === 'warning') icon = 'fa-triangle-exclamation';
+  let icon = 'ti-info-circle';
+  if (type === 'success') icon = 'ti-circle-check';
+  if (type === 'error') icon = 'ti-alert-circle';
+  if (type === 'warning') icon = 'ti-alert-triangle';
 
-  toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${escapeHtml(message)}</span>`;
+  toast.innerHTML = `<i class="ti ${icon}"></i> <span>${escapeHtml(message)}</span>`;
   container.appendChild(toast);
 
   setTimeout(() => {
@@ -2130,7 +2130,7 @@ async function loadAuditLogs(forceRefresh = false) {
   const refreshBtn = document.getElementById('btn-refresh-audit');
 
   if (refreshBtn) {
-    refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin text-primary"></i> Syncing...';
+    refreshBtn.innerHTML = '<i class="ti ti-refresh ti-spin text-primary"></i> Syncing...';
     refreshBtn.disabled = true;
   }
 
@@ -2138,7 +2138,7 @@ async function loadAuditLogs(forceRefresh = false) {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="text-center py-5 text-muted" style="padding: 40px 20px; text-align: center;">
-          <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.6rem; color: #0284c7; margin-bottom: 8px; display: block;"></i>
+          <i class="ti ti-loader-2 ti-spin" style="font-size: 1.6rem; color: #0284c7; margin-bottom: 8px; display: block;"></i>
           <span style="font-size: 0.88rem; font-weight: 600; color: #64748b;">Synchronizing cryptographically verified audit records...</span>
         </td>
       </tr>
@@ -2277,7 +2277,7 @@ async function loadAuditLogs(forceRefresh = false) {
     filterAuditLogs();
   } finally {
     if (refreshBtn) {
-      refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Refresh';
+      refreshBtn.innerHTML = '<i class="ti ti-refresh"></i> Refresh';
       refreshBtn.disabled = false;
     }
   }
@@ -2342,12 +2342,12 @@ function renderAuditLogs(list) {
       <tr>
         <td colspan="6" class="audit-empty-container">
           <div class="audit-empty-icon">
-            <i class="fa-solid fa-clipboard-question"></i>
+            <i class="ti ti-clipboard-text"></i>
           </div>
           <h4 class="audit-empty-title">No Audit Records Match Filters</h4>
           <p class="audit-empty-desc">There are no logged compliance events matching your current search parameters or selected filters.</p>
           <button type="button" class="btn-audit-tool btn-primary-tool" onclick="resetAuditFilters()">
-            <i class="fa-solid fa-filter-circle-xmark"></i> Clear Filters
+            <i class="ti ti-filter-off"></i> Clear Filters
           </button>
         </td>
       </tr>
@@ -2365,22 +2365,22 @@ function renderAuditLogs(list) {
     let actionBadge = '';
     switch (item.action) {
       case 'PAYMENT_COLLECTED':
-        actionBadge = `<span class="audit-action-badge audit-badge-payment"><i class="fa-solid fa-cash-register"></i> Payment Settled</span>`;
+        actionBadge = `<span class="audit-action-badge audit-badge-payment"><i class="ti ti-cash"></i> Payment Settled</span>`;
         break;
       case 'INVOICE_WRITTEN_OFF':
-        actionBadge = `<span class="audit-action-badge audit-badge-writeoff"><i class="fa-solid fa-ban"></i> Bad Debt Write-Off</span>`;
+        actionBadge = `<span class="audit-action-badge audit-badge-writeoff"><i class="ti ti-ban"></i> Bad Debt Write-Off</span>`;
         break;
       case 'APPOINTMENT_CANCELLED':
-        actionBadge = `<span class="audit-action-badge audit-badge-cancel"><i class="fa-solid fa-calendar-xmark"></i> Appt Cancelled</span>`;
+        actionBadge = `<span class="audit-action-badge audit-badge-cancel"><i class="ti ti-calendar-x"></i> Appt Cancelled</span>`;
         break;
       case 'APPOINTMENT_STATUS_CHANGED':
-        actionBadge = `<span class="audit-action-badge audit-badge-status"><i class="fa-solid fa-arrows-rotate"></i> Status Updated</span>`;
+        actionBadge = `<span class="audit-action-badge audit-badge-status"><i class="ti ti-refresh"></i> Status Updated</span>`;
         break;
       case 'APPOINTMENT_DELETED':
-        actionBadge = `<span class="audit-action-badge audit-badge-delete"><i class="fa-solid fa-trash-can"></i> Record Deleted</span>`;
+        actionBadge = `<span class="audit-action-badge audit-badge-delete"><i class="ti ti-trash"></i> Record Deleted</span>`;
         break;
       default:
-        actionBadge = `<span class="audit-action-badge audit-badge-default"><i class="fa-solid fa-fingerprint"></i> ${escapeHtml(item.action)}</span>`;
+        actionBadge = `<span class="audit-action-badge audit-badge-default"><i class="ti ti-fingerprint"></i> ${escapeHtml(item.action)}</span>`;
     }
 
     const staff = item.user_name || 'Staff User';
@@ -2425,13 +2425,13 @@ function renderAuditLogs(list) {
         </td>
         <td>
           <div class="audit-ip-tag" title="Client IP Address">
-            <i class="fa-solid fa-desktop text-slate-400"></i> ${escapeHtml(ip)}
+            <i class="ti ti-device-desktop text-slate-400"></i> ${escapeHtml(ip)}
           </div>
         </td>
         <td style="text-align: center;">
           <button type="button" class="btn-audit-tool" style="height: 32px; width: 32px; padding: 0; justify-content: center; border-radius: 6px;" 
                   id="btn-meta-${logId}" onclick="toggleAuditMeta('${logId}')" title="Inspect security metadata">
-            <i class="fa-solid fa-code"></i>
+            <i class="ti ti-code"></i>
           </button>
         </td>
       </tr>
@@ -2439,9 +2439,9 @@ function renderAuditLogs(list) {
         <td colspan="6" style="padding: 16px 20px;">
           <div class="audit-meta-container">
             <div class="audit-meta-title">
-              <span><i class="fa-solid fa-shield-halved"></i> Audit Verification Fingerprint — #${escapeHtml(String(item.id || item.entity_id || 'LOG'))}</span>
+              <span><i class="ti ti-shield-check"></i> Audit Verification Fingerprint — #${escapeHtml(String(item.id || item.entity_id || 'LOG'))}</span>
               <button type="button" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.75rem;" onclick="toggleAuditMeta('${logId}')">
-                <i class="fa-solid fa-xmark"></i> Close Details
+                <i class="ti ti-x"></i> Close Details
               </button>
             </div>
             <pre style="margin: 0; color: #38bdf8; font-family: monospace; white-space: pre-wrap; word-break: break-all;">${escapeHtml(metaJson)}</pre>
@@ -2613,19 +2613,19 @@ function loadReceptionistNotifications(isManual = false) {
       if (notifs.length === 0) {
         list.innerHTML = `
           <div class="rnd-empty">
-            <i class="fa-regular fa-bell-slash" style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 6px;"></i>
+            <i class="ti ti-bell-off" style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 6px;"></i>
             <p>All caught up! No active clinic alerts.</p>
           </div>
         `;
       } else {
         list.innerHTML = notifs.map(n => {
           const isUnread = !readSet.has(n.id);
-          const iconClass = n.icon ? `fa-${n.icon}` : 'fa-bell';
+          const iconClass = n.icon ? `ti-${n.icon.replace(/^fa-/, '')}` : 'ti-bell';
 
           return `
             <div class="rnd-item ${isUnread ? 'unread' : ''}" onclick="onReceptionistNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.tab || ''}')">
               <div class="rnd-icon-wrap type-${n.type || 'info'}">
-                <i class="fa-solid ${iconClass}"></i>
+                <i class="ti ${iconClass}"></i>
               </div>
               <div class="rnd-content">
                 <div class="rnd-title">${escapeHtml(n.title)}</div>

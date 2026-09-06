@@ -285,18 +285,18 @@
   function getStatusBadge(status, isPaid, balance = 1) {
     const s = (status || '').toLowerCase();
     if (isPaid || s === 'paid') {
-      return `<span class="modern-badge badge-paid"><i class="fa-solid fa-check"></i> Paid</span>`;
+      return `<span class="modern-badge badge-paid"><i class="ti ti-check"></i> Paid</span>`;
     }
     if (s === 'written off') {
-      return `<span class="modern-badge badge-baddebt"><i class="fa-solid fa-ban"></i> Bad Debt</span>`;
+      return `<span class="modern-badge badge-baddebt"><i class="ti ti-ban"></i> Bad Debt</span>`;
     }
     if (s === 'partial') {
-      return `<span class="modern-badge badge-partial"><i class="fa-solid fa-circle-half-stroke"></i> Partial</span>`;
+      return `<span class="modern-badge badge-partial"><i class="ti ti-adjustments"></i> Partial</span>`;
     }
     if (s === 'hmo') {
-      return `<span class="modern-badge badge-hmo"><i class="fa-solid fa-hospital"></i> HMO Claim</span>`;
+      return `<span class="modern-badge badge-hmo"><i class="ti ti-building-hospital"></i> HMO Claim</span>`;
     }
-    return `<span class="modern-badge badge-unpaid"><i class="fa-regular fa-clock"></i> Unpaid</span>`;
+    return `<span class="modern-badge badge-unpaid"><i class="ti ti-clock"></i> Unpaid</span>`;
   }
 
   function renderOverviewTable() {
@@ -335,9 +335,9 @@
           <td>${getStatusBadge(inv.status, isPaid, balance)}</td>
           <td style="text-align: right;">
             <div class="row-actions-group">
-              ${!isPaid && !isWrittenOff ? `<button type="button" class="btn-action-pill btn-collect" onclick="openRecordPaymentModal('${inv.id}')"><i class="fa-solid fa-cash-register"></i> Settle</button>` : ''}
-              <button type="button" class="btn-action-icon" onclick="viewReceipt('${inv.id}')" title="Receipt"><i class="fa-solid fa-print"></i></button>
-              <button type="button" class="btn-action-icon" onclick="openInvoiceDetailsModal('${inv.id}')" title="Details"><i class="fa-solid fa-eye"></i></button>
+              ${!isPaid && !isWrittenOff ? `<button type="button" class="btn-action-pill btn-collect" onclick="openRecordPaymentModal('${inv.id}')"><i class="ti ti-cash"></i> Settle</button>` : ''}
+              <button type="button" class="btn-action-icon" onclick="viewReceipt('${inv.id}')" title="Receipt"><i class="ti ti-printer"></i></button>
+              <button type="button" class="btn-action-icon" onclick="openInvoiceDetailsModal('${inv.id}')" title="Details"><i class="ti ti-eye"></i></button>
             </div>
           </td>
         </tr>
@@ -353,7 +353,7 @@
       tbody.innerHTML = `
         <tr>
           <td colspan="9" class="empty-state-cell">
-            <i class="fa-solid fa-receipt" style="font-size: 2.2rem; color: #94a3b8; display: block; margin-bottom: 10px;"></i>
+            <i class="ti ti-receipt" style="font-size: 2.2rem; color: #94a3b8; display: block; margin-bottom: 10px;"></i>
             No invoices recorded yet. Click <strong>+ New Invoice</strong> to create one.
           </td>
         </tr>`;
@@ -400,15 +400,15 @@
       // Status badge
       let statusBadge = '';
       if (isPaid) {
-        statusBadge = `<span class="modern-badge badge-paid"><i class="fa-solid fa-check"></i> Paid</span>`;
+        statusBadge = `<span class="modern-badge badge-paid"><i class="ti ti-check"></i> Paid</span>`;
       } else if (isWrittenOff) {
-        statusBadge = `<span class="modern-badge badge-baddebt" title="Written off from active balance"><i class="fa-solid fa-ban"></i> Bad Debt</span>`;
+        statusBadge = `<span class="modern-badge badge-baddebt" title="Written off from active balance"><i class="ti ti-ban"></i> Bad Debt</span>`;
       } else if (balance > 0 && daysOld > 30) {
-        statusBadge = `<span class="modern-badge badge-overdue" title="${daysOld} days overdue"><i class="fa-solid fa-triangle-exclamation"></i> Overdue (${daysOld}d)</span>`;
+        statusBadge = `<span class="modern-badge badge-overdue" title="${daysOld} days overdue"><i class="ti ti-alert-triangle"></i> Overdue (${daysOld}d)</span>`;
       } else if (paidAmount > 0 && balance > 0) {
-        statusBadge = `<span class="modern-badge badge-partial"><i class="fa-solid fa-circle-half-stroke"></i> Partial</span>`;
+        statusBadge = `<span class="modern-badge badge-partial"><i class="ti ti-adjustments"></i> Partial</span>`;
       } else {
-        statusBadge = `<span class="modern-badge badge-unpaid"><i class="fa-regular fa-clock"></i> Unpaid</span>`;
+        statusBadge = `<span class="modern-badge badge-unpaid"><i class="ti ti-clock"></i> Unpaid</span>`;
       }
 
       return `
@@ -435,14 +435,14 @@
           <td>
             <div class="treatment-meta-box">
               <div class="treatment-name-bold">
-                <i class="fa-solid fa-tooth text-primary"></i>
+                <i class="ti ti-tooth text-primary"></i>
                 <span>${escapeHtml(treatmentName)}</span>
               </div>
               <div class="treatment-pills-row">
-                <span class="info-pill branch-pill"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(branchName)}</span>
-                ${dentistName !== 'Assigned Doctor' ? `<span class="info-pill doctor-pill"><i class="fa-solid fa-user-doctor"></i> ${escapeHtml(dentistName)}</span>` : ''}
+                <span class="info-pill branch-pill"><i class="ti ti-map-pin"></i> ${escapeHtml(branchName)}</span>
+                ${dentistName !== 'Assigned Doctor' ? `<span class="info-pill doctor-pill"><i class="ti ti-stethoscope"></i> ${escapeHtml(dentistName)}</span>` : ''}
                 ${concern ? `<span class="info-pill concern-pill">${escapeHtml(concern)}</span>` : ''}
-                ${hasAlerts ? `<span class="info-pill alert-pill" title="Patient has clinical alerts"><i class="fa-solid fa-heart-pulse"></i> Alerts</span>` : ''}
+                ${hasAlerts ? `<span class="info-pill alert-pill" title="Patient has clinical alerts"><i class="ti ti-heartbeat"></i> Alerts</span>` : ''}
               </div>
             </div>
           </td>
@@ -482,14 +482,14 @@
             <div class="row-actions-group">
               ${!isPaid && !isWrittenOff ? `
                 <button type="button" class="btn-action-pill btn-collect" onclick="openRecordPaymentModal('${inv.id}')" title="Collect payment">
-                  <i class="fa-solid fa-cash-register"></i> Collect
+                  <i class="ti ti-cash"></i> Collect
                 </button>
               ` : ''}
               <button type="button" class="btn-action-icon" onclick="viewReceipt('${inv.id}')" title="Print Official Receipt">
-                <i class="fa-solid fa-print"></i>
+                <i class="ti ti-printer"></i>
               </button>
               <button type="button" class="btn-action-icon" onclick="openInvoiceDetailsModal('${inv.id}')" title="View Full Breakdown & Intake">
-                <i class="fa-solid fa-eye"></i>
+                <i class="ti ti-eye"></i>
               </button>
             </div>
           </td>

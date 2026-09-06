@@ -8,7 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260906_settings_v11">
+  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260906_tabler_icons">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="../css/ai-chat.css">
 </head>
 <body>
@@ -26,8 +27,7 @@
           <img src="../Resources/logo.png" alt="Fano Dental Clinic Logo" class="sb-logo-img">
           <span class="sb-logo-text">Fano Clinic</span>
         </a>
-        <button class="burger-menu-btn" id="burger-menu-btn" aria-label="Close sidebar" title="Close menu">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <button class="burger-menu-btn" id="burger-menu-btn" aria-label="Close sidebar" title="Close menu"><i class="ti ti-x" style="font-size: 20px;"></i>
         </button>
       </div>
 
@@ -45,32 +45,27 @@
         <p class="nav-label">MAIN</p>
         <ul class="sidebar-menu">
           <li>
-            <a href="#" class="nav-item active" data-section="overview" id="nav-overview">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <a href="#" class="nav-item active" data-section="overview" id="nav-overview"><i class="ti ti-dashboard nav-icon" style="font-size: 18px;"></i>
               Dashboard
             </a>
           </li>
           <li>
-            <a href="#" class="nav-item" data-section="appointments" id="nav-appointments">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <a href="#" class="nav-item" data-section="appointments" id="nav-appointments"><i class="ti ti-calendar nav-icon" style="font-size: 18px;"></i>
               Book Appointment
             </a>
           </li>
           <li>
-            <a href="#" class="nav-item" data-section="records" id="nav-records">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <a href="#" class="nav-item" data-section="records" id="nav-records"><i class="ti ti-file-text nav-icon" style="font-size: 18px;"></i>
               My Records
             </a>
           </li>
           <li>
-            <a href="#" class="nav-item" data-section="billing" id="nav-billing">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <a href="#" class="nav-item" data-section="billing" id="nav-billing"><i class="ti ti-credit-card nav-icon" style="font-size: 18px;"></i>
               Billing &amp; Invoices
             </a>
           </li>
           <li>
-            <a href="#" class="nav-item" data-section="finances" id="nav-finances">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <a href="#" class="nav-item" data-section="finances" id="nav-finances"><i class="ti ti-cash nav-icon" style="font-size: 18px;"></i>
               Financial Summary
             </a>
           </li>
@@ -79,14 +74,12 @@
         <p class="nav-label" style="margin-top:24px;">PERSONAL</p>
         <ul class="sidebar-menu">
           <li>
-            <a href="#" class="nav-item" data-section="profile" id="nav-profile">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <a href="#" class="nav-item" data-section="profile" id="nav-profile"><i class="ti ti-user nav-icon" style="font-size: 18px;"></i>
               My Profile
             </a>
           </li>
           <li>
-            <a href="#" class="nav-item" data-section="settings" id="nav-settings">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <a href="#" class="nav-item" data-section="settings" id="nav-settings"><i class="ti ti-settings nav-icon" style="font-size: 18px;"></i>
               Settings
             </a>
           </li>
@@ -102,8 +95,7 @@
             <span class="sidebar-user-role">Patient</span>
           </div>
         </div>
-        <button class="sidebar-logout-btn" onclick="logout()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <button class="sidebar-logout-btn" onclick="logout()"><i class="ti ti-logout" style="font-size: 16px;"></i>
           Log Out
         </button>
       </div>
@@ -120,7 +112,7 @@
           </button>
           <div class="breadcrumb">
             <span class="breadcrumb-item">Patient Dashboard</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            <i class="ti ti-chevron-right" style="font-size: 14px;"></i>
             <span class="breadcrumb-current" id="breadcrumb-current">Overview</span>
           </div>
         </div>
@@ -128,8 +120,7 @@
           <span class="header-date" id="header-date"></span>
           <!-- Patient Notification Center -->
           <div class="notif-wrapper" id="patient-notif-wrapper">
-            <button type="button" class="notif-btn" id="btn-patient-notif" aria-label="Notifications" title="View Notifications">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <button type="button" class="notif-btn" id="btn-patient-notif" aria-label="Notifications" title="View Notifications"><i class="ti ti-bell" style="font-size: 18px;"></i>
               <span class="notif-badge" id="patient-notif-count" style="display: none;">0</span>
             </button>
             <div class="patient-notif-dropdown" id="patient-notif-dropdown" hidden>
@@ -142,24 +133,23 @@
               </div>
               <div class="pnd-list" id="patient-notif-list">
                 <div class="pnd-empty">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  <i class="ti ti-bell-off" style="font-size: 32px; color: #94a3b8;"></i>
                   <p>Loading notifications...</p>
                 </div>
               </div>
               <div class="pnd-footer">
                 <button type="button" class="pnd-footer-action" onclick="loadPatientNotifications(true)">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  <i class="ti ti-refresh" style="font-size: 13px;"></i>
                   <span>Refresh Alerts</span>
                 </button>
                 <button type="button" class="pnd-footer-action" onclick="switchSection('settings')">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <i class="ti ti-settings" style="font-size: 13px;"></i>
                   <span>Preferences</span>
                 </button>
               </div>
             </div>
           </div>
-          <button class="quick-book-btn" id="quick-book-btn" style="background: var(--primary-color); color: #ffffff;" title="Book Appointment">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <button class="quick-book-btn" id="quick-book-btn" style="background: var(--primary-color); color: #ffffff;" title="Book Appointment"><i class="ti ti-plus" style="font-size: 14px;"></i>
             <span class="quick-book-text">Book Appointment</span>
           </button>
           <div class="header-user" id="header-user">
@@ -182,7 +172,7 @@
         <div class="stats-row">
           <div class="stat-card stat-primary">
             <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <i class="ti ti-calendar" style="font-size: 22px;"></i>
             </div>
             <div class="stat-content">
               <p class="stat-label">Next Appointment</p>
@@ -190,8 +180,7 @@
             </div>
           </div>
           <div class="stat-card stat-success">
-            <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <div class="stat-icon"><i class="ti ti-check" style="font-size: 22px;"></i>
             </div>
             <div class="stat-content">
               <p class="stat-label">Total Visits</p>
@@ -200,7 +189,7 @@
           </div>
           <div class="stat-card stat-warning">
             <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              <i class="ti ti-credit-card" style="font-size: 22px;"></i>
             </div>
             <div class="stat-content">
               <p class="stat-label">Unpaid Balance</p>
@@ -209,7 +198,7 @@
           </div>
           <div class="stat-card stat-info">
             <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <i class="ti ti-circle-check" style="font-size: 22px;"></i>
             </div>
             <div class="stat-content">
               <p class="stat-label">Health Status</p>
@@ -235,14 +224,13 @@
             </div>
             <div id="upcoming-appointments-list">
               <div class="empty-state-sm">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <i class="ti ti-calendar" style="font-size: 32px;"></i>
                 <p>No upcoming appointments</p>
                 <button class="link-btn" onclick="switchSection('appointments')">Schedule one now →</button>
               </div>
             </div>
             <div id="history-appointments-list" style="display: none;">
-              <div class="empty-state-sm">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+              <div class="empty-state-sm"><i class="ti ti-clock" style="font-size: 32px;"></i>
                 <p>No past visit history yet</p>
               </div>
             </div>
@@ -256,7 +244,7 @@
             </div>
             <div id="recent-invoices-list">
               <div class="empty-state-sm">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <i class="ti ti-credit-card" style="font-size: 32px;"></i>
                 <p>No billing history</p>
               </div>
             </div>
@@ -277,7 +265,7 @@
         <div class="card booking-lock-card" id="booking-delinquent-lock" style="display: none; border: 2px solid #ef4444; background: #fff5f5; padding: 24px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.12);">
           <div style="display: flex; align-items: flex-start; gap: 18px;">
             <div style="width: 50px; height: 50px; border-radius: 14px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(220,38,38,0.2);">
-              <i class="fa-solid fa-triangle-exclamation"></i>
+              <i class="ti ti-alert-triangle"></i>
             </div>
             <div style="flex: 1;">
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
@@ -289,10 +277,10 @@
               </p>
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button type="button" class="btn btn-primary" id="btn-lock-pay-now" onclick="payOverdueInvoiceNow()" style="background: #dc2626; border-color: #dc2626; font-weight: 700; box-shadow: 0 4px 12px rgba(220,38,38,0.35);">
-                  <i class="fa-solid fa-credit-card"></i> Settle Overdue Balance with PayMongo
+                  <i class="ti ti-credit-card"></i> Settle Overdue Balance with PayMongo
                 </button>
                 <button type="button" class="secondary-btn" onclick="switchSection('billing')">
-                  <i class="fa-solid fa-receipt"></i> View Invoices &amp; Breakdown
+                  <i class="ti ti-receipt"></i> View Invoices &amp; Breakdown
                 </button>
               </div>
             </div>
@@ -335,7 +323,7 @@
                 <!-- Date & Time Slot Card -->
                 <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
                   <div style="font-size: 0.82rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <i class="ti ti-calendar" style="font-size: 15px;"></i>
                     1. Choose Date &amp; Available Time Slot
                   </div>
 
@@ -361,8 +349,7 @@
 
                 <!-- Patient Details & Emergency Contact Card -->
                 <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
-                  <div style="font-size: 0.82rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <div style="font-size: 0.82rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;"><i class="ti ti-user" style="font-size: 15px;"></i>
                     2. Patient Information &amp; Contact
                   </div>
                   
@@ -386,7 +373,7 @@
                       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                         <label class="form-label" style="margin-bottom: 0;">Patient / Home Address</label>
                         <button type="button" class="link-btn" id="btn-detect-gps" style="font-size: 0.76rem; display: flex; align-items: center; gap: 4px;">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                          <i class="ti ti-crosshair" style="font-size: 12px;"></i>
                           Detect GPS
                         </button>
                       </div>
@@ -408,8 +395,7 @@
 
                 <!-- Medical Screening & Health Alerts Card -->
                 <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
-                  <div style="font-size: 0.82rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                  <div style="font-size: 0.82rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;"><i class="ti ti-stethoscope" style="font-size: 15px;"></i>
                     3. Medical Screening &amp; Health Alerts
                   </div>
 
@@ -456,7 +442,7 @@
                 <!-- Dental Concern, Insurance & Preferences Card -->
                 <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
                   <div style="font-size: 0.82rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8 2 4 5 4 9c0 5.25 8 13 8 13s8-7.75 8-13c0-4-4-7-8-7z"/></svg>
+                    <i class="ti ti-map-pin" style="font-size: 15px;"></i>
                     4. Dental Concern, Insurance &amp; Branch Locator
                   </div>
 
@@ -518,8 +504,7 @@
 
                   <!-- Nearest Branch Recommendation Banner -->
                   <div class="nearest-branch-banner" id="nearest-branch-banner" style="margin-bottom: 14px;">
-                    <div class="nb-icon">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <div class="nb-icon"><i class="ti ti-map-pin" style="font-size: 22px;"></i>
                     </div>
                     <div class="nb-info">
                       <div class="nb-header">
@@ -582,8 +567,7 @@
 
                 <!-- Fee Summary Box -->
                 <div class="booking-fee-banner">
-                  <div class="fee-banner-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                  <div class="fee-banner-icon"><i class="ti ti-credit-card" style="font-size: 24px;"></i>
                   </div>
                   <div class="fee-banner-info">
                     <span class="fee-service-name" id="wizard-fee-service">Selected Dental Service</span>
@@ -610,10 +594,10 @@
                         Pay securely using your preferred mobile wallet, online bank, or credit/debit card. Your payment receipt is verified instantly.
                       </p>
                       <div class="choice-channels-row">
-                        <span class="pms-chip gcash"><i class="fa-solid fa-wallet"></i> GCash</span>
-                        <span class="pms-chip maya"><i class="fa-solid fa-mobile-screen"></i> Maya</span>
-                        <span class="pms-chip cards"><i class="fa-solid fa-credit-card"></i> Visa / Mastercard</span>
-                        <span class="pms-chip billease"><i class="fa-solid fa-calendar-check"></i> BillEase</span>
+                        <span class="pms-chip gcash"><i class="ti ti-wallet"></i> GCash</span>
+                        <span class="pms-chip maya"><i class="ti ti-device-mobile"></i> Maya</span>
+                        <span class="pms-chip cards"><i class="ti ti-credit-card"></i> Visa / Mastercard</span>
+                        <span class="pms-chip billease"><i class="ti ti-calendar-check"></i> BillEase</span>
                       </div>
                     </div>
                   </div>
@@ -632,8 +616,8 @@
                         Settle at the receptionist counter upon arrival for your appointment. We accept Cash, GCash QR, or Clinic POS card swipe.
                       </p>
                       <div class="choice-channels-row">
-                        <span class="pms-chip counter"><i class="fa-solid fa-money-bill-wave"></i> Cash at Counter</span>
-                        <span class="pms-chip counter"><i class="fa-solid fa-cash-register"></i> Clinic POS Terminal</span>
+                        <span class="pms-chip counter"><i class="ti ti-cash-banknote"></i> Cash at Counter</span>
+                        <span class="pms-chip counter"><i class="ti ti-cash"></i> Clinic POS Terminal</span>
                       </div>
                     </div>
                   </div>
@@ -641,8 +625,7 @@
 
                 <input type="hidden" id="wizard-payment-method" value="paymongo">
 
-                <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-top: 18px; font-size: 0.78rem; color: #64748b; display: flex; align-items: center; gap: 8px;">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-top: 18px; font-size: 0.78rem; color: #64748b; display: flex; align-items: center; gap: 8px;"><i class="ti ti-info-circle" style="font-size: 15px;"></i>
                   <span>Payments are processed in compliance with Bangko Sentral ng Pilipinas (BSP) security standards.</span>
                 </div>
               </div>
@@ -697,8 +680,7 @@
                   </div>
 
                 </div>
-                <div style="font-size: 0.82rem; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); padding: 12px 14px; border-radius: 8px; font-weight: 600;">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <div style="font-size: 0.82rem; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); padding: 12px 14px; border-radius: 8px; font-weight: 600;"><i class="ti ti-circle-check" style="font-size: 16px;"></i>
                   <span>Instant confirmation: An SMS reminder &amp; email voucher will be sent to you upon booking.</span>
                 </div>
               </div>
@@ -729,7 +711,7 @@
         <div class="stats-row" style="margin-bottom: 24px;">
           <div class="stat-card">
             <div class="stat-icon" style="background: #eff6ff; color: #3b82f6;">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <i class="ti ti-calendar" style="font-size: 22px;"></i>
             </div>
             <div class="stat-content">
               <p class="stat-label">Total Visits</p>
@@ -737,8 +719,7 @@
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <div class="stat-icon" style="background: #ecfdf5; color: #10b981;"><i class="ti ti-check" style="font-size: 22px;"></i>
             </div>
             <div class="stat-content">
               <p class="stat-label">Completed</p>
@@ -746,8 +727,7 @@
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon" style="background: #fdf4ff; color: #a855f7;">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <div class="stat-icon" style="background: #fdf4ff; color: #a855f7;"><i class="ti ti-cash" style="font-size: 22px;"></i>
             </div>
             <div class="stat-content">
               <p class="stat-label">Total Billed</p>
@@ -755,8 +735,7 @@
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon" style="background: #fff7ed; color: #f97316;">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div class="stat-icon" style="background: #fff7ed; color: #f97316;"><i class="ti ti-clock" style="font-size: 22px;"></i>
             </div>
             <div class="stat-content">
               <p class="stat-label">Upcoming</p>
@@ -771,7 +750,7 @@
             <div style="display: flex; gap: 10px; align-items: center; flex: 1; min-width: 260px;">
               <div class="search-input-wrap" style="position: relative; flex: 1; max-width: 520px;">
                 <input type="text" id="history-search-input" onkeyup="filterPatientHistory()" placeholder="Search by treatment, dentist, or branch..." style="width: 100%; height: 42px; padding: 0 14px 0 38px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.86rem; box-sizing: border-box;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <i class="ti ti-search" style="font-size: 15px; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
               </div>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
@@ -801,7 +780,7 @@
               <tbody id="records-table-body">
                 <tr>
                   <td colspan="7" class="empty-table-row">
-                    <i class="fa-solid fa-spinner fa-spin"></i> Loading treatment history...
+                    <i class="ti ti-loader-2 ti-spin"></i> Loading treatment history...
                   </td>
                 </tr>
               </tbody>
@@ -859,7 +838,7 @@
           </div>
           <div class="balance-summary">
             <button type="button" class="primary-btn" onclick="switchSection('billing')" style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              <i class="ti ti-credit-card" style="font-size: 15px;"></i>
               <span>View Invoices &amp; Pay</span>
             </button>
           </div>
@@ -897,7 +876,7 @@
           </div>
           <div id="financial-activity-list" style="padding: 16px;">
             <div class="empty-state-sm">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9"/><circle cx="12" cy="12" r="3"/></svg>
+              <i class="ti ti-activity" style="font-size: 32px;"></i>
               <p>No financial activity recorded yet.</p>
             </div>
           </div>
@@ -920,8 +899,7 @@
             <h2 class="profile-hero-name" id="profile-hero-name">Loading...</h2>
             <p class="profile-hero-email" id="profile-hero-email">—</p>
             <div class="profile-badges">
-              <span class="profile-badge verified">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="profile-badge verified"><i class="ti ti-check" style="font-size: 12px;"></i>
                 Verified
               </span>
               <span class="profile-badge patient">Patient</span>
@@ -1005,7 +983,7 @@
                 <input type="hidden" id="profile-address">
               </div>
               <button type="submit" class="primary-btn full-width">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <i class="ti ti-check" style="font-size: 16px;"></i>
                 Save Changes
               </button>
             </form>
@@ -1026,8 +1004,7 @@
             <p class="os-settings-subtitle">Manage your patient security, notifications, profile credentials, and clinic support.</p>
 
             <!-- Search Bar -->
-            <div class="os-search-wrap">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <div class="os-search-wrap"><i class="ti ti-search" style="font-size: 18px; color: #94a3b8;"></i>
               <input type="text" class="os-search-input" id="os-settings-search" placeholder="Search settings..." oninput="filterOsSettings(this.value)" onkeyup="filterOsSettings(this.value)" onchange="filterOsSettings(this.value)">
             </div>
 
@@ -1035,15 +1012,14 @@
             <div class="os-card-group" data-os-group="security">
               <!-- Security & privacy -->
               <div class="os-list-item" id="os-item-privacy" data-cat="privacy" role="button" tabindex="0" onclick="openOsSettingsCategory('privacy')" data-os-item="security privacy 2fa password authentication devices sessions">
-                <div class="os-badge os-badge-blue">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <div class="os-badge os-badge-blue"><i class="ti ti-shield" style="font-size: 22px;"></i>
                 </div>
                 <div class="os-item-content">
                   <div class="os-item-title">Security &amp; privacy</div>
                   <div class="os-item-desc">Two-factor auth, password, active sessions</div>
                 </div>
                 <div class="os-item-trailing">
-                  <span class="os-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg></span>
+                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
                 </div>
               </div>
 
@@ -1057,35 +1033,33 @@
                   <div class="os-item-desc">Emergency contacts, medical &amp; allergy alerts</div>
                 </div>
                 <div class="os-item-trailing">
-                  <span class="os-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg></span>
+                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
                 </div>
               </div>
 
               <!-- Notifications -->
               <div class="os-list-item" id="os-item-notifications" data-cat="notifications" role="button" tabindex="0" onclick="openOsSettingsCategory('notifications')" data-os-item="notifications alerts sms email viber reminders appointments">
-                <div class="os-badge os-badge-emerald">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <div class="os-badge os-badge-emerald"><i class="ti ti-bell" style="font-size: 22px;"></i>
                 </div>
                 <div class="os-item-content">
                   <div class="os-item-title">Notifications</div>
                   <div class="os-item-desc">Appointment SMS reminders, email confirmations &amp; clinic notices</div>
                 </div>
                 <div class="os-item-trailing">
-                  <span class="os-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg></span>
+                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
                 </div>
               </div>
 
               <!-- Users & accounts -->
               <div class="os-list-item" id="os-item-account" data-cat="account" role="button" tabindex="0" onclick="openOsSettingsCategory('account')" data-os-item="users accounts profile patient name email phone id">
-                <div class="os-badge os-badge-user">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <div class="os-badge os-badge-user"><i class="ti ti-user" style="font-size: 22px;"></i>
                 </div>
                 <div class="os-item-content">
                   <div class="os-item-title">Users &amp; accounts</div>
                   <div class="os-item-desc">Patient registration, credentials, login history</div>
                 </div>
                 <div class="os-item-trailing">
-                  <span class="os-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg></span>
+                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
                 </div>
               </div>
             </div>
@@ -1094,29 +1068,27 @@
             <div class="os-card-group" data-os-group="support">
               <!-- Help & feedback -->
               <div class="os-list-item" id="os-item-support" data-cat="support" role="button" tabindex="0" onclick="openOsSettingsCategory('support')" data-os-item="help feedback support hotline faqs contact bug guides">
-                <div class="os-badge os-badge-help">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <div class="os-badge os-badge-help"><i class="ti ti-help" style="font-size: 22px;"></i>
                 </div>
                 <div class="os-item-content">
                   <div class="os-item-title">Help &amp; feedback</div>
                   <div class="os-item-desc">Patient guides, FAQs, contact clinic &amp; bug reporting</div>
                 </div>
                 <div class="os-item-trailing">
-                  <span class="os-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg></span>
+                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
                 </div>
               </div>
 
               <!-- Account deactivation -->
               <div class="os-list-item" id="os-item-danger" data-cat="danger" role="button" tabindex="0" onclick="openOsSettingsCategory('danger')" data-os-item="danger deactivate delete disable account">
-                <div class="os-badge os-badge-danger">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div class="os-badge os-badge-danger"><i class="ti ti-alert-triangle" style="font-size: 22px;"></i>
                 </div>
                 <div class="os-item-content">
                   <div class="os-item-title" style="color: #dc2626;">Account deactivation</div>
                   <div class="os-item-desc">Temporarily suspend portal login access</div>
                 </div>
                 <div class="os-item-trailing">
-                  <span class="os-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg></span>
+                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
                 </div>
               </div>
             </div>
@@ -1129,8 +1101,7 @@
 
             <!-- Back Nav Bar -->
             <div class="os-detail-topbar">
-              <button type="button" class="os-back-btn" id="os-back-to-menu-btn" onclick="closeOsSettingsCategory()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              <button type="button" class="os-back-btn" id="os-back-to-menu-btn" onclick="closeOsSettingsCategory()"><i class="ti ti-chevron-left" style="font-size: 18px;"></i>
                 <span>Settings</span>
               </button>
             </div>
@@ -1161,8 +1132,7 @@
               <div class="os-detail-card">
                 <h3>Password &amp; Credentials</h3>
                 <p>Change your password periodically to keep your dental records secure.</p>
-                <button type="button" class="os-back-btn" onclick="openChangePasswordModal()" style="margin-top: 10px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <button type="button" class="os-back-btn" onclick="openChangePasswordModal()" style="margin-top: 10px;"><i class="ti ti-lock" style="font-size: 14px;"></i>
                   <span>Change Password</span>
                 </button>
               </div>
@@ -1171,12 +1141,10 @@
                 <h3>Data Export &amp; Active Sessions</h3>
                 <p>Manage your account records and connected browser sessions.</p>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;">
-                  <button type="button" class="os-back-btn" onclick="downloadPatientData()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <button type="button" class="os-back-btn" onclick="downloadPatientData()"><i class="ti ti-download" style="font-size: 14px;"></i>
                     <span>Download Records (JSON)</span>
                   </button>
-                  <button type="button" class="os-back-btn" onclick="logoutAllDevices()" style="color: #dc2626; border-color: #fca5a5;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  <button type="button" class="os-back-btn" onclick="logoutAllDevices()" style="color: #dc2626; border-color: #fca5a5;"><i class="ti ti-logout" style="font-size: 14px;"></i>
                     <span>Logout All Devices</span>
                   </button>
                 </div>
@@ -1304,8 +1272,7 @@
                   </div>
                 </div>
 
-                <button type="button" class="os-back-btn" onclick="switchSection('profile')" style="margin-top: 16px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <button type="button" class="os-back-btn" onclick="switchSection('profile')" style="margin-top: 16px;"><i class="ti ti-edit" style="font-size: 14px;"></i>
                   <span>Edit Profile Details</span>
                 </button>
               </div>
@@ -1317,7 +1284,7 @@
                 <h3>Support &amp; Assistance</h3>
                 <div class="support-actions-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px;">
                   <div class="support-item" onclick="openHelpCenterModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.15s ease;">
-                    <div class="si-icon" style="color: #f97316; font-size: 1.25rem;"><i class="fa-solid fa-book-medical"></i></div>
+                    <div class="si-icon" style="color: #f97316; font-size: 1.25rem;"><i class="ti ti-notes-medical"></i></div>
                     <div class="si-content" style="flex: 1;">
                       <div class="si-title" style="color: #0f172a; font-weight: 700; font-size: 0.95rem;">Help Center &amp; FAQs</div>
                       <div class="si-desc" style="color: #64748b; font-size: 0.82rem; margin-top: 2px;">Appointment policies, records &amp; billing guide</div>
@@ -1326,7 +1293,7 @@
                   </div>
 
                   <div class="support-item" onclick="openContactClinicPrompt()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.15s ease;">
-                    <div class="si-icon" style="color: #2563eb; font-size: 1.25rem;"><i class="fa-solid fa-phone-volume"></i></div>
+                    <div class="si-icon" style="color: #2563eb; font-size: 1.25rem;"><i class="ti ti-phone-call"></i></div>
                     <div class="si-content" style="flex: 1;">
                       <div class="si-title" style="color: #0f172a; font-weight: 700; font-size: 0.95rem;">Contact Clinic Desk</div>
                       <div class="si-desc" style="color: #64748b; font-size: 0.82rem; margin-top: 2px;">Hotline: (032) 489-1200 · +63 917 489 1200</div>
@@ -1335,7 +1302,7 @@
                   </div>
 
                   <div class="support-item" onclick="openReportIssueModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.15s ease;">
-                    <div class="si-icon" style="color: #ef4444; font-size: 1.25rem;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="si-icon" style="color: #ef4444; font-size: 1.25rem;"><i class="ti ti-alert-triangle"></i></div>
                     <div class="si-content" style="flex: 1;">
                       <div class="si-title" style="color: #0f172a; font-weight: 700; font-size: 0.95rem;">Report an Issue</div>
                       <div class="si-desc" style="color: #64748b; font-size: 0.82rem; margin-top: 2px;">Notify clinic technical support team</div>
@@ -1360,7 +1327,7 @@
             <!-- Save All Changes Button Bar -->
             <div class="os-save-bar">
               <button class="os-save-btn" id="save-settings-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <i class="ti ti-check" style="font-size: 16px;"></i>
                 <span>Save All Settings</span>
               </button>
             </div>
@@ -1457,27 +1424,23 @@
       <!-- Modal Actions Footer -->
       <div class="modal-actions-footer">
         <div class="modal-primary-actions">
-          <button type="button" class="btn-action-reschedule" id="btn-modal-reschedule" onclick="toggleReschedulePanel(true)">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+          <button type="button" class="btn-action-reschedule" id="btn-modal-reschedule" onclick="toggleReschedulePanel(true)"><i class="ti ti-calendar-time" style="font-size: 15px;"></i>
             Reschedule
           </button>
-          <button type="button" class="btn-action-cancel" id="btn-modal-cancel" onclick="executeCancelAppointment()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <button type="button" class="btn-action-cancel" id="btn-modal-cancel" onclick="executeCancelAppointment()"><i class="ti ti-x" style="font-size: 15px;"></i>
             Cancel Visit
           </button>
         </div>
 
         <div class="modal-secondary-actions">
           <button type="button" class="btn-action-util" onclick="downloadCalendarEvent()" title="Add to Google/Apple/Outlook Calendar (.ics)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <i class="ti ti-calendar" style="font-size: 14px;"></i>
             Add to Calendar
           </button>
-          <button type="button" class="btn-action-util" onclick="openBranchDirections()" title="Get Clinic Map Navigation">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+          <button type="button" class="btn-action-util" onclick="openBranchDirections()" title="Get Clinic Map Navigation"><i class="ti ti-navigation" style="font-size: 14px;"></i>
             Directions
           </button>
-          <button type="button" class="btn-action-util" onclick="printAppointmentSlip()" title="Print Appointment Voucher">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          <button type="button" class="btn-action-util" onclick="printAppointmentSlip()" title="Print Appointment Voucher"><i class="ti ti-printer" style="font-size: 14px;"></i>
             Print Slip
           </button>
         </div>
@@ -1491,7 +1454,7 @@
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
           <div class="paymongo-logo-badge">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <i class="ti ti-credit-card" style="font-size: 22px;"></i>
           </div>
           <div>
             <h3 class="modal-title" style="margin: 0; font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">Pay with PayMongo</h3>
@@ -1543,8 +1506,7 @@
         </div>
 
         <!-- Security & Compliance Info -->
-        <div class="paymongo-security-note">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div class="paymongo-security-note"><i class="ti ti-lock" style="font-size: 18px;"></i>
           <div>
             <strong>BSP-Regulated &amp; 256-bit Encrypted Checkout</strong>
             <p>You will be securely redirected to PayMongo's official Philippine payment checkout page to select your preferred channel and complete payment.</p>
@@ -1559,8 +1521,7 @@
       <div class="modal-actions-footer">
         <div class="paymongo-action-buttons">
           <button type="button" class="secondary-btn" onclick="closePaymongoModal()" style="min-width: 110px;">Cancel</button>
-          <button type="button" class="primary-btn btn-paymongo-submit" id="btn-proceed-paymongo" onclick="executePayMongoCheckout()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <button type="button" class="primary-btn btn-paymongo-submit" id="btn-proceed-paymongo" onclick="executePayMongoCheckout()"><i class="ti ti-check" style="font-size: 16px;"></i>
             <span id="btn-paymongo-text">Proceed to Checkout</span>
           </button>
         </div>
@@ -1572,8 +1533,7 @@
   <div class="modal-overlay" id="modal-payment-receipt" onclick="if(event.target === this) closeReceiptModal()">
     <div class="modal-card receipt-modal-card">
       <div class="receipt-success-banner">
-        <div class="receipt-check-circle">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        <div class="receipt-check-circle"><i class="ti ti-check" style="font-size: 32px; color: #ffffff;"></i>
         </div>
         <h3 class="receipt-title">Payment Received!</h3>
         <p class="receipt-subtitle">Thank you. Your dental appointment invoice has been successfully settled.</p>
@@ -1599,7 +1559,7 @@
           </div>
           <div class="receipt-row">
             <span class="rc-label">Status</span>
-            <span class="status-pill confirmed"><i class="fa-solid fa-check"></i> Paid</span>
+            <span class="status-pill confirmed"><i class="ti ti-check"></i> Paid</span>
           </div>
         </div>
       </div>
@@ -1607,8 +1567,7 @@
       <div class="modal-actions-footer">
         <div style="display: flex; gap: 10px; width: 100%;">
           <button type="button" class="secondary-btn" onclick="closeReceiptModal()" style="flex: 1; justify-content: center;">Close</button>
-          <button type="button" class="primary-btn" onclick="window.print()" style="flex: 1; justify-content: center;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          <button type="button" class="primary-btn" onclick="window.print()" style="flex: 1; justify-content: center;"><i class="ti ti-printer" style="font-size: 15px;"></i>
             Print Receipt
           </button>
         </div>
@@ -1619,8 +1578,7 @@
     <div class="modal-card" style="max-width: 440px;">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(37, 99, 235, 0.1); color: #2563eb; display: flex; align-items: center; justify-content: center;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(37, 99, 235, 0.1); color: #2563eb; display: flex; align-items: center; justify-content: center;"><i class="ti ti-lock" style="font-size: 18px;"></i>
           </div>
           <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 800;">Change Password</h3>
         </div>
@@ -1654,8 +1612,7 @@
     <div class="modal-card" style="max-width: 480px;">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(220, 38, 38, 0.1); color: #dc2626; display: flex; align-items: center; justify-content: center;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(220, 38, 38, 0.1); color: #dc2626; display: flex; align-items: center; justify-content: center;"><i class="ti ti-alert-triangle" style="font-size: 18px;"></i>
           </div>
           <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 800;">Report an Issue</h3>
         </div>
@@ -1692,7 +1649,7 @@
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
           <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(13, 148, 136, 0.1); color: #0d9488; display: flex; align-items: center; justify-content: center;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <i class="ti ti-help" style="font-size: 18px;"></i>
           </div>
           <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 800;">Help Center &amp; Patient FAQs</h3>
         </div>
@@ -1726,37 +1683,37 @@
   <nav class="mobile-bottom-taskbar" id="patient-bottom-taskbar" aria-label="Mobile navigation bar">
     <button type="button" class="taskbar-item active" data-section="overview" onclick="switchSection('overview')">
       <div class="taskbar-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <i class="ti ti-dashboard" style="font-size: 22px;"></i>
       </div>
       <span class="taskbar-label">Overview</span>
     </button>
     <button type="button" class="taskbar-item" data-section="appointments" onclick="switchSection('appointments')">
       <div class="taskbar-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <i class="ti ti-calendar" style="font-size: 22px;"></i>
       </div>
       <span class="taskbar-label">Book Appt</span>
     </button>
     <button type="button" class="taskbar-item" data-section="records" onclick="switchSection('records')">
       <div class="taskbar-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <i class="ti ti-file-text" style="font-size: 22px;"></i>
       </div>
       <span class="taskbar-label">Records</span>
     </button>
     <button type="button" class="taskbar-item" data-section="billing" onclick="switchSection('billing')">
       <div class="taskbar-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        <i class="ti ti-credit-card" style="font-size: 22px;"></i>
       </div>
       <span class="taskbar-label">Billing</span>
     </button>
     <button type="button" class="taskbar-item" data-section="finances" onclick="switchSection('finances')">
       <div class="taskbar-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <i class="ti ti-cash" style="font-size: 22px;"></i>
       </div>
       <span class="taskbar-label">Finances</span>
     </button>
     <button type="button" class="taskbar-item" data-section="profile" onclick="switchSection('profile')">
       <div class="taskbar-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <i class="ti ti-user" style="font-size: 22px;"></i>
       </div>
       <span class="taskbar-label">Profile</span>
     </button>

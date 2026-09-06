@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin-dashboard.css?v=20260906_mobile">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 </head>
 <body>
@@ -16,7 +17,7 @@
   <div class="mobile-topbar" id="mobile-topbar">
     <div class="mobile-topbar-left">
       <button type="button" class="mobile-hamburger-btn" id="mobile-hamburger-btn" onclick="toggleAdminMobileSidebar()" aria-label="Toggle navigation menu" title="Open Menu">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <i class="ti ti-menu-2" style="font-size: 22px;"></i>
       </button>
       <a href="../pages/landing-page.html" class="mobile-topbar-brand">
         <img src="../Resources/logo.png" alt="Fano Dental Logo" class="mobile-topbar-logo">
@@ -42,17 +43,17 @@
           <span class="sb-logo-text">Fano Dental</span>
         </a>
         <button class="sidebar-drawer-close" id="sidebar-drawer-close" onclick="toggleAdminMobileSidebar(false)" aria-label="Close drawer" title="Close Menu">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <i class="ti ti-x" style="font-size: 18px;"></i>
         </button>
         <button class="sb-collapse-btn" id="sb-collapse-btn" title="Collapse sidebar">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <i class="ti ti-chevron-left" style="font-size: 16px;"></i>
         </button>
       </div>
 
       <!-- Clinic Info Card -->
       <div class="sb-clinic-card">
         <div class="sb-clinic-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <i class="ti ti-building-hospital" style="font-size: 22px;"></i>
         </div>
         <div class="sb-clinic-info">
           <div class="sb-clinic-name">Fano Dental Clinic</div>
@@ -66,7 +67,7 @@
         <!-- Dashboard -->
         <a href="#" class="sb-nav-item nav-tab active" data-tab="overview">
           <span class="sb-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <i class="ti ti-dashboard" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Dashboard</span>
         </a>
@@ -76,28 +77,28 @@
 
         <a href="#" class="sb-nav-item nav-tab" data-tab="appointments">
           <span class="sb-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <i class="ti ti-calendar" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Appointments</span>
         </a>
 
         <a href="#" class="sb-nav-item nav-tab" data-tab="patients">
           <span class="sb-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            <i class="ti ti-users" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Patients</span>
         </a>
 
         <a href="#" class="sb-nav-item nav-tab" data-tab="history">
           <span class="sb-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <i class="ti ti-history" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Visits History</span>
         </a>
 
         <a href="#" class="sb-nav-item nav-tab" data-tab="staff">
           <span class="sb-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            <i class="ti ti-stethoscope" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Staff / Dentists</span>
         </a>
@@ -107,14 +108,14 @@
 
         <a href="#" class="sb-nav-item nav-tab" data-tab="billing">
           <span class="sb-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <i class="ti ti-credit-card" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Billing &amp; Payments</span>
         </a>
 
         <a href="#" class="sb-nav-item nav-tab" data-tab="inventory">
           <span class="sb-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            <i class="ti ti-box" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Inventory</span>
         </a>
@@ -124,21 +125,21 @@
 
         <a href="#" class="sb-nav-item nav-tab" data-tab="users">
           <span class="sb-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+            <i class="ti ti-user-cog" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Manage Users</span>
         </a>
 
         <a href="#" class="sb-nav-item nav-tab" data-tab="logs">
           <span class="sb-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <i class="ti ti-file-text" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">System Logs</span>
         </a>
 
         <a href="#" class="sb-nav-item nav-tab" data-tab="settings">
           <span class="sb-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 008 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            <i class="ti ti-settings" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Settings</span>
         </a>
@@ -155,7 +156,7 @@
           </div>
         </div>
         <button class="sb-logout-btn" onclick="logout()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <i class="ti ti-logout" style="font-size: 16px;"></i>
           <span>Log Out</span>
         </button>
       </div>
@@ -176,14 +177,14 @@
         </div>
         <div class="admin-top-bar-right">
           <div class="admin-date-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <i class="ti ti-calendar" style="font-size: 14px;"></i>
             <span id="current-date"></span>
           </div>
 
           <!-- Admin Notification Bell Center -->
           <div class="admin-notif-wrapper" id="admin-notif-wrapper" style="position: relative;">
             <button type="button" class="admin-notif-btn" id="btn-admin-notif" aria-label="Notifications" title="System & Clinic Alerts">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <i class="ti ti-bell" style="font-size: 17px;"></i>
               <span class="admin-notif-badge" id="admin-notif-count" style="display: none;">0</span>
             </button>
             <div class="admin-notif-dropdown" id="admin-notif-dropdown" hidden>
@@ -196,13 +197,13 @@
               </div>
               <div class="and-list" id="admin-notif-list">
                 <div class="and-empty">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  <i class="ti ti-bell-off" style="font-size: 28px; color: #94a3b8;"></i>
                   <p>No active alerts. System running smoothly.</p>
                 </div>
               </div>
               <div class="and-footer">
                 <button type="button" class="and-footer-action" onclick="loadAdminNotifications(true)">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  <i class="ti ti-refresh" style="font-size: 13px;"></i>
                   <span>Refresh Alerts</span>
                 </button>
               </div>
@@ -546,7 +547,7 @@
             <!-- Filter Bar for Patients -->
             <div class="filter-bar">
               <div class="search-input-wrapper" style="flex: 1;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <i class="ti ti-search" style="font-size: 16px; color: #888;"></i>
                 <input type="text" id="patient-search-input" placeholder="Search patients by name, email, or contact...">
               </div>
             </div>
@@ -627,7 +628,7 @@
             <!-- Filter Bar for Staff -->
             <div class="filter-bar">
               <div class="search-input-wrapper">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <i class="ti ti-search" style="font-size: 16px; color: #888;"></i>
                 <input type="text" id="staff-search-input" placeholder="Search staff by name or email...">
               </div>
               <div class="filter-group">
@@ -759,7 +760,7 @@
           <!-- Filter Bar for Users -->
           <div class="filter-bar" style="margin-bottom: 20px; display: flex; gap: 16px; align-items: center; justify-content: space-between;">
             <div class="search-input-wrapper" style="flex: 1; max-width: 400px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 14px; background: white;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <i class="ti ti-search" style="font-size: 16px; color: #888;"></i>
               <input type="text" id="user-search-input" placeholder="Search users by name, email, or contact..." style="border: none; outline: none; font-size: 0.9rem; width: 100%;">
             </div>
             <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
@@ -813,15 +814,15 @@
               </div>
               <div class="logs-actions-group">
                 <button type="button" id="btn-export-logs" class="btn-log-action btn-log-export" title="Export logs as .log file">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <i class="ti ti-download" style="font-size: 15px;"></i>
                   Export Logs
                 </button>
                 <button type="button" id="btn-refresh-logs" class="btn-log-action btn-log-refresh" title="Refresh logs from server">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                  <i class="ti ti-refresh" style="font-size: 15px;"></i>
                   Refresh
                 </button>
                 <button type="button" id="btn-clear-logs" class="btn-log-action btn-log-clear" title="Clear console logs">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  <i class="ti ti-trash" style="font-size: 15px;"></i>
                   Clear Console
                 </button>
               </div>
@@ -830,7 +831,7 @@
             <!-- Controls / Filter Toolbar -->
             <div class="logs-filter-toolbar">
               <div class="logs-search-wrapper">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <i class="ti ti-search" style="font-size: 16px; color: #888;"></i>
                 <input type="text" id="logs-search-input" placeholder="Search logs (e.g. AUTH, patient, database, booking)...">
               </div>
               <div class="logs-filter-selects">
@@ -894,7 +895,7 @@
             <!-- Filter Bar for History -->
             <div class="filter-bar">
               <div class="search-input-wrapper">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <i class="ti ti-search" style="font-size: 16px; color: #888;"></i>
                 <input type="text" id="history-search-input" placeholder="Search history by patient name or treatment...">
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
@@ -1163,11 +1164,11 @@
               <p style="margin: 0 0 20px 0; font-size: 0.85rem; color: #666; line-height: 1.5;">Maintenance tools to manage the backend database records, clear active bookings, and backup records.</p>
               <div style="display: flex; flex-direction: column; gap: 12px;">
                 <button id="btn-backup-roster" class="slot-btn" style="width: 100%; border-color: var(--secondary-color); color: var(--secondary-color); display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 12px; border-radius: 10px; background: white; cursor: pointer;">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <i class="ti ti-download" style="font-size: 16px;"></i>
                   Backup Records (JSON)
                 </button>
                 <button id="btn-reset-seeder" class="btn-danger-action" style="width: 100%; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 12px; border-radius: 10px; cursor: pointer; box-sizing: border-box; font-size: 0.9rem;">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9v11a2 2 0 01-2 2H6a2 2 0 01-2-2V9m16-5H4m5 0V2h6v2m-5 8v6m4-6v6"/></svg>
+                  <i class="ti ti-trash" style="font-size: 16px;"></i>
                   Reset &amp; Seed Database
                 </button>
               </div>
@@ -1261,10 +1262,7 @@
           <div class="password-wrapper">
             <input type="password" id="staff-password" required style="width: 100%; padding: 10px 40px 10px 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
             <button type="button" class="toggle-password" aria-label="Toggle password visibility">
-              <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
+              <i class="ti ti-eye eye-icon" style="font-size: 18px;"></i>
             </button>
           </div>
         </div>
@@ -1616,11 +1614,7 @@
     <div class="modal-card delete-modal-card">
       <div class="delete-modal-header">
         <div class="delete-modal-icon-badge">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
+          <i class="ti ti-alert-triangle" style="font-size: 26px;"></i>
         </div>
         <div>
           <h4 class="delete-modal-title">Confirm Deletion</h4>
@@ -1633,10 +1627,7 @@
       <div class="delete-modal-actions">
         <button type="button" id="btn-cancel-delete" class="btn-cancel-action">Cancel</button>
         <button type="button" id="btn-confirm-delete" class="btn-danger-action">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-          </svg>
+          <i class="ti ti-trash" style="font-size: 15px;"></i>
           Delete Record
         </button>
       </div>
