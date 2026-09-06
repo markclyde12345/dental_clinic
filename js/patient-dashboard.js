@@ -48,12 +48,12 @@ if (!token) {
   apiFetch('/auth/profile', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  .then(data => {
-    if (!data || data.message) { logout(); return; }
-    user = data;
-    initDashboard();
-  })
-  .catch(() => logout());
+    .then(data => {
+      if (!data || data.message) { logout(); return; }
+      user = data;
+      initDashboard();
+    })
+    .catch(() => logout());
 }
 
 // ─── Init ───────────────────────────────────────────────────
@@ -155,10 +155,10 @@ function applyLanguage(lang) {
 
 function setupSettings() {
   // 1. Notifications
-  const notifAppt    = document.getElementById('notify-appt-alerts');
+  const notifAppt = document.getElementById('notify-appt-alerts');
   const notifBilling = document.getElementById('notify-billing-alerts');
   const notifUpdates = document.getElementById('notify-clinic-updates');
-  if (notifAppt)    notifAppt.checked    = localStorage.getItem('pd-notif-appt')    !== 'false';
+  if (notifAppt) notifAppt.checked = localStorage.getItem('pd-notif-appt') !== 'false';
   if (notifBilling) notifBilling.checked = localStorage.getItem('pd-notif-billing') !== 'false';
   if (notifUpdates) notifUpdates.checked = localStorage.getItem('pd-notif-updates') !== 'false';
 
@@ -168,23 +168,23 @@ function setupSettings() {
 
   // 3. Patient Preferences
   const prefDentist = document.getElementById('pref-dentist');
-  const prefBranch  = document.getElementById('pref-branch');
+  const prefBranch = document.getElementById('pref-branch');
   const prefContact = document.getElementById('pref-contact-method');
-  const prefSched   = document.getElementById('pref-schedule');
+  const prefSched = document.getElementById('pref-schedule');
 
   if (prefDentist) prefDentist.value = localStorage.getItem('pd-pref-dentist') || 'any';
-  if (prefBranch)  prefBranch.value  = localStorage.getItem('pd-pref-branch')  || 'main-balirong';
+  if (prefBranch) prefBranch.value = localStorage.getItem('pd-pref-branch') || 'main-balirong';
   if (prefContact) prefContact.value = localStorage.getItem('pd-pref-contact') || 'sms';
-  if (prefSched)   prefSched.value   = localStorage.getItem('pd-pref-sched')   || 'morning';
+  if (prefSched) prefSched.value = localStorage.getItem('pd-pref-sched') || 'morning';
 
   // 4. Accessibility
-  const savedSize     = localStorage.getItem('pd-text-size') || 'normal';
+  const savedSize = localStorage.getItem('pd-text-size') || 'normal';
   const savedContrast = localStorage.getItem('pd-high-contrast') === 'true';
-  const savedMotion   = localStorage.getItem('pd-reduce-motion') === 'true';
+  const savedMotion = localStorage.getItem('pd-reduce-motion') === 'true';
 
   setTextSize(savedSize);
   const contrastCheck = document.getElementById('pref-high-contrast');
-  const motionCheck   = document.getElementById('pref-reduce-motion');
+  const motionCheck = document.getElementById('pref-reduce-motion');
   if (contrastCheck) {
     contrastCheck.checked = savedContrast;
     toggleHighContrast(savedContrast);
@@ -197,7 +197,7 @@ function setupSettings() {
   // 5. Save All Settings button
   document.getElementById('save-settings-btn')?.addEventListener('click', () => {
     // Save notifications
-    if (notifAppt)    localStorage.setItem('pd-notif-appt', notifAppt.checked);
+    if (notifAppt) localStorage.setItem('pd-notif-appt', notifAppt.checked);
     if (notifBilling) localStorage.setItem('pd-notif-billing', notifBilling.checked);
     if (notifUpdates) localStorage.setItem('pd-notif-updates', notifUpdates.checked);
 
@@ -206,66 +206,189 @@ function setupSettings() {
 
     // Save preferences
     if (prefDentist) localStorage.setItem('pd-pref-dentist', prefDentist.value);
-    if (prefBranch)  localStorage.setItem('pd-pref-branch',  prefBranch.value);
+    if (prefBranch) localStorage.setItem('pd-pref-branch', prefBranch.value);
     if (prefContact) localStorage.setItem('pd-pref-contact', prefContact.value);
-    if (prefSched)   localStorage.setItem('pd-pref-sched',   prefSched.value);
+    if (prefSched) localStorage.setItem('pd-pref-sched', prefSched.value);
 
     // Save accessibility
     if (contrastCheck) localStorage.setItem('pd-high-contrast', contrastCheck.checked);
-    if (motionCheck)   localStorage.setItem('pd-reduce-motion', motionCheck.checked);
+    if (motionCheck) localStorage.setItem('pd-reduce-motion', motionCheck.checked);
 
     showToast('✓ Settings saved successfully!', 'success');
   });
 
-  // 6. Initialize Active Category (default to 'account' so it toggles & shows cleanly)
-  const savedCat = localStorage.getItem('pd-settings-active-cat') || 'account';
-  filterSettingsCategory(savedCat);
+  // 6. Bind OS Settings handlers globally
+  window.openOsSettingsCategory = openOsSettingsCategory;
+  window.closeOsSettingsCategory = closeOsSettingsCategory;
+  window.filterOsSettings = filterOsSettings;
 }
 
-// ─── Settings Category Filtering & Toggling ──────────────────
-function filterSettingsCategory(cat) {
-  const activePill = document.querySelector('.settings-nav-pill.active');
-  const currentActive = activePill?.getAttribute('data-cat');
+// ─── Settings Categories Metadata ────────────────────────────
+const OS_SETTINGS_META = {
+  privacy: {
+    title: 'Security & privacy',
+    desc: 'Protect your patient credentials, two-factor authentication, and active sessions.',
+    badgeClass: 'os-badge-blue',
+    iconHtml: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+  },
+  safety: {
+    title: 'Safety & emergency',
+    desc: 'Emergency contact information, medical precautions, and allergy alerts.',
+    badgeClass: 'os-badge-red',
+    iconHtml: '<span style="font-weight:900; font-size: 13px; letter-spacing: -0.5px; text-transform: lowercase;">sos</span>'
+  },
+  notifications: {
+    title: 'Notifications',
+    desc: 'Appointment SMS reminders, email confirmations, and clinic advisories.',
+    badgeClass: 'os-badge-emerald',
+    iconHtml: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+  },
+  account: {
+    title: 'Users & accounts',
+    desc: 'Official patient registration, identity details, and login history.',
+    badgeClass: 'os-badge-user',
+    iconHtml: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+  },
+  support: {
+    title: 'Help & feedback',
+    desc: 'Patient guides, FAQs, direct clinic telephone desk, and issue reporting.',
+    badgeClass: 'os-badge-help',
+    iconHtml: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>'
+  },
+  danger: {
+    title: 'Account deactivation',
+    desc: 'Temporarily suspend portal credentials while preserving medical records.',
+    badgeClass: 'os-badge-danger',
+    iconHtml: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+  }
+};
 
-  // If user clicks the currently active pill (and it's not 'all'), toggle to 'all'
-  const targetCat = (currentActive === cat && cat !== 'all') ? 'all' : cat;
+function openOsSettingsCategory(catId) {
+  const menuEl = document.getElementById('os-settings-menu');
+  const detailEl = document.getElementById('os-settings-detail');
+  if (!menuEl || !detailEl) return;
 
-  // Update pill buttons
-  document.querySelectorAll('.settings-nav-pill').forEach(pill => {
-    const pillCat = pill.getAttribute('data-cat') || (pill.getAttribute('onclick')?.includes(`'${targetCat}'`) ? targetCat : '');
-    const isSelected = pillCat === targetCat;
-    pill.classList.toggle('active', isSelected);
-  });
+  const meta = OS_SETTINGS_META[catId] || OS_SETTINGS_META.privacy;
 
-  // Toggle card visibility
-  const cards = document.querySelectorAll('#settings-section .settings-card[data-settings-category]');
-  cards.forEach(card => {
-    const cardCat = card.getAttribute('data-settings-category');
-    if (targetCat === 'all' || cardCat === targetCat) {
-      card.classList.remove('settings-card-hidden');
-      if (targetCat !== 'all') {
-        card.classList.add('single-view');
-      } else {
-        card.classList.remove('single-view');
-      }
-    } else {
-      card.classList.add('settings-card-hidden');
-      card.classList.remove('single-view');
-    }
-  });
+  // Set Title & Desc & Icon
+  const titleEl = document.getElementById('os-detail-head-title');
+  const descEl = document.getElementById('os-detail-head-desc');
+  const badgeEl = document.getElementById('os-detail-head-badge');
 
-  // Danger zone card: show under 'account' or 'all'
-  const dangerCard = document.querySelector('.danger-zone-card');
-  if (dangerCard) {
-    if (targetCat === 'all' || targetCat === 'account') {
-      dangerCard.classList.remove('settings-card-hidden');
-    } else {
-      dangerCard.classList.add('settings-card-hidden');
-    }
+  if (titleEl) titleEl.textContent = meta.title;
+  if (descEl) descEl.textContent = meta.desc;
+  if (badgeEl) {
+    badgeEl.className = 'os-badge ' + meta.badgeClass;
+    badgeEl.innerHTML = meta.iconHtml;
   }
 
-  // Persist choice
-  localStorage.setItem('pd-settings-active-cat', targetCat);
+  // Activate matching sub-panel
+  document.querySelectorAll('.os-sub-panel').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  const targetSub = document.getElementById(`os-sub-${catId}`);
+  if (targetSub) {
+    targetSub.classList.add('active');
+    targetSub.style.display = 'block';
+  }
+
+  // Toggle views
+  menuEl.style.display = 'none';
+  detailEl.style.display = 'block';
+  detailEl.classList.add('active');
+
+  // Scroll smoothly to top of settings section
+  document.getElementById('settings-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeOsSettingsCategory() {
+  const menuEl = document.getElementById('os-settings-menu');
+  const detailEl = document.getElementById('os-settings-detail');
+  if (!menuEl || !detailEl) return;
+
+  detailEl.classList.remove('active');
+  detailEl.style.display = 'none';
+  menuEl.style.display = 'block';
+  document.getElementById('settings-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function filterOsSettings(query) {
+  const q = (query || '').trim().toLowerCase();
+  const items = document.querySelectorAll('.os-list-item');
+  const groups = document.querySelectorAll('.os-card-group');
+
+  if (!q) {
+    items.forEach(el => { el.style.display = 'flex'; });
+    groups.forEach(g => { g.style.display = 'block'; });
+    return;
+  }
+
+  items.forEach(el => {
+    const hay = ((el.getAttribute('data-os-item') || '') + ' ' + (el.textContent || '')).toLowerCase();
+    const match = hay.includes(q);
+    el.style.display = match ? 'flex' : 'none';
+  });
+
+  // Hide empty groups
+  groups.forEach(g => {
+    const itemsInGroup = Array.from(g.querySelectorAll('.os-list-item'));
+    const anyVisible = itemsInGroup.some(item => item.style.display !== 'none');
+    g.style.display = anyVisible ? 'block' : 'none';
+  });
+}
+
+// Immediately expose functions globally
+window.openOsSettingsCategory = openOsSettingsCategory;
+window.closeOsSettingsCategory = closeOsSettingsCategory;
+window.filterOsSettings = filterOsSettings;
+
+function setupOsSettingsDelegation() {
+  const menu = document.getElementById('os-settings-menu');
+  if (!menu || menu._hasOsDelegation) return;
+  menu._hasOsDelegation = true;
+
+  const searchInput = document.getElementById('os-settings-search');
+  if (searchInput) {
+    const handleSearch = () => filterOsSettings(searchInput.value);
+    searchInput.addEventListener('input', handleSearch);
+    searchInput.addEventListener('keyup', handleSearch);
+    searchInput.addEventListener('search', handleSearch);
+    searchInput.addEventListener('change', handleSearch);
+  }
+
+  menu.addEventListener('click', (e) => {
+    const item = e.target.closest('.os-list-item');
+    if (item) {
+      const cat = item.getAttribute('data-cat');
+      if (cat) openOsSettingsCategory(cat);
+    }
+  });
+
+  menu.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const item = e.target.closest('.os-list-item');
+      if (item) {
+        e.preventDefault();
+        const cat = item.getAttribute('data-cat');
+        if (cat) openOsSettingsCategory(cat);
+      }
+    }
+  });
+}
+
+// Bind delegation on DOM ready or immediately if ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupOsSettingsDelegation);
+} else {
+  setupOsSettingsDelegation();
+}
+
+function filterSettingsCategory(cat) {
+  // Legacy fallback support for older buttons
+  if (window.openOsSettingsCategory) {
+    window.openOsSettingsCategory(cat === 'account' ? 'account' : cat);
+  }
 }
 
 // ─── Clipboard Helper ────────────────────────────────────────
@@ -445,7 +568,7 @@ function renderUserInfo() {
 
   // Generate a display patient ID from user id
   const shortId = user.id ? user.id.slice(0, 8).toUpperCase() : '0000';
-  safeSet('patient-id-tag', `PT-${new Date().getFullYear()}-${shortId.slice(0,4)}`);
+  safeSet('patient-id-tag', `PT-${new Date().getFullYear()}-${shortId.slice(0, 4)}`);
 
   // Member since
   if (user.created_at || user.createdAt) {
@@ -470,7 +593,209 @@ function renderUserInfo() {
   safeVal('profile-last-name', user.lastName || '');
   safeVal('profile-email', user.email || '');
   safeVal('profile-phone', user.contactNumber || '');
-  safeVal('profile-address', user.address || '');
+  prefillAddressFields(user.address || '');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ADDRESS SELECTOR — Cebu Province
+// ═══════════════════════════════════════════════════════════════
+
+const CEBU_ADDRESS_DATA = {
+  'Cebu City': [
+    'Adlaon','Agsungot','Apas','Bacayan','Banilad','Basak Pardo','Basak San Nicolas',
+    'Binaliw','Bonbon','Budlaan','Busay','Calamba','Cambinocot','Capitol Site','Carreta',
+    'Central Poblacion','Cogon Pardo','Cogon Ramos','Cubacub','Dalag','Guadalupe',
+    'Guba','Inayawan','Kalubihan','Kalunasan','Kamagayan','Kasambagan','Kinasang-an',
+    'Labangon','Lahug','Lorega','Lusaran','Luz','Mabini','Mabolo','Malubog','Mambaling',
+    'Non-stock','Pardo','Pari-an','Paril','Pasil','Pit-os','Pulangbato','Pung-ol-Sibugay',
+    'Punta Princesa','Quiot Pardo','Sambag I','Sambag II','San Antonio','San Jose',
+    'San Nicolas Central','San Roque','Santa Cruz','Santo Niño','Sapangdaku','Sawang Calero',
+    'Sinsin','Sirao','Suba Poblacion','Sudlon I','Sudlon II','T. Padilla','Tabunan',
+    'Tagbao','Taptap','Talamban','Tejero','Tinago','Tisa','To-ong Pardo','Upper Bulacao',
+    'Cambinocot','Zapatera'
+  ],
+  'Mandaue City': [
+    'Alang-Alang','Bakilid','Banilad','Basak','Cambaro','Canduman','Casili','Casuntingan',
+    'Centro (Pob.)','Cubacub','Guizo','Ibabao-Estancia','Jagobiao','Labogon','Looc',
+    'Maguikay','Mahiga','Mantuyong','Opao','Pagsabungan','Pakna-an','Subangdaku',
+    'Tabok','Tawason','Tingub','Tipolo','Umapad'
+  ],
+  'Lapu-Lapu City': [
+    'Agus','Babag','Bankal','Baring','Basak','Buaya','Calawisan','Canjulao','Caubian',
+    'Caw-oy','Cokoy','Cordova (Pob.)','Gun-ob','Ibo','Looc','Mactan','Marigondon',
+    'Pajac','Pajo','Pangan-an','Poblacion','Punta Engaño','Pusok','Subabasbas','Talima',
+    'Tingo','Tungasan'
+  ],
+  'Talisay City': [
+    'Biasong','Bulacao','Cadulawan','Cansojong','Dumlog','Jaclupan','Lagtang','Linao',
+    'Maghaway','Manipis','Mohon','Ngabo','Poblacion','Pooc','San Isidro','San Roque',
+    'Sapang','Tabunok','Tangke','Tapul'
+  ],
+  'Danao City': [
+    'Baliang','Binaliw','Cabungahan','Cagat-Lamac','Cahumayan','Cambanay','Cambubho',
+    'Cogon-Cruz','Danasan','Dungga','Dunggoan','Guinacot','Guinsay','Ibo','Langosig',
+    'Lawaan','Licos','Looc','Magtagobtob','Mahayahay','Mandaug','Manlagtang','Masaba',
+    'Pili','Poblacion','Pondol','Pugaro','Regression','San Vicente','Sandayong Norte',
+    'Sandayong Sur','Santa Rosa','Santican','Sibacan','Suba','Taboc','Tabil','Talavera',
+    'Tinubdan','Tominjao'
+  ],
+  'Carcar City': [
+    'Bolinawan','Boljoon (Pob.)','Bosdak','Calidngan','Can-asujan','Guadalupe',
+    'Liburon','Napo','Ocaña','Perrelos','Poblacion I','Poblacion II','Poblacion III',
+    'Tuyom','Valencia','Valladolid'
+  ],
+  'Toledo City': [
+    'Awihao','Bagakay','Balamban (Pob.)','Bato','Biga','Bulongan','Bunga','Cabitoonan',
+    'Calongcalong','Cambang-ug','Camp 8','Canlumampao','Cantabaco','Capitan Lorenzo',
+    'Caraon','Celestial','Cogon','Colon','Don Andres Soriano','Dumlog','Gairan',
+    'Ibo (Luray 2)','Ilihan','Ilihan Norte','Iyosan','Jaclupan','Kalubihan','Luray',
+    'Luray II','Media Once','Mina de Oro','Mulat','Pagina','Poblacion','Poog','Putingbato',
+    'Sagay','Sam-ang','Santo Niño','Subabasbas','Taberna','Talavera','Tinaan','Tuburan',
+    'Tungkay'
+  ],
+  'Bogo City': [
+    'Anapog-Mohon','Astorga','Atop-atop','Bacsay','Cagcagan','Cayang','Cogon','Dakit',
+    'Don Pedro Rodriguez','Gairan','Guadalupe','La Paz','Lapaz','Libertad','Lourdes',
+    'Malingin','Marangog','Nailon','Odlot','Pandan Cain','Pangdan','Poblacion Norte',
+    'Poblacion Sur','Punta','Putlongon','Sudlonon','Tapilon','Tigbawan','Trip',
+    'Tuong Buhingtubig','Villa Kanghog','Villa Pagoda','Vito'
+  ],
+  'City of Naga': [
+    'Alfaco','Bairan','Balirong','Cabungahan','Cantao-an','Central Poblacion','Colon',
+    'East Poblacion','Inayagan','Inoburan','Jaguimit','Lanas','Langtad','Lutac',
+    'Mainit','Mambaling','Pangdan','Patag','South Poblacion','Tinaan','Tuyan',
+    'Uling','West Poblacion'
+  ],
+  'Minglanilla': [
+    'Calajo-an','Camp 7','Camp 8','Cuanos','Guindaruhan','Jugan','Linao','Lipata',
+    'Luyong Baybay','Pakigne','Poblacion Ward I','Poblacion Ward II','Poblacion Ward III',
+    'Poblacion Ward IV','Tubod','Tulay','Tungkop','Vito'
+  ],
+  'San Fernando': [
+    'Balud','Balungag','Basak','Bugho','Cabatbatan','Greenhills','Ilaya','Lantawan',
+    'Liburon','Looc','Lubog','Managase','Manipis','Olango','Paril','Pitogo','Poblacion Norte',
+    'Poblacion Sur','Pungtod','Salmeron','Sambagon','Sangat','Tabionan','Tananas',
+    'Tinubdan','Tonggo','Tubod'
+  ],
+  'Consolacion': [
+    'Cabangahan','Cansaga','Casili','Danglag','Garing','Jugan','Lamac','Lanipga',
+    'Nangka','Panas','Panoypoy','Pitogo','Poblacion Occidental','Poblacion Oriental',
+    'Pulpogan','Sacsac','Tayud','Tilhaong','Tolotolo','Tugbongan'
+  ],
+  'Liloan': [
+    'Catarman','Cotcot','Jubay','Lataban','Mulao','Poblacion','San Roque','San Vicente',
+    'Santa Cruz','Santo Domingo','Scientia','Tayud','Yati'
+  ],
+  'Compostela': [
+    'Bagalnga','Basak','Buluang','Cabadiangan','Cambayog','Canamucan','Cogon',
+    'Dapdap','Estaca','Lupa','Magay','Mulao','Panangban','Poblacion','Tag-iyasan',
+    'Tamiao','Tubigan'
+  ],
+  'Cordova': [
+    'Alegria','Cogon','Dapa','Gabi','Ibabao','Pilipog','Poblacion','San Miguel'
+  ],
+  'Cebu (Province)': [],
+  'Other / Outside Cebu': []
+};
+
+// Populate city dropdown on page load
+(function initAddressSelectors() {
+  const citySelect = document.getElementById('profile-city');
+  const barangaySelect = document.getElementById('profile-barangay');
+  if (!citySelect || !barangaySelect) return;
+
+  // Fill city options
+  Object.keys(CEBU_ADDRESS_DATA).forEach(city => {
+    if (city === 'Cebu (Province)' || city === 'Other / Outside Cebu') return;
+    const opt = document.createElement('option');
+    opt.value = city;
+    opt.textContent = city;
+    citySelect.appendChild(opt);
+  });
+
+  // Cascade: when city changes, reload barangay list
+  citySelect.addEventListener('change', () => {
+    populateBarangays(citySelect.value);
+  });
+})();
+
+function populateBarangays(city) {
+  const barangaySelect = document.getElementById('profile-barangay');
+  if (!barangaySelect) return;
+  barangaySelect.innerHTML = '<option value="">— Select Barangay —</option>';
+  const list = CEBU_ADDRESS_DATA[city] || [];
+  list.forEach(brgy => {
+    const opt = document.createElement('option');
+    opt.value = brgy;
+    opt.textContent = brgy;
+    barangaySelect.appendChild(opt);
+  });
+  barangaySelect.disabled = list.length === 0;
+}
+
+/** Compose full address string from dropdowns and write to hidden field */
+function composeAddress() {
+  const city    = document.getElementById('profile-city')?.value || '';
+  const brgy    = document.getElementById('profile-barangay')?.value || '';
+  const street  = document.getElementById('profile-street')?.value.trim() || '';
+  const parts   = [street, brgy, city, 'Cebu'].filter(Boolean);
+  const full    = parts.join(', ');
+  const hidden  = document.getElementById('profile-address');
+  if (hidden) hidden.value = full;
+  return full;
+}
+
+/** Pre-fill address dropdowns from a saved address string */
+function prefillAddressFields(savedAddress) {
+  if (!savedAddress) return;
+  const citySelect = document.getElementById('profile-city');
+  const brgySelect = document.getElementById('profile-barangay');
+  const streetInput = document.getElementById('profile-street');
+  const hiddenField = document.getElementById('profile-address');
+  if (!citySelect) return;
+
+  // Match city from saved address (look for known cities)
+  let matchedCity = '';
+  const cities = Object.keys(CEBU_ADDRESS_DATA).filter(c => c !== 'Cebu (Province)' && c !== 'Other / Outside Cebu');
+  for (const city of cities) {
+    if (savedAddress.toLowerCase().includes(city.toLowerCase())) {
+      matchedCity = city;
+      break;
+    }
+  }
+
+  if (matchedCity) {
+    citySelect.value = matchedCity;
+    populateBarangays(matchedCity);
+
+    // Match barangay
+    const brgyList = CEBU_ADDRESS_DATA[matchedCity] || [];
+    let matchedBrgy = '';
+    for (const brgy of brgyList) {
+      if (savedAddress.toLowerCase().includes(brgy.toLowerCase())) {
+        matchedBrgy = brgy;
+        break;
+      }
+    }
+    if (matchedBrgy && brgySelect) {
+      brgySelect.value = matchedBrgy;
+    }
+
+    // Remaining parts become street
+    if (streetInput) {
+      // Remove matched city, brgy, "Cebu" from string and use the remainder as street
+      let remainder = savedAddress
+        .replace(matchedCity, '')
+        .replace(matchedBrgy, '')
+        .replace(/,?\s*Cebu\s*$/i, '')
+        .replace(/^,\s*|,\s*$/g, '')
+        .trim();
+      streetInput.value = remainder;
+    }
+  }
+
+  // Always set hidden field to saved address
+  if (hiddenField) hiddenField.value = savedAddress;
 }
 
 // ─── Load Appointments ───────────────────────────────────────
@@ -478,17 +803,17 @@ function loadAppointments() {
   apiFetch('/appointments', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  .then(data => {
-    if (!Array.isArray(data)) return;
-    allAppointments = data;
-    renderAppointmentStats();
-    renderUpcomingPreview();
-    renderOverviewHistoryPreview();
-    renderAppointmentsFullList();
-    renderPatientHistoryRecords();
-    updateHistoryStats();
-  })
-  .catch(err => console.error('Appointments error:', err));
+    .then(data => {
+      if (!Array.isArray(data)) return;
+      allAppointments = data;
+      renderAppointmentStats();
+      renderUpcomingPreview();
+      renderOverviewHistoryPreview();
+      renderAppointmentsFullList();
+      renderPatientHistoryRecords();
+      updateHistoryStats();
+    })
+    .catch(err => console.error('Appointments error:', err));
 }
 
 function renderAppointmentStats() {
@@ -626,7 +951,7 @@ function updateHistoryStats() {
   const total = allAppointments.length;
   const completed = allAppointments.filter(a => a.status === 'Completed').length;
   const upcoming = allAppointments.filter(a => a.status !== 'Cancelled' && new Date(a.appointment_date || a.dateTime) > new Date()).length;
-  
+
   let totalValue = 0;
   allAppointments.forEach(a => {
     if (a.status !== 'Cancelled') {
@@ -688,7 +1013,7 @@ function renderPatientHistoryRecords(list = null) {
     return;
   }
 
-  const sorted = [...dataset].sort((a, b) => 
+  const sorted = [...dataset].sort((a, b) =>
     new Date(b.appointment_date || b.dateTime) - new Date(a.appointment_date || a.dateTime)
   );
 
@@ -826,18 +1151,18 @@ function loadInvoices() {
   apiFetch('/invoices', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  .then(data => {
-    if (!Array.isArray(data)) return;
-    allInvoices = data;
-    renderInvoiceStats();
-    renderFinancialWidgets();
-    renderFinancialActivity();
-    renderInvoicesPreview();
-    renderInvoicesTable();
-    renderPatientHistoryRecords();
-    checkDelinquentBookingLock();
-  })
-  .catch(err => console.error('Invoices error:', err));
+    .then(data => {
+      if (!Array.isArray(data)) return;
+      allInvoices = data;
+      renderInvoiceStats();
+      renderFinancialWidgets();
+      renderFinancialActivity();
+      renderInvoicesPreview();
+      renderInvoicesTable();
+      renderPatientHistoryRecords();
+      checkDelinquentBookingLock();
+    })
+    .catch(err => console.error('Invoices error:', err));
 }
 
 function renderInvoiceStats() {
@@ -929,12 +1254,12 @@ function renderFinancialWidgets() {
   const pendingInvoices = allInvoices.filter(inv => inv.status === 'Unpaid' || !inv.is_paid);
   const pendingAmount = pendingInvoices.reduce((sum, inv) => sum + parseFloat(inv.amount || inv.total_amount || 0), 0);
 
-  const insuranceClaims = allInvoices.filter(inv => 
+  const insuranceClaims = allInvoices.filter(inv =>
     inv.insurance_provider && inv.insurance_provider !== 'None / Self-Pay'
   ).length;
 
   // Calculate trends
-  const billedTrend = lastMonthInvoices.length > 0 
+  const billedTrend = lastMonthInvoices.length > 0
     ? ((thisMonthInvoices.length - lastMonthInvoices.length) / lastMonthInvoices.length * 100).toFixed(1)
     : 0;
   const paidTrend = paidLastMonth > 0
@@ -1041,9 +1366,9 @@ function renderInvoicesPreview() {
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="inv-amount">₱${amount}</span>
-          ${isPaid 
-            ? `<span class="status-pill confirmed">Paid</span>` 
-            : `<button class="btn-paymongo-mini" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, Card)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Pay</button>`}
+          ${isPaid
+        ? `<span class="status-pill confirmed">Paid</span>`
+        : `<button class="btn-paymongo-mini" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, Card)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Pay</button>`}
         </div>
       </div>`;
   }).join('');
@@ -1160,45 +1485,45 @@ function executePayMongoCheckout() {
       cancel_url: `${currentPageUrl}?payment=cancelled&invoice_id=${activePaymentInvoice.id}`
     })
   })
-  .then(data => {
-    if (data.mode === 'live' && data.checkout_url) {
-      // Live PayMongo Checkout Session
-      showToast('Redirecting to PayMongo secure payment page...', 'success');
-      closePaymongoModal();
-      window.location.href = data.checkout_url;
-    } else {
-      // Sandbox mode simulation
-      showToast('PayMongo Gateway connected! Confirming payment...', 'success');
-      return apiFetch('/payments/paymongo/verify', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          invoice_id: activePaymentInvoice.id,
-          checkout_id: data.checkout_id || 'sandbox_test'
-        })
-      });
-    }
-  })
-  .then(res => {
-    if (res && res.success) {
-      showToast('Payment verified successfully!', 'success');
-      const paidInvId = activePaymentInvoice.id;
-      closePaymongoModal();
-      loadInvoices();
-      viewInvoiceReceipt(paidInvId);
-    }
-  })
-  .catch(err => {
-    console.error('[PayMongo Checkout Error]', err);
-    showToast(err.message || 'Error communicating with PayMongo gateway.', 'error');
-  })
-  .finally(() => {
-    if (btn) btn.disabled = false;
-    if (btnText) btnText.textContent = originalText;
-  });
+    .then(data => {
+      if (data.mode === 'live' && data.checkout_url) {
+        // Live PayMongo Checkout Session
+        showToast('Redirecting to PayMongo secure payment page...', 'success');
+        closePaymongoModal();
+        window.location.href = data.checkout_url;
+      } else {
+        // Sandbox mode simulation
+        showToast('PayMongo Gateway connected! Confirming payment...', 'success');
+        return apiFetch('/payments/paymongo/verify', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            invoice_id: activePaymentInvoice.id,
+            checkout_id: data.checkout_id || 'sandbox_test'
+          })
+        });
+      }
+    })
+    .then(res => {
+      if (res && res.success) {
+        showToast('Payment verified successfully!', 'success');
+        const paidInvId = activePaymentInvoice.id;
+        closePaymongoModal();
+        loadInvoices();
+        viewInvoiceReceipt(paidInvId);
+      }
+    })
+    .catch(err => {
+      console.error('[PayMongo Checkout Error]', err);
+      showToast(err.message || 'Error communicating with PayMongo gateway.', 'error');
+    })
+    .finally(() => {
+      if (btn) btn.disabled = false;
+      if (btnText) btnText.textContent = originalText;
+    });
 }
 
 function viewInvoiceReceipt(invoiceId) {
@@ -1207,7 +1532,7 @@ function viewInvoiceReceipt(invoiceId) {
 
   const amount = parseFloat(inv.amount || inv.total_amount || 0).toFixed(2);
   const refId = inv.id.slice(0, 8).toUpperCase();
-  const dateStr = inv.paid_at 
+  const dateStr = inv.paid_at
     ? new Date(inv.paid_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
@@ -1243,11 +1568,11 @@ function checkPaymentReturnStatus() {
       },
       body: JSON.stringify({ invoice_id: invoiceId })
     })
-    .then(res => {
-      loadInvoices();
-      viewInvoiceReceipt(invoiceId);
-    })
-    .catch(err => console.error('[Return Verification Error]', err));
+      .then(res => {
+        loadInvoices();
+        viewInvoiceReceipt(invoiceId);
+      })
+      .catch(err => console.error('[Return Verification Error]', err));
 
     // Clear URL query parameters cleanly
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -1262,11 +1587,11 @@ function loadTreatments() {
   apiFetch('/treatments', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  .then(treatments => {
-    const grid = document.getElementById('services-picker-grid');
-    if (!grid) return;
-    if (Array.isArray(treatments) && treatments.length > 0) {
-      grid.innerHTML = treatments.map(t => `
+    .then(treatments => {
+      const grid = document.getElementById('services-picker-grid');
+      if (!grid) return;
+      if (Array.isArray(treatments) && treatments.length > 0) {
+        grid.innerHTML = treatments.map(t => `
         <div class="service-card" data-id="${t.id}" data-name="${escapeHTML(t.name)}" data-price="${parseFloat(t.price || 0).toFixed(2)}">
           <div class="service-title">${escapeHTML(t.name)}</div>
           <div class="service-price">₱${parseFloat(t.price || 0).toFixed(2)}</div>
@@ -1274,20 +1599,20 @@ function loadTreatments() {
         </div>
       `).join('');
 
-      // Attach selection listeners
-      grid.querySelectorAll('.service-card').forEach(card => {
-        card.addEventListener('click', () => {
-          grid.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-          card.classList.add('selected');
-          document.getElementById('wizard-treatment-id').value = card.getAttribute('data-id');
-          document.getElementById('summary-service').textContent = `${card.getAttribute('data-name')} (₱${card.getAttribute('data-price')})`;
+        // Attach selection listeners
+        grid.querySelectorAll('.service-card').forEach(card => {
+          card.addEventListener('click', () => {
+            grid.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('wizard-treatment-id').value = card.getAttribute('data-id');
+            document.getElementById('summary-service').textContent = `${card.getAttribute('data-name')} (₱${card.getAttribute('data-price')})`;
+          });
         });
-      });
-    } else {
-      grid.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">No services available</div>';
-    }
-  })
-  .catch(err => console.error('Treatments error:', err));
+      } else {
+        grid.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">No services available</div>';
+      }
+    })
+    .catch(err => console.error('Treatments error:', err));
 }
 
 // ─── Booking Wizard Logic ────────────────────────────────────
@@ -1829,41 +2154,41 @@ function loadDentists() {
   fetch(`${API}/dentists`, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  .then(res => res.json())
-  .then(dentists => {
-    const grid = document.getElementById('dentists-picker-grid');
-    if (!grid) return;
+    .then(res => res.json())
+    .then(dentists => {
+      const grid = document.getElementById('dentists-picker-grid');
+      if (!grid) return;
 
-    // Add No Preference card
-    let html = `
+      // Add No Preference card
+      let html = `
       <div class="dentist-card selected" data-name="No Preference">
         <div class="dentist-name">No Preference</div>
         <div class="dentist-specialty">Auto-assigned to available staff</div>
       </div>
     `;
 
-    if (Array.isArray(dentists) && dentists.length > 0) {
-      html += dentists.map(d => `
+      if (Array.isArray(dentists) && dentists.length > 0) {
+        html += dentists.map(d => `
         <div class="dentist-card" data-name="${escapeHTML(d.name)}">
           <div class="dentist-name">${escapeHTML(d.name)}</div>
           <div class="dentist-specialty">Dental Specialist</div>
           <div style="font-size: 0.72rem; color: #888; margin-top: 4px;">Contact: ${escapeHTML(d.contact_number || 'N/A')}</div>
         </div>
       `).join('');
-    }
+      }
 
-    grid.innerHTML = html;
+      grid.innerHTML = html;
 
-    // Attach listeners
-    grid.querySelectorAll('.dentist-card').forEach(card => {
-      card.addEventListener('click', () => {
-        grid.querySelectorAll('.dentist-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        document.getElementById('wizard-dentist-name').value = card.getAttribute('data-name');
+      // Attach listeners
+      grid.querySelectorAll('.dentist-card').forEach(card => {
+        card.addEventListener('click', () => {
+          grid.querySelectorAll('.dentist-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          document.getElementById('wizard-dentist-name').value = card.getAttribute('data-name');
+        });
       });
-    });
-  })
-  .catch(err => console.error('Dentists list error:', err));
+    })
+    .catch(err => console.error('Dentists list error:', err));
 }
 
 function checkAvailableSlots() {
@@ -1900,131 +2225,131 @@ function checkAvailableSlots() {
   apiFetch(`/appointments/occupied?date=${dateVal}`, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  .then(occupiedList => {
-    const occupiedTimes = new Set();
+    .then(occupiedList => {
+      const occupiedTimes = new Set();
 
-    if (Array.isArray(occupiedList)) {
-      occupiedList.forEach(appt => {
-        // 1. Direct match from server-provided date & time
-        if (appt.date === dateVal && appt.time) {
-          occupiedTimes.add(appt.time.toUpperCase().trim());
-        }
-
-        // 2. Parse raw wall-clock time string (e.g. "2026-09-05T09:00:00...")
-        const raw = appt.appointment_date;
-        if (raw && raw.includes('T')) {
-          const [rawD, rawT] = raw.split('T');
-          if (rawD === dateVal && rawT) {
-            const [hStr, mStr] = rawT.substring(0, 5).split(':');
-            const h = parseInt(hStr, 10);
-            const m = parseInt(mStr, 10) || 0;
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            const h12 = h % 12 || 12;
-            const time12 = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
-            occupiedTimes.add(time12.toUpperCase().trim());
+      if (Array.isArray(occupiedList)) {
+        occupiedList.forEach(appt => {
+          // 1. Direct match from server-provided date & time
+          if (appt.date === dateVal && appt.time) {
+            occupiedTimes.add(appt.time.toUpperCase().trim());
           }
-        }
 
-        // 3. Date object parsing for UTC timestamps
-        const apptDateObj = new Date(raw || appt.dateTime);
-        if (!isNaN(apptDateObj.getTime())) {
-          const year = apptDateObj.getFullYear();
-          const month = String(apptDateObj.getMonth() + 1).padStart(2, '0');
-          const day = String(apptDateObj.getDate()).padStart(2, '0');
-          const localDateStr = `${year}-${month}-${day}`;
-
-          if (localDateStr === dateVal) {
-            const formattedTime = apptDateObj.toLocaleTimeString('en-US', {
-              hour: '2-digit', minute: '2-digit', hour12: true
-            });
-            occupiedTimes.add(formattedTime.toUpperCase().trim());
+          // 2. Parse raw wall-clock time string (e.g. "2026-09-05T09:00:00...")
+          const raw = appt.appointment_date;
+          if (raw && raw.includes('T')) {
+            const [rawD, rawT] = raw.split('T');
+            if (rawD === dateVal && rawT) {
+              const [hStr, mStr] = rawT.substring(0, 5).split(':');
+              const h = parseInt(hStr, 10);
+              const m = parseInt(mStr, 10) || 0;
+              const ampm = h >= 12 ? 'PM' : 'AM';
+              const h12 = h % 12 || 12;
+              const time12 = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+              occupiedTimes.add(time12.toUpperCase().trim());
+            }
           }
-        }
-      });
-    }
 
-    // Only update slots that are actually occupied — available ones already rendered
-    slotButtons.forEach(btn => {
-      const time = btn.getAttribute('data-time');
-      const normTime = time ? time.trim().toUpperCase() : '';
-      const noZeroTime = normTime.startsWith('0') ? normTime.substring(1) : ('0' + normTime);
+          // 3. Date object parsing for UTC timestamps
+          const apptDateObj = new Date(raw || appt.dateTime);
+          if (!isNaN(apptDateObj.getTime())) {
+            const year = apptDateObj.getFullYear();
+            const month = String(apptDateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(apptDateObj.getDate()).padStart(2, '0');
+            const localDateStr = `${year}-${month}-${day}`;
 
-      const isOccupied = occupiedTimes.has(normTime) || occupiedTimes.has(noZeroTime);
+            if (localDateStr === dateVal) {
+              const formattedTime = apptDateObj.toLocaleTimeString('en-US', {
+                hour: '2-digit', minute: '2-digit', hour12: true
+              });
+              occupiedTimes.add(formattedTime.toUpperCase().trim());
+            }
+          }
+        });
+      }
 
-      if (isOccupied) {
-        btn.classList.add('occupied');
-        btn.classList.remove('selected');
-        btn.disabled = true;
-        btn.title = 'This time slot is already booked and unavailable';
-        btn.innerHTML = `
+      // Only update slots that are actually occupied — available ones already rendered
+      slotButtons.forEach(btn => {
+        const time = btn.getAttribute('data-time');
+        const normTime = time ? time.trim().toUpperCase() : '';
+        const noZeroTime = normTime.startsWith('0') ? normTime.substring(1) : ('0' + normTime);
+
+        const isOccupied = occupiedTimes.has(normTime) || occupiedTimes.has(noZeroTime);
+
+        if (isOccupied) {
+          btn.classList.add('occupied');
+          btn.classList.remove('selected');
+          btn.disabled = true;
+          btn.title = 'This time slot is already booked and unavailable';
+          btn.innerHTML = `
           <span>${time}</span>
           <span class="slot-badge-occupied">Unavailable</span>
         `;
-      } else {
-        btn.classList.remove('occupied');
-        btn.disabled = false;
-        btn.title = 'Click to select this time slot';
-        btn.innerHTML = `
+        } else {
+          btn.classList.remove('occupied');
+          btn.disabled = false;
+          btn.title = 'Click to select this time slot';
+          btn.innerHTML = `
           <span>${time}</span>
           <span class="slot-badge-available">Available</span>
         `;
-      }
-    });
-  })
-  .catch(err => {
-    console.error('Error fetching occupied slots:', err);
-    // Fallback: check cached allAppointments
-    slotButtons.forEach(btn => {
-      const time = btn.getAttribute('data-time');
-      const normTime = time ? time.trim().toUpperCase() : '';
-      const noZeroTime = normTime.startsWith('0') ? normTime.substring(1) : ('0' + normTime);
-      let isOccupied = false;
-
-      (allAppointments || []).forEach(appt => {
-        if (appt.status === 'Cancelled') return;
-        const raw = appt.appointment_date || appt.dateTime;
-        if (!raw) return;
-
-        // Raw string match
-        if (raw.includes('T')) {
-          const [rawD, rawT] = raw.split('T');
-          if (rawD === dateVal && rawT) {
-            const [hStr, mStr] = rawT.substring(0, 5).split(':');
-            const h = parseInt(hStr, 10);
-            const m = parseInt(mStr, 10) || 0;
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            const h12 = h % 12 || 12;
-            const time12 = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`.toUpperCase();
-            if (time12 === normTime || time12 === noZeroTime) isOccupied = true;
-          }
-        }
-
-        // Date object match
-        const apptDate = new Date(raw);
-        if (!isNaN(apptDate.getTime())) {
-          const y = apptDate.getFullYear();
-          const mo = String(apptDate.getMonth() + 1).padStart(2, '0');
-          const dy = String(apptDate.getDate()).padStart(2, '0');
-          if (`${y}-${mo}-${dy}` === dateVal) {
-            const apptTimeFormatted = apptDate.toLocaleTimeString('en-US', {
-              hour: '2-digit', minute: '2-digit', hour12: true
-            }).toUpperCase();
-            if (apptTimeFormatted === normTime || apptTimeFormatted === noZeroTime) isOccupied = true;
-          }
         }
       });
+    })
+    .catch(err => {
+      console.error('Error fetching occupied slots:', err);
+      // Fallback: check cached allAppointments
+      slotButtons.forEach(btn => {
+        const time = btn.getAttribute('data-time');
+        const normTime = time ? time.trim().toUpperCase() : '';
+        const noZeroTime = normTime.startsWith('0') ? normTime.substring(1) : ('0' + normTime);
+        let isOccupied = false;
 
-      if (isOccupied) {
-        btn.classList.add('occupied');
-        btn.classList.remove('selected');
-        btn.disabled = true;
-        btn.innerHTML = `
+        (allAppointments || []).forEach(appt => {
+          if (appt.status === 'Cancelled') return;
+          const raw = appt.appointment_date || appt.dateTime;
+          if (!raw) return;
+
+          // Raw string match
+          if (raw.includes('T')) {
+            const [rawD, rawT] = raw.split('T');
+            if (rawD === dateVal && rawT) {
+              const [hStr, mStr] = rawT.substring(0, 5).split(':');
+              const h = parseInt(hStr, 10);
+              const m = parseInt(mStr, 10) || 0;
+              const ampm = h >= 12 ? 'PM' : 'AM';
+              const h12 = h % 12 || 12;
+              const time12 = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`.toUpperCase();
+              if (time12 === normTime || time12 === noZeroTime) isOccupied = true;
+            }
+          }
+
+          // Date object match
+          const apptDate = new Date(raw);
+          if (!isNaN(apptDate.getTime())) {
+            const y = apptDate.getFullYear();
+            const mo = String(apptDate.getMonth() + 1).padStart(2, '0');
+            const dy = String(apptDate.getDate()).padStart(2, '0');
+            if (`${y}-${mo}-${dy}` === dateVal) {
+              const apptTimeFormatted = apptDate.toLocaleTimeString('en-US', {
+                hour: '2-digit', minute: '2-digit', hour12: true
+              }).toUpperCase();
+              if (apptTimeFormatted === normTime || apptTimeFormatted === noZeroTime) isOccupied = true;
+            }
+          }
+        });
+
+        if (isOccupied) {
+          btn.classList.add('occupied');
+          btn.classList.remove('selected');
+          btn.disabled = true;
+          btn.innerHTML = `
           <span>${time}</span>
           <span class="slot-badge-occupied">Unavailable</span>
         `;
-      }
+        }
+      });
     });
-  });
 }
 
 function renderConfirmationDetails() {
@@ -2136,49 +2461,49 @@ function submitBooking() {
       payment_method: paymentMethod
     })
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.message && !data.id) throw new Error(data.message);
-    
-    // Reset wizard
-    currentStep = 1;
-    selectedTime = '';
-    document.getElementById('booking-wizard-form').reset();
-    document.getElementById('wizard-treatment-id').value = '';
-    document.getElementById('wizard-dentist-name').value = 'No Preference';
-    document.getElementById('wizard-time').value = '';
-    document.getElementById('wizard-payment-method').value = 'paymongo';
-    
-    // Unselect grids & checkboxes
-    document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-    document.querySelectorAll('.dentist-card').forEach(c => c.classList.remove('selected'));
-    document.querySelectorAll('.payment-choice-card').forEach(c => c.classList.toggle('selected', c.getAttribute('data-method') === 'paymongo'));
-    document.querySelectorAll('.slot-btn').forEach(c => {
-      c.classList.remove('selected');
-      c.disabled = false;
+    .then(res => res.json())
+    .then(data => {
+      if (data.message && !data.id) throw new Error(data.message);
+
+      // Reset wizard
+      currentStep = 1;
+      selectedTime = '';
+      document.getElementById('booking-wizard-form').reset();
+      document.getElementById('wizard-treatment-id').value = '';
+      document.getElementById('wizard-dentist-name').value = 'No Preference';
+      document.getElementById('wizard-time').value = '';
+      document.getElementById('wizard-payment-method').value = 'paymongo';
+
+      // Unselect grids & checkboxes
+      document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.dentist-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.payment-choice-card').forEach(c => c.classList.toggle('selected', c.getAttribute('data-method') === 'paymongo'));
+      document.querySelectorAll('.slot-btn').forEach(c => {
+        c.classList.remove('selected');
+        c.disabled = false;
+      });
+
+      goToStep(1);
+      loadAppointments();
+      loadInvoices(); // CRITICAL: Updates unpaid balance and pending payments immediately!
+
+      if (paymentMethod === 'paymongo' && data.invoice && data.invoice.id) {
+        showToast('Appointment booked! Opening PayMongo Checkout...', 'success');
+        setTimeout(() => {
+          openPaymongoModal(data.invoice.id);
+        }, 700);
+      } else {
+        showToast('Appointment booked successfully! Settle payment upon arrival at clinic.', 'success');
+        setTimeout(() => switchSection('overview'), 1200);
+      }
+    })
+    .catch(err => {
+      showToast(err.message || 'Failed to book appointment.', 'error');
+    })
+    .finally(() => {
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = 'Confirm & Book Appointment';
     });
-
-    goToStep(1);
-    loadAppointments();
-    loadInvoices(); // CRITICAL: Updates unpaid balance and pending payments immediately!
-
-    if (paymentMethod === 'paymongo' && data.invoice && data.invoice.id) {
-      showToast('Appointment booked! Opening PayMongo Checkout...', 'success');
-      setTimeout(() => {
-        openPaymongoModal(data.invoice.id);
-      }, 700);
-    } else {
-      showToast('Appointment booked successfully! Settle payment upon arrival at clinic.', 'success');
-      setTimeout(() => switchSection('overview'), 1200);
-    }
-  })
-  .catch(err => {
-    showToast(err.message || 'Failed to book appointment.', 'error');
-  })
-  .finally(() => {
-    btnSubmit.disabled = false;
-    btnSubmit.textContent = 'Confirm & Book Appointment';
-  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2303,12 +2628,12 @@ function toggleReschedulePanel(show) {
   if (show && selectedAppointment) {
     const dateInput = document.getElementById('reschedule-date-input');
     const timeSelect = document.getElementById('reschedule-time-select');
-    
+
     // Set minimum date to tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
-    
+
     if (dateInput) {
       dateInput.min = tomorrowStr;
       dateInput.value = tomorrowStr;
@@ -2357,26 +2682,26 @@ function executeReschedule() {
       appointment_date: isoDateTime
     })
   })
-  .then(res => {
-    if (!res.ok) {
-      return res.json().then(err => { throw new Error(err.message || 'Failed to reschedule.'); });
-    }
-    return res.json();
-  })
-  .then(updated => {
-    showToast('✓ Appointment rescheduled successfully!', 'success');
-    closeAppointmentModal();
-    loadAppointments();
-  })
-  .catch(err => {
-    showToast(err.message || 'Could not reschedule appointment. Slot may be occupied.', 'error');
-  })
-  .finally(() => {
-    if (btnConfirm) {
-      btnConfirm.disabled = false;
-      btnConfirm.textContent = 'Save New Schedule';
-    }
-  });
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(err => { throw new Error(err.message || 'Failed to reschedule.'); });
+      }
+      return res.json();
+    })
+    .then(updated => {
+      showToast('✓ Appointment rescheduled successfully!', 'success');
+      closeAppointmentModal();
+      loadAppointments();
+    })
+    .catch(err => {
+      showToast(err.message || 'Could not reschedule appointment. Slot may be occupied.', 'error');
+    })
+    .finally(() => {
+      if (btnConfirm) {
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = 'Save New Schedule';
+      }
+    });
 }
 
 function executeCancelAppointment() {
@@ -2405,24 +2730,24 @@ function executeCancelAppointment() {
       status: 'Cancelled'
     })
   })
-  .then(res => {
-    if (!res.ok) throw new Error('Failed to cancel appointment.');
-    return res.json();
-  })
-  .then(() => {
-    showToast('Appointment has been cancelled.', 'info');
-    closeAppointmentModal();
-    loadAppointments();
-  })
-  .catch(err => {
-    showToast(err.message || 'Failed to cancel appointment.', 'error');
-  })
-  .finally(() => {
-    if (btnCancel) {
-      btnCancel.disabled = false;
-      btnCancel.textContent = 'Cancel Visit';
-    }
-  });
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to cancel appointment.');
+      return res.json();
+    })
+    .then(() => {
+      showToast('Appointment has been cancelled.', 'info');
+      closeAppointmentModal();
+      loadAppointments();
+    })
+    .catch(err => {
+      showToast(err.message || 'Failed to cancel appointment.', 'error');
+    })
+    .finally(() => {
+      if (btnCancel) {
+        btnCancel.disabled = false;
+        btnCancel.textContent = 'Cancel Visit';
+      }
+    });
 }
 
 function downloadCalendarEvent() {
@@ -2569,21 +2894,23 @@ document.querySelectorAll('input[name="med_condition"]').forEach(cb => {
 function escapeHTML(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 // ─── Profile Form ────────────────────────────────────────────
 document.getElementById('profile-form')?.addEventListener('submit', (e) => {
   e.preventDefault();
+  // Compose full address from selector parts
+  composeAddress();
   showToast('Profile updated successfully!', 'success');
 });
 
 // ─── Sidebar Toggle ──────────────────────────────────────────
-const sidebar  = document.getElementById('sidebar');
-const overlay  = document.getElementById('sidebar-overlay');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebar-overlay');
 
 function openSidebar() {
   sidebar?.classList.add('open');
@@ -2626,13 +2953,13 @@ function switchSection(sectionId) {
 
   // Breadcrumb
   const labels = {
-    overview:     'Overview',
+    overview: 'Overview',
     appointments: 'Book Appointment',
-    records:      'My Records',
-    billing:      'Billing & Invoices',
-    finances:     'Financial Summary',
-    profile:      'My Profile',
-    settings:     'Settings'
+    records: 'My Records',
+    billing: 'Billing & Invoices',
+    finances: 'Financial Summary',
+    profile: 'My Profile',
+    settings: 'Settings'
   };
   safeSet('breadcrumb-current', labels[sectionId] || 'Dashboard');
 
@@ -2671,9 +2998,9 @@ function showToast(message, type = 'success') {
   toast.innerHTML = `
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       ${type === 'success'
-        ? '<polyline points="20 6 9 17 4 12"/>'
-        : (type === 'info' ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
-          : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>')}
+      ? '<polyline points="20 6 9 17 4 12"/>'
+      : (type === 'info' ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
+        : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>')}
     </svg>
     ${message}`;
 
@@ -2752,7 +3079,7 @@ function saveReadNotificationId(id) {
     const readSet = getReadNotificationIds();
     readSet.add(id);
     localStorage.setItem(key, JSON.stringify([...readSet]));
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function loadPatientNotifications(isManual = false) {
@@ -2763,42 +3090,42 @@ function loadPatientNotifications(isManual = false) {
   apiFetch('/notifications', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  .then(notifs => {
-    if (!Array.isArray(notifs)) return;
-    allPatientNotifications = notifs;
-    const readSet = getReadNotificationIds();
-    const unreadCount = notifs.filter(n => !readSet.has(n.id)).length;
+    .then(notifs => {
+      if (!Array.isArray(notifs)) return;
+      allPatientNotifications = notifs;
+      const readSet = getReadNotificationIds();
+      const unreadCount = notifs.filter(n => !readSet.has(n.id)).length;
 
-    // Update badge & header
-    if (badge) {
-      if (unreadCount > 0) {
-        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
-        badge.style.display = 'inline-flex';
-      } else {
-        badge.style.display = 'none';
+      // Update badge & header
+      if (badge) {
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+          badge.style.display = 'inline-flex';
+        } else {
+          badge.style.display = 'none';
+        }
       }
-    }
 
-    if (unreadLabel) {
-      unreadLabel.textContent = `${unreadCount} New`;
-    }
+      if (unreadLabel) {
+        unreadLabel.textContent = `${unreadCount} New`;
+      }
 
-    // Render list
-    if (list) {
-      if (notifs.length === 0) {
-        list.innerHTML = `
+      // Render list
+      if (list) {
+        if (notifs.length === 0) {
+          list.innerHTML = `
           <div class="pnd-empty">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             <p>You have no notifications right now.</p>
           </div>
         `;
-      } else {
-        list.innerHTML = notifs.map(n => {
-          const isUnread = !readSet.has(n.id);
-          const timeStr = formatNotificationTime(n.time);
-          const iconSvg = getNotificationIconSvg(n.icon, n.type);
+        } else {
+          list.innerHTML = notifs.map(n => {
+            const isUnread = !readSet.has(n.id);
+            const timeStr = formatNotificationTime(n.time);
+            const iconSvg = getNotificationIconSvg(n.icon, n.type);
 
-          return `
+            return `
             <div class="pnd-item ${isUnread ? 'unread' : ''}" onclick="onPatientNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.id || ''}', '${n.action?.tab || ''}')">
               <div class="pnd-icon-wrap type-${n.type || 'info'}">
                 ${iconSvg}
@@ -2810,17 +3137,17 @@ function loadPatientNotifications(isManual = false) {
               </div>
             </div>
           `;
-        }).join('');
+          }).join('');
+        }
       }
-    }
 
-    if (isManual) {
-      showToast('Notifications refreshed', 'success');
-    }
-  })
-  .catch(err => {
-    console.error('Failed to load notifications:', err);
-  });
+      if (isManual) {
+        showToast('Notifications refreshed', 'success');
+      }
+    })
+    .catch(err => {
+      console.error('Failed to load notifications:', err);
+    });
 }
 
 function onPatientNotificationClick(notifId, actionType, actionTarget, actionTab) {
@@ -2854,7 +3181,7 @@ function markAllPatientNotificationsRead() {
     localStorage.setItem(key, JSON.stringify(allIds));
     loadPatientNotifications();
     showToast('All notifications marked as read', 'success');
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function formatNotificationTime(isoStr) {
