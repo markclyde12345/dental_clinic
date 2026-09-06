@@ -164,21 +164,18 @@ function setupSettings() {
 
   // 2. Privacy & 2FA
   const tfaCheck = document.getElementById('enable-2fa');
-  if (tfaCheck) {
-    tfaCheck.checked = localStorage.getItem('pd-2fa') === 'true';
-    updateSecurityHealthScore();
-  }
+  if (tfaCheck) tfaCheck.checked = localStorage.getItem('pd-2fa') === 'true';
 
   // 3. Patient Preferences
   const prefDentist = document.getElementById('pref-dentist');
   const prefBranch  = document.getElementById('pref-branch');
-  const savedContact = localStorage.getItem('pd-pref-contact') || 'sms';
-  const savedSched   = localStorage.getItem('pd-pref-sched')   || 'morning';
+  const prefContact = document.getElementById('pref-contact-method');
+  const prefSched   = document.getElementById('pref-schedule');
 
   if (prefDentist) prefDentist.value = localStorage.getItem('pd-pref-dentist') || 'any';
   if (prefBranch)  prefBranch.value  = localStorage.getItem('pd-pref-branch')  || 'main-balirong';
-  selectContactMethodPill(savedContact);
-  selectSchedulePill(savedSched);
+  if (prefContact) prefContact.value = localStorage.getItem('pd-pref-contact') || 'sms';
+  if (prefSched)   prefSched.value   = localStorage.getItem('pd-pref-sched')   || 'morning';
 
   // 4. Accessibility
   const savedSize     = localStorage.getItem('pd-text-size') || 'normal';
@@ -210,18 +207,65 @@ function setupSettings() {
     // Save preferences
     if (prefDentist) localStorage.setItem('pd-pref-dentist', prefDentist.value);
     if (prefBranch)  localStorage.setItem('pd-pref-branch',  prefBranch.value);
-
-    const contactVal = document.getElementById('pref-contact-method')?.value || 'sms';
-    const schedVal   = document.getElementById('pref-schedule')?.value || 'morning';
-    localStorage.setItem('pd-pref-contact', contactVal);
-    localStorage.setItem('pd-pref-sched',   schedVal);
+    if (prefContact) localStorage.setItem('pd-pref-contact', prefContact.value);
+    if (prefSched)   localStorage.setItem('pd-pref-sched',   prefSched.value);
 
     // Save accessibility
     if (contrastCheck) localStorage.setItem('pd-high-contrast', contrastCheck.checked);
     if (motionCheck)   localStorage.setItem('pd-reduce-motion', motionCheck.checked);
 
-    showToast('✓ All settings saved successfully!', 'success');
+    showToast('✓ Settings saved successfully!', 'success');
   });
+
+  // 6. Initialize Active Category (default to 'account' so it toggles & shows cleanly)
+  const savedCat = localStorage.getItem('pd-settings-active-cat') || 'account';
+  filterSettingsCategory(savedCat);
+}
+
+// ─── Settings Category Filtering & Toggling ──────────────────
+function filterSettingsCategory(cat) {
+  const activePill = document.querySelector('.settings-nav-pill.active');
+  const currentActive = activePill?.getAttribute('data-cat');
+
+  // If user clicks the currently active pill (and it's not 'all'), toggle to 'all'
+  const targetCat = (currentActive === cat && cat !== 'all') ? 'all' : cat;
+
+  // Update pill buttons
+  document.querySelectorAll('.settings-nav-pill').forEach(pill => {
+    const pillCat = pill.getAttribute('data-cat') || (pill.getAttribute('onclick')?.includes(`'${targetCat}'`) ? targetCat : '');
+    const isSelected = pillCat === targetCat;
+    pill.classList.toggle('active', isSelected);
+  });
+
+  // Toggle card visibility
+  const cards = document.querySelectorAll('#settings-section .settings-card[data-settings-category]');
+  cards.forEach(card => {
+    const cardCat = card.getAttribute('data-settings-category');
+    if (targetCat === 'all' || cardCat === targetCat) {
+      card.classList.remove('settings-card-hidden');
+      if (targetCat !== 'all') {
+        card.classList.add('single-view');
+      } else {
+        card.classList.remove('single-view');
+      }
+    } else {
+      card.classList.add('settings-card-hidden');
+      card.classList.remove('single-view');
+    }
+  });
+
+  // Danger zone card: show under 'account' or 'all'
+  const dangerCard = document.querySelector('.danger-zone-card');
+  if (dangerCard) {
+    if (targetCat === 'all' || targetCat === 'account') {
+      dangerCard.classList.remove('settings-card-hidden');
+    } else {
+      dangerCard.classList.add('settings-card-hidden');
+    }
+  }
+
+  // Persist choice
+  localStorage.setItem('pd-settings-active-cat', targetCat);
 }
 
 // ─── Clipboard Helper ────────────────────────────────────────
@@ -253,71 +297,17 @@ function fallbackCopy(text, label) {
   }
 }
 
-// ─── Preference Pill Selectors ───────────────────────────────
-function selectContactMethodPill(val) {
-  const hiddenInput = document.getElementById('pref-contact-method');
-  if (hiddenInput) hiddenInput.value = val;
-
-  const container = document.getElementById('contact-method-pills');
-  if (container) {
-    container.querySelectorAll('.visual-pill').forEach(pill => {
-      pill.classList.toggle('active', pill.getAttribute('data-val') === val);
-    });
-  }
-  localStorage.setItem('pd-pref-contact', val);
-}
-
-function selectSchedulePill(val) {
-  const hiddenInput = document.getElementById('pref-schedule');
-  if (hiddenInput) hiddenInput.value = val;
-
-  const container = document.getElementById('schedule-pills');
-  if (container) {
-    container.querySelectorAll('.visual-pill').forEach(pill => {
-      pill.classList.toggle('active', pill.getAttribute('data-val') === val);
-    });
-  }
-  localStorage.setItem('pd-pref-sched', val);
-}
-
-// ─── Security Health Score Meter ─────────────────────────────
-function updateSecurityHealthScore() {
-  const tfa = document.getElementById('enable-2fa');
-  const bar = document.getElementById('security-health-bar');
-  const badge = document.getElementById('security-health-badge');
-  const is2fa = tfa ? tfa.checked : false;
-
-  if (bar) {
-    bar.style.width = is2fa ? '100%' : '85%';
-  }
-  if (badge) {
-    badge.textContent = is2fa ? '100% · MAXIMUM' : '85% · STRONG';
-    badge.style.background = is2fa ? 'rgba(16,185,129,0.18)' : 'rgba(37,99,235,0.12)';
-    badge.style.color = is2fa ? '#059669' : '#2563eb';
-    badge.style.borderColor = is2fa ? 'rgba(16,185,129,0.3)' : 'rgba(37,99,235,0.25)';
-  }
-}
-
 // ─── Accessibility Controls ──────────────────────────────────
 function setTextSize(size) {
   document.querySelectorAll('.btn-size-pill').forEach(b => b.classList.remove('active'));
   document.getElementById(`btn-size-${size}`)?.classList.add('active');
 
-  const previewText = document.getElementById('accessibility-preview-text');
-  const sizeBadge = document.getElementById('current-size-badge');
-
   if (size === 'medium') {
     document.documentElement.style.fontSize = '16px';
-    if (previewText) previewText.style.fontSize = '1.15rem';
-    if (sizeBadge) sizeBadge.textContent = '115% Scale';
   } else if (size === 'large') {
     document.documentElement.style.fontSize = '17.5px';
-    if (previewText) previewText.style.fontSize = '1.3rem';
-    if (sizeBadge) sizeBadge.textContent = '130% Scale';
   } else {
     document.documentElement.style.fontSize = '';
-    if (previewText) previewText.style.fontSize = '1rem';
-    if (sizeBadge) sizeBadge.textContent = '100% Scale';
   }
   localStorage.setItem('pd-text-size', size);
 }
