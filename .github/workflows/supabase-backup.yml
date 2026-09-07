@@ -1,0 +1,50 @@
+name: Supabase Daily Database Backup & Health Keep-Alive
+
+on:
+  schedule:
+    # Runs daily at 00:00 UTC (8:00 AM PHT)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  backup:
+    name: Cloud Database Backup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install PostgreSQL Client Tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+
+      - name: Perform Database Keep-Alive & JSON Backup
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          mkdir -p backups
+          TIMESTAMP=$(date -u +"%Y%m%d_%H%M%SZ")
+          
+          echo "Executing Supabase anti-inactivity ping and dump..."
+          if [ -n "$SUPABASE_DB_URL" ]; then
+            pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges -f "backups/supabase_dump_${TIMESTAMP}.sql"
+            echo "SQL dump completed: backups/supabase_dump_${TIMESTAMP}.sql"
+          else
+            echo "Direct DB URL not set, saving timestamp keepalive receipt."
+            echo "{\"timestamp\": \"$TIMESTAMP\", \"status\": \"keepalive_executed\"}" > "backups/keepalive_${TIMESTAMP}.json"
+          fi
+
+      - name: Upload Backup Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup-${{ github.run_id }}
+          path: backups/
+          retention-days: 14

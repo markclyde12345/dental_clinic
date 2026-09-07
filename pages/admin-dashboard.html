@@ -1158,20 +1158,89 @@
           </div>
 
           <!-- SECTION 5: Database & Backup Roster -->
+          <!-- SECTION 5: Database & Backup Roster -->
           <div id="settings-sec-utilities" class="settings-sec-pane" style="display: none;">
-            <div style="max-width: 600px; background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-              <h3 style="margin: 0 0 16px 0; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.15rem; font-weight: 700;">Database Utilities</h3>
-              <p style="margin: 0 0 20px 0; font-size: 0.85rem; color: #666; line-height: 1.5;">Maintenance tools to manage the backend database records, clear active bookings, and backup records.</p>
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                <button id="btn-backup-roster" class="slot-btn" style="width: 100%; border-color: var(--secondary-color); color: var(--secondary-color); display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 12px; border-radius: 10px; background: white; cursor: pointer;">
-                  <i class="ti ti-download" style="font-size: 16px;"></i>
-                  Backup Records (JSON)
-                </button>
-                <button id="btn-reset-seeder" class="btn-danger-action" style="width: 100%; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 12px; border-radius: 10px; cursor: pointer; box-sizing: border-box; font-size: 0.9rem;">
-                  <i class="ti ti-trash" style="font-size: 16px;"></i>
-                  Reset &amp; Seed Database
-                </button>
+            <div style="display: flex; flex-direction: column; gap: 24px; max-width: 800px;">
+              
+              <!-- Database Health & Storage Card -->
+              <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                  <div>
+                    <h3 style="margin: 0; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.15rem; font-weight: 700;">Database Resilience &amp; Storage Health</h3>
+                    <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #666;">Live Supabase PostgreSQL metrics, anti-inactivity keep-alive monitor, and automated backups.</p>
+                  </div>
+                  <button type="button" id="btn-refresh-db-status" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: #f8fafc; color: var(--dark-color); font-weight: 600; font-size: 0.8rem; cursor: pointer;">
+                    <i class="ti ti-refresh" style="font-size: 14px;"></i> Refresh Status
+                  </button>
+                </div>
+
+                <!-- Status Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
+                  <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 14px;">
+                    <div style="font-size: 0.75rem; color: #166534; font-weight: 700; text-transform: uppercase;">Connection Status</div>
+                    <div id="db-health-status" style="font-size: 1.05rem; font-weight: 700; color: #15803d; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></span>
+                      Connected (PostgreSQL)
+                    </div>
+                    <div id="db-latency" style="font-size: 0.8rem; color: #4ade80; margin-top: 2px;">Latency: -- ms</div>
+                  </div>
+
+                  <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 14px;">
+                    <div style="font-size: 0.75rem; color: #1e40af; font-weight: 700; text-transform: uppercase;">Anti-Inactivity Keep-Alive</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #1d4ed8; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                      <i class="ti ti-activity-heartbeat" style="font-size: 16px;"></i> Active (48h Interval)
+                    </div>
+                    <div style="font-size: 0.8rem; color: #60a5fa; margin-top: 2px;">Prevents 7-day Supabase pause</div>
+                  </div>
+
+                  <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 12px; padding: 14px;">
+                    <div style="font-size: 0.75rem; color: #854d0e; font-weight: 700; text-transform: uppercase;">Latest Automated Backup</div>
+                    <div id="db-backup-time" style="font-size: 0.95rem; font-weight: 700; color: #a16207; margin-top: 4px;">Loading...</div>
+                    <div id="db-backup-size" style="font-size: 0.8rem; color: #ca8a04; margin-top: 2px;">Retention: 14 days</div>
+                  </div>
+                </div>
+
+                <!-- Table Volumes -->
+                <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
+                  <div style="font-size: 0.85rem; font-weight: 600; color: var(--dark-color); margin-bottom: 10px;">Cloud Database Table Volume:</div>
+                  <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; text-align: center;">
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+                      <div style="font-size: 0.75rem; color: #64748b;">Users</div>
+                      <div id="db-count-users" style="font-size: 1.2rem; font-weight: 700; color: var(--dark-color);">0</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+                      <div style="font-size: 0.75rem; color: #64748b;">Appointments</div>
+                      <div id="db-count-appts" style="font-size: 1.2rem; font-weight: 700; color: var(--dark-color);">0</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+                      <div style="font-size: 0.75rem; color: #64748b;">Invoices</div>
+                      <div id="db-count-invoices" style="font-size: 1.2rem; font-weight: 700; color: var(--dark-color);">0</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+                      <div style="font-size: 0.75rem; color: #64748b;">Payments</div>
+                      <div id="db-count-payments" style="font-size: 1.2rem; font-weight: 700; color: var(--dark-color);">0</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+                      <div style="font-size: 0.75rem; color: #64748b;">Audit Logs</div>
+                      <div id="db-count-audits" style="font-size: 1.2rem; font-weight: 700; color: var(--dark-color);">0</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Backup Actions -->
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                  <button type="button" id="btn-trigger-backup-now" style="flex: 1; border: none; background: var(--secondary-color); color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 12px 18px; border-radius: 10px; cursor: pointer; font-size: 0.9rem;">
+                    <i class="ti ti-cloud-upload" style="font-size: 16px;"></i> Run Server Backup Now
+                  </button>
+                  <button type="button" id="btn-backup-roster" style="flex: 1; border: 1px solid var(--secondary-color); color: var(--secondary-color); display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 12px 18px; border-radius: 10px; background: white; cursor: pointer; font-size: 0.9rem;">
+                    <i class="ti ti-download" style="font-size: 16px;"></i> Download Local JSON
+                  </button>
+                  <button type="button" id="btn-reset-seeder" style="border: 1px solid #fca5a5; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 12px 18px; border-radius: 10px; cursor: pointer; font-size: 0.9rem;">
+                    <i class="ti ti-trash" style="font-size: 16px;"></i> Reset &amp; Seed DB
+                  </button>
+                </div>
               </div>
+
             </div>
           </div>
 
@@ -1639,5 +1708,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="../js/admin-dashboard.js?v=20260906_mobile"></script>
+  <script src="../js/offline-monitor.js"></script>
 </body>
 </html>

@@ -119,6 +119,14 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           window.location.href = `verify.html?email=${encodeURIComponent(data.email)}&channel=email&flow=signup`;
         }, 1500);
+      } else if (status === 429) {
+        showError(data.message || 'Account is temporarily locked due to repeated failed login attempts.');
+        btn.textContent = 'Account Locked';
+        btn.disabled    = true;
+        setTimeout(() => {
+          btn.textContent = 'Log In';
+          btn.disabled    = false;
+        }, 10000);
       } else {
         showError(data.message || 'Invalid email or password.');
         btn.textContent = 'Log In';
@@ -131,6 +139,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const signupForm = document.getElementById('signup-form');
 
   if (signupForm) {
+    // Real-time password requirement checklist
+    const passInput = document.getElementById('signup-password');
+    if (passInput) {
+      passInput.addEventListener('input', () => {
+        const val = passInput.value;
+        const setRule = (id, passes) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const dot = el.querySelector('.rule-dot');
+          if (passes) {
+            el.style.color = '#166534';
+            el.style.fontWeight = '600';
+            if (dot) dot.textContent = '●';
+          } else {
+            el.style.color = '#64748b';
+            el.style.fontWeight = 'normal';
+            if (dot) dot.textContent = '○';
+          }
+        };
+        setRule('rule-len', val.length >= 8);
+        setRule('rule-upper', /[A-Z]/.test(val));
+        setRule('rule-lower', /[a-z]/.test(val));
+        setRule('rule-num', /\d/.test(val));
+        setRule('rule-spec', /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(val));
+      });
+    }
+
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -162,8 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      if (password.length < 8) {
-        showError('Password must be at least 8 characters.');
+      // Strict password policy validation
+      const strongPwd = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+      if (!strongPwd.test(password)) {
+        showError('Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.');
         return;
       }
 

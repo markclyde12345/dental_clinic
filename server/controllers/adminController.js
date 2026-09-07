@@ -740,6 +740,59 @@ const clearSystemLogs = async (req, res) => {
   }
 };
 
+// ─── Database Health & Backup Controllers ─────────────────────────────────────
+const { performDatabaseBackup, getLatestBackupInfo } = require('../utils/backupService');
+
+// @desc    Get database health status, table counts, latency & latest backup info
+// @route   GET /api/admin/database-status
+// @access  Private (Admin)
+const getDatabaseStatus = async (req, res) => {
+  try {
+    const startTime = Date.now();
+    const { count: userCount, error: userErr } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true });
+    const latencyMs = Date.now() - startTime;
+
+    const { count: apptCount } = await supabase.from('appointments').select('*', { count: 'exact', head: true });
+    const { count: invoiceCount } = await supabase.from('invoices').select('*', { count: 'exact', head: true });
+    const { count: paymentCount } = await supabase.from('payments').select('*', { count: 'exact', head: true });
+    const { count: auditCount } = await supabase.from('audit_logs').select('*', { count: 'exact', head: true });
+
+    const latestBackup = getLatestBackupInfo();
+
+    res.json({
+      status: userErr ? 'degraded' : 'healthy',
+      latencyMs,
+      tableCounts: {
+        users: userCount || 0,
+        appointments: apptCount || 0,
+        invoices: invoiceCount || 0,
+        payments: paymentCount || 0,
+        audit_logs: auditCount || 0
+      },
+      latestBackup,
+      keepAliveIntervalHours: 48,
+      lastKeepAlive: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
+
+// @desc    Trigger an immediate on-demand database backup
+// @route   POST /api/admin/trigger-backup
+// @access  Private (Admin)
+const triggerDatabaseBackup = async (req, res) => {
+  try {
+    const result = await performDatabaseBackup();
+    recordServerLog('SUCCESS', 'BACKUP', `Admin (${req.user?.name || 'Admin'}) executed on-demand DB backup.`);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = { 
   getAdminStats, 
   getAdminAnalytics, 
@@ -756,5 +809,7 @@ module.exports = {
   getSystemLogs,
   addSystemLog,
   clearSystemLogs,
-  recordServerLog
+  recordServerLog,
+  getDatabaseStatus,
+  triggerDatabaseBackup
 };

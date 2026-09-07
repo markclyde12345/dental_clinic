@@ -535,6 +535,17 @@ const updateAppointment = async (req, res) => {
       }
     }
 
+    // Fetch prior appointment details to compare previous vs new state
+    const { data: existingAppt } = await supabase
+      .from('appointments')
+      .select('id, appointment_date, status, patient_id')
+      .eq('id', id)
+      .maybeSingle();
+
+    const previousDate = existingAppt?.appointment_date;
+    const previousStatus = existingAppt?.status;
+    const isRescheduled = targetDate && previousDate && targetDate !== previousDate;
+
     const updateFields = {};
     if (targetDate !== undefined) updateFields.appointment_date = targetDate;
     if (status !== undefined) updateFields.status = status;
@@ -560,8 +571,10 @@ const updateAppointment = async (req, res) => {
 
     if (error) throw error;
 
-    // Send status notification email (fire-and-forget, won't delay response)
-    if (status) {
+    // Send status or reschedule notification email (fire-and-forget, won't delay response)
+    if (isRescheduled) {
+      sendAppointmentStatusEmail(updated, 'Rescheduled').catch(() => {});
+    } else if (status) {
       sendAppointmentStatusEmail(updated, status).catch(() => {});
     }
 
@@ -590,28 +603,68 @@ const updateAppointment = async (req, res) => {
       }
     }
 
-    // Log appointment status changes and cancellations in audit trail
+    // Detailed Appointment Audit Trail logging (Risk Control: Change Log & Integrity)
     try {
       const { logAuditAction } = require('../utils/auditLogger');
       const apptRef = id ? id.substring(0, 8).toUpperCase() : id;
       const patientName = updated.patient ? (updated.patient.name || updated.patient.email) : 'Patient';
+      const actorName = req.user?.name || `${req.user?.firstName || ''} ${req.user?.lastName || ''}`.trim() || 'User';
+      const actorRole = req.user?.role || 'Staff';
+
+      if (isRescheduled) {
+        logAuditAction({
+          action: 'APPOINTMENT_RESCHEDULED',
+          entityType: 'appointment',
+          entityId: id,
+          details: `${actorName} (${actorRole}) rescheduled appointment #${apptRef} for ${patientName} from ${previousDate} to ${targetDate}`,
+          metadata: {
+            appointment_id: id,
+            patient_id: updated.patient_id,
+            previous_date: previousDate,
+            new_date: targetDate,
+            previous_status: previousStatus,
+            new_status: status || previousStatus,
+            changed_by_user_id: req.user?.id || req.user?._id,
+            changed_by_name: actorName,
+            changed_by_role: actorRole
+          },
+          req
+        });
+      }
 
       if (status === 'Cancelled') {
         logAuditAction({
           action: 'APPOINTMENT_CANCELLED',
           entityType: 'appointment',
           entityId: id,
-          details: `${req.user?.name || 'Staff'} cancelled appointment #${apptRef} for ${patientName}`,
-          metadata: { appointment_id: id, patient_id: updated.patient_id, status: 'Cancelled' },
+          details: `${actorName} (${actorRole}) cancelled appointment #${apptRef} for ${patientName}`,
+          metadata: {
+            appointment_id: id,
+            patient_id: updated.patient_id,
+            previous_status: previousStatus,
+            new_status: 'Cancelled',
+            appointment_date: updated.appointment_date,
+            changed_by_user_id: req.user?.id || req.user?._id,
+            changed_by_name: actorName,
+            changed_by_role: actorRole
+          },
           req
         });
-      } else if (status) {
+      } else if (status && status !== previousStatus && !isRescheduled) {
         logAuditAction({
           action: 'APPOINTMENT_STATUS_CHANGED',
           entityType: 'appointment',
           entityId: id,
-          details: `${req.user?.name || 'Staff'} updated appointment #${apptRef} for ${patientName} to status '${status}'`,
-          metadata: { appointment_id: id, patient_id: updated.patient_id, status },
+          details: `${actorName} (${actorRole}) updated appointment #${apptRef} for ${patientName} from '${previousStatus}' to '${status}'`,
+          metadata: {
+            appointment_id: id,
+            patient_id: updated.patient_id,
+            previous_status: previousStatus,
+            new_status: status,
+            changed_by_user_id: req.user?.id || req.user?._id,
+            changed_by_name: actorName,
+            changed_by_role: actorRole
+          },
           req
         });
       }

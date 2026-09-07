@@ -144,6 +144,73 @@ app.get('/api/dentists', async (req, res) => {
   }
 });
 
+// ─── Health Check Endpoint (System Availability Monitoring) ───────────────────
+// @route   GET /api/health
+// @access  Public
+app.get('/api/health', async (req, res) => {
+  const uptimeSeconds = Math.floor(process.uptime());
+  const memUsage = process.memoryUsage();
+  let dbStatus = 'disconnected';
+  let dbLatencyMs = null;
+
+  try {
+    const t0 = Date.now();
+    const { error } = await supabase.from('users').select('id').limit(1);
+    dbLatencyMs = Date.now() - t0;
+    dbStatus = error ? 'error' : 'connected';
+  } catch (dbErr) {
+    dbStatus = 'unreachable';
+  }
+
+  const isHealthy = dbStatus === 'connected';
+
+  return res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? 'healthy' : 'degraded',
+    service: 'Fano Dental Clinic Management System',
+    uptimeSeconds,
+    timestamp: new Date().toISOString(),
+    database: {
+      status: dbStatus,
+      latencyMs: dbLatencyMs,
+    },
+    system: {
+      nodeVersion: process.version,
+      memoryRssMb: (memUsage.rss / 1024 / 1024).toFixed(1),
+      memoryHeapUsedMb: (memUsage.heapUsed / 1024 / 1024).toFixed(1),
+      platform: process.platform,
+    },
+    emergencySupport: {
+      clinicPhone: '(032) 489-1200',
+      mobile: '+63 917 123 4567',
+      address: 'Balirong Highway, City of Naga, Cebu'
+    }
+  });
+});
+
+// ─── Supabase Anti-Inactivity Keep-Alive Ping (Runs every 48 Hours) ───────────
+const KEEP_ALIVE_INTERVAL_MS = 48 * 60 * 60 * 1000;
+
+const pingSupabaseKeepAlive = async () => {
+  try {
+    const start = Date.now();
+    const { error } = await supabase.from('users').select('id').limit(1);
+    if (error) {
+      console.warn('[Keep-Alive] ⚠️ Supabase ping warning:', error.message);
+    } else {
+      console.log(`[Keep-Alive] ✅ Supabase keep-alive ping successful (${Date.now() - start}ms). Prevents 7-day inactivity pause.`);
+    }
+  } catch (err) {
+    console.error('[Keep-Alive] ❌ Supabase ping error:', err.message);
+  }
+};
+
+setTimeout(pingSupabaseKeepAlive, 5000);
+setInterval(pingSupabaseKeepAlive, KEEP_ALIVE_INTERVAL_MS);
+
+// ─── Initialize Automated Database Backups ────────────────────────────────────
+const { initScheduledBackups } = require('./utils/backupService');
+initScheduledBackups();
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/patients', require('./routes/patientRoutes'));

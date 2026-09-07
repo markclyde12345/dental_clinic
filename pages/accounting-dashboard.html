@@ -232,6 +232,14 @@
                   </div>
                 </button>
 
+                <button type="button" class="action-tile" onclick="runFinancialReconciliation()">
+                  <span class="action-tile-icon">⚖️</span>
+                  <div>
+                    <div class="action-tile-title">Run Reconciliation</div>
+                    <div class="action-tile-desc">Audit billing, completed appts &amp; payments</div>
+                  </div>
+                </button>
+
                 <button type="button" class="action-tile" onclick="exportInvoicesCSV()">
                   <span class="action-tile-icon">📥</span>
                   <div>
@@ -248,6 +256,52 @@
                   </div>
                 </button>
               </div>
+            </div>
+          </div>
+
+          <!-- Financial Reconciliation & Audit Strip (Separation of Duties Control) -->
+          <div class="section-card" style="margin-top: 24px; border-left: 4px solid var(--secondary-color);">
+            <div class="section-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                  <i class="ti ti-scale" style="font-size: 18px; color: var(--secondary-color);"></i>
+                  Periodic Financial Reconciliation &amp; Separation of Duties
+                </h3>
+                <span style="font-size: 0.8rem; color: #64748b;">Cross-references completed clinic visits against issued invoices and payments. Restricts billing modification to Accounting &amp; Admin.</span>
+              </div>
+              <button type="button" class="btn-primary-action" onclick="runFinancialReconciliation()" style="padding: 8px 16px; font-size: 0.85rem;">
+                <i class="ti ti-refresh"></i> Run Audit Check
+              </button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+                <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Reconciliation Status</div>
+                <div id="rec-status-badge" style="font-size: 1rem; font-weight: 700; color: #166534; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></span> Clean (Balanced)
+                </div>
+              </div>
+
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+                <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Unbilled Completed Visits</div>
+                <div id="rec-unbilled-count" style="font-size: 1.2rem; font-weight: 700; color: var(--text-dark); margin-top: 4px;">0</div>
+              </div>
+
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+                <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Payment Discrepancies</div>
+                <div id="rec-discrepancy-count" style="font-size: 1.2rem; font-weight: 700; color: #166534; margin-top: 4px;">0</div>
+              </div>
+
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+                <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Separation of Duties Policy</div>
+                <div style="font-size: 0.9rem; font-weight: 600; color: #0284c7; margin-top: 4px;">Accounting &amp; Admin only</div>
+                <div style="font-size: 0.75rem; color: #64748b;">Receptionist write-off restricted</div>
+              </div>
+            </div>
+            
+            <div id="rec-discrepancy-container" style="display: none; margin-top: 16px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 12px 16px;">
+              <div style="font-weight: 700; font-size: 0.85rem; color: #9f1239; margin-bottom: 6px;">Audit Discrepancies Requiring Review:</div>
+              <ul id="rec-discrepancy-list" style="margin: 0; padding-left: 20px; font-size: 0.82rem; color: #be123c;"></ul>
             </div>
           </div>
 
@@ -305,6 +359,9 @@
               <div class="action-buttons-group">
                 <button type="button" class="btn-primary-action" onclick="openCreateInvoiceModal()">
                   <i class="ti ti-plus"></i> New Invoice
+                </button>
+                <button type="button" class="btn-secondary-action" onclick="runFinancialReconciliation()">
+                  <i class="ti ti-scale"></i> Reconcile
                 </button>
                 <button type="button" class="btn-secondary-action" onclick="exportInvoicesCSV()">
                   <i class="ti ti-file-spreadsheet"></i> Export CSV
@@ -1630,6 +1687,7 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script src="../js/accounting-dashboard.js?v=20260904_03"></script>
+  <script src="../js/offline-monitor.js"></script>
 </body>
 </html>
 

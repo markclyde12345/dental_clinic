@@ -2666,6 +2666,14 @@ function executeReschedule() {
   if (modifier === 'AM' && hours === '12') hours = '00';
   const isoDateTime = `${dateVal}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
 
+  // Explicit confirmation requirement
+  const formattedNew = new Date(isoDateTime).toLocaleString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+  if (!confirm(`Please confirm rescheduling:\n\nDo you want to change your appointment to ${formattedNew}?\n\nAn updated confirmation notice will be dispatched to your email.`)) {
+    return;
+  }
+
   const btnConfirm = document.getElementById('btn-confirm-reschedule');
   if (btnConfirm) {
     btnConfirm.disabled = true;
@@ -2689,7 +2697,7 @@ function executeReschedule() {
       return res.json();
     })
     .then(updated => {
-      showToast('✓ Appointment rescheduled successfully!', 'success');
+      showToast('✓ Appointment rescheduled! Confirmation notice sent.', 'success');
       closeAppointmentModal();
       loadAppointments();
     })
@@ -2710,7 +2718,9 @@ function executeCancelAppointment() {
   const d = new Date(selectedAppointment.appointment_date || selectedAppointment.dateTime);
   const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-  if (!confirm(`Are you sure you want to cancel your appointment on ${formattedDate}?`)) {
+  // Explicit confirmation with notice of non-reversible cancellation
+  const confirmMsg = `Appointment Cancellation Confirmation:\n\nAre you sure you want to cancel your appointment scheduled for ${formattedDate}?\n\n• This action will release your reserved slot.\n• A cancellation confirmation notice will be sent to your email.\n\nClick OK to proceed with cancellation.`;
+  if (!confirm(confirmMsg)) {
     return;
   }
 
@@ -2735,7 +2745,7 @@ function executeCancelAppointment() {
       return res.json();
     })
     .then(() => {
-      showToast('Appointment has been cancelled.', 'info');
+      showToast('Appointment has been cancelled. Confirmation sent.', 'info');
       closeAppointmentModal();
       loadAppointments();
     })

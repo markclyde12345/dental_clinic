@@ -2647,6 +2647,9 @@ window.switchSettingsSection = function(sectionId, element) {
   if (sectionId === 'services') {
     loadSettingsTreatments();
   }
+  if (sectionId === 'utilities') {
+    loadDatabaseHealthStatus();
+  }
 };
 
 window.loadSettings = function() {
@@ -3074,6 +3077,94 @@ if (btnBackupRoster) {
 
     showToast('Records backup downloaded successfully', 'success');
     logConsoleEvent('[INFO] System records backup file generated & downloaded.');
+  });
+}
+
+// ─── Database Resilience & Health Handlers ────────────────────────────────────
+async function loadDatabaseHealthStatus() {
+  try {
+    const res = await fetch(`${ADMIN_API}/database-status`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const statusEl = document.getElementById('db-health-status');
+    const latencyEl = document.getElementById('db-latency');
+    const backupTimeEl = document.getElementById('db-backup-time');
+    const backupSizeEl = document.getElementById('db-backup-size');
+
+    if (statusEl) {
+      const isOk = data.status === 'healthy';
+      statusEl.innerHTML = `
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${isOk ? '#22c55e' : '#ef4444'};"></span>
+        ${isOk ? 'Connected (PostgreSQL)' : 'Degraded'}
+      `;
+      statusEl.style.color = isOk ? '#15803d' : '#b91c1c';
+    }
+
+    if (latencyEl && data.latencyMs !== undefined) {
+      latencyEl.textContent = `Latency: ${data.latencyMs} ms`;
+    }
+
+    if (data.latestBackup && data.latestBackup.lastBackupTime) {
+      const bTime = new Date(data.latestBackup.lastBackupTime).toLocaleString();
+      if (backupTimeEl) backupTimeEl.textContent = bTime;
+      if (backupSizeEl) backupSizeEl.textContent = `${data.latestBackup.fileSizeKb || 0} KB • ${data.latestBackup.totalRows || 0} rows`;
+    } else {
+      if (backupTimeEl) backupTimeEl.textContent = 'None yet';
+    }
+
+    if (data.tableCounts) {
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = Number(val || 0).toLocaleString();
+      };
+      setVal('db-count-users', data.tableCounts.users);
+      setVal('db-count-appts', data.tableCounts.appointments);
+      setVal('db-count-invoices', data.tableCounts.invoices);
+      setVal('db-count-payments', data.tableCounts.payments);
+      setVal('db-count-audits', data.tableCounts.audit_logs);
+    }
+  } catch (err) {
+    console.error('Failed fetching database status:', err);
+  }
+}
+
+const btnRefreshDb = document.getElementById('btn-refresh-db-status');
+if (btnRefreshDb) {
+  btnRefreshDb.addEventListener('click', () => {
+    btnRefreshDb.querySelector('i')?.classList.add('ti-spin');
+    loadDatabaseHealthStatus().finally(() => {
+      btnRefreshDb.querySelector('i')?.classList.remove('ti-spin');
+    });
+  });
+}
+
+const btnTriggerBackup = document.getElementById('btn-trigger-backup-now');
+if (btnTriggerBackup) {
+  btnTriggerBackup.addEventListener('click', async () => {
+    btnTriggerBackup.disabled = true;
+    btnTriggerBackup.innerHTML = '<i class="ti ti-loader ti-spin" style="font-size: 16px;"></i> Running Backup...';
+
+    try {
+      const res = await fetch(`${ADMIN_API}/trigger-backup`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Server backup created: ${data.fileName} (${data.fileSizeKb} KB, ${data.totalRows} rows)`, 'success');
+        loadDatabaseHealthStatus();
+      } else {
+        showToast(`Backup failed: ${data.message || data.error}`, 'error');
+      }
+    } catch (err) {
+      showToast(`Server connection error: ${err.message}`, 'error');
+    } finally {
+      btnTriggerBackup.disabled = false;
+      btnTriggerBackup.innerHTML = '<i class="ti ti-cloud-upload" style="font-size: 16px;"></i> Run Server Backup Now';
+    }
   });
 }
 

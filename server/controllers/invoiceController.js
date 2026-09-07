@@ -160,4 +160,139 @@ const updateInvoice = async (req, res) => {
   }
 };
 
-module.exports = { getInvoices, createInvoice, updateInvoice };
+// @desc    Automated Financial Reconciliation Check
+// @route   GET /api/invoices/reconciliation
+// @access  Private (Accounting, Admin)
+const reconcileInvoices = async (req, res) => {
+  try {
+    // 1. Fetch completed appointments
+    const { data: completedAppts, error: apptErr } = await supabase
+      .from('appointments')
+      .select(`
+        id, appointment_date, status, patient_id,
+        patient:patient_id ( id, name, email ),
+        treatment:treatment_id ( id, name, price )
+      `)
+      .eq('status', 'Completed');
+
+    if (apptErr) throw apptErr;
+
+    // 2. Fetch all invoices
+    const { data: allInvoices, error: invErr } = await supabase
+      .from('invoices')
+      .select('*');
+
+    if (invErr) throw invErr;
+
+    // 3. Fetch all recorded payments
+    const { data: allPayments } = await supabase
+      .from('payments')
+      .select('*');
+
+    const paymentsByInvoice = new Map();
+    (allPayments || []).forEach(p => {
+      const invId = p.invoice_id;
+      if (invId) {
+        const sum = paymentsByInvoice.get(invId) || 0;
+        paymentsByInvoice.set(invId, sum + (Number(p.amount) || 0));
+      }
+    });
+
+    const invoiceByApptId = new Map();
+    (allInvoices || []).forEach(inv => {
+      if (inv.appointment_id) {
+        invoiceByApptId.set(inv.appointment_id, inv);
+      }
+    });
+
+    // Check for unbilled completed appointments
+    const unbilledAppointments = [];
+    (completedAppts || []).forEach(appt => {
+      if (!invoiceByApptId.has(appt.id)) {
+        unbilledAppointments.push({
+          appointmentId: appt.id,
+          date: appt.appointment_date,
+          patientName: appt.patient?.name || 'Unknown Patient',
+          treatmentName: appt.treatment?.name || 'General Consultation',
+          estimatedAmount: Number(appt.treatment?.price) || 0
+        });
+      }
+    });
+
+    // Check for payment discrepancies on invoices
+    const discrepancies = [];
+    let totalBilled = 0;
+    let totalCollected = 0;
+    let totalUnpaid = 0;
+    let totalWrittenOff = 0;
+
+    (allInvoices || []).forEach(inv => {
+      const billed = Number(inv.amount) || 0;
+      totalBilled += billed;
+
+      if (inv.status === 'Paid') {
+        totalCollected += billed;
+      } else if (inv.status === 'Written Off') {
+        totalWrittenOff += billed;
+      } else {
+        totalUnpaid += billed;
+      }
+
+      // Check if recorded payments match invoice marked as Paid
+      const recordedPaid = paymentsByInvoice.get(inv.id);
+      if (inv.status === 'Paid' && recordedPaid !== undefined && Math.abs(recordedPaid - billed) > 1) {
+        discrepancies.push({
+          invoiceId: inv.id,
+          type: 'PAYMENT_MISMATCH',
+          description: `Invoice #${inv.id.slice(0, 8)} billed at ₱${billed.toFixed(2)}, recorded payments sum to ₱${recordedPaid.toFixed(2)}`,
+          billedAmount: billed,
+          recordedPaidAmount: recordedPaid,
+          difference: billed - recordedPaid
+        });
+      }
+    });
+
+    const isReconciled = unbilledAppointments.length === 0 && discrepancies.length === 0;
+
+    // Log reconciliation run to audit
+    const { logAuditAction } = require('../utils/auditLogger');
+    logAuditAction({
+      action: 'FINANCIAL_RECONCILIATION_RUN',
+      entityType: 'invoice',
+      entityId: 'reconciliation_summary',
+      details: `${req.user?.name || 'Accountant'} performed financial reconciliation: ${isReconciled ? 'CLEAN (No discrepancies)' : `${unbilledAppointments.length} unbilled appts, ${discrepancies.length} mismatches`}`,
+      metadata: {
+        totalBilled,
+        totalCollected,
+        totalUnpaid,
+        unbilledCount: unbilledAppointments.length,
+        discrepancyCount: discrepancies.length,
+        isReconciled
+      },
+      req
+    }).catch(() => {});
+
+    return res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      isReconciled,
+      summary: {
+        totalBilled,
+        totalCollected,
+        totalUnpaid,
+        totalWrittenOff,
+        completedAppointmentsCount: (completedAppts || []).length,
+        totalInvoicesCount: (allInvoices || []).length,
+        unbilledAppointmentsCount: unbilledAppointments.length,
+        discrepancyCount: discrepancies.length
+      },
+      unbilledAppointments,
+      discrepancies
+    });
+  } catch (error) {
+    console.error('[Reconciliation Error]', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { getInvoices, createInvoice, updateInvoice, reconcileInvoices };

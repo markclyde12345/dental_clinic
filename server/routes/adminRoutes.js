@@ -15,7 +15,9 @@ const {
   resetSeeder,
   getSystemLogs,
   addSystemLog,
-  clearSystemLogs
+  clearSystemLogs,
+  getDatabaseStatus,
+  triggerDatabaseBackup
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -23,6 +25,10 @@ router.get('/stats', protect, authorize('Admin'), getAdminStats);
 router.get('/analytics', protect, authorize('Admin'), getAdminAnalytics);
 router.get('/detailed-stats', protect, authorize('Admin'), getDetailedStats);
 router.post('/reset-seeder', protect, authorize('Admin'), resetSeeder);
+
+// Database Health & Backup routes
+router.get('/database-status', protect, authorize('Admin'), getDatabaseStatus);
+router.post('/trigger-backup', protect, authorize('Admin'), triggerDatabaseBackup);
 
 // System Logs routes
 router.route('/logs')

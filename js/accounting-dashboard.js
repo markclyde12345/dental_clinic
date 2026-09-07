@@ -170,6 +170,7 @@
     }
 
     renderAllViews();
+    runFinancialReconciliation();
   }
 
   async function loadPatients() {
@@ -1842,6 +1843,61 @@
 
   window.printPurchaseOrder = function() {
     window.print();
+  };
+
+  // ─── Financial Reconciliation & Separation of Duties Audit ───────────────────
+  window.runFinancialReconciliation = async function() {
+    try {
+      const res = await fetch(`${INVOICE_API}/reconciliation`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Reconciliation check failed');
+      const data = await res.json();
+
+      const badge = document.getElementById('rec-status-badge');
+      const unbilledEl = document.getElementById('rec-unbilled-count');
+      const discEl = document.getElementById('rec-discrepancy-count');
+      const discBox = document.getElementById('rec-discrepancy-container');
+      const discList = document.getElementById('rec-discrepancy-list');
+
+      if (unbilledEl && data.summary) unbilledEl.textContent = data.summary.unbilledAppointmentsCount;
+      if (discEl && data.summary) discEl.textContent = data.summary.discrepancyCount;
+
+      if (badge) {
+        if (data.isReconciled) {
+          badge.innerHTML = '<span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></span> Clean (Balanced)';
+          badge.style.color = '#166534';
+        } else {
+          badge.innerHTML = '<span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></span> Discrepancies Found';
+          badge.style.color = '#b91c1c';
+        }
+      }
+
+      if (discBox && discList) {
+        if (!data.isReconciled && (data.discrepancies.length > 0 || data.unbilledAppointments.length > 0)) {
+          discBox.style.display = 'block';
+          discList.innerHTML = '';
+          data.unbilledAppointments.forEach(u => {
+            const li = document.createElement('li');
+            li.textContent = `Unbilled Appointment: ${u.patientName} (${u.treatmentName}) on ${new Date(u.date).toLocaleDateString()} — Est: ₱${u.estimatedAmount}`;
+            discList.appendChild(li);
+          });
+          data.discrepancies.forEach(d => {
+            const li = document.createElement('li');
+            li.textContent = d.description;
+            discList.appendChild(li);
+          });
+        } else {
+          discBox.style.display = 'none';
+        }
+      }
+
+      if (typeof showToast === 'function') {
+        showToast(data.isReconciled ? '✓ Financial ledger fully reconciled.' : '⚠️ Reconciliation detected items requiring review.', data.isReconciled ? 'success' : 'warning');
+      }
+    } catch (err) {
+      console.error('Reconciliation error:', err);
+    }
   };
 
   // Helper

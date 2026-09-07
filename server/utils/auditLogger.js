@@ -43,8 +43,8 @@ async function logAuditAction(entry) {
         userName = req.user.name || `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || userName;
         userRole = req.user.role || userRole;
       }
-      ipAddress = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || req.ip || ipAddress;
-      userAgent = req.headers['user-agent'] || userAgent;
+      ipAddress = req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || req.ip || ipAddress;
+      userAgent = req.headers?.['user-agent'] || userAgent;
     }
 
     const logItem = {
