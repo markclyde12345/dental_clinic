@@ -292,6 +292,9 @@ const reconcileInvoices = async (req, res) => {
   } catch (error) {
     console.error('[Reconciliation Error]', error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Get a single invoice by ID
 // @route   GET /api/invoices/:id
 // @access  Private
