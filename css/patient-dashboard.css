@@ -577,6 +577,20 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
+.header-action-grid:has(> :only-child) {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+.header-action-grid:has(> :only-child) .btn {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(11, 60, 77, 0.15);
+}
+
 .header-action-grid .btn {
   display: inline-flex;
   align-items: center;
