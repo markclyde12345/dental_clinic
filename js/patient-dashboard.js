@@ -40,6 +40,7 @@ const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 let user = null;
 let allAppointments = [];
 let allInvoices = [];
+let allTreatments = [];
 
 // ─── Auth Gate ──────────────────────────────────────────────
 if (!token) {
@@ -862,6 +863,15 @@ function renderUpcomingPreview() {
     const treatmentName = appt.treatment?.name || appt.reason || 'Dental Visit';
     const statusClass = (appt.status || 'pending').toLowerCase();
 
+    let dentistText = '';
+    const notesRaw = appt.notes || '';
+    const dentistMatch = notesRaw.match(/\[Dentist:\s*([^\]]+)\]/i);
+    if (dentistMatch && dentistMatch[1] && dentistMatch[1] !== 'No Preference') {
+      dentistText = dentistMatch[1];
+    } else if (appt.dentist?.name) {
+      dentistText = appt.dentist.name;
+    }
+
     return `
       <div class="appt-preview-item" onclick="openAppointmentDetailsModal('${appt.id}')" title="Click to view details, reschedule, or cancel">
         <div class="appt-date-block">
@@ -870,7 +880,7 @@ function renderUpcomingPreview() {
         </div>
         <div class="appt-info">
           <div class="appt-treatment">${escapeHTML(treatmentName)}</div>
-          <div class="appt-time">${time}</div>
+          <div class="appt-time"><i class="ti ti-clock" style="font-size: 11px;"></i> ${time}${dentistText ? ` • <i class="ti ti-stethoscope" style="font-size: 11px;"></i> ${escapeHTML(dentistText)}` : ''}</div>
         </div>
         <span class="status-pill ${statusClass}">${appt.status || 'Pending'}</span>
         <button type="button" class="btn-view-appt" onclick="event.stopPropagation(); openAppointmentDetailsModal('${appt.id}')">
@@ -1126,6 +1136,16 @@ function renderAppointmentsFullList() {
     const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     const treatmentName = appt.treatment?.name || appt.reason || 'Dental Visit';
     const statusClass = (appt.status || 'pending').toLowerCase();
+
+    let dentistText = '';
+    const notesRaw = appt.notes || '';
+    const dentistMatch = notesRaw.match(/\[Dentist:\s*([^\]]+)\]/i);
+    if (dentistMatch && dentistMatch[1] && dentistMatch[1] !== 'No Preference') {
+      dentistText = dentistMatch[1];
+    } else if (appt.dentist?.name) {
+      dentistText = appt.dentist.name;
+    }
+
     return `
       <div class="appt-preview-item" onclick="openAppointmentDetailsModal('${appt.id}')" title="Click to view details, reschedule, or cancel">
         <div class="appt-date-block">
@@ -1134,7 +1154,7 @@ function renderAppointmentsFullList() {
         </div>
         <div class="appt-info">
           <div class="appt-treatment">${escapeHTML(treatmentName)}</div>
-          <div class="appt-time">${time}</div>
+          <div class="appt-time"><i class="ti ti-clock" style="font-size: 11px;"></i> ${time}${dentistText ? ` • <i class="ti ti-stethoscope" style="font-size: 11px;"></i> ${escapeHTML(dentistText)}` : ''}</div>
         </div>
         <span class="status-pill ${statusClass}">${appt.status || 'Pending'}</span>
         <button type="button" class="btn-view-appt" onclick="event.stopPropagation(); openAppointmentDetailsModal('${appt.id}')">
@@ -1588,36 +1608,104 @@ function loadTreatments() {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(treatments => {
-      const grid = document.getElementById('services-picker-grid');
-      if (!grid) return;
-      if (Array.isArray(treatments) && treatments.length > 0) {
-        grid.innerHTML = treatments.map(t => `
-        <div class="service-card" data-id="${t.id}" data-name="${escapeHTML(t.name)}" data-price="${parseFloat(t.price || 0).toFixed(2)}">
+      allTreatments = Array.isArray(treatments) ? treatments : [];
+      renderTreatmentsPicker();
+    })
+    .catch(err => {
+      console.error('Treatments error:', err);
+      allTreatments = [];
+      renderTreatmentsPicker();
+    });
+}
+
+function renderTreatmentsPicker() {
+  const grid = document.getElementById('services-picker-grid');
+  if (!grid) return;
+  if (Array.isArray(allTreatments) && allTreatments.length > 0) {
+    const currentId = document.getElementById('wizard-treatment-id')?.value;
+    grid.innerHTML = allTreatments.map(t => {
+      const isSelected = currentId && (String(t.id) === String(currentId));
+      return `
+        <div class="service-card ${isSelected ? 'selected' : ''}" data-id="${t.id}" data-name="${escapeHTML(t.name)}" data-price="${parseFloat(t.price || 0).toFixed(2)}">
           <div class="service-title">${escapeHTML(t.name)}</div>
           <div class="service-price">₱${parseFloat(t.price || 0).toFixed(2)}</div>
           <div style="font-size: 0.72rem; color: #888; margin-top: 4px;">Duration: ${t.duration_minutes || 30} mins</div>
         </div>
-      `).join('');
+      `;
+    }).join('');
 
-        // Attach selection listeners
-        grid.querySelectorAll('.service-card').forEach(card => {
-          card.addEventListener('click', () => {
-            grid.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            document.getElementById('wizard-treatment-id').value = card.getAttribute('data-id');
-            document.getElementById('summary-service').textContent = `${card.getAttribute('data-name')} (₱${card.getAttribute('data-price')})`;
-          });
-        });
-      } else {
-        grid.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">No services available</div>';
-      }
-    })
-    .catch(err => console.error('Treatments error:', err));
+    // Attach selection listeners
+    grid.querySelectorAll('.service-card').forEach(card => {
+      card.addEventListener('click', () => {
+        grid.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        const treatId = card.getAttribute('data-id');
+        const treatName = card.getAttribute('data-name');
+        const treatPrice = card.getAttribute('data-price');
+        const treatInput = document.getElementById('wizard-treatment-id');
+        if (treatInput) treatInput.value = treatId;
+        const summaryService = document.getElementById('summary-service');
+        if (summaryService) {
+          summaryService.textContent = `${treatName} (₱${treatPrice})`;
+        }
+      });
+    });
+  } else {
+    grid.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">No services available</div>';
+  }
 }
 
 // ─── Booking Wizard Logic ────────────────────────────────────
 let currentStep = 1;
 let selectedTime = '';
+
+function updateDateTimeSummary() {
+  const dateVal = document.getElementById('wizard-date')?.value;
+  const timeVal = document.getElementById('wizard-time')?.value || selectedTime;
+  const summaryEl = document.getElementById('summary-datetime');
+  if (!summaryEl) return;
+
+  if (dateVal && timeVal) {
+    let formattedDate = dateVal;
+    try {
+      const [y, m, d] = dateVal.split('-').map(Number);
+      if (y && m && d) {
+        const dObj = new Date(y, m - 1, d);
+        if (!isNaN(dObj.getTime())) {
+          formattedDate = dObj.toLocaleDateString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+          });
+        }
+      }
+    } catch (_) {}
+    summaryEl.textContent = `${formattedDate} • ${timeVal}`;
+  } else if (dateVal) {
+    let formattedDate = dateVal;
+    try {
+      const [y, m, d] = dateVal.split('-').map(Number);
+      if (y && m && d) {
+        const dObj = new Date(y, m - 1, d);
+        if (!isNaN(dObj.getTime())) {
+          formattedDate = dObj.toLocaleDateString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+          });
+        }
+      }
+    } catch (_) {}
+    summaryEl.textContent = `${formattedDate} (Slot pending)`;
+  } else if (timeVal) {
+    summaryEl.textContent = `Date pending • ${timeVal}`;
+  } else {
+    summaryEl.textContent = '—';
+  }
+}
+
+function updateDentistSummary(dentistName) {
+  const summaryEl = document.getElementById('summary-dentist');
+  if (!summaryEl) return;
+  const name = dentistName || document.getElementById('wizard-dentist-name')?.value || 'No Preference';
+  summaryEl.textContent = (name === 'No Preference') ? 'No Preference (Auto-assigned)' : name;
+}
 
 function setupBookingWizard() {
   const form = document.getElementById('booking-wizard-form');
@@ -1632,7 +1720,10 @@ function setupBookingWizard() {
   const todayStr = new Date().toISOString().split('T')[0];
   if (dateInput) {
     dateInput.min = todayStr;
-    dateInput.addEventListener('change', checkAvailableSlots);
+    dateInput.addEventListener('change', () => {
+      checkAvailableSlots();
+      updateDateTimeSummary();
+    });
   }
 
   // Load Dentists List
@@ -1678,7 +1769,9 @@ function setupBookingWizard() {
       document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       selectedTime = btn.getAttribute('data-time');
-      document.getElementById('wizard-time').value = selectedTime;
+      const timeInput = document.getElementById('wizard-time');
+      if (timeInput) timeInput.value = selectedTime;
+      updateDateTimeSummary();
     });
   });
 
@@ -2103,7 +2196,7 @@ function selectBookingPaymentMethod(method) {
 
 function renderPaymentDetails() {
   const treatmentId = document.getElementById('wizard-treatment-id')?.value;
-  const selectedTreat = allTreatments.find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
+  const selectedTreat = (allTreatments || []).find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
   const feeService = document.getElementById('wizard-fee-service');
   const feeAmount = document.getElementById('wizard-fee-amount');
 
@@ -2114,8 +2207,16 @@ function renderPaymentDetails() {
       feeAmount.textContent = price > 0 ? `₱${price.toFixed(2)}` : 'Free Consultation';
     }
   } else {
-    if (feeService) feeService.textContent = 'General Dental Consultation';
-    if (feeAmount) feeAmount.textContent = '₱0.00';
+    const existingSummary = document.getElementById('summary-service')?.textContent;
+    if (existingSummary && existingSummary.includes('₱')) {
+      const match = existingSummary.match(/\(₱([0-9.,]+)\)/);
+      const name = existingSummary.split('(')[0].trim();
+      if (feeService) feeService.textContent = name;
+      if (feeAmount && match) feeAmount.textContent = `₱${parseFloat(match[1].replace(/,/g, '')).toFixed(2)}`;
+    } else {
+      if (feeService) feeService.textContent = 'General Dental Consultation';
+      if (feeAmount) feeAmount.textContent = '₱0.00';
+    }
   }
 }
 
@@ -2159,9 +2260,11 @@ function loadDentists() {
       const grid = document.getElementById('dentists-picker-grid');
       if (!grid) return;
 
+      const currentSelected = document.getElementById('wizard-dentist-name')?.value || 'No Preference';
+
       // Add No Preference card
       let html = `
-      <div class="dentist-card selected" data-name="No Preference">
+      <div class="dentist-card ${currentSelected === 'No Preference' ? 'selected' : ''}" data-name="No Preference">
         <div class="dentist-name">No Preference</div>
         <div class="dentist-specialty">Auto-assigned to available staff</div>
       </div>
@@ -2169,7 +2272,7 @@ function loadDentists() {
 
       if (Array.isArray(dentists) && dentists.length > 0) {
         html += dentists.map(d => `
-        <div class="dentist-card" data-name="${escapeHTML(d.name)}">
+        <div class="dentist-card ${currentSelected === d.name ? 'selected' : ''}" data-name="${escapeHTML(d.name)}">
           <div class="dentist-name">${escapeHTML(d.name)}</div>
           <div class="dentist-specialty">Dental Specialist</div>
           <div style="font-size: 0.72rem; color: #888; margin-top: 4px;">Contact: ${escapeHTML(d.contact_number || 'N/A')}</div>
@@ -2184,11 +2287,20 @@ function loadDentists() {
         card.addEventListener('click', () => {
           grid.querySelectorAll('.dentist-card').forEach(c => c.classList.remove('selected'));
           card.classList.add('selected');
-          document.getElementById('wizard-dentist-name').value = card.getAttribute('data-name');
+          const chosenName = card.getAttribute('data-name') || 'No Preference';
+          const hiddenInput = document.getElementById('wizard-dentist-name');
+          if (hiddenInput) hiddenInput.value = chosenName;
+          updateDentistSummary(chosenName);
         });
       });
+
+      // Initialize summary on load
+      updateDentistSummary(currentSelected);
     })
-    .catch(err => console.error('Dentists list error:', err));
+    .catch(err => {
+      console.error('Dentists list error:', err);
+      updateDentistSummary('No Preference');
+    });
 }
 
 function checkAvailableSlots() {
@@ -2355,42 +2467,74 @@ function checkAvailableSlots() {
 function renderConfirmationDetails() {
   const dentist = document.getElementById('wizard-dentist-name')?.value || 'No Preference';
   const dateVal = document.getElementById('wizard-date')?.value || '';
-  const timeVal = document.getElementById('wizard-time')?.value || '';
-  const branchVal = document.getElementById('wizard-selected-branch')?.value || selectedBranchObj?.name || 'Main Branch, Balirong';
-  const emergName = document.getElementById('wizard-emergency-name')?.value.trim();
-  const emergPhone = document.getElementById('wizard-emergency-phone')?.value.trim();
-  const allergies = document.getElementById('wizard-allergies')?.value.trim() || 'None';
-  const medications = document.getElementById('wizard-medications')?.value.trim() || 'None';
+  const timeVal = document.getElementById('wizard-time')?.value || selectedTime || '';
+  const branchVal = document.getElementById('wizard-selected-branch')?.value || selectedBranchObj?.name || 'Main Branch, Fano Dental Clinic';
+  const emergName = document.getElementById('wizard-emergency-name')?.value?.trim() || '';
+  const emergPhone = document.getElementById('wizard-emergency-phone')?.value?.trim() || '';
+  const allergies = document.getElementById('wizard-allergies')?.value?.trim() || 'None';
+  const medications = document.getElementById('wizard-medications')?.value?.trim() || 'None';
   const concern = document.getElementById('wizard-primary-concern')?.value || 'Routine Cleaning & General Checkup';
   const hmo = document.getElementById('wizard-insurance-provider')?.value || 'None / Self-Pay';
-  const hmoId = document.getElementById('wizard-insurance-id')?.value.trim();
-  const anxiety = document.getElementById('wizard-dental-anxiety')?.checked;
+  const hmoId = document.getElementById('wizard-insurance-id')?.value?.trim() || '';
+  const anxiety = document.getElementById('wizard-dental-anxiety')?.checked || false;
   const reminderPref = document.getElementById('wizard-reminder-pref')?.value || 'SMS Text Message';
 
   // Selected medical conditions
   const conditions = [];
   document.querySelectorAll('input[name="med_condition"]:checked').forEach(cb => {
-    if (cb.value !== 'None') conditions.push(cb.value);
+    if (cb.value && cb.value !== 'None') conditions.push(cb.value);
   });
   const conditionsStr = conditions.length > 0 ? conditions.join(', ') : 'None reported';
 
-  const dateObj = new Date(dateVal);
-  const formattedDate = dateObj.toLocaleDateString('en-US', {
-    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
-  });
+  // Format date safely without timezone shift
+  let formattedDate = '';
+  if (dateVal) {
+    try {
+      const [y, m, d] = dateVal.split('-').map(Number);
+      if (y && m && d) {
+        const dObj = new Date(y, m - 1, d);
+        if (!isNaN(dObj.getTime())) {
+          formattedDate = dObj.toLocaleDateString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+          });
+        }
+      }
+    } catch (_) {}
+    if (!formattedDate) formattedDate = dateVal;
+  }
 
+  // Treatment / Service name
   const treatmentId = document.getElementById('wizard-treatment-id')?.value;
-  const selectedTreat = allTreatments.find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
-  const serviceName = selectedTreat ? `${selectedTreat.name} (${selectedTreat.price ? '₱' + selectedTreat.price : ''})` : 'General Dental Consultation';
+  const selectedTreat = (allTreatments || []).find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
+  let serviceName = 'General Dental Consultation';
+  if (selectedTreat) {
+    const priceNum = parseFloat(selectedTreat.price);
+    const priceFormatted = (!isNaN(priceNum) && priceNum > 0) ? `₱${priceNum.toFixed(2)}` : 'Free Consultation';
+    serviceName = `${selectedTreat.name} (${priceFormatted})`;
+  } else {
+    const existingSummaryService = document.getElementById('summary-service')?.textContent;
+    if (existingSummaryService && existingSummaryService !== '—') {
+      serviceName = existingSummaryService;
+    }
+  }
 
-  safeSet('summary-datetime', `${formattedDate} at ${timeVal}`);
-  safeSet('summary-dentist', dentist);
+  // Datetime display text
+  const datetimeDisplay = (formattedDate && timeVal)
+    ? `${formattedDate} • ${timeVal}`
+    : (formattedDate ? `${formattedDate} (Time slot pending)` : (timeVal ? `Slot: ${timeVal}` : '—'));
+
+  // Dentist display text
+  const dentistDisplay = (dentist === 'No Preference') ? 'No Preference (Auto-assigned)' : dentist;
+
+  safeSet('summary-datetime', datetimeDisplay);
+  safeSet('summary-dentist', dentistDisplay);
   safeSet('summary-service', serviceName);
   safeSet('summary-branch', branchVal);
 
-  const patPhone = document.getElementById('wizard-pat-phone')?.value || user?.contact_number || user?.contactNumber || '';
+  const patPhone = document.getElementById('wizard-pat-phone')?.value || user?.contact_number || user?.contactNumber || user?.phone || '';
   const patEmail = document.getElementById('wizard-pat-email')?.value || user?.email || '';
-  safeSet('summary-patient-contact', `${patPhone ? patPhone + ' • ' : ''}${patEmail}`);
+  const contactText = [patPhone, patEmail].filter(Boolean).join(' • ') || '—';
+  safeSet('summary-patient-contact', contactText);
 
   if (emergName || emergPhone) {
     safeSet('summary-emergency-contact', `${emergName || 'Contact'} (${emergPhone || 'No phone'})`);
@@ -3019,7 +3163,12 @@ function showToast(message, type = 'success') {
 // ─── Helpers ─────────────────────────────────────────────────
 function safeSet(id, val) {
   const el = document.getElementById(id);
-  if (el) el.textContent = val;
+  if (!el) return;
+  if (typeof val === 'string' && val.includes('<')) {
+    el.innerHTML = val;
+  } else {
+    el.textContent = val;
+  }
 }
 function safeVal(id, val) {
   const el = document.getElementById(id);
