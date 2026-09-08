@@ -99,31 +99,49 @@
 
     <!-- ═════════════════════ MAIN CONTENT ═════════════════════ -->
     <main class="main-content">
-      <!-- Top Header -->
-      <header class="top-header">
-        <div>
-          <div class="breadcrumb" style="font-size: 0.82rem; color: #64748b; margin-bottom: 4px; font-weight: 500;">
-            Finance Management &rsaquo; <span id="breadcrumb-current" style="color: var(--primary-color); font-weight: 700;">Financial Overview</span>
+      <!-- ─── TOP BAR (STICKY NAVBAR) ─── -->
+      <header class="accounting-top-bar">
+        <div class="top-bar-left">
+          <div class="accounting-breadcrumb">
+            <span class="breadcrumb-root"><i class="ti ti-receipt-tax"></i> Finance Management</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current" id="breadcrumb-current">Financial Overview</span>
           </div>
-          <h2 id="page-title">Financial Control Portal</h2>
         </div>
-
-        <div class="header-actions">
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <button type="button" class="btn-create-inv" onclick="openCreateInvoiceModal()">
-              <span>+ Create Invoice</span>
-            </button>
-            <button type="button" class="btn-record-pay" onclick="openRecordPaymentModal()">
-              <span>💰 Settle Payment</span>
-            </button>
-            <div class="date-badge">
-              <span id="current-date"></span>
-            </div>
+        <div class="top-bar-right">
+          <!-- Live Clock Card -->
+          <div class="live-clock-card">
+            <i class="ti ti-clock"></i>
+            <span id="current-time">--:-- --</span>
+            <span class="clock-divider">|</span>
+            <span id="current-date">Loading date...</span>
           </div>
         </div>
       </header>
 
       <div class="dashboard-content">
+
+        <!-- Page Header & Action Bar -->
+        <div class="page-header-bar">
+          <div class="header-title-block">
+            <h2 id="page-title">Financial Control Portal</h2>
+            <p class="header-subtitle" id="page-subtitle">Manage clinic invoices, revenue ledgers, and payment reconciliations</p>
+          </div>
+          <div class="header-action-grid">
+            <button type="button" class="btn-create-inv" onclick="openCreateInvoiceModal()" title="Generate New Clinic Invoice">
+              <i class="ti ti-file-plus"></i>
+              <span>Create Invoice</span>
+            </button>
+            <button type="button" class="btn-record-pay" onclick="openRecordPaymentModal()" title="Record Patient Payment Settlement">
+              <i class="ti ti-cash"></i>
+              <span>Settle Payment</span>
+            </button>
+            <button type="button" class="btn-outline-util" onclick="switchTab('reports')" title="View Accounting Reports">
+              <i class="ti ti-report-analytics"></i>
+              <span>Reports</span>
+            </button>
+          </div>
+        </div>
 
         <!-- ══════════════ TAB 1: FINANCIAL OVERVIEW ══════════════ -->
         <div id="tab-overview" class="tab-pane active">

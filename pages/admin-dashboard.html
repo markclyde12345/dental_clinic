@@ -170,15 +170,18 @@
       <header class="admin-top-bar">
         <div class="admin-top-bar-left">
           <div class="admin-breadcrumb">
-            <span class="admin-breadcrumb-root">Admin Portal</span>
+            <span class="admin-breadcrumb-root"><i class="ti ti-shield-check"></i> Admin Portal</span>
             <span class="admin-breadcrumb-sep">/</span>
             <span class="admin-breadcrumb-current" id="admin-breadcrumb-label">Dashboard Overview</span>
           </div>
         </div>
         <div class="admin-top-bar-right">
-          <div class="admin-date-badge">
-            <i class="ti ti-calendar" style="font-size: 14px;"></i>
-            <span id="current-date"></span>
+          <!-- Live Clock Card -->
+          <div class="live-clock-card">
+            <i class="ti ti-clock"></i>
+            <span id="current-time">--:-- --</span>
+            <span class="clock-divider">|</span>
+            <span id="current-date">Loading date...</span>
           </div>
 
           <!-- Admin Notification Bell Center -->
@@ -217,9 +220,26 @@
         <!-- 1. OVERVIEW / HOME TAB -->
         <div id="tab-overview" class="tab-pane active">
           
-          <div style="margin-bottom: 24px;">
-            <h3 style="margin: 0; font-family: var(--font-display); font-size: 1.6rem; color: var(--dark-color);">Welcome back, Admin!</h3>
-            <p style="margin: 4px 0 0 0; color: #888; font-size: 0.9rem; font-weight: 500;">Here is a comprehensive summary of your clinic activity today.</p>
+          <!-- Page Header & Action Bar -->
+          <div class="page-header-bar">
+            <div class="header-title-block">
+              <h2 id="admin-page-title" style="margin: 0 0 4px 0; font-family: var(--font-display); font-size: 1.85rem; font-weight: 700; color: var(--dark-color);">Executive Control Center</h2>
+              <p class="header-subtitle" id="admin-page-subtitle" style="margin: 0; color: #64748b; font-size: 0.9rem;">Comprehensive analytics, executive clinic operations, and management</p>
+            </div>
+            <div class="header-action-grid">
+              <button type="button" class="btn btn-primary" onclick="switchTab('appointments')" title="View Clinic Appointments Agenda">
+                <i class="ti ti-calendar-event"></i>
+                <span>Appointments</span>
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="switchTab('users')" title="Manage System Staff and Users">
+                <i class="ti ti-user-cog"></i>
+                <span>Manage Users</span>
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="switchTab('logs')" title="Review System and Audit Trail">
+                <i class="ti ti-file-text"></i>
+                <span>System Logs</span>
+              </button>
+            </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 24px;">

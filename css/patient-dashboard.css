@@ -539,12 +539,87 @@ body {
   font-size: 0.82rem;
   font-weight: 500;
   color: var(--text-secondary);
-  background: #ffffff;
+  white-space: nowrap;
+}
+
+.live-clock-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
   padding: 6px 14px;
   border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  border: 1px solid rgba(11, 60, 77, 0.08);
+}
+
+.live-clock-card i {
+  color: var(--primary-color, #0b3c4d);
+  font-size: 0.95rem;
+}
+
+.clock-divider {
+  color: #cbd5e1;
+  font-weight: 400;
+}
+
+.header-action-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  background: #ffffff;
+  padding: 6px;
+  border-radius: 12px;
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-xs);
-  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.header-action-grid .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.header-action-grid .btn-primary {
+  background: var(--primary-color, #0b3c4d);
+  color: #ffffff;
+}
+
+.header-action-grid .btn-primary:hover {
+  background: var(--secondary-color, #082d3b);
+}
+
+.header-action-grid .btn-outline-primary {
+  background: #ffffff;
+  color: var(--primary-color, #0b3c4d);
+  border-color: rgba(11, 60, 77, 0.25);
+}
+
+.header-action-grid .btn-outline-primary:hover {
+  background: #f0f7f9;
+  border-color: var(--primary-color, #0b3c4d);
+}
+
+.header-action-grid .btn-outline-secondary {
+  background: #ffffff;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+.header-action-grid .btn-outline-secondary:hover {
+  background: #f8fafc;
+  color: var(--primary-color, #0b3c4d);
+  border-color: #94a3b8;
 }
 
 .notif-btn {

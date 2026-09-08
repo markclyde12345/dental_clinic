@@ -45,17 +45,38 @@
     });
   }
 
+  function initAccountingLiveClock() {
+    function tick() {
+      const now = new Date();
+      const timeEl = document.getElementById('current-time');
+      const dateEl = document.getElementById('current-date');
+      if (timeEl) {
+        timeEl.textContent = now.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        });
+      }
+      if (dateEl) {
+        dateEl.textContent = now.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+
   /* ═══════════════════════════════════════════════════════════
      1. INITIALIZATION & AUTH
      ═══════════════════════════════════════════════════════════ */
   document.addEventListener('DOMContentLoaded', () => {
-    // Current live date header
-    const dateEl = document.getElementById('current-date');
-    if (dateEl) {
-      dateEl.textContent = new Date().toLocaleDateString('en-US', {
-        weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'
-      });
-    }
+    // Current live clock header
+    initAccountingLiveClock();
 
     if (!token) {
       window.location.replace('login.html');
@@ -133,21 +154,26 @@
       targetPane.classList.add('active');
     }
 
-    // Update breadcrumb
-    const titles = {
-      overview: 'Financial Overview',
-      invoices: 'Invoices Ledger',
-      payments: 'Payments & Collections',
-      hmo: 'HMO & Insurance Claims',
-      expenses: 'Expenses & Bills',
-      inventory: 'Inventory Costs',
-      reports: 'Financial Reports',
-      settings: 'Billing Settings'
+    // Update header title, subtitle, and breadcrumb
+    const tabConfig = {
+      overview: { title: 'Financial Control Portal', sub: 'Manage clinic invoices, revenue ledgers, and payment reconciliations', breadcrumb: 'Financial Overview' },
+      invoices: { title: 'Clinic Invoices Ledger', sub: 'Browse issued invoices, check payment statuses, and print billing receipts', breadcrumb: 'Invoices Ledger' },
+      payments: { title: 'Payments & Collections', sub: 'Audit cash receipts, GCash/Maya settlements, and card transactions', breadcrumb: 'Payments & Collections' },
+      hmo: { title: 'HMO & Insurance Claims', sub: 'Process insurance coverage claims, corporate provider approvals, and payouts', breadcrumb: 'HMO & Insurance Claims' },
+      expenses: { title: 'Clinic Expenses & Bills', sub: 'Record clinic utility costs, supplier payables, and operational overheads', breadcrumb: 'Expenses & Bills' },
+      inventory: { title: 'Inventory Valuation & Costs', sub: 'Monitor clinic stock asset valuations, supply acquisitions, and unit costs', breadcrumb: 'Inventory Costs' },
+      reports: { title: 'Financial Reports & Analytics', sub: 'Monthly gross revenue, net margin summaries, and printable balance sheets', breadcrumb: 'Financial Reports' },
+      settings: { title: 'Billing Settings & Tax Rates', sub: 'Configure default payment options, invoicing tax presets, and clinic receipt details', breadcrumb: 'Billing Settings' }
     };
+
+    const currentTab = tabConfig[tabId] || { title: 'Financial Control Portal', sub: 'Financial management dashboard', breadcrumb: tabId };
+    const titleEl = document.getElementById('page-title');
+    const subEl = document.getElementById('page-subtitle');
     const breadcrumb = document.getElementById('breadcrumb-current');
-    if (breadcrumb && titles[tabId]) {
-      breadcrumb.textContent = titles[tabId];
-    }
+
+    if (titleEl) titleEl.textContent = currentTab.title;
+    if (subEl) subEl.textContent = currentTab.sub;
+    if (breadcrumb) breadcrumb.textContent = currentTab.breadcrumb;
   };
 
   /* ═══════════════════════════════════════════════════════════

@@ -150,23 +150,32 @@
 
     <!-- ==================== MAIN CONTENT ==================== -->
     <main class="main-content">
-      <!-- Top Header -->
-      <header class="top-header">
-        <div class="header-left">
-          <h2 id="page-title">Dentist Dashboard Overview</h2>
-          <p class="header-sub" id="header-subtitle">Welcome back, manage your clinical schedule & patients</p>
+      <!-- ─── TOP BAR (STICKY NAVBAR) ─── -->
+      <header class="dentist-top-bar">
+        <div class="top-bar-left">
+          <button class="burger-toggle" id="dentist-burger-toggle" onclick="toggleDentistMobileSidebar()" aria-label="Toggle Navigation Drawer">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="dentist-breadcrumb">
+            <span class="breadcrumb-root"><i class="fa-solid fa-tooth"></i> Dentist Portal</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current" id="dentist-breadcrumb-label">Dashboard Overview</span>
+          </div>
         </div>
-        <div class="header-actions">
-          <div class="header-date-badge">
-            <i class="fa-regular fa-calendar"></i>
-            <span id="current-date"></span>
+        <div class="top-bar-right">
+          <!-- Live Clock Card -->
+          <div class="live-clock-card">
+            <i class="fa-regular fa-clock"></i>
+            <span id="current-time">--:-- --</span>
+            <span class="clock-divider">|</span>
+            <span id="current-date">Loading date...</span>
           </div>
 
           <!-- Notification Dropdown Toggle -->
           <div class="notif-wrapper">
             <button class="icon-btn" id="notif-toggle" title="Notifications">
               <i class="fa-regular fa-bell"></i>
-              <span class="notif-badge" id="notif-badge-count">3</span>
+              <span class="notif-badge" id="notif-badge-count">0</span>
             </button>
             <div class="notif-dropdown" id="notif-dropdown" hidden>
               <div class="notif-header">
@@ -178,14 +187,32 @@
               </div>
             </div>
           </div>
-
-          <button class="btn btn-primary" onclick="openQuickActionModal()">
-            <i class="fa-solid fa-plus"></i> Quick Action
-          </button>
         </div>
       </header>
 
       <div class="dashboard-content">
+
+        <!-- Page Header & Action Bar -->
+        <div class="page-header-bar">
+          <div class="header-title-block">
+            <h2 id="page-title">Dentist Dashboard Overview</h2>
+            <p class="header-sub" id="header-subtitle">Welcome back, manage your clinical schedule &amp; patients</p>
+          </div>
+          <div class="header-action-grid">
+            <button class="btn btn-primary btn-quick-action" onclick="openQuickActionModal()" title="Perform Quick Clinical Action">
+              <i class="fa-solid fa-plus"></i>
+              <span>Quick Action</span>
+            </button>
+            <button class="btn btn-outline-secondary" onclick="switchTab('queue')" title="Go to Live Waiting Queue">
+              <i class="fa-solid fa-users"></i>
+              <span>Patient Queue</span>
+            </button>
+            <button class="btn btn-outline-secondary" onclick="switchTab('chart')" title="Open Dental Charting">
+              <i class="fa-solid fa-tooth"></i>
+              <span>Dental Chart</span>
+            </button>
+          </div>
+        </div>
 
         <!-- ==================== 1. OVERVIEW TAB ==================== -->
         <section id="tab-overview" class="tab-panel">

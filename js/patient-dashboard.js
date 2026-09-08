@@ -530,14 +530,31 @@ function openContactClinicPrompt() {
   }
 }
 
-// ─── Date & Greeting ────────────────────────────────────────
+// ─── Date, Time & Greeting ──────────────────────────────────
 function setDateTime() {
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
-  });
-  const el = document.getElementById('header-date');
-  if (el) el.textContent = dateStr;
+  function tick() {
+    const now = new Date();
+    const timeEl = document.getElementById('current-time');
+    const dateEl = document.getElementById('header-date');
+    if (timeEl) {
+      timeEl.textContent = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+    }
+    if (dateEl) {
+      dateEl.textContent = now.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+  }
+  tick();
+  setInterval(tick, 1000);
 }
 
 function setGreeting() {

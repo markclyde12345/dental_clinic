@@ -19,13 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initDashboard() {
-  // Set live header date
-  const dateElem = document.getElementById('current-date');
-  if (dateElem) {
-    dateElem.textContent = new Date().toLocaleDateString('en-PH', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
-  }
+  // Start live clock
+  initDentistLiveClock();
 
   // Auth verification
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -59,6 +54,33 @@ async function initDashboard() {
   await loadOverview();
   await loadNotifications();
   setInterval(() => loadNotifications(), 30000);
+}
+
+// ─── Live Clock Controller ───────────────────────────────────────
+function initDentistLiveClock() {
+  function tick() {
+    const now = new Date();
+    const timeEl = document.getElementById('current-time');
+    const dateEl = document.getElementById('current-date');
+    if (timeEl) {
+      timeEl.textContent = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+    }
+    if (dateEl) {
+      dateEl.textContent = now.toLocaleDateString('en-PH', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+  }
+  tick();
+  setInterval(tick, 1000);
 }
 
 // ─── User Profile Setup ──────────────────────────────────────────
@@ -167,22 +189,28 @@ function switchTab(tabName) {
     }
   } catch (e) {}
 
-  const titles = {
-    overview: 'Dashboard Overview',
-    schedule: "Today's Patient Schedule",
-    queue: 'Live Patient Queue & Chair',
-    patients: 'Patient Electronic Records',
-    chart: 'Interactive Dental Charting',
-    treatments: 'Treatment Plans & Procedures',
-    prescriptions: 'Prescriptions Management (Rx)',
-    followups: 'Post-Op Follow-Up Management',
-    calendar: 'Clinical Appointments Calendar',
-    reports: 'Clinical Reports & Statistics',
-    profile: 'Dentist Professional Profile'
+  const tabConfig = {
+    overview: { title: 'Dentist Dashboard Overview', sub: 'Welcome back, manage your clinical schedule & patients', breadcrumb: 'Dashboard Overview' },
+    schedule: { title: "Today's Patient Schedule", sub: 'Appointments list, chair assignments, and treatment timeline', breadcrumb: 'Schedule' },
+    queue: { title: 'Live Patient Queue & Chair', sub: 'Front desk queue arrivals and real-time dental chair occupancy', breadcrumb: 'Patient Queue' },
+    patients: { title: 'Patient Electronic Records', sub: 'Search patient database, clinical chart histories, and notes', breadcrumb: 'Patient Records' },
+    chart: { title: 'Interactive Dental Charting', sub: 'Interactive adult & pediatric odontogram and procedure mapping', breadcrumb: 'Dental Chart' },
+    treatments: { title: 'Treatment Plans & Procedures', sub: 'Manage ongoing treatment plans, clinical notes, and diagnosis', breadcrumb: 'Treatments' },
+    prescriptions: { title: 'Prescriptions Management (Rx)', sub: 'Issue medical prescriptions, dosages, and patient medication advice', breadcrumb: 'Prescriptions (Rx)' },
+    followups: { title: 'Post-Op Follow-Up Management', sub: 'Track post-operative recovery reminders and follow-up calls', breadcrumb: 'Follow-Ups' },
+    calendar: { title: 'Clinical Appointments Calendar', sub: 'Monthly and weekly clinical schedule and doctor availability', breadcrumb: 'Calendar' },
+    reports: { title: 'Clinical Reports & Statistics', sub: 'Dentist performance analytics, treated cases, and productivity', breadcrumb: 'Reports' },
+    profile: { title: 'Dentist Professional Profile', sub: 'Doctor credentials, clinical specialty, and contact details', breadcrumb: 'Profile' }
   };
 
+  const currentTab = tabConfig[tabName] || { title: 'Dentist Portal', sub: 'Clinical management dashboard', breadcrumb: tabName };
   const titleEl = document.getElementById('page-title');
-  if (titleEl) titleEl.textContent = titles[tabName] || 'Dentist Portal';
+  const subEl = document.getElementById('header-subtitle');
+  const breadcrumbEl = document.getElementById('dentist-breadcrumb-label');
+
+  if (titleEl) titleEl.textContent = currentTab.title;
+  if (subEl) subEl.textContent = currentTab.sub;
+  if (breadcrumbEl) breadcrumbEl.textContent = currentTab.breadcrumb;
 
   // Lazy tab loaders
   if (tabName === 'overview') loadOverview();

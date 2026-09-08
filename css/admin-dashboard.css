@@ -1437,7 +1437,8 @@ body.dark-theme .btn-log-clear {
   gap: 14px;
 }
 
-.admin-date-badge {
+.admin-date-badge,
+.live-clock-card {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1447,6 +1448,78 @@ body.dark-theme .btn-log-clear {
   font-size: 0.82rem;
   font-weight: 600;
   color: #475569;
+  border: 1px solid rgba(11, 60, 77, 0.08);
+}
+
+.live-clock-card i {
+  color: var(--primary-color, #0b3c4d);
+  font-size: 0.95rem;
+}
+
+.clock-divider {
+  color: #cbd5e1;
+  font-weight: 400;
+}
+
+/* Page Header & Action Bar */
+.page-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.page-header-bar .header-title-block {
+  flex: 1 1 auto;
+  min-width: 260px;
+}
+
+.header-action-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  background: #ffffff;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.header-action-grid .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.header-action-grid .btn-primary {
+  background: var(--primary-color);
+  color: #ffffff;
+}
+
+.header-action-grid .btn-primary:hover {
+  background: #082d3b;
+}
+
+.header-action-grid .btn-secondary {
+  background: #ffffff;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+.header-action-grid .btn-secondary:hover {
+  background: #f8fafc;
+  color: var(--primary-color);
+  border-color: #94a3b8;
 }
 
 .admin-notif-wrapper {
@@ -1705,9 +1778,27 @@ body.dark-theme .admin-breadcrumb-current {
   color: #f1f5f9;
 }
 
-body.dark-theme .admin-date-badge {
+body.dark-theme .admin-date-badge,
+body.dark-theme .live-clock-card {
   background: #1e293b;
   color: #94a3b8;
+  border-color: #334155;
+}
+
+body.dark-theme .header-action-grid {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+body.dark-theme .header-action-grid .btn-secondary {
+  background: #0f172a;
+  color: #cbd5e1;
+  border-color: #334155;
+}
+
+body.dark-theme .header-action-grid .btn-secondary:hover {
+  background: #1e293b;
+  color: #ffffff;
 }
 
 body.dark-theme .admin-notif-btn {

@@ -104,20 +104,27 @@
     <!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
     <main class="main-content">
 
-      <!-- Top Header -->
+      <!-- ─── TOP BAR (STICKY NAVBAR) ─── -->
       <header class="top-header">
         <div class="header-left">
           <button class="burger-toggle" id="burger-toggle" aria-label="Toggle menu">
             <span></span><span></span><span></span>
           </button>
           <div class="breadcrumb">
-            <span class="breadcrumb-item">Patient Dashboard</span>
+            <span class="breadcrumb-item"><i class="ti ti-heart-handshake" style="font-size: 15px; margin-right: 4px;"></i> Patient Portal</span>
             <i class="ti ti-chevron-right" style="font-size: 14px;"></i>
             <span class="breadcrumb-current" id="breadcrumb-current">Overview</span>
           </div>
         </div>
         <div class="header-right">
-          <span class="header-date" id="header-date"></span>
+          <!-- Live Clock Card -->
+          <div class="live-clock-card">
+            <i class="ti ti-clock"></i>
+            <span id="current-time">--:-- --</span>
+            <span class="clock-divider">|</span>
+            <span id="header-date">Loading date...</span>
+          </div>
+
           <!-- Patient Notification Center -->
           <div class="notif-wrapper" id="patient-notif-wrapper">
             <button type="button" class="notif-btn" id="btn-patient-notif" aria-label="Notifications" title="View Notifications"><i class="ti ti-bell" style="font-size: 18px;"></i>
@@ -149,9 +156,6 @@
               </div>
             </div>
           </div>
-          <button class="quick-book-btn" id="quick-book-btn" style="background: var(--primary-color); color: #ffffff;" title="Book Appointment"><i class="ti ti-plus" style="font-size: 14px;"></i>
-            <span class="quick-book-text">Book Appointment</span>
-          </button>
           <div class="header-user" id="header-user">
             <div class="header-avatar" id="header-avatar">P</div>
             <span class="header-user-name" id="header-user-name">Patient</span>
@@ -161,10 +165,25 @@
 
       <!-- ══════════ OVERVIEW SECTION ══════════ -->
       <section id="overview-section" class="content-section active">
-        <div class="section-header">
-          <div>
+        <!-- Page Header & Action Bar -->
+        <div class="page-header-bar section-header">
+          <div class="header-title-block">
             <h1 class="section-title">Patient Overview</h1>
             <p class="section-subtitle" id="greeting-text">Good morning! Here's your health summary.</p>
+          </div>
+          <div class="header-action-grid">
+            <button class="btn btn-primary" id="quick-book-btn" onclick="switchSection('appointments')" title="Book New Appointment">
+              <i class="ti ti-calendar-plus"></i>
+              <span>Book Appointment</span>
+            </button>
+            <button class="btn btn-outline-primary" onclick="switchSection('records')" title="View Dental Records">
+              <i class="ti ti-notes"></i>
+              <span>Dental Records</span>
+            </button>
+            <button class="btn btn-outline-secondary" onclick="switchSection('finances')" title="Check Invoices & Payments">
+              <i class="ti ti-receipt-2"></i>
+              <span>Finances</span>
+            </button>
           </div>
         </div>
 

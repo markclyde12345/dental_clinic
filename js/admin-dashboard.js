@@ -1,8 +1,30 @@
 // Admin Dashboard Logic
-
-document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
-  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-});
+function initAdminLiveClock() {
+  function tick() {
+    const now = new Date();
+    const timeEl = document.getElementById('current-time');
+    const dateEl = document.getElementById('current-date');
+    if (timeEl) {
+      timeEl.textContent = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+    }
+    if (dateEl) {
+      dateEl.textContent = now.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+initAdminLiveClock();
 
 const BASE_ORIGIN = (
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
