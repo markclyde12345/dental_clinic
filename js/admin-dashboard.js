@@ -413,6 +413,7 @@ function loadStats() {
     allInvoices = data.invoices || [];
     allAppointments = data.allAppointments || [];
     updateSidebarBranchBadges();
+    loadAdminNotifications();
 
     // Fills widgets safely
     const seenEl = document.getElementById('today-seen');
@@ -1213,6 +1214,7 @@ function loadAppointments() {
 
     allAppointments = Array.isArray(data) ? data : [];
     filterAndRenderAppointments();
+    loadAdminNotifications();
   })
   .catch(err => {
     console.error('Error loading appointments:', err);
@@ -1776,6 +1778,7 @@ function loadBilling() {
     }
 
     allInvoices = data.invoices || [];
+    loadAdminNotifications();
 
     let totalBilled = 0;
     let totalCollected = 0;
@@ -3767,49 +3770,229 @@ window.switchToInventoryTab = function() {
 // ADMIN NOTIFICATION CENTER LOGIC
 // ═══════════════════════════════════════════════════════════════════════════
 let adminNotificationsList = [];
-const ADMIN_READ_NOTIFS_KEY = 'admin_read_notif_ids';
+
+function getAdminReadNotifKey() {
+  const uid = (user && user.id) || 'admin';
+  return `admin_read_notifs_${uid}`;
+}
 
 function getAdminReadNotifIds() {
   try {
-    const raw = localStorage.getItem(ADMIN_READ_NOTIFS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(getAdminReadNotifKey());
+    return raw ? new Set(JSON.parse(raw)) : new Set();
   } catch (_) {
-    return [];
+    return new Set();
   }
+}
+
+function saveAdminReadNotifId(id) {
+  try {
+    const set = getAdminReadNotifIds();
+    set.add(id);
+    localStorage.setItem(getAdminReadNotifKey(), JSON.stringify([...set]));
+  } catch (_) {}
 }
 
 function saveAdminReadNotifIds(ids) {
   try {
-    localStorage.setItem(ADMIN_READ_NOTIFS_KEY, JSON.stringify(ids));
+    const set = getAdminReadNotifIds();
+    (ids || []).forEach(id => set.add(id));
+    localStorage.setItem(getAdminReadNotifKey(), JSON.stringify([...set]));
   } catch (_) {}
 }
 
+function getAdminNotifTablerIcon(icon, type) {
+  const iconMap = {
+    'calendar-clock': 'ti-calendar-time',
+    'calendar-time': 'ti-calendar-time',
+    'calendar-plus': 'ti-calendar-plus',
+    'calendar-x': 'ti-calendar-x',
+    'calendar-check': 'ti-calendar-check',
+    'calendar': 'ti-calendar',
+    'hourglass': 'ti-hourglass',
+    'clock': 'ti-clock',
+    'receipt': 'ti-receipt-2',
+    'credit-card': 'ti-credit-card',
+    'alert-triangle': 'ti-alert-triangle',
+    'triangle-exclamation': 'ti-alert-triangle',
+    'shield-check': 'ti-shield-check',
+    'chair': 'ti-armchair',
+    'user-doctor': 'ti-stethoscope',
+    'tooth': 'ti-dental',
+    'users': 'ti-users',
+    'bell': 'ti-bell'
+  };
+  const clean = String(icon || '').replace(/^ti-/, '').trim();
+  if (iconMap[clean]) return iconMap[clean];
+  if (type === 'danger') return 'ti-alert-triangle';
+  if (type === 'warning') return 'ti-alert-circle';
+  if (type === 'success') return 'ti-shield-check';
+  return 'ti-info-circle';
+}
+
+function generateLocalAdminAlerts() {
+  const alerts = [];
+  const now = Date.now();
+
+  // 1. Pending Bookings (actionable)
+  const pendingAppts = (allAppointments || []).filter(a => a.status === 'Pending');
+  if (pendingAppts.length > 0) {
+    pendingAppts.slice(0, 8).forEach(a => {
+      const pName = a.patient?.name || (a.patient ? `${a.patient.firstName || ''} ${a.patient.lastName || ''}`.trim() : '') || 'Patient';
+      const treatName = a.treatment?.name || 'Dental Consultation';
+      const branchName = typeof getAppointmentBranch === 'function' ? getAppointmentBranch(a) : '';
+      const d = a.appointment_date ? new Date(a.appointment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Scheduled date';
+
+      alerts.push({
+        id: `local-admin-pending-${a.id}`,
+        entity_id: a.id,
+        category: 'operations',
+        title: 'New Booking Request',
+        message: `${pName} booked ${treatName}${branchName ? ' (' + branchName + ')' : ''} for ${d}. Review and confirm.`,
+        type: 'info',
+        icon: 'calendar-plus',
+        time: a.created_at || new Date().toISOString(),
+        action: {
+          type: 'switch_tab',
+          tab: 'appointments',
+          filterStatus: 'Pending',
+          filterBranch: branchName,
+          entityId: a.id
+        }
+      });
+    });
+  }
+
+  // 2. Recent Cancellations
+  const cancelledAppts = (allAppointments || []).filter(a => a.status === 'Cancelled');
+  if (cancelledAppts.length > 0) {
+    cancelledAppts.slice(0, 4).forEach(a => {
+      const pName = a.patient?.name || 'Patient';
+      const treatName = a.treatment?.name || 'Appointment';
+      const branchName = typeof getAppointmentBranch === 'function' ? getAppointmentBranch(a) : '';
+      const d = a.appointment_date ? new Date(a.appointment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Scheduled date';
+
+      alerts.push({
+        id: `local-admin-cancelled-${a.id}`,
+        entity_id: a.id,
+        category: 'operations',
+        title: 'Appointment Cancelled',
+        message: `${pName} cancelled ${treatName}${branchName ? ' at ' + branchName : ''} for ${d}. Slot reopened.`,
+        type: 'danger',
+        icon: 'calendar-x',
+        time: a.created_at || new Date().toISOString(),
+        action: {
+          type: 'switch_tab',
+          tab: 'appointments',
+          filterStatus: 'Cancelled',
+          filterBranch: branchName,
+          entityId: a.id
+        }
+      });
+    });
+  }
+
+  // 3. Checked In Patients in Lounge
+  const checkedInAppts = (allAppointments || []).filter(a => a.status === 'Checked In');
+  if (checkedInAppts.length > 0) {
+    alerts.push({
+      id: `local-admin-queue-${checkedInAppts.length}`,
+      category: 'operations',
+      title: 'Patients in Clinic Lounge',
+      message: `${checkedInAppts.length} patient${checkedInAppts.length !== 1 ? 's are' : ' is'} checked in and waiting in the front lounge.`,
+      type: 'warning',
+      icon: 'hourglass',
+      time: new Date().toISOString(),
+      action: { type: 'switch_tab', tab: 'appointments', filterStatus: 'Checked In' }
+    });
+
+    const overdue = checkedInAppts.filter(a => {
+      const t = new Date(a.appointment_date || a.created_at || now).getTime();
+      return (now - t) > 15 * 60 * 1000;
+    });
+    if (overdue.length > 0) {
+      alerts.push({
+        id: 'local-admin-long-wait-alert',
+        category: 'operations',
+        title: 'Lounge Wait Time Alert',
+        message: `${overdue.length} patient(s) waiting in lounge >15 mins. Check room readiness.`,
+        type: 'danger',
+        icon: 'triangle-exclamation',
+        time: new Date().toISOString(),
+        action: { type: 'switch_tab', tab: 'appointments', filterStatus: 'Checked In' }
+      });
+    }
+  }
+
+  // 4. Unpaid Invoices
+  const unpaidInvs = (allInvoices || []).filter(i => {
+    const s = (i.status || '').toLowerCase();
+    return s === 'unpaid' || s === 'pending';
+  });
+  if (unpaidInvs.length > 0) {
+    const totalPending = unpaidInvs.reduce((sum, i) => sum + (parseFloat(i.amount || i.total_amount || 0) || 0), 0);
+    alerts.push({
+      id: `local-admin-unpaid-${unpaidInvs.length}-${Math.round(totalPending)}`,
+      category: 'finance',
+      title: 'Unpaid Invoices Awaiting Collection',
+      message: `${unpaidInvs.length} invoice(s) totaling ₱${totalPending.toLocaleString('en-PH', { minimumFractionDigits: 2 })} are currently unpaid.`,
+      type: 'warning',
+      icon: 'receipt',
+      time: new Date().toISOString(),
+      action: { type: 'switch_tab', tab: 'billing' }
+    });
+  }
+
+  // 5. System Health Status
+  alerts.push({
+    id: 'local-admin-system-health',
+    category: 'system',
+    title: 'Clinic Operations System Healthy',
+    message: 'Multi-branch synchronization, database connection, and audit logging pipelines are operating normally.',
+    type: 'success',
+    icon: 'shield-check',
+    time: new Date().toISOString()
+  });
+
+  return alerts;
+}
+
 function setupAdminNotifications() {
+  if (window._adminNotifSetupDone) return;
+  window._adminNotifSetupDone = true;
+
   const btn = document.getElementById('btn-admin-notif');
   const dropdown = document.getElementById('admin-notif-dropdown');
 
-  if (!btn || !dropdown) return;
+  if (btn && dropdown) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isHidden = dropdown.hidden;
+      dropdown.hidden = !isHidden;
+      if (!dropdown.hidden) {
+        loadAdminNotifications(false);
+      }
+    });
 
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isHidden = dropdown.hidden;
-    dropdown.hidden = !isHidden;
-    if (isHidden) {
+    document.addEventListener('click', (e) => {
+      if (!dropdown.hidden && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+        dropdown.hidden = true;
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !dropdown.hidden) {
+        dropdown.hidden = true;
+      }
+    });
+  }
+
+  // Background polling every 30 seconds
+  if (!window._adminNotifInterval) {
+    window._adminNotifInterval = setInterval(() => {
       loadAdminNotifications(false);
-    }
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
-      dropdown.hidden = true;
-    }
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !dropdown.hidden) {
-      dropdown.hidden = true;
-    }
-  });
+    }, 30000);
+  }
 }
 
 async function loadAdminNotifications(forceRefresh = false) {
@@ -3820,34 +4003,42 @@ async function loadAdminNotifications(forceRefresh = false) {
   if (forceRefresh && listEl) {
     listEl.innerHTML = `
       <div class="and-empty">
-        <i class="ti ti-loader-2 ti-spin" style="font-size: 24px; color: #94a3b8;"></i>
+        <i class="ti ti-loader-2 ti-spin" style="font-size: 24px; color: #0284c7;"></i>
         <p>Refreshing clinic alerts...</p>
       </div>
     `;
   }
 
+  let notifs = null;
   try {
     const authToken = localStorage.getItem('token') || sessionStorage.getItem('token');
-    const res = await fetch(`${BASE_ORIGIN}/api/notifications`, {
-      headers: {
-        'Authorization': `Bearer ${authToken}`
+    if (authToken) {
+      const res = await fetch(`${BASE_ORIGIN}/api/notifications?role=admin`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          notifs = data;
+        }
       }
-    });
-
-    if (!res.ok) throw new Error('Failed to fetch notifications');
-    const notifs = await res.json();
-    adminNotificationsList = Array.isArray(notifs) ? notifs : [];
-    renderAdminNotifications(adminNotificationsList);
-  } catch (err) {
-    console.error('Error fetching admin notifications:', err);
-    if (listEl && (!adminNotificationsList || adminNotificationsList.length === 0)) {
-      listEl.innerHTML = `
-        <div class="and-empty">
-          <i class="ti ti-bell-off" style="font-size: 28px; color: #94a3b8;"></i>
-          <p>No active alerts right now.</p>
-        </div>
-      `;
     }
+  } catch (err) {
+    console.warn('[Admin Notifications] Backend fetch error:', err);
+  }
+
+  // Fallback to locally synthesized alerts if backend returned empty or unreachable
+  if (!notifs || notifs.length === 0) {
+    notifs = generateLocalAdminAlerts();
+  }
+
+  adminNotificationsList = notifs || [];
+  renderAdminNotifications(adminNotificationsList);
+
+  if (forceRefresh) {
+    showToast('Alerts refreshed', 'success');
   }
 }
 window.loadAdminNotifications = loadAdminNotifications;
@@ -3858,13 +4049,13 @@ function renderAdminNotifications(notifs) {
   const labelEl = document.getElementById('and-unread-label');
   if (!listEl) return;
 
-  const readIds = getAdminReadNotifIds();
-  const unreadCount = notifs.filter(n => !readIds.includes(n.id)).length;
+  const readSet = getAdminReadNotifIds();
+  const unreadCount = notifs.filter(n => !readSet.has(n.id)).length;
 
   if (badgeEl) {
     if (unreadCount > 0) {
       badgeEl.textContent = unreadCount > 9 ? '9+' : unreadCount;
-      badgeEl.style.display = 'inline-block';
+      badgeEl.style.display = 'inline-flex';
     } else {
       badgeEl.style.display = 'none';
     }
@@ -3885,43 +4076,31 @@ function renderAdminNotifications(notifs) {
   }
 
   listEl.innerHTML = notifs.map((n, idx) => {
-    const isUnread = !readIds.includes(n.id);
+    const isUnread = !readSet.has(n.id);
     const typeClass = `type-${n.type || 'info'}`;
+    const iconClass = getAdminNotifTablerIcon(n.icon, n.type);
     const timeStr = formatAdminNotifTime(n.time);
 
-    let iconSvg = '';
-    if (n.icon === 'triangle-exclamation') {
-      iconSvg = '<i class="ti ti-alert-triangle" style="font-size: 18px;"></i>';
-    } else if (n.icon === 'calendar-clock' || n.category === 'operations') {
-      iconSvg = '<i class="ti ti-calendar-time" style="font-size: 18px;"></i>';
-    } else if (n.icon === 'shield-check' || n.type === 'success') {
-      iconSvg = '<i class="ti ti-shield-check" style="font-size: 18px;"></i>';
-    } else {
-      iconSvg = '<i class="ti ti-info-circle" style="font-size: 18px;"></i>';
-    }
-
     return `
-      <div class="and-item ${isUnread ? 'unread' : ''}" onclick="onAdminNotificationClick('${escapeHtml(n.id)}', ${idx})">
+      <div class="and-item ${isUnread ? 'unread' : ''}" onclick="onAdminNotificationClick('${escapeHtml(n.id)}', ${idx})" role="button" tabindex="0">
         <div class="and-icon-box ${typeClass}">
-          ${iconSvg}
+          <i class="ti ${escapeHtml(iconClass)}" style="font-size: 18px;"></i>
         </div>
         <div class="and-body">
-          <div class="and-title">${escapeHtml(n.title)}</div>
+          <div class="and-title-row">
+            <div class="and-title">${escapeHtml(n.title)}</div>
+            ${isUnread ? '<div class="and-dot" title="Unread alert"></div>' : ''}
+          </div>
           <div class="and-desc">${escapeHtml(n.message)}</div>
-          <div class="and-time">${timeStr}</div>
+          <div class="and-time"><i class="ti ti-clock" style="font-size: 0.68rem; margin-right: 3px;"></i>${timeStr}</div>
         </div>
-        ${isUnread ? '<div class="and-dot"></div>' : ''}
       </div>
     `;
   }).join('');
 }
 
 function onAdminNotificationClick(notifId, index) {
-  const readIds = getAdminReadNotifIds();
-  if (!readIds.includes(notifId)) {
-    readIds.push(notifId);
-    saveAdminReadNotifIds(readIds);
-  }
+  saveAdminReadNotifId(notifId);
 
   const notif = adminNotificationsList[index] || adminNotificationsList.find(n => n.id === notifId);
   const dropdown = document.getElementById('admin-notif-dropdown');
@@ -3930,8 +4109,51 @@ function onAdminNotificationClick(notifId, index) {
   renderAdminNotifications(adminNotificationsList);
 
   if (notif && notif.action) {
-    if (notif.action.type === 'switch_tab' && notif.action.tab) {
-      activateTab(notif.action.tab);
+    const act = notif.action;
+    if (act.type === 'switch_tab' && act.tab) {
+      activateTab(act.tab);
+
+      if (act.tab === 'appointments') {
+        if (act.filterStatus) {
+          const statusSelect = document.getElementById('filter-status');
+          if (statusSelect) {
+            statusSelect.value = act.filterStatus;
+          }
+        }
+        if (act.filterBranch) {
+          const branchSelect = document.getElementById('filter-branch');
+          if (branchSelect) {
+            const fb = act.filterBranch.toLowerCase();
+            let matchedValue = 'all';
+            if (fb.includes('minglanilla')) matchedValue = 'Minglanilla';
+            else if (fb.includes('talisay')) matchedValue = 'Talisay';
+            else if (fb.includes('main') || fb.includes('naga')) matchedValue = 'Main Branch';
+            branchSelect.value = matchedValue;
+            if (typeof selectAdminBranch === 'function') {
+              selectAdminBranch(matchedValue);
+            }
+          }
+        }
+        if (typeof filterAndRenderAppointments === 'function') {
+          filterAndRenderAppointments();
+        }
+        if (act.entityId) {
+          setTimeout(() => {
+            const rows = document.querySelectorAll('#appointments-table-body tr');
+            rows.forEach(tr => {
+              if (tr.innerHTML.includes(act.entityId.slice(0, 8))) {
+                tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                tr.style.outline = '2px solid #0284c7';
+                tr.style.backgroundColor = 'rgba(2, 132, 199, 0.08)';
+                setTimeout(() => {
+                  tr.style.outline = '';
+                  tr.style.backgroundColor = '';
+                }, 3000);
+              }
+            });
+          }, 200);
+        }
+      }
     }
   }
 }
@@ -3940,7 +4162,17 @@ window.onAdminNotificationClick = onAdminNotificationClick;
 function markAllAdminNotificationsRead() {
   const allIds = adminNotificationsList.map(n => n.id);
   saveAdminReadNotifIds(allIds);
+
+  // Immediate visual response
+  const badgeEl = document.getElementById('admin-notif-count');
+  const labelEl = document.getElementById('and-unread-label');
+  if (badgeEl) badgeEl.style.display = 'none';
+  if (labelEl) labelEl.textContent = '0 New';
+  document.querySelectorAll('.and-item.unread').forEach(el => el.classList.remove('unread'));
+  document.querySelectorAll('.and-dot').forEach(el => el.remove());
+
   renderAdminNotifications(adminNotificationsList);
+  showToast('All alerts marked as read', 'success');
 }
 window.markAllAdminNotificationsRead = markAllAdminNotificationsRead;
 

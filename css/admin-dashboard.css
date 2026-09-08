@@ -1718,6 +1718,10 @@ body.dark-theme .btn-log-clear {
   animation: adminDropdownFade 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.admin-notif-dropdown[hidden] {
+  display: none !important;
+}
+
 @keyframes adminDropdownFade {
   from { opacity: 0; transform: translateY(-8px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -1780,10 +1784,19 @@ body.dark-theme .btn-log-clear {
 
 .and-item.unread {
   background: #f0f9ff;
+  border-left: 3px solid #0284c7;
 }
 
 .and-item.unread:hover {
   background: #e0f2fe;
+}
+
+.and-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
 }
 
 .and-icon-box {

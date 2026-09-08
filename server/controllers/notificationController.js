@@ -298,8 +298,132 @@ const getUserNotifications = async (req, res) => {
     // ─────────────────────────────────────────────────────────────
     // 3. ADMIN & ACCOUNTING NOTIFICATIONS
     // ─────────────────────────────────────────────────────────────
-    else if (userRole === 'Admin' || userRole === 'Accounting') {
-      // 3a. Overdue Balances (> 30 days)
+    else if (userRole === 'Admin' || userRole === 'Super Admin' || userRole === 'Accounting' || req.query.role === 'admin') {
+      const isAdminRole = userRole === 'Admin' || userRole === 'Super Admin' || req.query.role === 'admin';
+
+      if (isAdminRole) {
+        // 3a. Pending Appointments (Individual actionable bookings)
+        const { data: pendingAppts } = await supabase
+          .from('appointments')
+          .select(`
+            id, appointment_date, status, created_at, notes,
+            patient:patient_id ( name, contact_number ),
+            treatment:treatment_id ( name )
+          `)
+          .eq('status', 'Pending')
+          .order('created_at', { ascending: false })
+          .limit(8);
+
+        (pendingAppts || []).forEach(a => {
+          const patientName = a.patient?.name || 'Patient';
+          const treatmentName = a.treatment?.name || 'Dental Consultation';
+          const branchMatch = (a.notes || '').match(/\[Branch:\s*([^\]]+)\]/i) || (a.notes || '').match(/\[Location:\s*([^\]]+)\]/i);
+          const branchName = branchMatch ? branchMatch[1].trim() : '';
+          const d = new Date(a.appointment_date);
+          const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Date';
+
+          notifications.push({
+            id: `admin-pending-${a.id}`,
+            entity_id: a.id,
+            category: 'operations',
+            title: 'New Booking Request',
+            message: `${patientName} booked ${treatmentName}${branchName ? ' (' + branchName + ')' : ''} for ${dateStr}. Review and confirm.`,
+            type: 'info',
+            icon: 'calendar-plus',
+            time: a.created_at || new Date().toISOString(),
+            action: {
+              type: 'switch_tab',
+              tab: 'appointments',
+              filterStatus: 'Pending',
+              filterBranch: branchName,
+              entityId: a.id
+            }
+          });
+        });
+
+        // 3b. Recent Cancellations (alert that chair slot reopened)
+        const { data: cancelledAppts } = await supabase
+          .from('appointments')
+          .select(`
+            id, appointment_date, status, created_at, notes,
+            patient:patient_id ( name ),
+            treatment:treatment_id ( name )
+          `)
+          .eq('status', 'Cancelled')
+          .order('created_at', { ascending: false })
+          .limit(4);
+
+        (cancelledAppts || []).forEach(a => {
+          const patientName = a.patient?.name || 'Patient';
+          const treatmentName = a.treatment?.name || 'Appointment';
+          const branchMatch = (a.notes || '').match(/\[Branch:\s*([^\]]+)\]/i) || (a.notes || '').match(/\[Location:\s*([^\]]+)\]/i);
+          const branchName = branchMatch ? branchMatch[1].trim() : '';
+          const d = new Date(a.appointment_date);
+          const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Date';
+
+          notifications.push({
+            id: `admin-cancelled-${a.id}`,
+            entity_id: a.id,
+            category: 'operations',
+            title: 'Appointment Cancelled',
+            message: `${patientName} cancelled ${treatmentName}${branchName ? ' at ' + branchName : ''} for ${dateStr}. Slot reopened.`,
+            type: 'danger',
+            icon: 'calendar-x',
+            time: a.created_at || new Date().toISOString(),
+            action: {
+              type: 'switch_tab',
+              tab: 'appointments',
+              filterStatus: 'Cancelled',
+              filterBranch: branchName,
+              entityId: a.id
+            }
+          });
+        });
+
+        // 3c. Front Lounge Queue
+        const { data: queueAppts } = await supabase
+          .from('appointments')
+          .select(`
+            id, appointment_date, status, created_at,
+            patient:patient_id ( name ),
+            treatment:treatment_id ( name )
+          `)
+          .eq('status', 'Checked In');
+
+        if (queueAppts && queueAppts.length > 0) {
+          notifications.push({
+            id: `admin-queue-${queueAppts.length}`,
+            category: 'operations',
+            title: 'Patients in Clinic Lounge',
+            message: `${queueAppts.length} patient${queueAppts.length !== 1 ? 's are' : ' is'} checked in and waiting in the clinic front lounge.`,
+            type: 'warning',
+            icon: 'hourglass',
+            time: new Date().toISOString(),
+            action: { type: 'switch_tab', tab: 'appointments', filterStatus: 'Checked In' }
+          });
+
+          // Lounge overdue wait alert (>15 mins)
+          const nowMs = Date.now();
+          const overdue = queueAppts.filter(a => {
+            const t = new Date(a.appointment_date || a.created_at || nowMs).getTime();
+            return (nowMs - t) > 15 * 60 * 1000;
+          });
+          if (overdue.length > 0) {
+            notifications.push({
+              id: 'admin-long-wait-alert',
+              category: 'operations',
+              title: 'Lounge Wait Time Alert',
+              message: `${overdue.length} patient(s) waiting in lounge >15 mins. Check dentist room readiness.`,
+              type: 'danger',
+              icon: 'triangle-exclamation',
+              time: new Date().toISOString(),
+              action: { type: 'switch_tab', tab: 'appointments', filterStatus: 'Checked In' }
+            });
+          }
+        }
+      }
+
+      // 3d. Overdue Balances (> 30 days)
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const { data: overdueInvs } = await supabase
         .from('invoices')
@@ -320,7 +444,7 @@ const getUserNotifications = async (req, res) => {
         });
       }
 
-      // 3b. Unpaid Invoices
+      // 3e. Unpaid Invoices Counter
       const { data: unpaidInvs } = await supabase
         .from('invoices')
         .select('id, amount')
@@ -329,7 +453,7 @@ const getUserNotifications = async (req, res) => {
       if (unpaidInvs && unpaidInvs.length > 0) {
         const totalPending = unpaidInvs.reduce((sum, i) => sum + (parseFloat(i.amount) || 0), 0);
         notifications.push({
-          id: 'billing-unpaid-counter',
+          id: `billing-unpaid-${unpaidInvs.length}-${Math.round(totalPending)}`,
           category: 'finance',
           title: 'Unpaid Invoices Awaiting Collection',
           message: `${unpaidInvs.length} invoice(s) totaling ₱${totalPending.toLocaleString('en-PH', { minimumFractionDigits: 2 })} are currently unpaid.`,
@@ -340,32 +464,13 @@ const getUserNotifications = async (req, res) => {
         });
       }
 
-      if (userRole === 'Admin') {
-        // 3c. Recent Bookings & Pending Approvals
-        const { count: pendingCount } = await supabase
-          .from('appointments')
-          .select('id', { count: 'exact', head: true })
-          .eq('status', 'Pending');
-
-        if (pendingCount && pendingCount > 0) {
-          notifications.push({
-            id: 'admin-pending-count',
-            category: 'operations',
-            title: 'Pending Appointment Approvals',
-            message: `${pendingCount} appointment request(s) require review or front desk confirmation.`,
-            type: 'warning',
-            icon: 'calendar-clock',
-            time: new Date().toISOString(),
-            action: { type: 'switch_tab', tab: 'appointments' }
-          });
-        }
-
-        // 3d. System & Audit Notification
+      if (isAdminRole) {
+        // 3f. System & Clinic Operations Status
         notifications.push({
           id: 'admin-system-status',
           category: 'system',
           title: 'Clinic Operations System Healthy',
-          message: 'Database connection, PayMongo gateway, and audit log pipelines are operating normally.',
+          message: 'Multi-branch synchronization, database connection, and audit logging pipelines are operating normally.',
           type: 'success',
           icon: 'shield-check',
           time: new Date().toISOString()
