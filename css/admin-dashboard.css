@@ -1687,14 +1687,17 @@ body.dark-theme .btn-log-clear {
   color: #ffffff;
   font-size: 0.65rem;
   font-weight: 800;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 10px;
-  min-width: 17px;
-  height: 17px;
-  line-height: 15px;
+  min-width: 18px;
+  height: 18px;
   box-sizing: border-box;
   text-align: center;
   border: 2px solid #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   animation: adminPulseBadge 2.2s infinite ease-in-out;
 }
 

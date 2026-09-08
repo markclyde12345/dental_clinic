@@ -3059,11 +3059,12 @@ body {
   border-radius: 10px;
   background: #ef4444;
   color: #ffffff;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 800;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
   box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
 }
 

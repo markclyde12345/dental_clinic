@@ -3376,7 +3376,7 @@ function loadPatientNotifications(isManual = false) {
       // Update badge & header
       if (badge) {
         if (unreadCount > 0) {
-          badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+          badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
           badge.style.display = 'inline-flex';
         } else {
           badge.style.display = 'none';

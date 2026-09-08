@@ -4149,7 +4149,7 @@ function renderAdminNotifications(notifs) {
 
   if (badgeEl) {
     if (unreadCount > 0) {
-      badgeEl.textContent = unreadCount > 9 ? '9+' : unreadCount;
+      badgeEl.textContent = unreadCount > 99 ? '99+' : unreadCount;
       badgeEl.style.display = 'inline-flex';
     } else {
       badgeEl.style.display = 'none';

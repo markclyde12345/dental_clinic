@@ -1459,8 +1459,8 @@ async function loadNotifications() {
     const unreadCount = dentistNotificationsList.filter(n => !readIds.includes(n.id)).length;
 
     if (badgeEl) {
-      badgeEl.textContent = unreadCount > 9 ? '9+' : unreadCount;
-      badgeEl.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+      badgeEl.textContent = unreadCount > 99 ? '99+' : unreadCount;
+      badgeEl.style.display = unreadCount > 0 ? 'inline-flex' : 'none';
     }
 
     if (listEl) {
