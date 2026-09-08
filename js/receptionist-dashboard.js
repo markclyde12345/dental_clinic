@@ -221,6 +221,7 @@ async function loadDashboardData() {
     renderDentistsRoster();
     renderBillingTable(allInvoices);
     renderFastCheckInDatalist();
+    loadReceptionistNotifications();
 
   } catch (err) {
     console.error('[Dashboard Load Error]', err);
@@ -3096,6 +3097,39 @@ function exportAuditLogsCSV() {
 
 let allReceptionistNotifications = [];
 
+function getNotifTablerIcon(iconName, type) {
+  if (!iconName) {
+    if (type === 'danger') return 'ti-alert-circle';
+    if (type === 'warning') return 'ti-alert-triangle';
+    if (type === 'success') return 'ti-circle-check';
+    return 'ti-bell';
+  }
+  const clean = String(iconName).replace(/^fa-/, '').replace(/^ti-/, '');
+  const iconMap = {
+    'hourglass': 'ti-hourglass',
+    'hourglass-half': 'ti-hourglass',
+    'hourglass-alert': 'ti-hourglass-empty',
+    'chair': 'ti-armchair',
+    'calendar-check': 'ti-calendar-check',
+    'calendar-plus': 'ti-calendar-plus',
+    'calendar-x': 'ti-calendar-x',
+    'calendar-xmark': 'ti-calendar-x',
+    'calendar-clock': 'ti-calendar-time',
+    'clock': 'ti-clock',
+    'receipt': 'ti-receipt',
+    'credit-card': 'ti-credit-card',
+    'circle-check': 'ti-circle-check',
+    'circle-x': 'ti-circle-x',
+    'circle-xmark': 'ti-circle-x',
+    'alert-triangle': 'ti-alert-triangle',
+    'triangle-exclamation': 'ti-alert-triangle',
+    'user-doctor': 'ti-stethoscope',
+    'bell': 'ti-bell',
+    'tooth': 'ti-dental'
+  };
+  return iconMap[clean] || (clean.startsWith('ti-') ? clean : `ti-${clean}`);
+}
+
 function setupReceptionistNotifications() {
   const toggleBtn = document.getElementById('btn-receptionist-notif');
   const dropdown = document.getElementById('receptionist-notif-dropdown');
@@ -3120,6 +3154,13 @@ function setupReceptionistNotifications() {
         dropdown.hidden = true;
       }
     });
+
+    // Background polling every 30 seconds for live front desk updates
+    if (!window._receptionistNotifInterval) {
+      window._receptionistNotifInterval = setInterval(() => {
+        loadReceptionistNotifications();
+      }, 30000);
+    }
   }
 }
 
@@ -3142,79 +3183,239 @@ function saveReceptionistReadNotificationId(id) {
   } catch (_) {}
 }
 
-function loadReceptionistNotifications(isManual = false) {
+function generateLocalReceptionistAlerts() {
+  const alerts = [];
+  const now = Date.now();
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // 1. Waiting Lounge Queue
+  const waitingAppts = (allAppointments || []).filter(a => a.status === 'Checked In');
+  if (waitingAppts.length > 0) {
+    alerts.push({
+      id: 'local-rec-queue-active',
+      category: 'queue',
+      title: 'Patients Waiting in Lounge',
+      message: `${waitingAppts.length} patient${waitingAppts.length > 1 ? 's are' : ' is'} checked in and waiting in the front lounge.`,
+      type: 'warning',
+      icon: 'hourglass',
+      time: new Date().toISOString(),
+      action: { type: 'switch_tab', tab: 'queue' }
+    });
+
+    // Overdue wait (> 15 mins)
+    const overdueWait = waitingAppts.filter(a => {
+      const t = new Date(a.appointment_date || a.created_at || now).getTime();
+      return (now - t) > 15 * 60 * 1000;
+    });
+    if (overdueWait.length > 0) {
+      alerts.push({
+        id: 'local-rec-long-wait',
+        category: 'queue',
+        title: 'Lounge Wait Time Alert',
+        message: `${overdueWait.length} patient(s) waiting in lounge >15 mins. Check dentist chair availability.`,
+        type: 'danger',
+        icon: 'alert-triangle',
+        time: new Date().toISOString(),
+        action: { type: 'switch_tab', tab: 'queue' }
+      });
+    }
+  }
+
+  // 2. Pending Appointments
+  const pendingAppts = (allAppointments || []).filter(a => a.status === 'Pending');
+  if (pendingAppts.length > 0) {
+    pendingAppts.slice(0, 5).forEach(a => {
+      const pName = a.patient?.name || 'Patient';
+      const treat = a.treatment?.name || 'Dental Consultation';
+      const d = a.appointment_date ? new Date(a.appointment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Scheduled date';
+      alerts.push({
+        id: `local-rec-pending-${a.id}`,
+        entity_id: a.id,
+        category: 'appointment',
+        title: 'Pending Booking Request',
+        message: `${pName} booked ${treat} for ${d}. Confirm or assign doctor.`,
+        type: 'info',
+        icon: 'calendar-plus',
+        time: a.created_at || new Date().toISOString(),
+        action: { type: 'switch_tab', tab: 'appointments', filterStatus: 'Pending', entityId: a.id }
+      });
+    });
+  }
+
+  // 3. Today's Cancelled Appointments
+  const cancelledToday = (allAppointments || []).filter(a => {
+    if (a.status !== 'Cancelled') return false;
+    const dStr = (a.appointment_date || a.created_at || '').split('T')[0];
+    return dStr === todayStr;
+  });
+  if (cancelledToday.length > 0) {
+    cancelledToday.slice(0, 3).forEach(a => {
+      const pName = a.patient?.name || 'Patient';
+      alerts.push({
+        id: `local-rec-cancelled-${a.id}`,
+        entity_id: a.id,
+        category: 'appointment',
+        title: 'Appointment Cancelled',
+        message: `${pName} cancelled today's visit. Chair slot is now open.`,
+        type: 'danger',
+        icon: 'calendar-x',
+        time: a.created_at || new Date().toISOString(),
+        action: { type: 'switch_tab', tab: 'appointments', filterStatus: 'Cancelled', entityId: a.id }
+      });
+    });
+  }
+
+  // 4. Unpaid Invoices Ready for Collection
+  const unpaidInvs = (allInvoices || []).filter(inv => {
+    const s = (inv.status || '').toLowerCase();
+    return s === 'unpaid' || s === 'pending';
+  });
+  if (unpaidInvs.length > 0) {
+    const totalUnpaid = unpaidInvs.reduce((acc, i) => acc + (parseFloat(i.amount || i.total_amount || 0) || 0), 0);
+    alerts.push({
+      id: 'local-rec-unpaid-invoices',
+      category: 'billing',
+      title: 'Unpaid Invoices Awaiting Collection',
+      message: `${unpaidInvs.length} invoice(s) totaling ₱${totalUnpaid.toLocaleString('en-US', { minimumFractionDigits: 2 })} pending check-out.`,
+      type: 'warning',
+      icon: 'receipt',
+      time: new Date().toISOString(),
+      action: { type: 'switch_tab', tab: 'billing', filterStatus: 'Unpaid' }
+    });
+  }
+
+  return alerts;
+}
+
+async function loadReceptionistNotifications(isManual = false) {
   const badge = document.getElementById('receptionist-notif-count');
   const unreadLabel = document.getElementById('rnd-unread-label');
   const list = document.getElementById('receptionist-notif-list');
 
-  fetch(`${BASE_ORIGIN}/api/notifications`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  })
-  .then(res => res.json())
-  .then(notifs => {
-    if (!Array.isArray(notifs)) return;
-    allReceptionistNotifications = notifs;
-    const readSet = getReceptionistReadNotificationIds();
-    const unreadCount = notifs.filter(n => !readSet.has(n.id)).length;
+  let notifs = null;
 
-    if (badge) {
-      if (unreadCount > 0) {
-        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
-        badge.style.display = 'inline-flex';
-      } else {
-        badge.style.display = 'none';
+  try {
+    const authToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (authToken) {
+      const res = await fetch(`${BASE_ORIGIN}/api/notifications?role=receptionist`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          notifs = data;
+        }
       }
     }
+  } catch (err) {
+    console.warn('[Receptionist Notifications] Backend fetch error:', err);
+  }
 
-    if (unreadLabel) {
-      unreadLabel.textContent = `${unreadCount} New`;
+  // Fallback to local synthesis if backend returned empty or errored
+  if (!notifs || notifs.length === 0) {
+    notifs = generateLocalReceptionistAlerts();
+  }
+
+  allReceptionistNotifications = notifs || [];
+  const readSet = getReceptionistReadNotificationIds();
+  const unreadCount = allReceptionistNotifications.filter(n => !readSet.has(n.id)).length;
+
+  if (badge) {
+    if (unreadCount > 0) {
+      badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.style.display = 'none';
     }
+  }
 
-    if (list) {
-      if (notifs.length === 0) {
-        list.innerHTML = `
-          <div class="rnd-empty">
-            <i class="ti ti-bell-off" style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 6px;"></i>
-            <p>All caught up! No active clinic alerts.</p>
+  if (unreadLabel) {
+    unreadLabel.textContent = `${unreadCount} New`;
+  }
+
+  if (list) {
+    if (!allReceptionistNotifications.length) {
+      list.innerHTML = `
+        <div class="rnd-empty">
+          <i class="ti ti-bell-off" style="font-size: 1.8rem; color: #94a3b8; margin-bottom: 8px; display: block;"></i>
+          <h5 style="margin: 0 0 4px 0; font-size: 0.9rem; color: #475569; font-weight: 700;">All caught up!</h5>
+          <p style="margin: 0; font-size: 0.78rem; color: #94a3b8;">No active clinic alerts or pending front desk actions.</p>
+        </div>
+      `;
+    } else {
+      list.innerHTML = allReceptionistNotifications.map(n => {
+        const isUnread = !readSet.has(n.id);
+        const iconClass = getNotifTablerIcon(n.icon, n.type);
+        const actType = n.action?.type || '';
+        const actTab = n.action?.tab || '';
+        const actFilter = n.action?.filterStatus || '';
+        const actEntity = n.action?.entityId || n.entity_id || '';
+
+        return `
+          <div class="rnd-item ${isUnread ? 'unread' : ''}" onclick="onReceptionistNotificationClick('${escapeHtml(n.id)}', '${escapeHtml(actType)}', '${escapeHtml(actTab)}', '${escapeHtml(actFilter)}', '${escapeHtml(actEntity)}')" role="button" tabindex="0">
+            <div class="rnd-icon-wrap type-${escapeHtml(n.type || 'info')}">
+              <i class="ti ${escapeHtml(iconClass)}"></i>
+            </div>
+            <div class="rnd-content">
+              <div class="rnd-title-row">
+                <div class="rnd-title">${escapeHtml(n.title)}</div>
+                ${isUnread ? '<span class="rnd-unread-dot" title="Unread alert"></span>' : ''}
+              </div>
+              <div class="rnd-desc">${escapeHtml(n.message)}</div>
+              <span class="rnd-time"><i class="ti ti-clock" style="font-size: 0.68rem; margin-right: 3px;"></i>${formatRecTime(n.time)}</span>
+            </div>
           </div>
         `;
-      } else {
-        list.innerHTML = notifs.map(n => {
-          const isUnread = !readSet.has(n.id);
-          const iconClass = n.icon ? `ti-${n.icon.replace(/^fa-/, '')}` : 'ti-bell';
-
-          return `
-            <div class="rnd-item ${isUnread ? 'unread' : ''}" onclick="onReceptionistNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.tab || ''}')">
-              <div class="rnd-icon-wrap type-${n.type || 'info'}">
-                <i class="ti ${iconClass}"></i>
-              </div>
-              <div class="rnd-content">
-                <div class="rnd-title">${escapeHtml(n.title)}</div>
-                <div class="rnd-desc">${escapeHtml(n.message)}</div>
-                <span class="rnd-time">${formatRecTime(n.time)}</span>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
+      }).join('');
     }
+  }
 
-    if (isManual) {
-      showToast('Alerts refreshed', 'success');
-    }
-  })
-  .catch(err => {
-    console.error('Failed to load receptionist alerts:', err);
-  });
+  if (isManual) {
+    showToast('Alerts refreshed', 'success');
+  }
 }
 
-function onReceptionistNotificationClick(notifId, actionType, actionTab) {
+function onReceptionistNotificationClick(notifId, actionType, actionTab, filterStatus, entityId) {
   saveReceptionistReadNotificationId(notifId);
   const dropdown = document.getElementById('receptionist-notif-dropdown');
   if (dropdown) dropdown.hidden = true;
 
   if (actionType === 'switch_tab' && actionTab) {
     switchTab(actionTab);
+
+    if (actionTab === 'appointments') {
+      if (filterStatus) {
+        const statusSelect = document.getElementById('appts-status-filter');
+        if (statusSelect) {
+          statusSelect.value = filterStatus;
+          if (typeof filterAppointments === 'function') {
+            filterAppointments();
+          }
+        }
+      }
+      if (entityId && typeof openApptIntakeDetails === 'function') {
+        setTimeout(() => {
+          openApptIntakeDetails(entityId);
+        }, 180);
+      }
+    } else if (actionTab === 'billing') {
+      if (filterStatus) {
+        const billStatusSelect = document.getElementById('billing-status-filter');
+        if (billStatusSelect) {
+          billStatusSelect.value = filterStatus;
+          if (typeof filterBilling === 'function') {
+            filterBilling();
+          }
+        }
+      }
+      if (entityId) {
+        const inv = (allInvoices || []).find(i => i.id === entityId);
+        if (inv && typeof openPaymentModal === 'function') {
+          const pName = inv.patient ? (inv.patient.name || 'Patient') : 'Patient';
+          openPaymentModal(inv.id, pName, inv.amount || inv.total_amount || 0);
+        }
+      }
+    }
   }
 
   loadReceptionistNotifications();
@@ -3223,9 +3424,17 @@ function onReceptionistNotificationClick(notifId, actionType, actionTab) {
 function markAllReceptionistNotificationsRead() {
   try {
     const key = currentUser ? `rec_read_notifs_${currentUser.id}` : 'rec_read_notifs_default';
-    const allIds = allReceptionistNotifications.map(n => n.id);
+    const allIds = (allReceptionistNotifications || []).map(n => n.id);
     localStorage.setItem(key, JSON.stringify(allIds));
-    loadReceptionistNotifications();
+
+    // Immediate visual response
+    const badge = document.getElementById('receptionist-notif-count');
+    const unreadLabel = document.getElementById('rnd-unread-label');
+    if (badge) badge.style.display = 'none';
+    if (unreadLabel) unreadLabel.textContent = '0 New';
+    document.querySelectorAll('.rnd-item.unread').forEach(el => el.classList.remove('unread'));
+    document.querySelectorAll('.rnd-unread-dot').forEach(el => el.remove());
+
     showToast('All alerts marked as read', 'success');
   } catch (_) {}
 }
@@ -3243,6 +3452,10 @@ function formatRecTime(isoStr) {
   if (diffHours < 24) return `${diffHours}h ago`;
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+window.loadReceptionistNotifications = loadReceptionistNotifications;
+window.markAllReceptionistNotificationsRead = markAllReceptionistNotificationsRead;
+window.onReceptionistNotificationClick = onReceptionistNotificationClick;
 
 // ═══════════════════════════════════════════════════════════════
 //  USE CASE NO. 015: CLINIC QR STANDEE & KIOSK GENERATOR

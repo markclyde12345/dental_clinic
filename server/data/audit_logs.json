@@ -1,5 +1,124 @@
 [
   {
+    "id": "ff5a5320-668f-4c85-a937-30c869ab1c32",
+    "timestamp": "2026-09-08T17:37:13.589Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "56bb8070-9e54-496b-99f4-456e7ab40b5a",
+    "timestamp": "2026-09-08T17:36:14.722Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d0d69b76-d84c-4a03-aa51-bb9898c4e7f6",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user markycastillote@gmail.com (Patient)",
+    "metadata": {
+      "email": "markycastillote@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "605f34e7-5676-46d6-8ccd-fad573bf9efb",
+    "timestamp": "2026-09-08T17:16:08.420Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "98e351e4-9c92-467e-ab3b-8d42ab4419c3",
+    "timestamp": "2026-09-08T16:40:41.635Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d0d69b76-d84c-4a03-aa51-bb9898c4e7f6",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user markycastillote@gmail.com (Patient)",
+    "metadata": {
+      "email": "markycastillote@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "c8efbb36-ec18-4c8c-a651-3f33355db468",
+    "timestamp": "2026-09-08T15:36:12.652Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d0d69b76-d84c-4a03-aa51-bb9898c4e7f6",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user markycastillote@gmail.com (Patient)",
+    "metadata": {
+      "email": "markycastillote@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "0ab003ec-d66a-4fce-93a5-2a86a76615a2",
+    "timestamp": "2026-09-08T14:31:45.693Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "46eb9ccf-1f48-4099-b1ad-03c2a365757c",
+    "timestamp": "2026-09-08T14:31:31.385Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d0d69b76-d84c-4a03-aa51-bb9898c4e7f6",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user markycastillote@gmail.com (Patient)",
+    "metadata": {
+      "email": "markycastillote@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
     "id": "2644f86e-204f-4325-8190-ba6278a717c7",
     "timestamp": "2026-09-08T14:08:07.606Z",
     "action": "USER_LOGIN_SUCCESS",

@@ -165,44 +165,68 @@ const getUserNotifications = async (req, res) => {
     // ─────────────────────────────────────────────────────────────
     // 2. RECEPTIONIST NOTIFICATIONS
     // ─────────────────────────────────────────────────────────────
-    else if (userRole === 'Receptionist') {
+    else if (userRole === 'Receptionist' || ((userRole === 'Admin' || userRole === 'Super Admin') && req.query.role === 'receptionist')) {
       // 2a. Today's Lounge Queue
-      const { data: queueAppts } = await supabase
-        .from('appointments')
-        .select(`id, status, patient:patient_id ( name ), treatment:treatment_id ( name )`)
-        .eq('status', 'Checked In');
-
-      if (queueAppts && queueAppts.length > 0) {
-        notifications.push({
-          id: 'queue-active-alert',
-          category: 'queue',
-          title: 'Patients Waiting in Lounge',
-          message: `${queueAppts.length} patient${queueAppts.length !== 1 ? 's are' : ' is'} checked in and waiting in the clinic front lounge.`,
-          type: 'warning',
-          icon: 'hourglass-half',
-          time: new Date().toISOString(),
-          action: { type: 'switch_tab', tab: 'queue' }
-        });
-      }
-
-      // 2b. Recent Appointment Bookings
-      const { data: recentAppts } = await supabase
+      const { data: queueAppts, error: qErr } = await supabase
         .from('appointments')
         .select(`
           id, appointment_date, status, created_at,
           patient:patient_id ( name, contact_number ),
           treatment:treatment_id ( name )
         `)
+        .eq('status', 'Checked In');
+
+      if (!qErr && queueAppts && queueAppts.length > 0) {
+        notifications.push({
+          id: 'queue-active-alert',
+          category: 'queue',
+          title: 'Patients Waiting in Lounge',
+          message: `${queueAppts.length} patient${queueAppts.length !== 1 ? 's are' : ' is'} checked in and waiting in the clinic front lounge.`,
+          type: 'warning',
+          icon: 'hourglass',
+          time: new Date().toISOString(),
+          action: { type: 'switch_tab', tab: 'queue' }
+        });
+
+        // Long wait alert (>15 mins)
+        const nowMs = Date.now();
+        const overdue = queueAppts.filter(a => {
+          const t = new Date(a.appointment_date || a.created_at || nowMs).getTime();
+          return (nowMs - t) > 15 * 60 * 1000;
+        });
+        if (overdue.length > 0) {
+          notifications.push({
+            id: 'lounge-long-wait-alert',
+            category: 'queue',
+            title: 'Lounge Wait Time Alert',
+            message: `${overdue.length} patient(s) waiting in lounge >15 mins. Check dentist room readiness.`,
+            type: 'danger',
+            icon: 'alert-triangle',
+            time: new Date().toISOString(),
+            action: { type: 'switch_tab', tab: 'queue' }
+          });
+        }
+      }
+
+      // 2b. Pending Appointments Needing Confirmation
+      const { data: pendingAppts, error: pErr } = await supabase
+        .from('appointments')
+        .select(`
+          id, appointment_date, status, created_at,
+          patient:patient_id ( name, contact_number ),
+          treatment:treatment_id ( name )
+        `)
+        .eq('status', 'Pending')
         .order('created_at', { ascending: false })
-        .limit(6);
+        .limit(10);
 
-      (recentAppts || []).forEach(a => {
-        const patientName = a.patient?.name || 'Patient';
-        const treatmentName = a.treatment?.name || 'General Consultation';
-        const d = new Date(a.appointment_date);
-        const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Date';
+      if (!pErr && pendingAppts) {
+        pendingAppts.forEach(a => {
+          const patientName = a.patient?.name || 'Patient';
+          const treatmentName = a.treatment?.name || 'General Consultation';
+          const d = new Date(a.appointment_date);
+          const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Date';
 
-        if (a.status === 'Pending') {
           notifications.push({
             id: `rec-pending-${a.id}`,
             entity_id: a.id,
@@ -212,30 +236,51 @@ const getUserNotifications = async (req, res) => {
             type: 'info',
             icon: 'calendar-plus',
             time: a.created_at || new Date().toISOString(),
-            action: { type: 'switch_tab', tab: 'appointments' }
+            action: { type: 'switch_tab', tab: 'appointments', filterStatus: 'Pending', entityId: a.id }
           });
-        } else if (a.status === 'Cancelled') {
+        });
+      }
+
+      // 2c. Recent Cancellations
+      const { data: cancelledAppts, error: cErr } = await supabase
+        .from('appointments')
+        .select(`
+          id, appointment_date, status, created_at,
+          patient:patient_id ( name, contact_number ),
+          treatment:treatment_id ( name )
+        `)
+        .eq('status', 'Cancelled')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (!cErr && cancelledAppts) {
+        cancelledAppts.forEach(a => {
+          const patientName = a.patient?.name || 'Patient';
+          const treatmentName = a.treatment?.name || 'Appointment';
+          const d = new Date(a.appointment_date);
+          const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Date';
+
           notifications.push({
             id: `rec-cancelled-${a.id}`,
             entity_id: a.id,
             category: 'appointment',
             title: 'Appointment Cancelled',
-            message: `${patientName} cancelled visit scheduled for ${dateStr}.`,
+            message: `${patientName} cancelled visit scheduled for ${dateStr}. Slot is now open.`,
             type: 'danger',
-            icon: 'calendar-xmark',
+            icon: 'calendar-x',
             time: a.created_at || new Date().toISOString(),
-            action: { type: 'switch_tab', tab: 'appointments' }
+            action: { type: 'switch_tab', tab: 'appointments', filterStatus: 'Cancelled', entityId: a.id }
           });
-        }
-      });
+        });
+      }
 
-      // 2c. Unpaid Invoices Counter
-      const { data: unpaidInvs } = await supabase
+      // 2d. Unpaid Invoices Counter
+      const { data: unpaidInvs, error: iErr } = await supabase
         .from('invoices')
         .select('id, amount')
         .eq('status', 'Unpaid');
 
-      if (unpaidInvs && unpaidInvs.length > 0) {
+      if (!iErr && unpaidInvs && unpaidInvs.length > 0) {
         const sum = unpaidInvs.reduce((acc, i) => acc + (parseFloat(i.amount) || 0), 0);
         notifications.push({
           id: 'rec-unpaid-counter',
@@ -245,7 +290,7 @@ const getUserNotifications = async (req, res) => {
           type: 'warning',
           icon: 'receipt',
           time: new Date().toISOString(),
-          action: { type: 'switch_tab', tab: 'billing' }
+          action: { type: 'switch_tab', tab: 'billing', filterStatus: 'Unpaid' }
         });
       }
     }
