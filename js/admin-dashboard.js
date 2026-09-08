@@ -157,6 +157,22 @@ function initDashboard() {
   const hashTab = (window.location.hash || '').replace('#', '').trim();
   const initialTab = validTabs.includes(hashTab) ? hashTab : 'overview';
 
+  // Restore branches toggle state (default open)
+  const branchesOpen = localStorage.getItem('admin_sidebar_branches_open');
+  const branchesToggle = document.getElementById('sb-branches-toggle');
+  const branchesSubnav = document.getElementById('sb-branches-subnav');
+  if (branchesToggle && branchesSubnav) {
+    if (branchesOpen === 'false') {
+      branchesToggle.classList.remove('open');
+      branchesSubnav.classList.add('collapsed');
+      branchesToggle.setAttribute('aria-expanded', 'false');
+    } else {
+      branchesToggle.classList.add('open');
+      branchesSubnav.classList.remove('collapsed');
+      branchesToggle.setAttribute('aria-expanded', 'true');
+    }
+  }
+
   activateTab(initialTab);
 }
 
@@ -277,6 +293,104 @@ function setupTabs() {
   });
 }
 
+// ─── Clinic Branches Sidebar Navigation & Filtering ──────────────────────────
+let currentAdminBranch = 'all';
+
+function getAppointmentBranch(a) {
+  if (!a) return 'Main Branch, Fano Dental';
+  if (a.branch) return a.branch;
+  const notesStr = a.notes || '';
+  const branchMatch = notesStr.match(/\[Branch:\s*([^\]]+)\]/i);
+  if (branchMatch) return branchMatch[1].trim();
+  const locMatch = notesStr.match(/\[Location:\s*([^\]]+)\]/i);
+  if (locMatch) return locMatch[1].trim();
+  return 'Main Branch, Fano Dental';
+}
+
+function doesAppointmentMatchBranch(a, targetBranch) {
+  if (!targetBranch || targetBranch === 'all') return true;
+  const b = getAppointmentBranch(a).toLowerCase();
+  const t = targetBranch.toLowerCase();
+
+  if (t === 'main' || t.includes('main') || t.includes('naga')) {
+    return b.includes('main') || b.includes('naga') || (!b.includes('minglanilla') && !b.includes('talisay'));
+  }
+  if (t === 'minglanilla' || t.includes('minglanilla')) {
+    return b.includes('minglanilla');
+  }
+  if (t === 'talisay' || t.includes('talisay')) {
+    return b.includes('talisay');
+  }
+  return b.includes(t);
+}
+
+window.toggleSidebarBranches = function(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  const toggle = document.getElementById('sb-branches-toggle');
+  const subnav = document.getElementById('sb-branches-subnav');
+  if (!toggle || !subnav) return;
+
+  const isOpen = toggle.classList.toggle('open');
+  subnav.classList.toggle('collapsed', !isOpen);
+  toggle.setAttribute('aria-expanded', String(isOpen));
+  try {
+    localStorage.setItem('admin_sidebar_branches_open', String(isOpen));
+  } catch (_) {}
+};
+
+window.selectAdminBranch = function(branchId, e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  currentAdminBranch = branchId || 'all';
+
+  // Ensure branches toggle is open
+  const toggle = document.getElementById('sb-branches-toggle');
+  const subnav = document.getElementById('sb-branches-subnav');
+  if (toggle) toggle.classList.add('open');
+  if (subnav) subnav.classList.remove('collapsed');
+
+  // Highlight active subnav item
+  document.querySelectorAll('.sb-subnav-item').forEach(item => {
+    const b = item.getAttribute('data-branch');
+    if (b === currentAdminBranch || (currentAdminBranch === 'all' && b === 'all')) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+
+  // Sync select dropdown in Appointments tab
+  const branchSelect = document.getElementById('filter-branch');
+  if (branchSelect) {
+    branchSelect.value = currentAdminBranch;
+  }
+
+  // Switch to Appointments tab
+  activateTab('appointments');
+
+  // Filter and render appointments
+  filterAndRenderAppointments();
+};
+
+function updateSidebarBranchBadges() {
+  const badgeAll = document.getElementById('branch-badge-all');
+  const badgeMain = document.getElementById('branch-badge-main');
+  const badgeMing = document.getElementById('branch-badge-minglanilla');
+  const badgeTalisay = document.getElementById('branch-badge-talisay');
+
+  const appts = allAppointments || [];
+  if (badgeAll) badgeAll.textContent = appts.length;
+  if (badgeMain) badgeMain.textContent = appts.filter(a => doesAppointmentMatchBranch(a, 'Main Branch')).length;
+  if (badgeMing) badgeMing.textContent = appts.filter(a => doesAppointmentMatchBranch(a, 'Minglanilla')).length;
+  if (badgeTalisay) badgeTalisay.textContent = appts.filter(a => doesAppointmentMatchBranch(a, 'Talisay')).length;
+}
+window.updateSidebarBranchBadges = updateSidebarBranchBadges;
+
 // ─── 1. Load Home Overview Stats ──────────────────────────────────────────────
 let currentRevenuePeriod = '12months';
 let currentFinancialPeriod = '12months';
@@ -298,6 +412,7 @@ function loadStats() {
     // Cache responses
     allInvoices = data.invoices || [];
     allAppointments = data.allAppointments || [];
+    updateSidebarBranchBadges();
 
     // Fills widgets safely
     const seenEl = document.getElementById('today-seen');
@@ -1117,10 +1232,12 @@ function loadAppointments() {
 }
 
 function setupFilters() {
+  const branchFilter = document.getElementById('filter-branch');
   const roomFilter = document.getElementById('filter-room');
   const statusFilter = document.getElementById('filter-status');
   const searchFilter = document.getElementById('appt-search');
 
+  if (branchFilter) branchFilter.addEventListener('change', (e) => selectAdminBranch(e.target.value));
   if (roomFilter) roomFilter.addEventListener('change', filterAndRenderAppointments);
   if (statusFilter) statusFilter.addEventListener('change', filterAndRenderAppointments);
   if (searchFilter) searchFilter.addEventListener('input', filterAndRenderAppointments);
@@ -1317,11 +1434,20 @@ function setupFilters() {
 }
 
 function filterAndRenderAppointments() {
-  const roomVal = document.getElementById('filter-room').value;
-  const statusVal = document.getElementById('filter-status').value;
-  const searchVal = document.getElementById('appt-search').value.toLowerCase().trim();
+  const roomVal = document.getElementById('filter-room')?.value || 'all';
+  const statusVal = document.getElementById('filter-status')?.value || 'all';
+  const branchVal = document.getElementById('filter-branch')?.value || currentAdminBranch || 'all';
+  const searchVal = (document.getElementById('appt-search')?.value || '').toLowerCase().trim();
+
+  currentAdminBranch = branchVal;
+  updateSidebarBranchBadges();
 
   const filtered = allAppointments.filter(a => {
+    // Branch filter
+    if (branchVal !== 'all' && !doesAppointmentMatchBranch(a, branchVal)) {
+      return false;
+    }
+
     // Room filter
     const room = a.room || a.chair || 'Chair 1';
     if (roomVal !== 'all' && room !== roomVal) return false;
@@ -1339,11 +1465,30 @@ function filterAndRenderAppointments() {
     return true;
   });
 
+  // Update Active Branch Banner
+  const banner = document.getElementById('active-branch-banner');
+  const bannerName = document.getElementById('active-branch-banner-name');
+  const bannerCount = document.getElementById('active-branch-banner-count');
+  if (banner) {
+    if (branchVal !== 'all') {
+      const branchDisplayNames = {
+        'Main Branch': 'Main Branch (Naga City)',
+        'Minglanilla': 'Minglanilla Branch',
+        'Talisay': 'Talisay Branch'
+      };
+      if (bannerName) bannerName.textContent = branchDisplayNames[branchVal] || branchVal;
+      if (bannerCount) bannerCount.textContent = filtered.length;
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
   const tbody = document.getElementById('appointments-table-body');
   if (!tbody) return;
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #888;">No matching appointments found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="padding: 28px 16px; text-align: center; color: #888;">No matching appointments found for the selected branch or filters.</td></tr>';
     return;
   }
 
@@ -1357,16 +1502,8 @@ function filterAndRenderAppointments() {
     const email = a.patient ? (a.patient.email || 'No Email') : 'No Email';
     const contact = a.patient ? (a.patient.contact_number || 'N/A') : 'N/A';
 
-    // Parse location from notes: e.g. [Location: South Branch, Fano Dental]
-    let location = 'Main Branch, Fano Dental';
-    const notesStr = a.notes || '';
-    if (notesStr.includes('[Location: ')) {
-      const start = notesStr.indexOf('[Location: ') + 11;
-      const end = notesStr.indexOf(']', start);
-      if (end !== -1) {
-        location = notesStr.substring(start, end);
-      }
-    }
+    // Parse branch location
+    const location = getAppointmentBranch(a);
 
     const status = a.status || 'Pending';
     const statusLower = status.toLowerCase();
@@ -1396,7 +1533,11 @@ function filterAndRenderAppointments() {
         <td style="padding: 14px 16px;">${escapeHTML(email)}</td>
         <td style="padding: 14px 16px;">${escapeHTML(contact)}</td>
         <td style="padding: 14px 16px;">${escapeHTML(dateStr)}</td>
-        <td style="padding: 14px 16px;">${escapeHTML(location)}</td>
+        <td style="padding: 14px 16px;">
+          <span class="info-pill branch-pill" style="display:inline-flex; align-items:center; gap:5px; font-size:0.8rem; background:#f0f9ff; color:#0369a1; padding:3px 9px; border-radius:6px; font-weight:600; border: 1px solid #bae6fd;">
+            <i class="ti ti-map-pin" style="font-size:12px;"></i> ${escapeHTML(location)}
+          </span>
+        </td>
         <td style="padding: 14px 16px;">${statusSelectHtml}</td>
         <td style="padding: 14px 16px; text-align: right;">${actionButtonsHtml}</td>
       </tr>
@@ -2915,10 +3056,13 @@ function updateAdminMapMarkers() {
   adminBranchMarkers.forEach(m => adminMap.removeLayer(m));
   adminBranchMarkers = [];
 
-  const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || [
+  const defaultDetailed = [
     { name: 'Fano Dental Clinic — Main Branch', address: 'Balirong Highway, City of Naga, Cebu', lat: 10.2098, lng: 123.7580 },
-    { name: 'Fano Dental Clinic — Minglanilla', address: 'Poblacion Ward II, Minglanilla, Cebu', lat: 10.2450, lng: 123.7960 }
+    { name: 'Fano Dental Clinic — Minglanilla Branch', address: 'Poblacion Ward II, Minglanilla, Cebu', lat: 10.2450, lng: 123.7960 },
+    { name: 'Fano Dental Clinic — Talisay Branch', address: 'Tabunok, Talisay City, Cebu', lat: 10.2600, lng: 123.8340 }
   ];
+
+  const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || defaultDetailed;
 
   const bounds = [];
   detailedBranches.forEach(b => {
@@ -2941,7 +3085,8 @@ window.renderBranchesList = function() {
 
   const defaultDetailed = [
     { name: 'Fano Dental Clinic — Main Branch', address: 'Balirong Highway, City of Naga, Cebu', lat: 10.2098, lng: 123.7580 },
-    { name: 'Fano Dental Clinic — Minglanilla', address: 'Poblacion Ward II, Minglanilla, Cebu', lat: 10.2450, lng: 123.7960 }
+    { name: 'Fano Dental Clinic — Minglanilla Branch', address: 'Poblacion Ward II, Minglanilla, Cebu', lat: 10.2450, lng: 123.7960 },
+    { name: 'Fano Dental Clinic — Talisay Branch', address: 'Tabunok, Talisay City, Cebu', lat: 10.2600, lng: 123.8340 }
   ];
 
   const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || defaultDetailed;

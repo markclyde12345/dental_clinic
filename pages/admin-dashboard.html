@@ -75,12 +75,47 @@
         <!-- CLINIC Section -->
         <div class="sb-section-label">CLINIC</div>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="appointments">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="appointments" id="sb-nav-appointments">
           <span class="sb-nav-icon">
             <i class="ti ti-calendar" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Appointments</span>
         </a>
+
+        <!-- Clinic Branches Expandable Dropdown -->
+        <div class="sb-nav-group" id="sb-branch-nav-group">
+          <div class="sb-nav-item sb-nav-toggle open" id="sb-branches-toggle" onclick="toggleSidebarBranches(event)" role="button" tabindex="0" title="Toggle Clinic Branches">
+            <span class="sb-nav-icon">
+              <i class="ti ti-building-hospital" style="font-size: 18px;"></i>
+            </span>
+            <span class="sb-nav-label">Branches</span>
+            <span class="sb-nav-chevron" id="sb-branches-chevron">
+              <i class="ti ti-chevron-down"></i>
+            </span>
+          </div>
+          <div class="sb-subnav-list" id="sb-branches-subnav">
+            <a href="#" class="sb-subnav-item active" data-branch="all" onclick="selectAdminBranch('all', event)">
+              <span class="sb-subnav-bullet"></span>
+              <span class="sb-subnav-text">All Branches</span>
+              <span class="sb-subnav-badge" id="branch-badge-all">0</span>
+            </a>
+            <a href="#" class="sb-subnav-item" data-branch="Main Branch" onclick="selectAdminBranch('Main Branch', event)">
+              <span class="sb-subnav-bullet"></span>
+              <span class="sb-subnav-text">Main Branch (Naga)</span>
+              <span class="sb-subnav-badge" id="branch-badge-main">0</span>
+            </a>
+            <a href="#" class="sb-subnav-item" data-branch="Minglanilla" onclick="selectAdminBranch('Minglanilla', event)">
+              <span class="sb-subnav-bullet"></span>
+              <span class="sb-subnav-text">Minglanilla Branch</span>
+              <span class="sb-subnav-badge" id="branch-badge-minglanilla">0</span>
+            </a>
+            <a href="#" class="sb-subnav-item" data-branch="Talisay" onclick="selectAdminBranch('Talisay', event)">
+              <span class="sb-subnav-bullet"></span>
+              <span class="sb-subnav-text">Talisay Branch</span>
+              <span class="sb-subnav-badge" id="branch-badge-talisay">0</span>
+            </a>
+          </div>
+        </div>
 
         <a href="#" class="sb-nav-item nav-tab" data-tab="patients">
           <span class="sb-nav-icon">
@@ -495,6 +530,17 @@
           <!-- Filters Header -->
           <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color); margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
+              <label style="font-size: 0.85rem; font-weight: 600; color: var(--dark-color); display: flex; align-items: center; gap: 4px;">
+                <i class="ti ti-building-hospital" style="color: var(--secondary-color);"></i> Branch:
+              </label>
+              <select id="filter-branch" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; outline: none; background: white; font-weight: 600;">
+                <option value="all">All Branches</option>
+                <option value="Main Branch">Main Branch (Naga)</option>
+                <option value="Minglanilla">Minglanilla Branch</option>
+                <option value="Talisay">Talisay Branch</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
               <label style="font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Room/Chair:</label>
               <select id="filter-room" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; outline: none; background: white;">
                 <option value="all">All Rooms</option>
@@ -515,8 +561,20 @@
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
               <label style="font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Search Patient:</label>
-              <input type="text" id="appt-search" placeholder="Type name..." style="padding: 8px 20px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; outline: none; width: 300px;">
+              <input type="text" id="appt-search" placeholder="Type name..." style="padding: 8px 20px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; outline: none; width: 260px;">
             </div>
+          </div>
+
+          <!-- Active Branch Banner -->
+          <div id="active-branch-banner" style="display: none; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 0.88rem; font-weight: 600; color: #0369a1;">
+              <i class="ti ti-map-pin" style="font-size: 1.2rem; color: #0284c7;"></i>
+              <span>Filtering Bookings for: <strong id="active-branch-banner-name" style="color: #0b3c4d;">Main Branch</strong> (<span id="active-branch-banner-count">0</span> appointments)</span>
+            </div>
+            <button type="button" onclick="selectAdminBranch('all')" style="background: white; border: 1px solid #7dd3fc; color: #0284c7; padding: 5px 12px; border-radius: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background 0.15s ease;">
+              <span>Show All Branches</span>
+              <i class="ti ti-x" style="font-size: 12px;"></i>
+            </button>
           </div>
 
           <!-- Appointments Agenda Calendar Grid -->
