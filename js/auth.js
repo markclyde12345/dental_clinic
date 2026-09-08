@@ -270,11 +270,23 @@ function initSocialAuth() {
 }
 
 function handleSocialAuth(provider) {
-  showSuccess(`Redirecting to ${provider} authentication…`);
-  // If Supabase OAuth or direct provider is enabled
+  const prov = (provider || 'Facebook').toLowerCase();
+
+  // Dynamic callback URL based on current page location
+  // e.g. http://127.0.0.1:5500/Dental_Clinic_Website/pages/oauth-callback.html
+  const currentPath = window.location.pathname;
+  const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/'));
+  const callbackUrl = `${window.location.origin}${currentDir}/oauth-callback.html`;
+
+  showSuccess(`Connecting to ${provider}… Redirecting to secure login.`);
+
+  // Supabase project authorize endpoint
+  const SUPABASE_PROJECT_URL = 'https://cusxuaugwkjjqbjesksg.supabase.co';
+  const authorizeUrl = `${SUPABASE_PROJECT_URL}/auth/v1/authorize?provider=${prov}&redirect_to=${encodeURIComponent(callbackUrl)}`;
+
   setTimeout(() => {
-    showError(`${provider} login: Please ensure ${provider} OAuth credentials are set in your backend configuration.`);
-  }, 1200);
+    window.location.href = authorizeUrl;
+  }, 400);
 }
 
 // ─── Terms of Service & Privacy Policy Modal ─────────────────────────────────

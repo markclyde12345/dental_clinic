@@ -944,4 +944,179 @@ const createStaffUser = async (req, res) => {
    }
  };
  
- module.exports = { registerUser, authUser, sendOTP, verifyOTP, forgotPassword, verifyResetOTP, resetPassword, getUserProfile, getAllUsers, createStaffUser, updateUserStatus, deleteUser };
+ // ─── Social Authentication (Facebook, Google, etc.) ─────────────────────────
+// @route   POST /api/auth/social-login
+// @access  Public
+const socialLogin = async (req, res) => {
+  const { access_token, code, provider } = req.body;
+
+  try {
+    if (!access_token && !code) {
+      return res.status(400).json({ message: 'Authentication token or authorization code is required.' });
+    }
+
+    let sbUser = null;
+
+    if (access_token) {
+      // Verify token with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.getUser(access_token);
+      if (!authError && authData?.user) {
+        sbUser = authData.user;
+      }
+    } else if (code) {
+      // Exchange PKCE code for session with Supabase Auth
+      const { data: sessionData, error: codeError } = await supabase.auth.exchangeCodeForSession(code);
+      if (!codeError && sessionData?.user) {
+        sbUser = sessionData.user;
+      }
+    }
+
+    if (!sbUser) {
+      return res.status(401).json({ message: 'Invalid or expired social authentication credentials.' });
+    }
+
+    const email = (sbUser.email || '').trim().toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({ 
+        message: 'Could not retrieve email from social account. Please ensure email permissions are granted.' 
+      });
+    }
+
+    // Extract user profile metadata from Facebook / provider
+    const meta = sbUser.user_metadata || {};
+    const fullName = meta.full_name || meta.name || email.split('@')[0];
+    const nameParts = fullName.trim().split(/\s+/);
+    const firstName = nameParts[0] || 'Patient';
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'User';
+
+    // Check if user already exists in clinic users table
+    const { data: existingUser, error: findError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (findError) throw findError;
+
+    let userRecord = existingUser;
+
+    if (!existingUser) {
+      // Create new Patient account
+      const { data: newUser, error: insertError } = await supabase
+        .from('users')
+        .insert([{
+          name: fullName,
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          role: 'Patient',
+          is_active: true,
+          is_verified: true,
+          address: 'N/A'
+        }])
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+      userRecord = newUser;
+
+      // Audit log registration
+      try {
+        logAuditAction({
+          action: 'USER_REGISTER_SUCCESS',
+          entity_type: 'user',
+          entity_id: userRecord.id,
+          user_id: userRecord.id,
+          user_name: userRecord.name,
+          user_role: userRecord.role,
+          details: `New patient registered via ${provider || 'Social'} OAuth (${email})`,
+          metadata: { provider, email },
+          req
+        });
+      } catch (_) {}
+    } else {
+      // Check if account is active
+      if (!existingUser.is_active) {
+        return res.status(403).json({ message: 'Account is deactivated. Please contact clinic support.' });
+      }
+
+      // Auto-verify if not verified
+      if (!existingUser.is_verified) {
+        await supabase
+          .from('users')
+          .update({ is_verified: true })
+          .eq('id', existingUser.id);
+        userRecord.is_verified = true;
+      }
+    }
+
+    // Issue JWT token
+    const token = generateToken(userRecord.id);
+
+    // Audit log login
+    try {
+      logAuditAction({
+        action: 'USER_LOGIN_SUCCESS',
+        entity_type: 'user',
+        entity_id: userRecord.id,
+        user_id: userRecord.id,
+        user_name: userRecord.name,
+        user_role: userRecord.role,
+        details: `Successful login via ${provider || 'Social'} OAuth for ${email}`,
+        metadata: { provider, email, role: userRecord.role },
+        req
+      });
+    } catch (_) {}
+
+    return res.json({
+      token,
+      ...mapUser(userRecord)
+    });
+
+  } catch (error) {
+    console.error('[Social Login Error]', error);
+    return internalError(res, error);
+  }
+};
+
+// @route   GET /api/auth/oauth/:provider
+// @access  Public
+const getOAuthUrl = async (req, res) => {
+  const { provider } = req.params;
+  const { redirect_to } = req.query;
+
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: provider || 'facebook',
+      options: {
+        redirectTo: redirect_to || `${req.protocol}://${req.get('host')}/pages/oauth-callback.html`
+      }
+    });
+
+    if (error || !data?.url) {
+      return res.status(400).json({ message: error?.message || 'Failed to generate OAuth URL.' });
+    }
+
+    return res.json({ url: data.url, provider });
+  } catch (error) {
+    return internalError(res, error);
+  }
+};
+
+module.exports = { 
+  registerUser, 
+  authUser, 
+  sendOTP, 
+  verifyOTP, 
+  forgotPassword, 
+  verifyResetOTP, 
+  resetPassword, 
+  getUserProfile, 
+  getAllUsers, 
+  createStaffUser, 
+  updateUserStatus, 
+  deleteUser,
+  socialLogin,
+  getOAuthUrl
+};

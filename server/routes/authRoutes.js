@@ -1,6 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, authUser, sendOTP, verifyOTP, forgotPassword, verifyResetOTP, resetPassword, getUserProfile, getAllUsers, createStaffUser, updateUserStatus, deleteUser } = require('../controllers/authController');
+const { 
+  registerUser, 
+  authUser, 
+  sendOTP, 
+  verifyOTP, 
+  forgotPassword, 
+  verifyResetOTP, 
+  resetPassword, 
+  getUserProfile, 
+  getAllUsers, 
+  createStaffUser, 
+  updateUserStatus, 
+  deleteUser,
+  socialLogin,
+  getOAuthUrl
+} = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/auth');
 const { validateRegister, validateLogin, validateSendOTP, validateVerifyOTP, validateForgotPassword, validateVerifyResetOTP, validateResetPassword } = require('../middleware/validate');
 
@@ -12,6 +27,10 @@ router.post('/forgot-password', validateForgotPassword, forgotPassword);
 router.post('/verify-reset-otp', validateVerifyResetOTP, verifyResetOTP);
 router.post('/reset-password', validateResetPassword, resetPassword);
 router.get('/profile', protect, getUserProfile);
+
+// Social / OAuth Authentication Routes
+router.post('/social-login', socialLogin);
+router.get('/oauth/:provider', getOAuthUrl);
 
 // User Management Routes
 router.route('/users')
