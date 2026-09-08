@@ -159,21 +159,23 @@ function switchTab(tabName) {
     targetPane.classList.add('active');
   }
 
-  // Update page header
+  // Update page header & breadcrumb
   const titleEl = document.getElementById('page-title');
   const subEl = document.getElementById('page-subtitle');
+  const breadcrumbEl = document.getElementById('breadcrumb-label');
   const tabTitles = {
-    overview: { title: 'Front Desk Overview', sub: 'Manage daily appointments, walk-in arrivals, and patient check-ins' },
-    appointments: { title: 'Appointments Schedule', sub: 'Comprehensive clinic booking roster and schedule management' },
-    queue: { title: 'Patient Waiting Lounge & Queue', sub: 'Live chair occupancy, front desk arrival queues, and seating' },
-    patients: { title: 'Patient Directory & Charts', sub: 'Search patient records, view medical demographics, or register walk-ins' },
-    dentists: { title: 'Dentists on Duty', sub: 'Medical doctors roster, clinical shift hours, and availability' },
-    billing: { title: 'Front Desk Check-Out & Billing', sub: 'Collect treatment payments, print receipts, and reconcile invoices' }
+    overview: { title: 'Front Desk Overview', sub: 'Manage daily appointments, arrivals, and patient check-ins', breadcrumb: 'Overview' },
+    appointments: { title: 'Appointments Schedule', sub: 'Comprehensive clinic booking roster and schedule management', breadcrumb: 'Appointments' },
+    queue: { title: 'Patient Waiting Lounge & Queue', sub: 'Live chair occupancy, front desk arrival queues, and seating', breadcrumb: 'Waiting Lounge & Queue' },
+    patients: { title: 'Patient Directory & Charts', sub: 'Search patient records, view medical demographics, and chart history', breadcrumb: 'Patients Directory' },
+    dentists: { title: 'Dentists on Duty', sub: 'Medical doctors roster, clinical shift hours, and availability', breadcrumb: 'Dentists on Duty' },
+    billing: { title: 'Front Desk Check-Out & Billing', sub: 'Collect treatment payments, print receipts, and reconcile invoices', breadcrumb: 'Check-Out & Billing' }
   };
 
   if (tabTitles[tabName]) {
     if (titleEl) titleEl.textContent = tabTitles[tabName].title;
     if (subEl) subEl.textContent = tabTitles[tabName].sub;
+    if (breadcrumbEl) breadcrumbEl.textContent = tabTitles[tabName].breadcrumb;
   }
 
   // Auto-scroll to top of main content

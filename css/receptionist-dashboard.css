@@ -302,64 +302,115 @@ body {
 /* ═════════════════════ MAIN CONTENT ═════════════════════ */
 .main-content {
   flex-grow: 1;
-  padding: 32px 40px 60px 40px;
+  padding: 0;
   overflow-y: auto;
   background: var(--light-bg);
-}
-
-/* Top Header */
-.top-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ═════════════════════ TOP NAVBAR (STICKY BAR) ═════════════════════ */
+.receptionist-top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(11, 60, 77, 0.08);
+  padding: 12px 36px;
+  display: flex;
   align-items: center;
-  margin-bottom: 28px;
-  gap: 20px;
-  flex-wrap: nowrap;     /* ← prevent wrapping that causes layout shift */
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  flex-shrink: 0;
 }
 
-.top-header > div:first-child {
-  flex: 1 1 0;
-  min-width: 0;
+.receptionist-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
 }
 
-.top-header h2 {
-  font-family: var(--font-display);
-  font-size: 1.95rem;
+.receptionist-breadcrumb .breadcrumb-root {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.receptionist-breadcrumb .breadcrumb-sep {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+
+.receptionist-breadcrumb .breadcrumb-current {
   font-weight: 700;
-  color: var(--primary-color);
-  margin: 0 0 4px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--primary-color, #0b3c4d);
 }
 
-.header-subtitle {
-  color: var(--text-muted);
-  font-size: 0.92rem;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.header-actions {
+.top-bar-left {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;       /* ← never shrink or wrap the right side on desktop */
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ═════════════════════ DASHBOARD BODY CONTAINER ═════════════════════ */
+.dashboard-body {
+  padding: 28px 36px 60px 36px;
+  flex: 1 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ═════════════════════ PAGE HEADER & ACTION BAR ═════════════════════ */
+.page-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
-.header-utility-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.page-header-bar .header-title-block {
+  flex: 1 1 auto;
+  min-width: 260px;
+}
+
+.page-header-bar h2 {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0 0 4px 0;
+  line-height: 1.25;
+}
+
+.page-header-bar .header-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .header-action-grid {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+  background: #ffffff;
+  padding: 6px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .btn-header-notif {
@@ -2208,49 +2259,53 @@ body {
     overflow: hidden !important;
   }
 
-  /* 4. Main Content Adjustments */
+  /* 4. Main Content & Bar Adjustments */
   .main-content {
-    padding: 16px;
+    padding: 0;
     width: 100%;
   }
 
-  /* 4. Top Header & Action Controls (Thin, Symmetrical & Clear) */
-  .top-header {
+  .receptionist-top-bar {
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .top-bar-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .top-bar-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .dashboard-body {
+    padding: 16px 16px 40px 16px;
+  }
+
+  /* 4. Page Header & Action Controls */
+  .page-header-bar {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-    padding: 4px 0 12px 0;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 
-  .header-title-block h2 {
+  .page-header-bar .header-title-block h2 {
     font-size: 1.35rem;
     line-height: 1.25;
     margin: 0 0 3px 0;
     white-space: normal;
   }
 
-  .header-title-block .header-subtitle {
+  .page-header-bar .header-title-block .header-subtitle {
     font-size: 0.8rem;
     line-height: 1.35;
     white-space: normal;
     color: var(--text-muted, #64748b);
-  }
-
-  .header-actions {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 8px;
-  }
-
-  /* Thin & sleek utility bar: Live Clock (left) + Alerts (right) */
-  .header-utility-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    gap: 8px;
   }
 
   .live-clock-card {
