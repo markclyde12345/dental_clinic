@@ -14,6 +14,7 @@ const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15-minute lockout
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+const OTP_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30-day OTP validity
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -141,10 +142,10 @@ const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(8);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Generate OTP
+    // Generate OTP (valid for 30 days)
     const otp = String(Math.floor(100000 + Math.random() * 900000));
-    console.log(`\n🔑 [DEV OTP] Code for ${cleanEmail} is: ${otp}\n`);
-    const otpExpires = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    console.log(`\n🔑 [DEV OTP] Code for ${cleanEmail} is: ${otp} (valid for 30 days)\n`);
+    const otpExpires = new Date(Date.now() + OTP_EXPIRY_MS).toISOString();
 
     const { data: newUser, error: insertError } = await supabase
       .from('users')
@@ -195,7 +196,7 @@ const registerUser = async (req, res) => {
                 <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0b3c4d; display: inline-block;">${otp}</span>
               </div>
               <p style="font-size: 13px; line-height: 1.5; color: #64748b; margin: 0 0 8px 0;">
-                ⏱️ <strong>This code will expire in 5 minutes.</strong>
+                ⏱️ <strong>This code is valid for 30 days.</strong>
               </p>
               <p style="font-size: 12px; line-height: 1.5; color: #94a3b8; margin: 0;">
                 If you did not request this verification, you can safely ignore this email. Do not share this code with anyone.
@@ -216,7 +217,7 @@ const registerUser = async (req, res) => {
       </body>
       </html>
     `;
-    const emailText = `Hello ${fullName},\n\nThank you for signing up with Fano Dental Clinic.\nYour 6-digit verification code is: ${otp}\n\nThis code will expire in 5 minutes. Please do not share this code with anyone.\n\nFano Dental Clinic\nBalirong Highway, City of Naga, Cebu\n(032) 489-1200`;
+    const emailText = `Hello ${fullName},\n\nThank you for signing up with Fano Dental Clinic.\nYour 6-digit verification code is: ${otp}\n\nThis code is valid for 30 days. Please do not share this code with anyone.\n\nFano Dental Clinic\nBalirong Highway, City of Naga, Cebu\n(032) 489-1200`;
 
     sendEmail(newUser.email, 'Your Verification Code: ' + otp + ' — Fano Dental Clinic', emailHtml, emailText).catch(err => {
       console.error('[Verification Email Error]', err);
@@ -325,10 +326,10 @@ const authUser = async (req, res) => {
     loginAttemptTracker.delete(normalizedEmail);
 
     if (!user.is_verified) {
-      // Generate new OTP for unverified users trying to log in (5-minute expiry)
+      // Generate new OTP for unverified users trying to log in (valid for 30 days)
       const otp = String(Math.floor(100000 + Math.random() * 900000));
-      console.log(`\n🔑 [DEV OTP] Code for ${user.email} is: ${otp}\n`);
-      const otpExpires = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+      console.log(`\n🔑 [DEV OTP] Code for ${user.email} is: ${otp} (valid for 30 days)\n`);
+      const otpExpires = new Date(Date.now() + OTP_EXPIRY_MS).toISOString();
 
       await supabase.from('users').update({
         otp_code: otp,
@@ -361,7 +362,7 @@ const authUser = async (req, res) => {
                   <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0b3c4d; display: inline-block;">${otp}</span>
                 </div>
                 <p style="font-size: 13px; line-height: 1.5; color: #64748b; margin: 0 0 8px 0;">
-                  ⏱️ <strong>This code will expire in 5 minutes.</strong>
+                  ⏱️ <strong>This code is valid for 30 days.</strong>
                 </p>
                 <p style="font-size: 12px; line-height: 1.5; color: #94a3b8; margin: 0;">
                   If you did not request this verification, please secure your account.
@@ -382,7 +383,7 @@ const authUser = async (req, res) => {
         </body>
         </html>
       `;
-      const emailText = `Hello ${user.name},\n\nYour account requires verification.\nYour 6-digit verification code is: ${otp}\n\nThis code will expire in 5 minutes.\n\nFano Dental Clinic\nBalirong Highway, City of Naga, Cebu\n(032) 489-1200`;
+      const emailText = `Hello ${user.name},\n\nYour account requires verification.\nYour 6-digit verification code is: ${otp}\n\nThis code is valid for 30 days.\n\nFano Dental Clinic\nBalirong Highway, City of Naga, Cebu\n(032) 489-1200`;
 
       sendEmail(user.email, 'Your Verification Code: ' + otp + ' — Fano Dental Clinic', emailHtml, emailText).catch(err => {
         console.error('[Verification Email Error]', err);
@@ -435,14 +436,14 @@ const sendOTP = async (req, res) => {
       return res.json({ message: 'If this email is registered, a code will be sent.' });
     }
 
-    // Enforce a 60-second cooldown (4 minutes remaining out of 5 minutes lifetime)
-    if (user.otp_expires && (new Date(user.otp_expires) - Date.now()) > (4 * 60 * 1000)) {
+    // Enforce a 60-second cooldown (allow resending after 60s has elapsed)
+    if (user.otp_expires && (new Date(user.otp_expires) - Date.now()) > (OTP_EXPIRY_MS - 60 * 1000)) {
       return res.status(429).json({ message: 'A code was recently sent. Please wait before requesting another.' });
     }
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
-    console.log(`\n🔑 [DEV OTP] Code for ${email} is: ${otp}\n`);
-    const otpExpires = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    console.log(`\n🔑 [DEV OTP] Code for ${email} is: ${otp} (valid for 30 days)\n`);
+    const otpExpires = new Date(Date.now() + OTP_EXPIRY_MS).toISOString();
 
     await supabase.from('users').update({
       otp_code: otp,
@@ -454,7 +455,7 @@ const sendOTP = async (req, res) => {
       if (!user.contact_number) {
         return res.status(400).json({ message: 'No phone number registered for this user.' });
       }
-      const message = `Fano Dental Clinic: Your secure login code is ${otp}. Expires in 5 minutes. Do not share this code.`;
+      const message = `Fano Dental Clinic: Your secure login code is ${otp}. Valid for 30 days. Do not share this code.`;
       const smsSuccess = await sendSMS(user.contact_number, message);
       if (!smsSuccess) {
         return res.status(500).json({ message: 'Failed to send SMS. Please try email instead.' });
@@ -485,7 +486,7 @@ const sendOTP = async (req, res) => {
                   <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0b3c4d; display: inline-block;">${otp}</span>
                 </div>
                 <p style="font-size: 13px; line-height: 1.5; color: #64748b; margin: 0 0 8px 0;">
-                  ⏱️ <strong>This code will expire in 5 minutes.</strong>
+                  ⏱️ <strong>This code is valid for 30 days.</strong>
                 </p>
                 <p style="font-size: 12px; line-height: 1.5; color: #94a3b8; margin: 0;">
                   If you did not initiate this request, someone may be trying to access your account. Please change your password immediately.
@@ -506,7 +507,7 @@ const sendOTP = async (req, res) => {
         </body>
         </html>
       `;
-      const emailText = `Hello ${user.name},\n\nYour security verification code for Fano Dental Clinic is: ${otp}\n\nThis code will expire in 5 minutes.\n\nFano Dental Clinic\nBalirong Highway, City of Naga, Cebu\n(032) 489-1200`;
+      const emailText = `Hello ${user.name},\n\nYour security verification code for Fano Dental Clinic is: ${otp}\n\nThis code is valid for 30 days.\n\nFano Dental Clinic\nBalirong Highway, City of Naga, Cebu\n(032) 489-1200`;
 
       const emailSuccess = await sendEmail(user.email, 'Your Verification Code: ' + otp + ' — Fano Dental Clinic', emailHtml, emailText);
       if (!emailSuccess && process.env.NODE_ENV === 'production') {
@@ -524,7 +525,7 @@ const sendOTP = async (req, res) => {
 // @route   POST /api/auth/verify-otp
 // @access  Public
 const verifyOTP = async (req, res) => {
-  const { email, otpCode } = req.body;
+  const { email, otpCode, trustDevice } = req.body;
   try {
     const { data: user } = await supabase
       .from('users')
@@ -576,6 +577,8 @@ const verifyOTP = async (req, res) => {
       email: user.email,
       role: user.role,
       token: generateToken(user.id),
+      trustedDevice: !!trustDevice,
+      trustedUntil: trustDevice ? new Date(Date.now() + OTP_EXPIRY_MS).toISOString() : null,
     });
   } catch (error) {
     return internalError(res, error);
@@ -599,14 +602,14 @@ const forgotPassword = async (req, res) => {
       return res.json({ message: 'If this email is registered, a reset code has been sent.' });
     }
 
-    // Enforce a 60-second cooldown (4 minutes remaining out of 5 minutes lifetime)
-    if (user.otp_expires && (new Date(user.otp_expires) - Date.now()) > (4 * 60 * 1000)) {
+    // Enforce a 60-second cooldown (allow resending after 60s has elapsed)
+    if (user.otp_expires && (new Date(user.otp_expires) - Date.now()) > (OTP_EXPIRY_MS - 60 * 1000)) {
       return res.status(429).json({ message: 'A code was recently sent. Please wait before requesting another.' });
     }
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
-    console.log(`\n🔑 [DEV RESET OTP] Code for ${email} is: ${otp}\n`);
-    const otpExpires = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    console.log(`\n🔑 [DEV RESET OTP] Code for ${email} is: ${otp} (valid for 30 days)\n`);
+    const otpExpires = new Date(Date.now() + OTP_EXPIRY_MS).toISOString();
 
     await supabase.from('users').update({
       otp_code: otp,
@@ -639,7 +642,7 @@ const forgotPassword = async (req, res) => {
                 <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0b3c4d; display: inline-block;">${otp}</span>
               </div>
               <p style="font-size: 13px; line-height: 1.5; color: #64748b; margin: 0 0 8px 0;">
-                ⏱️ <strong>This code will expire in 5 minutes.</strong>
+                ⏱️ <strong>This code is valid for 30 days.</strong>
               </p>
               <p style="font-size: 12px; line-height: 1.5; color: #94a3b8; margin: 0;">
                 If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.
@@ -660,7 +663,7 @@ const forgotPassword = async (req, res) => {
       </body>
       </html>
     `;
-    const emailText = `Hello ${user.name},\n\nWe received a request to reset your password.\nYour 6-digit reset code is: ${otp}\n\nThis code will expire in 5 minutes.\n\nIf you did not request this, you can safely ignore this email.\n\nFano Dental Clinic\nBalirong Highway, City of Naga, Cebu\n(032) 489-1200`;
+    const emailText = `Hello ${user.name},\n\nWe received a request to reset your password.\nYour 6-digit reset code is: ${otp}\n\nThis code is valid for 30 days.\n\nIf you did not request this, you can safely ignore this email.\n\nFano Dental Clinic\nBalirong Highway, City of Naga, Cebu\n(032) 489-1200`;
 
     sendEmail(user.email, 'Password Reset Code: ' + otp + ' — Fano Dental Clinic', emailHtml, emailText).catch(err => {
       console.error('[Password Reset Email Error]', err);

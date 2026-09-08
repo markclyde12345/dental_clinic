@@ -34,7 +34,7 @@
 
       <h1 class="verify-title">Check your email</h1>
       <p class="verify-subtitle" id="verify-subtitle">
-        We sent a 6-digit code to your email.<br>Enter it below to verify your account.
+        We sent a 6-digit code to your email.<br>Enter it below to verify your account. Code is valid for 30 days.
       </p>
 
       <!-- Channel tabs -->
@@ -58,6 +58,12 @@
           <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
           <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
           <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        </div>
+
+        <div class="auth-actions" style="margin: 12px 0 6px; display: flex; justify-content: center;">
+          <label style="font-size: 0.85rem; color: #64748b; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="trust-device" checked> Remember / Trust this device for 30 days
+          </label>
         </div>
 
         <div id="otp-error" class="otp-error" style="display:none;"></div>

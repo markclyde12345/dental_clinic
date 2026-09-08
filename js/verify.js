@@ -68,11 +68,11 @@ function updateChannelTabs() {
   if (currentChannel === 'sms') {
     smsTab.classList.add('active');
     emailTab.classList.remove('active');
-    document.getElementById('verify-subtitle').innerHTML = 'We sent a 6-digit code to your registered mobile number.<br>Enter it below to continue.';
+    document.getElementById('verify-subtitle').innerHTML = 'We sent a 6-digit code to your registered mobile number.<br>Enter it below to continue. Code is valid for 30 days.';
   } else {
     emailTab.classList.add('active');
     smsTab.classList.remove('active');
-    document.getElementById('verify-subtitle').innerHTML = 'We sent a 6-digit code to your email address <strong>' + currentEmail + '</strong>.<br>Enter it below.';
+    document.getElementById('verify-subtitle').innerHTML = 'We sent a 6-digit code to your email address <strong>' + currentEmail + '</strong>.<br>Enter it below. Code is valid for 30 days.';
   }
 }
 
@@ -194,6 +194,7 @@ async function handleVerifySubmit(e) {
 
   const btn = document.getElementById('verify-btn');
   const btnText = document.getElementById('verify-btn-text');
+  const trustDevice = document.getElementById('trust-device') ? document.getElementById('trust-device').checked : true;
   
   if (btnText) btnText.textContent = 'Verifying…';
   if (btn) btn.disabled = true;
@@ -202,11 +203,18 @@ async function handleVerifySubmit(e) {
     const res = await fetch(`${API}/verify-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: currentEmail, otpCode: code })
+      body: JSON.stringify({ email: currentEmail, otpCode: code, trustDevice })
     });
     const data = await res.json();
 
     if (res.ok) {
+      if (trustDevice) {
+        localStorage.setItem(`fano_trusted_device_${currentEmail}`, JSON.stringify({
+          email: currentEmail,
+          trustedUntil: data.trustedUntil || (Date.now() + 30 * 24 * 60 * 60 * 1000)
+        }));
+      }
+
       const flow = new URLSearchParams(window.location.search).get('flow');
       if (flow === 'signup') {
         showOtpSuccess('Account verified successfully! Redirecting you to login...');
@@ -215,7 +223,20 @@ async function handleVerifySubmit(e) {
         }, 2000);
       } else {
         // Save token and login
-        localStorage.setItem('token', data.token);
+        const userInfo = {
+          _id: data._id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          token: data.token
+        };
+        if (trustDevice) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('userInfo', JSON.stringify(userInfo));
+        } else {
+          sessionStorage.setItem('token', data.token);
+          sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
+        }
         window.location.href = 'dashboard.html';
       }
     } else {
