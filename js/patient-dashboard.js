@@ -1168,11 +1168,11 @@ function renderAppointmentsFullList() {
 let delinquentOverdueInvoice = null;
 
 function loadInvoices() {
-  apiFetch('/invoices', {
+  return apiFetch('/invoices', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(data => {
-      if (!Array.isArray(data)) return;
+      if (!Array.isArray(data)) return allInvoices;
       allInvoices = data;
       renderInvoiceStats();
       renderFinancialWidgets();
@@ -1181,8 +1181,12 @@ function loadInvoices() {
       renderInvoicesTable();
       renderPatientHistoryRecords();
       checkDelinquentBookingLock();
+      return allInvoices;
     })
-    .catch(err => console.error('Invoices error:', err));
+    .catch(err => {
+      console.error('Invoices error:', err);
+      return allInvoices;
+    });
 }
 
 function renderInvoiceStats() {
@@ -1450,17 +1454,35 @@ function renderInvoicesTable() {
 // ─── PayMongo Payment Integration ──────────────────────────────
 let activePaymentInvoice = null;
 
-function openPaymongoModal(invoiceId) {
-  const inv = allInvoices.find(i => i.id === invoiceId);
+async function openPaymongoModal(invoiceOrId) {
+  let inv = null;
+
+  if (invoiceOrId && typeof invoiceOrId === 'object') {
+    inv = invoiceOrId;
+  } else if (invoiceOrId) {
+    const targetId = String(invoiceOrId).trim().toLowerCase();
+    inv = (allInvoices || []).find(i => String(i.id).trim().toLowerCase() === targetId);
+
+    // If not found in cache, fetch fresh invoices from server
+    if (!inv) {
+      try {
+        const freshInvoices = await loadInvoices();
+        inv = (freshInvoices || []).find(i => String(i.id).trim().toLowerCase() === targetId);
+      } catch (e) {
+        console.warn('[openPaymongoModal] Refresh failed:', e);
+      }
+    }
+  }
+
   if (!inv) {
-    showToast('Invoice not found', 'error');
+    showToast('Invoice record not found. Please refresh your page.', 'error');
     return;
   }
 
   activePaymentInvoice = inv;
   const amount = parseFloat(inv.amount || inv.total_amount || 0).toFixed(2);
-  const refId = inv.id.slice(0, 8).toUpperCase();
-  const serviceName = inv.appointment?.treatment?.name || inv.treatment_name || 'Dental Consultation / Service';
+  const refId = String(inv.id).slice(0, 8).toUpperCase();
+  const serviceName = inv.appointment?.treatment?.name || inv.treatment_name || inv.service || 'Dental Consultation / Service';
 
   safeSet('pm-invoice-ref', `Invoice #${refId}`);
   safeSet('pm-invoice-service', serviceName);
@@ -1566,12 +1588,26 @@ function executePayMongoCheckout() {
     });
 }
 
-function viewInvoiceReceipt(invoiceId) {
-  const inv = allInvoices.find(i => i.id === invoiceId);
+async function viewInvoiceReceipt(invoiceOrId) {
+  let inv = null;
+  if (invoiceOrId && typeof invoiceOrId === 'object') {
+    inv = invoiceOrId;
+  } else if (invoiceOrId) {
+    const targetId = String(invoiceOrId).trim().toLowerCase();
+    inv = (allInvoices || []).find(i => String(i.id).trim().toLowerCase() === targetId);
+    if (!inv) {
+      try {
+        const fresh = await loadInvoices();
+        inv = (fresh || []).find(i => String(i.id).trim().toLowerCase() === targetId);
+      } catch (e) {
+        console.warn('[viewInvoiceReceipt] Refresh failed:', e);
+      }
+    }
+  }
   if (!inv) return;
 
   const amount = parseFloat(inv.amount || inv.total_amount || 0).toFixed(2);
-  const refId = inv.id.slice(0, 8).toUpperCase();
+  const refId = String(inv.id).slice(0, 8).toUpperCase();
   const dateStr = inv.paid_at
     ? new Date(inv.paid_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -2696,14 +2732,28 @@ function submitBooking() {
 
       goToStep(1);
       loadAppointments();
-      loadInvoices(); // CRITICAL: Updates unpaid balance and pending payments immediately!
 
       if (paymentMethod === 'paymongo' && data.invoice && data.invoice.id) {
+        // Construct complete invoice object including appointment and service details
+        const createdInv = {
+          ...data.invoice,
+          appointment: {
+            ...data,
+            treatment: selectedTreat || { name: 'Dental Service' }
+          },
+          treatment_name: selectedTreat?.name || 'Dental Service'
+        };
+
+        // Cache immediately so billing tables and PayMongo modal have it right away
+        if (!allInvoices.some(i => String(i.id) === String(createdInv.id))) {
+          allInvoices.unshift(createdInv);
+        }
+
+        loadInvoices();
         showToast('Appointment booked! Opening PayMongo Checkout for 30% reservation fee...', 'success');
-        setTimeout(() => {
-          openPaymongoModal(data.invoice.id);
-        }, 700);
+        openPaymongoModal(createdInv);
       } else {
+        loadInvoices();
         showToast('Appointment booked successfully! Settle payment upon arrival at clinic.', 'success');
         setTimeout(() => switchSection('overview'), 1200);
       }

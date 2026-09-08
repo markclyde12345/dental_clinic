@@ -12,22 +12,33 @@ const createPaymongoCheckout = async (req, res) => {
   try {
     const { invoice_id, success_url, cancel_url } = req.body;
 
-    if (!invoice_id) {
+    const cleanInvoiceId = String(invoice_id || '').trim();
+    if (!cleanInvoiceId) {
       return res.status(400).json({ message: 'Invoice ID is required' });
     }
 
-    // 1. Fetch invoice details from Supabase
-    const { data: invoice, error: invError } = await supabase
+    // 1. Fetch invoice details from Supabase with relations
+    let { data: invoice, error: invError } = await supabase
       .from('invoices')
       .select(`
         id, amount, status, issued_at, paid_at, patient_id, appointment_id,
         patient:patient_id ( id, name, email, contact_number ),
         appointment:appointment_id ( id, appointment_date, notes, treatment:treatment_id ( id, name, price ) )
       `)
-      .eq('id', invoice_id)
-      .single();
+      .eq('id', cleanInvoiceId)
+      .maybeSingle();
 
-    if (invError || !invoice) {
+    // Fallback: if relational join fails, fetch base invoice record
+    if (!invoice) {
+      const { data: plainInv } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('id', cleanInvoiceId)
+        .maybeSingle();
+      if (plainInv) invoice = plainInv;
+    }
+
+    if (!invoice) {
       return res.status(404).json({ message: 'Invoice not found' });
     }
 
@@ -167,7 +178,8 @@ const verifyPaymongoPayment = async (req, res) => {
   try {
     const { invoice_id, checkout_id } = req.body;
 
-    if (!invoice_id) {
+    const cleanInvoiceId = String(invoice_id || '').trim();
+    if (!cleanInvoiceId) {
       return res.status(400).json({ message: 'Invoice ID is required' });
     }
 
@@ -175,8 +187,8 @@ const verifyPaymongoPayment = async (req, res) => {
     const { data: invoice, error: invError } = await supabase
       .from('invoices')
       .select('*')
-      .eq('id', invoice_id)
-      .single();
+      .eq('id', cleanInvoiceId)
+      .maybeSingle();
 
     if (invError || !invoice) {
       return res.status(404).json({ message: 'Invoice not found' });

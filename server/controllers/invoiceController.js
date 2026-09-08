@@ -292,7 +292,33 @@ const reconcileInvoices = async (req, res) => {
   } catch (error) {
     console.error('[Reconciliation Error]', error);
     res.status(500).json({ success: false, message: error.message });
+// @desc    Get a single invoice by ID
+// @route   GET /api/invoices/:id
+// @access  Private
+const getInvoiceById = async (req, res) => {
+  const id = String(req.params.id || '').trim();
+  try {
+    let query = supabase
+      .from('invoices')
+      .select(`
+        id, amount, status, issued_at, paid_at, appointment_id, patient_id,
+        patient:patient_id ( id, name, email, contact_number ),
+        appointment:appointment_id ( id, appointment_date, notes, treatment:treatment_id ( id, name, price ) )
+      `)
+      .eq('id', id);
+
+    if (req.user.role === 'Patient') {
+      query = query.eq('patient_id', req.user.id);
+    }
+
+    const { data: invoice, error } = await query.maybeSingle();
+    if (error || !invoice) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+    res.json(invoice);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
-module.exports = { getInvoices, createInvoice, updateInvoice, reconcileInvoices };
+module.exports = { getInvoices, getInvoiceById, createInvoice, updateInvoice, reconcileInvoices };
