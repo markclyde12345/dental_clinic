@@ -506,6 +506,8 @@ function getAvatarColor(name) {
 }
 
 function updateStatusPillsCount() {
+  if (!document.getElementById('count-pill-all')) return;
+
   const counts = {
     ALL: allAppointments.length,
     Pending: 0,

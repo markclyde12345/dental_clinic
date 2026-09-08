@@ -329,46 +329,8 @@
       <!-- ────────────────── TAB 2: APPOINTMENTS ────────────────── -->
       <section id="tab-appointments" class="tab-pane">
         <div class="card-box">
-          <!-- Status Filter Tabs / Chips Bar -->
-          <div class="status-pills-bar" id="appts-status-pills">
-            <button class="status-pill-btn active" data-status="ALL" onclick="selectStatusPill('ALL')">
-              <span>All Appointments</span>
-              <span class="pill-count" id="count-pill-all">0</span>
-            </button>
-            <button class="status-pill-btn" data-status="Pending" onclick="selectStatusPill('Pending')">
-              <span class="status-dot dot-amber"></span>
-              <span>Pending</span>
-              <span class="pill-count" id="count-pill-pending">0</span>
-            </button>
-            <button class="status-pill-btn" data-status="Approved" onclick="selectStatusPill('Approved')">
-              <span class="status-dot dot-blue"></span>
-              <span>Confirmed</span>
-              <span class="pill-count" id="count-pill-approved">0</span>
-            </button>
-            <button class="status-pill-btn" data-status="Checked In" onclick="selectStatusPill('Checked In')">
-              <span class="status-dot dot-gold"></span>
-              <span>In Lounge</span>
-              <span class="pill-count" id="count-pill-checkedin">0</span>
-            </button>
-            <button class="status-pill-btn" data-status="In Progress" onclick="selectStatusPill('In Progress')">
-              <span class="status-dot dot-purple"></span>
-              <span>In Chair</span>
-              <span class="pill-count" id="count-pill-inprogress">0</span>
-            </button>
-            <button class="status-pill-btn" data-status="Completed" onclick="selectStatusPill('Completed')">
-              <span class="status-dot dot-green"></span>
-              <span>Completed</span>
-              <span class="pill-count" id="count-pill-completed">0</span>
-            </button>
-            <button class="status-pill-btn" data-status="Cancelled" onclick="selectStatusPill('Cancelled')">
-              <span class="status-dot dot-red"></span>
-              <span>Cancelled</span>
-              <span class="pill-count" id="count-pill-cancelled">0</span>
-            </button>
-          </div>
-
           <!-- Toolbar -->
-          <div class="table-toolbar" style="margin-top: 18px;">
+          <div class="table-toolbar">
             <div class="search-box">
               <i class="ti ti-search"></i>
               <input type="text" id="appts-search-input" placeholder="Search patient name, phone, email, or reference ID..." oninput="filterAppointments()">
@@ -388,8 +350,18 @@
                 <input type="date" id="appts-custom-date" style="display: none;" onchange="filterAppointments()">
               </div>
 
-              <!-- Hidden backing select for status filter to sync with pill tabs -->
-              <input type="hidden" id="appts-status-filter" value="ALL">
+              <div class="filter-group">
+                <label><i class="ti ti-filter"></i> Status:</label>
+                <select id="appts-status-filter" onchange="filterAppointments()">
+                  <option value="ALL">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Approved">Confirmed</option>
+                  <option value="Checked In">In Lounge</option>
+                  <option value="In Progress">In Chair</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
 
               <button class="btn btn-primary" onclick="openBookAppointmentModal()" title="Schedule an Appointment">
                 <i class="ti ti-calendar-plus"></i>
