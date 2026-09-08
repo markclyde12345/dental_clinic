@@ -42,16 +42,25 @@ function getCurrencySymbol() {
   return localStorage.getItem('set-currency') || '₱';
 }
 
-const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+function getAuthToken() {
+  return localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+}
+
+let token = getAuthToken();
 let user = null;
 
-// Roster memory states
+// Roster memory states & dashboard state variables
 let allAppointments = [];
 let allPatients = [];
 let allInvoices = [];
 let localInventory = null;
 let localStaffSchedules = null;
 let localUsers = [];
+let allSystemLogs = [];
+let logsPollingInterval = null;
+let adminNotificationsList = [];
+let currentAdminBranch = 'Main Branch';
+let onDeleteConfirmCallback = null;
 
 
 const defaultAdmin = {
@@ -65,6 +74,7 @@ const defaultAdmin = {
 
 // Always open dashboard first without forcing a redirect to login.html
 function startAdminApp() {
+  token = getAuthToken();
   if (token) {
     fetch(`${AUTH_API}/profile`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -93,8 +103,6 @@ function startAdminApp() {
     initDashboard();
   }
 }
-
-startAdminApp();
 
 function renderAdminSidebar() {
   const displayName = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Admin';
@@ -150,12 +158,14 @@ function initDashboard() {
   initSystemLogsListeners(); // Attach live system logs search, filter, and stream controls
   setupAdminNotifications(); // Attach admin alert center listeners
   loadAdminNotifications();  // Initial fetch of admin notifications
+  loadAppointments();        // Initial fetch and cache of all clinic appointments & branch badges
   setInterval(() => loadAdminNotifications(), 30000); // Polling every 30s
 
-  // Open to 'overview' by default unless accessed via a specific #hash link
+  // Open to saved tab or hash link or 'overview' by default
   const validTabs = ['overview', 'appointments', 'patients', 'billing', 'staff', 'inventory', 'users', 'history', 'logs', 'settings'];
   const hashTab = (window.location.hash || '').replace('#', '').trim();
-  const initialTab = validTabs.includes(hashTab) ? hashTab : 'overview';
+  const savedTab = localStorage.getItem('admin_active_tab');
+  const initialTab = validTabs.includes(hashTab) ? hashTab : (validTabs.includes(savedTab) ? savedTab : 'overview');
 
   // Restore branches toggle state (default open)
   const branchesOpen = localStorage.getItem('admin_sidebar_branches_open');
@@ -177,7 +187,7 @@ function initDashboard() {
 }
 
 // ─── Tab Switcher ─────────────────────────────────────────────────────────────
-window.activateTab = function(targetTab, skipDataLoad = false) {
+function activateTab(targetTab, skipDataLoad = false) {
   if (!targetTab) return;
   const tabs = document.querySelectorAll('.nav-tab');
   const panes = document.querySelectorAll('.tab-pane');
@@ -217,9 +227,13 @@ window.activateTab = function(targetTab, skipDataLoad = false) {
   // Manage live polling for system logs tab
   if (targetTab === 'logs') {
     loadSystemLogs();
-    startSystemLogsStream();
+    if (typeof startSystemLogsStream === 'function') {
+      startSystemLogsStream();
+    }
   } else {
-    stopSystemLogsStream();
+    if (typeof stopSystemLogsStream === 'function') {
+      stopSystemLogsStream();
+    }
     const pauseBtn = document.getElementById('btn-pause-stream');
     if (pauseBtn) {
       pauseBtn.innerHTML = '<i class="ti ti-player-pause" style="font-size: 14px;"></i> Pause Stream';
@@ -263,7 +277,8 @@ window.activateTab = function(targetTab, skipDataLoad = false) {
       loadSettings();
     }
   }
-};
+}
+window.activateTab = activateTab;
 
 function setupTabs() {
   const tabs = document.querySelectorAll('.nav-tab');
@@ -300,7 +315,7 @@ function setupTabs() {
 }
 
 // ─── Clinic Branches Sidebar Navigation & Filtering ──────────────────────────
-let currentAdminBranch = 'Main Branch';
+// currentAdminBranch is declared at top of file
 
 function getAppointmentBranch(a) {
   if (!a) return 'Main Branch, Fano Dental';
@@ -350,7 +365,6 @@ window.toggleSidebarBranches = function(e) {
 window.selectAdminMainClinicAppointments = function(e) {
   if (e) {
     e.preventDefault();
-    e.stopPropagation();
   }
   selectAdminBranch('Main Branch');
 };
@@ -437,22 +451,24 @@ function loadStats() {
 
     // Cache responses
     allInvoices = data.invoices || [];
-    allAppointments = data.allAppointments || [];
+    if (Array.isArray(data.allAppointments) && data.allAppointments.length > 0) {
+      allAppointments = data.allAppointments;
+    }
     updateSidebarBranchBadges();
     loadAdminNotifications();
 
     // Fills widgets safely
     const seenEl = document.getElementById('today-seen');
-    if (seenEl) seenEl.textContent = data.stats.seenToday || 0;
+    if (seenEl) seenEl.textContent = data.stats?.seenToday || 0;
     
     const noShowEl = document.getElementById('today-noshows');
-    if (noShowEl) noShowEl.textContent = data.stats.noShowsToday || 0;
+    if (noShowEl) noShowEl.textContent = data.stats?.noShowsToday || 0;
     
     const todayRevEl = document.getElementById('today-revenue');
-    if (todayRevEl) todayRevEl.textContent = `${getCurrencySymbol()}${(data.stats.revenueToday || 0).toFixed(2)}`;
+    if (todayRevEl) todayRevEl.textContent = `${getCurrencySymbol()}${(data.stats?.revenueToday || 0).toFixed(2)}`;
     
     const monthRevEl = document.getElementById('month-revenue');
-    if (monthRevEl) monthRevEl.textContent = `${getCurrencySymbol()}${(data.stats.revenueMonth || 0).toFixed(2)}`;
+    if (monthRevEl) monthRevEl.textContent = `${getCurrencySymbol()}${(data.stats?.revenueMonth || 0).toFixed(2)}`;
 
     // Populate timeline list safely
     const timeline = document.getElementById('today-appointments-timeline');
@@ -1182,8 +1198,11 @@ function loadAppointments() {
     filterAndRenderAppointments();
   }
 
-  // 2. If no auth token is found, prompt login immediately instead of hanging
-  if (!token) {
+  // 2. Refresh auth token dynamically
+  const currentToken = getAuthToken();
+  token = currentToken;
+
+  if (!currentToken) {
     if (tbody && (!allAppointments || allAppointments.length === 0)) {
       tbody.innerHTML = `
         <tr>
@@ -1200,8 +1219,8 @@ function loadAppointments() {
   }
 
   // 3. Fetch latest data from server
-  fetch(APPT_API, {
-    headers: { 'Authorization': `Bearer ${token}` }
+  return fetch(APPT_API, {
+    headers: { 'Authorization': `Bearer ${currentToken}` }
   })
   .then(async res => {
     if (res.status === 401 || res.status === 403) {
@@ -1239,6 +1258,7 @@ function loadAppointments() {
     }
 
     allAppointments = Array.isArray(data) ? data : [];
+    updateSidebarBranchBadges();
     filterAndRenderAppointments();
     loadAdminNotifications();
   })
@@ -1258,6 +1278,7 @@ function loadAppointments() {
     showToast('Failed to load appointments agenda', 'error');
   });
 }
+window.loadAppointments = loadAppointments;
 
 function setupFilters() {
   const branchFilter = document.getElementById('filter-branch');
@@ -1622,7 +1643,7 @@ function loadPatients() {
 }
 
 function filterAndRenderPatients() {
-  const searchVal = document.getElementById('patient-search-input').value.toLowerCase().trim();
+  const searchVal = (document.getElementById('patient-search-input')?.value || '').toLowerCase().trim();
   const filtered = allPatients.filter(p => {
     const name = p.user ? (p.user.name || `${p.user.first_name || ''} ${p.user.last_name || ''}`.trim() || '').toLowerCase() : '';
     const email = p.user ? (p.user.email || '').toLowerCase() : '';
@@ -2558,12 +2579,13 @@ if (addStaffForm) {
 }
 
 // ─── Live Active System Logs Engine ──────────────────────────────────────────
-let allSystemLogs = [];
-let logsPollingInterval = null;
+// allSystemLogs and logsPollingInterval declared at top of file
 
 function loadSystemLogs() {
+  const t = getAuthToken();
+  if (!t) return;
   fetch(`${ADMIN_API}/logs`, {
-    headers: { 'Authorization': `Bearer ${token}` }
+    headers: { 'Authorization': `Bearer ${t}` }
   })
   .then(res => res.json())
   .then(logs => {
@@ -2576,6 +2598,22 @@ function loadSystemLogs() {
     console.error('Error fetching system logs:', err);
   });
 }
+
+function startSystemLogsStream() {
+  if (logsPollingInterval) clearInterval(logsPollingInterval);
+  logsPollingInterval = setInterval(() => {
+    loadSystemLogs();
+  }, 5000);
+}
+window.startSystemLogsStream = startSystemLogsStream;
+
+function stopSystemLogsStream() {
+  if (logsPollingInterval) {
+    clearInterval(logsPollingInterval);
+    logsPollingInterval = null;
+  }
+}
+window.stopSystemLogsStream = stopSystemLogsStream;
 
 function logConsoleEvent(message, level = 'INFO', module = 'SYSTEM') {
   const timestamp = new Date().toISOString();
@@ -2729,6 +2767,7 @@ function initSystemLogsListeners() {
 // ─── Toasts & Utilities ───────────────────────────────────────────────────────
 function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
+  if (!container) return;
   const toast = document.createElement('div');
   toast.style.background = type === 'success' ? '#e3fcef' : '#fdf3f2';
   toast.style.color = type === 'success' ? '#0e6245' : '#e74c3c';
@@ -2782,7 +2821,7 @@ if (sbCollapseBtn && sidebarEl) {
 }
 
 // ─── Custom Delete Confirmation Modal ──────────────────────────────────────────
-let onDeleteConfirmCallback = null;
+// onDeleteConfirmCallback is declared at top of file
 
 function showDeleteConfirmation(message, onConfirm) {
   const modal = document.getElementById('modal-confirm-delete');
@@ -3801,7 +3840,7 @@ window.switchToInventoryTab = function() {
 // ═══════════════════════════════════════════════════════════════════════════
 // ADMIN NOTIFICATION CENTER LOGIC
 // ═══════════════════════════════════════════════════════════════════════════
-let adminNotificationsList = [];
+// adminNotificationsList is declared at top of file
 
 function getAdminReadNotifKey() {
   const uid = (user && user.id) || 'admin';
@@ -4223,6 +4262,15 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+// ─── Application Bootstrap ───────────────────────────────────────────────────
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startAdminApp);
+  } else {
+    startAdminApp();
+  }
 }
 
 

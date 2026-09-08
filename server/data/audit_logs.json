@@ -1,5 +1,40 @@
 [
   {
+    "id": "97a78caf-e880-49b3-9f06-3c7aa49d37ce",
+    "timestamp": "2026-09-08T19:15:51.001Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "06f7a649-3c85-4fc0-97bc-caf612ef8eca",
+    "timestamp": "2026-09-08T19:15:39.954Z",
+    "action": "FAILED_LOGIN_ATTEMPT",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Failed login attempt (1/5) for email: admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "attemptCount": 1,
+      "maxAttempts": 5
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
     "id": "ff5a5320-668f-4c85-a937-30c869ab1c32",
     "timestamp": "2026-09-08T17:37:13.589Z",
     "action": "USER_LOGIN_SUCCESS",
