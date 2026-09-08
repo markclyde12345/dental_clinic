@@ -2838,6 +2838,30 @@ body {
   border: 1px solid #bbf7d0;
 }
 
+.audit-badge-checkin {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+}
+
+.audit-badge-book {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.audit-badge-reschedule {
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #e9d5ff;
+}
+
+.audit-badge-register {
+  background: #ede9fe;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+}
+
 .audit-badge-writeoff {
   background: #fee2e2;
   color: #b91c1c;

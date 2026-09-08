@@ -189,9 +189,9 @@
               <i class="ti ti-calendar-plus"></i>
               <span>Book Appointment</span>
             </button>
-            <button class="btn btn-outline-secondary btn-audit-action" onclick="openAuditLogsModal()" title="View financial and staff activity audit trail">
-              <i class="ti ti-clock-hour-3"></i>
-              <span>Audit Trail</span>
+            <button class="btn btn-outline-secondary btn-audit-action" onclick="openAuditLogsModal()" title="View front-desk daily activity and operations log">
+              <i class="ti ti-activity"></i>
+              <span>Activity Log</span>
             </button>
           </div>
         </div>
@@ -1053,32 +1053,32 @@
     </div>
   </div>
 
-  <!-- 7. MODAL: AUDIT TRAIL & FINANCIAL ACTIVITY LOGS -->
+  <!-- 7. MODAL: FRONT DESK ACTIVITY LOG -->
   <div class="modal-overlay" id="modal-audit-logs">
     <div class="modal-dialog modal-xl" style="max-height: 92vh; display: flex; flex-direction: column;">
       
-      <!-- Modal Header with Security & Compliance Badges -->
+      <!-- Modal Header -->
       <div class="modal-header" style="padding: 20px 28px; background: #ffffff; border-bottom: 1.5px solid #e2e8f0;">
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <h3 class="modal-title" style="margin: 0; font-size: 1.35rem; color: #0f172a; display: flex; align-items: center; gap: 10px;">
               <span style="width: 36px; height: 36px; border-radius: 10px; background: #eff6ff; color: #0284c7; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem;">
-                <i class="ti ti-shield-check"></i>
+                <i class="ti ti-activity"></i>
               </span>
-              System Audit Trail &amp; Activity Log
+              Front Desk Activity Log
             </h3>
             <span class="audit-compliance-pill live-pill">
-              <span class="audit-live-dot"></span> Real-Time Monitor
+              <span class="audit-live-dot"></span> Live Operations Feed
             </span>
             <span class="audit-compliance-pill">
-              <i class="ti ti-lock text-emerald-600"></i> Immutable Audit Ledger
+              <i class="ti ti-check text-emerald-600"></i> Front-Desk Operations
             </span>
             <span class="audit-compliance-pill">
-              <i class="ti ti-file-shredder text-blue-600"></i> DPA 2012 / HIPAA
+              <i class="ti ti-clock text-blue-600"></i> Daily Shift Log
             </span>
           </div>
           <p class="modal-sub" style="margin: 0; color: #64748b; font-size: 0.83rem;">
-            Real-time chronological ledger tracking receptionist billing collections, schedule cancellations, bad debt write-offs, and security access.
+            Chronological activity feed tracking patient check-ins, appointment bookings, schedule changes, payments settled, and new patient registrations.
           </p>
         </div>
         <button type="button" class="modal-close" onclick="closeModal('modal-audit-logs')" aria-label="Close modal">&times;</button>
@@ -1087,13 +1087,13 @@
       <!-- Modal Body -->
       <div class="modal-body audit-modal-body" style="flex: 1; overflow-y: auto;">
         
-        <!-- KPI Executive Summary Row -->
+        <!-- KPI Summary Row -->
         <div class="audit-kpi-grid">
           <div class="audit-kpi-card">
             <div class="audit-kpi-info">
-              <span class="audit-kpi-lbl">Total Events</span>
+              <span class="audit-kpi-lbl">Total Activities</span>
               <span class="audit-kpi-val" id="audit-kpi-total">0</span>
-              <span class="audit-kpi-sub" id="audit-kpi-total-sub">Tracked actions</span>
+              <span class="audit-kpi-sub" id="audit-kpi-total-sub">Front-desk events</span>
             </div>
             <div class="audit-kpi-icon icon-blue">
               <i class="ti ti-list-check"></i>
@@ -1104,7 +1104,7 @@
             <div class="audit-kpi-info">
               <span class="audit-kpi-lbl">Collections Settled</span>
               <span class="audit-kpi-val" id="audit-kpi-payments" style="color: #059669;">₱0.00</span>
-              <span class="audit-kpi-sub" id="audit-kpi-payments-sub">0 transactions</span>
+              <span class="audit-kpi-sub" id="audit-kpi-payments-sub">0 payments recorded</span>
             </div>
             <div class="audit-kpi-icon icon-green">
               <i class="ti ti-cash"></i>
@@ -1113,12 +1113,12 @@
 
           <div class="audit-kpi-card">
             <div class="audit-kpi-info">
-              <span class="audit-kpi-lbl">Bad Debt Write-Offs</span>
-              <span class="audit-kpi-val" id="audit-kpi-writeoffs" style="color: #e11d48;">₱0.00</span>
-              <span class="audit-kpi-sub" id="audit-kpi-writeoffs-sub">0 write-offs</span>
+              <span class="audit-kpi-lbl">Patient Check-Ins</span>
+              <span class="audit-kpi-val" id="audit-kpi-checkins" style="color: #0284c7;">0</span>
+              <span class="audit-kpi-sub" id="audit-kpi-checkins-sub">Arrived in lounge</span>
             </div>
-            <div class="audit-kpi-icon icon-rose">
-              <i class="ti ti-file-x"></i>
+            <div class="audit-kpi-icon icon-blue">
+              <i class="ti ti-user-check"></i>
             </div>
           </div>
 
@@ -1126,10 +1126,10 @@
             <div class="audit-kpi-info">
               <span class="audit-kpi-lbl">Schedule Changes</span>
               <span class="audit-kpi-val" id="audit-kpi-cancellations" style="color: #d97706;">0</span>
-              <span class="audit-kpi-sub" id="audit-kpi-cancellations-sub">Cancellations &amp; edits</span>
+              <span class="audit-kpi-sub" id="audit-kpi-cancellations-sub">Bookings, reschedules &amp; cancels</span>
             </div>
             <div class="audit-kpi-icon icon-amber">
-              <i class="ti ti-calendar-x"></i>
+              <i class="ti ti-calendar-time"></i>
             </div>
           </div>
         </div>
@@ -1138,17 +1138,18 @@
         <div class="audit-toolbar-wrapper">
           <div class="audit-search-box">
             <i class="ti ti-search"></i>
-            <input type="text" id="audit-search-input" placeholder="Search staff, patient, reference #, action, IP..." oninput="filterAuditLogs()">
+            <input type="text" id="audit-search-input" placeholder="Search staff, patient, reference #, action, payment method..." oninput="filterAuditLogs()">
           </div>
 
           <div class="audit-filters-group">
             <select id="audit-action-filter" class="audit-select-filter" onchange="filterAuditLogs()">
               <option value="ALL">All Event Types</option>
               <option value="PAYMENT_COLLECTED">💵 Payments Collected</option>
-              <option value="INVOICE_WRITTEN_OFF">❌ Bad Debt Write-Offs</option>
-              <option value="APPOINTMENT_CANCELLED">🚫 Appointment Cancellations</option>
-              <option value="APPOINTMENT_STATUS_CHANGED">🔄 Status Updates</option>
-              <option value="APPOINTMENT_DELETED">🗑️ Deleted Records</option>
+              <option value="CHECKED_IN">⏱️ Patient Check-Ins</option>
+              <option value="APPOINTMENT_BOOKED">🗓️ Appointments Booked</option>
+              <option value="APPOINTMENT_RESCHEDULED">🔄 Schedule Rescheduled</option>
+              <option value="APPOINTMENT_CANCELLED">🚫 Cancellations</option>
+              <option value="PATIENT_REGISTERED">👤 Patient Registrations</option>
             </select>
 
             <select id="audit-date-filter" class="audit-select-filter" onchange="filterAuditLogs()">
@@ -1158,27 +1159,27 @@
               <option value="30DAYS">Last 30 Days</option>
             </select>
 
-            <button type="button" class="btn-audit-tool" onclick="exportAuditLogsCSV()" title="Export current audit logs to CSV">
+            <button type="button" class="btn-audit-tool" onclick="exportAuditLogsCSV()" title="Export front-desk activity log to CSV">
               <i class="ti ti-file-spreadsheet text-emerald-600"></i> Export CSV
             </button>
 
-            <button type="button" class="btn-audit-tool" id="btn-refresh-audit" onclick="loadAuditLogs(true)" title="Fetch latest audit updates">
+            <button type="button" class="btn-audit-tool" id="btn-refresh-audit" onclick="loadAuditLogs(true)" title="Fetch latest activity updates">
               <i class="ti ti-refresh"></i> Refresh
             </button>
           </div>
         </div>
 
-        <!-- High-End Audit Table Card -->
+        <!-- High-End Activity Table Card -->
         <div class="audit-table-card">
           <div class="audit-table-scroll">
             <table class="audit-table">
               <thead>
                 <tr>
-                  <th style="width: 170px;">Timestamp &amp; Age</th>
-                  <th style="width: 190px;">Staff Operator</th>
-                  <th style="width: 190px;">Action Classification</th>
-                  <th>Activity Description &amp; Financial Impact</th>
-                  <th style="width: 150px;">Security Source</th>
+                  <th style="width: 155px;">Timestamp &amp; Time</th>
+                  <th style="width: 175px;">Staff Operator</th>
+                  <th style="width: 165px;">Activity Type</th>
+                  <th>Activity Description &amp; Details</th>
+                  <th style="width: 155px;">Payment / Method</th>
                   <th style="width: 80px; text-align: center;">Details</th>
                 </tr>
               </thead>
@@ -1186,7 +1187,7 @@
                 <tr>
                   <td colspan="6" class="text-center py-5 text-muted" style="padding: 40px 20px; text-align: center;">
                     <i class="ti ti-loader-2 ti-spin" style="font-size: 1.5rem; color: #0284c7; margin-bottom: 8px; display: block;"></i>
-                    <span style="font-size: 0.88rem; font-weight: 600; color: #64748b;">Loading verified audit trail records...</span>
+                    <span style="font-size: 0.88rem; font-weight: 600; color: #64748b;">Loading front-desk activity records...</span>
                   </td>
                 </tr>
               </tbody>
@@ -1199,8 +1200,8 @@
       <!-- Modal Footer -->
       <div class="modal-footer" style="padding: 16px 28px; background: #ffffff; border-top: 1.5px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <span style="font-size: 0.84rem; font-weight: 700; color: #334155;" id="audit-count-info">Showing 0 audit entries</span>
-          <span style="font-size: 0.78rem; color: #94a3b8;">• Cryptographically sequenced</span>
+          <span style="font-size: 0.84rem; font-weight: 700; color: #334155;" id="audit-count-info">Showing 0 activity entries</span>
+          <span style="font-size: 0.78rem; color: #94a3b8;">• Real-time synchronized</span>
         </div>
         <div style="display: flex; gap: 10px;">
           <button type="button" class="btn-audit-tool" onclick="closeModal('modal-audit-logs')">Close Window</button>
