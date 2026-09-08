@@ -1190,7 +1190,7 @@ body {
   color: var(--danger-color);
 }
 
-.form-group input,
+.form-group input:not([type="checkbox"]):not([type="radio"]),
 .form-group select,
 .form-group textarea {
   width: 100%;
@@ -1205,11 +1205,56 @@ body {
   transition: all 0.2s ease;
 }
 
-.form-group input:focus,
+.form-group input:not([type="checkbox"]):not([type="radio"]):focus,
 .form-group select:focus,
 .form-group textarea:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(11, 60, 77, 0.08);
+}
+
+.form-group input[type="checkbox"],
+.form-group input[type="radio"] {
+  width: 18px !important;
+  min-width: 18px !important;
+  max-width: 18px !important;
+  height: 18px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+  flex-shrink: 0 !important;
+}
+
+/* Condition Pill Labels */
+.condition-pill-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  background: #f8fafc;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  margin-bottom: 0 !important;
+}
+
+.condition-pill-label:hover {
+  border-color: var(--primary-color);
+  background: #f1f5f9;
+}
+
+.condition-pill-label:has(input:checked) {
+  border-color: var(--primary-color);
+  background: #eef6f8;
+}
+
+.condition-pill-label span {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #334155;
+  white-space: nowrap;
 }
 
 .form-row {

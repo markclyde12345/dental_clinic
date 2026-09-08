@@ -1602,7 +1602,7 @@ function toggleWalkInPatientMode(mode) {
 }
 window.toggleWalkInPatientMode = toggleWalkInPatientMode;
 
-// ─── 30% Booking Fee & Treatment Change Handler ──────────────────────────────
+// ─── Treatment Change & Fee Handler ──────────────────────────────────────────
 function handleWalkInTreatmentChange() {
   const treatmentSelect = document.getElementById('book-treatment-select');
   if (!treatmentSelect) return;
@@ -1612,28 +1612,41 @@ function handleWalkInTreatmentChange() {
 
   const serviceNameElem = document.getElementById('walkin-fee-service-name');
   const totalAmountElem = document.getElementById('walkin-fee-total-amount');
-  const bookingFeeElem = document.getElementById('walkin-booking-fee');
-  const remainingBalElem = document.getElementById('walkin-remaining-balance');
 
   if (!selectedTreat) {
     if (serviceNameElem) serviceNameElem.textContent = 'Select Treatment Procedure Above';
     if (totalAmountElem) totalAmountElem.textContent = '₱0.00';
-    if (bookingFeeElem) bookingFeeElem.textContent = '₱0.00';
-    if (remainingBalElem) remainingBalElem.textContent = '₱0.00';
     return;
   }
 
   const price = parseFloat(selectedTreat.price) || 0;
-  const BOOKING_FEE_RATE = 0.30;
-  const bookingFee = price > 0 ? Math.round(price * BOOKING_FEE_RATE * 100) / 100 : 0;
-  const remainingBalance = price > 0 ? Math.round((price - bookingFee) * 100) / 100 : 0;
-
   if (serviceNameElem) serviceNameElem.textContent = selectedTreat.name;
   if (totalAmountElem) totalAmountElem.textContent = `₱${price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  if (bookingFeeElem) bookingFeeElem.textContent = `₱${bookingFee.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  if (remainingBalElem) remainingBalElem.textContent = `₱${remainingBalance.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 window.handleWalkInTreatmentChange = handleWalkInTreatmentChange;
+
+// ─── Condition Checkbox Mutual Exclusion Handler ─────────────────────────────
+function handleConditionCheckboxChange(input) {
+  if (!input) return;
+  const isNone = input.value === 'None';
+  const allConditionInputs = document.querySelectorAll('input[name="walkin_condition"]');
+  
+  if (isNone && input.checked) {
+    allConditionInputs.forEach(cb => {
+      if (cb.value !== 'None') cb.checked = false;
+    });
+  } else if (!isNone && input.checked) {
+    const noneCb = document.getElementById('walkin-cond-none');
+    if (noneCb) noneCb.checked = false;
+  } else {
+    const anyChecked = Array.from(allConditionInputs).some(cb => cb.checked);
+    if (!anyChecked) {
+      const noneCb = document.getElementById('walkin-cond-none');
+      if (noneCb) noneCb.checked = true;
+    }
+  }
+}
+window.handleConditionCheckboxChange = handleConditionCheckboxChange;
 
 // ─── Open Walk-In Appointment Modals ──────────────────────────────────────────
 function openBookAppointmentModal() {
@@ -1854,19 +1867,17 @@ async function handleBookAppointment(e) {
       if (dObj) dentistName = dObj.name;
     }
 
-    // Calculate 30% booking reservation fee and 70% remaining balance
+    // Treatment price and payment settlement
     const selectedTreat = (allTreatments || []).find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
     const treatmentPrice = selectedTreat?.price ? parseFloat(selectedTreat.price) : 0;
-    const bookingFee = treatmentPrice > 0 ? Math.round(treatmentPrice * 0.30 * 100) / 100 : 0;
-    const remainingBalance = treatmentPrice > 0 ? Math.round((treatmentPrice - bookingFee) * 100) / 100 : 0;
 
-    // Structured notes matching the online appointment format
-    const feeTag = `[BookingFee: ₱${bookingFee.toFixed(2)} (30%)] [RemainingBalance: ₱${remainingBalance.toFixed(2)} (70%)] [TotalTreatmentPrice: ₱${treatmentPrice.toFixed(2)}]`;
+    // Structured notes matching clinic format
+    const priceTag = treatmentPrice > 0 ? `[TreatmentPrice: ₱${treatmentPrice.toFixed(2)}]` : '';
     const settlementTag = `[Settlement: ${paymentSettlement}]`;
-    const structuredNotes = `[Type: Walk-In Intake] [Branch: ${branchVal}] [Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] ${settlementTag} ${feeTag} [Emergency: ${emergContact}] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [AnxietySupport: ${anxiety === 'Gentle' ? 'Yes (Gentle Care)' : 'Standard'}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`.trim();
+    const structuredNotes = `[Branch: ${branchVal}] [Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] ${settlementTag} ${priceTag} [Emergency: ${emergContact}] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [AnxietySupport: ${anxiety === 'Gentle' ? 'Yes (Gentle Care)' : 'Standard'}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`.trim();
 
     const appointmentDateTime = timeVal.length === 5 ? `${dateVal}T${timeVal}:00` : `${dateVal}T${timeVal}`;
-    const isPaid = (paymentSettlement === 'Deposit' || paymentSettlement === 'Full');
+    const isPaid = (paymentSettlement === 'Full');
 
     const res = await fetch(`${BASE_ORIGIN}/api/appointments`, {
       method: 'POST',
@@ -1883,7 +1894,6 @@ async function handleBookAppointment(e) {
         payment_method: paymentMethod,
         payment_status: isPaid ? 'Paid' : 'Unpaid',
         is_paid: isPaid,
-        booking_fee: bookingFee,
         total_treatment_price: treatmentPrice
       })
     });
@@ -1895,25 +1905,8 @@ async function handleBookAppointment(e) {
 
     const createdAppt = await res.json();
 
-    // Adjust invoice if deposit collected
-    if (paymentSettlement === 'Deposit' && createdAppt.invoice && createdAppt.invoice.id) {
-      try {
-        await fetch(`${BASE_ORIGIN}/api/invoices/${createdAppt.invoice.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            amount: bookingFee,
-            status: 'Paid',
-            notes: `30% Walk-In Booking Deposit collected via ${paymentMethod}. Remaining clinic balance: ₱${remainingBalance.toFixed(2)}`
-          })
-        });
-      } catch (e) {
-        console.warn('[Invoice update warning]', e);
-      }
-    } else if (paymentSettlement === 'Full' && createdAppt.invoice && createdAppt.invoice.id) {
+    // Adjust invoice if full payment collected
+    if (paymentSettlement === 'Full' && createdAppt.invoice && createdAppt.invoice.id) {
       try {
         await fetch(`${BASE_ORIGIN}/api/invoices/${createdAppt.invoice.id}`, {
           method: 'PUT',
@@ -1924,7 +1917,7 @@ async function handleBookAppointment(e) {
           body: JSON.stringify({
             amount: treatmentPrice,
             status: 'Paid',
-            notes: `Full 100% treatment payment collected at front desk counter via ${paymentMethod}.`
+            notes: `Full payment collected at front desk counter via ${paymentMethod}.`
           })
         });
       } catch (e) {
@@ -1992,17 +1985,14 @@ function printWalkInAppointmentSlip(appt) {
 
   let settlementBadgeColor = '#64748b';
   let settlementBadgeText = 'Payment Pending (Check-Out)';
-  if (settlement === 'Deposit') {
-    settlementBadgeColor = '#059669';
-    settlementBadgeText = 'Collected 30% Booking Fee Deposit';
-  } else if (settlement === 'Full') {
+  if (settlement === 'Full' || settlement === 'Paid') {
     settlementBadgeColor = '#0b3c4d';
-    settlementBadgeText = 'Collected 100% Full Payment';
+    settlementBadgeText = 'Paid in Full';
   }
 
   const printWindow = window.open('', '_blank', 'width=680,height=800');
   if (!printWindow) {
-    alert('Please allow pop-ups in your browser to print the Walk-In Appointment Slip.');
+    alert('Please allow pop-ups in your browser to print the Appointment Slip.');
     return;
   }
 
@@ -2010,7 +2000,7 @@ function printWalkInAppointmentSlip(appt) {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Walk-In Appointment Pass — Fano Dental Clinic</title>
+      <title>Appointment Pass — Fano Dental Clinic</title>
       <meta charset="utf-8">
       <style>
         body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 36px; color: #0f172a; margin: 0; background: #fff; }
@@ -2030,9 +2020,9 @@ function printWalkInAppointmentSlip(appt) {
         <div class="header">
           <div>
             <div class="logo-title">🦷 Fano Dental Clinic</div>
-            <div style="font-size: 12px; color: #64748b; margin-top: 3px; font-weight: 600;">Official Walk-In Clinic Pass &amp; Queue Slip</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 3px; font-weight: 600;">Official Clinic Pass &amp; Appointment Voucher</div>
           </div>
-          <span class="badge-walkin">${escapeHtml(appt.status || 'CHECKED IN')}</span>
+          <span class="badge-walkin">${escapeHtml(appt.status || 'CONFIRMED')}</span>
         </div>
 
         <div class="row"><span class="label">Pass Voucher ID:</span><span class="val">#${apptId}</span></div>
@@ -2048,8 +2038,6 @@ function printWalkInAppointmentSlip(appt) {
             <span>${escapeHtml(treatmentName)}</span>
             <span>${price}</span>
           </div>
-          ${bookingFeeStr ? `<div style="display: flex; justify-content: space-between; font-size: 12px; color: #059669; font-weight: 700; margin-bottom: 4px;"><span>30% Booking Reservation Fee:</span><span>${bookingFeeStr}</span></div>` : ''}
-          ${balanceStr ? `<div style="display: flex; justify-content: space-between; font-size: 12px; color: #475569; font-weight: 700; margin-bottom: 4px;"><span>70% Clinic Balance on Visit:</span><span>${balanceStr}</span></div>` : ''}
           <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
             <span style="color: #64748b; font-weight: 600;">Payment Status:</span>
             <span style="font-weight: 700; color: ${settlementBadgeColor};">${settlementBadgeText} (${escapeHtml(paymentMethod)})</span>

@@ -565,44 +565,19 @@
                   Choose your preferred payment method for this appointment.
                 </p>
 
-                <!-- Fee & 30% Booking Deposit Breakdown Card -->
-                <div class="booking-fee-banner-card">
-                  <div class="fee-banner-top-row">
+                <!-- Procedure Fee Banner Card -->
+                <div class="booking-fee-banner-card" style="padding: 18px 22px;">
+                  <div class="fee-banner-top-row" style="margin-bottom: 0;">
                     <div class="fee-banner-icon">
-                      <i class="ti ti-receipt-2" style="font-size: 22px;"></i>
+                      <i class="ti ti-receipt-2" style="font-size: 24px;"></i>
                     </div>
                     <div class="fee-banner-info">
                       <span class="fee-service-name" id="wizard-fee-service">Selected Dental Service</span>
                       <span class="fee-sub">Standard Clinic Procedure</span>
                     </div>
                     <div class="fee-service-total-wrap">
-                      <span class="fee-badge-total">Total Procedure Fee</span>
+                      <span class="fee-badge-total">Total Treatment Fee</span>
                       <span class="fee-banner-amount" id="wizard-fee-amount">₱0.00</span>
-                    </div>
-                  </div>
-
-                  <!-- 30% Booking Fee & 70% Clinic Balance Breakdown -->
-                  <div class="booking-deposit-breakdown">
-                    <div class="deposit-col deposit-now">
-                      <div class="deposit-col-header">
-                        <span class="deposit-tag deposit-tag-required"><i class="ti ti-shield-check"></i> Required Now</span>
-                        <span class="deposit-percent">30% Deposit</span>
-                      </div>
-                      <div class="deposit-amount" id="wizard-booking-fee">₱0.00</div>
-                      <span class="deposit-hint">Pay 30% fee to lock in &amp; confirm slot</span>
-                    </div>
-
-                    <div class="deposit-col-divider">
-                      <i class="ti ti-plus" style="font-size: 14px;"></i>
-                    </div>
-
-                    <div class="deposit-col deposit-later">
-                      <div class="deposit-col-header">
-                        <span class="deposit-tag deposit-tag-clinic"><i class="ti ti-building-hospital"></i> At Clinic</span>
-                        <span class="deposit-percent">70% Balance</span>
-                      </div>
-                      <div class="deposit-amount" id="wizard-remaining-balance">₱0.00</div>
-                      <span class="deposit-hint">Payable at counter upon appointment visit</span>
                     </div>
                   </div>
                 </div>
@@ -620,7 +595,7 @@
                         <span class="choice-badge-green">Instant Checkout</span>
                       </div>
                       <p class="choice-desc" id="choice-desc-paymongo">
-                        Pay the <strong>30% booking reservation fee</strong> online now via GCash, Maya, cards, or BillEase to secure your slot immediately. The 70% balance is payable at the clinic counter.
+                        Pay securely online now via GCash, Maya, cards, or BillEase. Your payment receipt is verified instantly.
                       </p>
                       <div class="choice-channels-row">
                         <span class="pms-chip gcash"><i class="ti ti-wallet"></i> GCash</span>
@@ -642,7 +617,7 @@
                         <span class="choice-badge-gray">Pay on Visit</span>
                       </div>
                       <p class="choice-desc">
-                        Settle your 30% booking reservation fee (or full amount) at the receptionist counter upon arrival. We accept Cash, GCash QR, or Clinic POS card swipe.
+                        Settle your treatment payment at the receptionist counter upon arrival. We accept Cash, GCash QR, or Clinic POS card swipe.
                       </p>
                       <div class="choice-channels-row">
                         <span class="pms-chip counter"><i class="ti ti-cash-banknote"></i> Cash at Counter</span>
@@ -684,12 +659,8 @@
                       <span id="summary-payment-method" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">Pay Online with PayMongo</span>
                     </div>
                     <div>
-                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Required Booking Fee (30% Deposit)</strong>
-                      <span id="summary-booking-fee" style="font-weight: 800; color: #059669; font-size: 1.08rem;">₱0.00</span>
-                    </div>
-                    <div>
-                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Remaining Balance on Visit (70%)</strong>
-                      <span id="summary-remaining-balance" style="font-weight: 700; color: var(--text-secondary); font-size: 1.05rem;">₱0.00</span>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Treatment Fee</strong>
+                      <span id="summary-fee-amount" style="font-weight: 800; color: #059669; font-size: 1.08rem;">₱0.00</span>
                     </div>
                     <div style="grid-column: 1 / -1;">
                       <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Assigned Clinic Branch</strong>

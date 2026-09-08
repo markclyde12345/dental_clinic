@@ -2274,27 +2274,13 @@ function renderPaymentDetails() {
     }
   }
 
-  const BOOKING_FEE_RATE = 0.30;
-  const bookingFee = price > 0 ? Math.round(price * BOOKING_FEE_RATE * 100) / 100 : 0;
-  const remainingBalance = price > 0 ? Math.round((price - bookingFee) * 100) / 100 : 0;
-
   if (feeService) feeService.textContent = serviceName;
   if (feeAmount) {
     feeAmount.textContent = price > 0 ? `₱${price.toFixed(2)}` : 'Free (₱0.00)';
   }
-  if (bookingFeeEl) {
-    bookingFeeEl.textContent = bookingFee > 0 ? `₱${bookingFee.toFixed(2)}` : '₱0.00';
-  }
-  if (remainingBalanceEl) {
-    remainingBalanceEl.textContent = remainingBalance > 0 ? `₱${remainingBalance.toFixed(2)}` : '₱0.00';
-  }
 
   if (paymongoDescEl) {
-    if (bookingFee > 0) {
-      paymongoDescEl.innerHTML = `Pay the <strong>30% booking reservation fee (₱${bookingFee.toFixed(2)})</strong> online now via GCash, Maya, cards, or BillEase to secure your slot immediately. The remaining ₱${remainingBalance.toFixed(2)} (70%) is payable at the clinic counter.`;
-    } else {
-      paymongoDescEl.innerHTML = `Pay securely using your preferred mobile wallet, online bank, or credit/debit card. Your payment receipt is verified instantly.`;
-    }
+    paymongoDescEl.innerHTML = `Pay securely online now using your preferred mobile wallet, online bank, or credit/debit card. Your payment receipt is verified instantly.`;
   }
 }
 
@@ -2634,16 +2620,13 @@ function renderConfirmationDetails() {
     if (match) price = parseFloat(match[1].replace(/,/g, '')) || 0;
   }
 
-  const BOOKING_FEE_RATE = 0.30;
-  const bookingFee = price > 0 ? Math.round(price * BOOKING_FEE_RATE * 100) / 100 : 0;
-  const remainingBalance = price > 0 ? Math.round((price - bookingFee) * 100) / 100 : 0;
-
-  safeSet('summary-booking-fee', bookingFee > 0 ? `₱${bookingFee.toFixed(2)}` : '₱0.00 (No fee)');
-  safeSet('summary-remaining-balance', remainingBalance > 0 ? `₱${remainingBalance.toFixed(2)}` : '₱0.00');
+  safeSet('summary-fee-amount', price > 0 ? `₱${price.toFixed(2)}` : 'Free (₱0.00)');
+  safeSet('summary-booking-fee', price > 0 ? `₱${price.toFixed(2)}` : '₱0.00');
+  safeSet('summary-remaining-balance', '₱0.00');
 
   const paymentLabel = paymentMethod === 'paymongo'
-    ? (bookingFee > 0 ? `Pay Online via PayMongo (₱${bookingFee.toFixed(2)} 30% Deposit)` : 'Pay Online via PayMongo')
-    : (bookingFee > 0 ? `Pay at Clinic Front Desk (₱${bookingFee.toFixed(2)} 30% Deposit or Full)` : 'Pay at Clinic Front Desk');
+    ? (price > 0 ? `Pay Online via PayMongo (₱${price.toFixed(2)})` : 'Pay Online via PayMongo')
+    : 'Pay at Clinic Front Desk';
   safeSet('summary-payment-method', paymentLabel);
 }
 
@@ -2668,8 +2651,6 @@ function submitBooking() {
 
   const selectedTreat = (allTreatments || []).find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
   const treatmentPrice = selectedTreat?.price ? parseFloat(selectedTreat.price) : 0;
-  const bookingFee = treatmentPrice > 0 ? Math.round(treatmentPrice * 0.30 * 100) / 100 : 0;
-  const remainingBalance = treatmentPrice > 0 ? Math.round((treatmentPrice - bookingFee) * 100) / 100 : 0;
 
   // Selected medical conditions
   const conditions = [];
@@ -2678,9 +2659,9 @@ function submitBooking() {
   });
   const conditionsStr = conditions.length > 0 ? conditions.join(', ') : 'None';
 
-  // Combine branch, dentist, booking fee metadata and comprehensive medical details into structured notes string
-  const feeTag = `[BookingFee: ₱${bookingFee.toFixed(2)} (30%)] [RemainingBalance: ₱${remainingBalance.toFixed(2)} (70%)] [TotalTreatmentPrice: ₱${treatmentPrice.toFixed(2)}]`;
-  const notes = `[Branch: ${branchVal}] [Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] ${feeTag} [Emergency: ${emergName} (${emergPhone})] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [HMO: ${hmo} / ${hmoId}] [AnxietySupport: ${anxiety}] [ReminderPref: ${reminderPref}] [PatientAddr: ${patientAddr}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`;
+  // Combine branch, dentist, and comprehensive medical details into structured notes string
+  const priceTag = treatmentPrice > 0 ? `[TreatmentPrice: ₱${treatmentPrice.toFixed(2)}]` : '';
+  const notes = `[Branch: ${branchVal}] [Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] ${priceTag} [Emergency: ${emergName} (${emergPhone})] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [HMO: ${hmo} / ${hmoId}] [AnxietySupport: ${anxiety}] [ReminderPref: ${reminderPref}] [PatientAddr: ${patientAddr}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`.trim();
 
   // Parse preferred date & time into ISO string
   const [time, modifier] = timeVal.split(' ');
@@ -2704,7 +2685,6 @@ function submitBooking() {
       appointment_date: isoDateTime,
       notes: notes,
       payment_method: paymentMethod,
-      booking_fee: bookingFee,
       total_treatment_price: treatmentPrice
     })
   })
@@ -2750,7 +2730,7 @@ function submitBooking() {
         }
 
         loadInvoices();
-        showToast('Appointment booked! Opening PayMongo Checkout for 30% reservation fee...', 'success');
+        showToast('Appointment booked! Opening PayMongo Checkout...', 'success');
         openPaymongoModal(createdInv);
       } else {
         loadInvoices();

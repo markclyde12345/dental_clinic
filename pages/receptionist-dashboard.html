@@ -674,8 +674,8 @@
             </div>
           </div>
 
-          <!-- PROCEDURE & 30% FEE BREAKDOWN (SAME AS ONLINE) -->
-          <div class="form-section-title" style="margin-top: 20px;"><i class="ti ti-receipt-2"></i> 3. Dental Service &amp; 30% Fee Breakdown</div>
+          <!-- PROCEDURE & FEE DETAILS -->
+          <div class="form-section-title" style="margin-top: 20px;"><i class="ti ti-receipt-2"></i> 3. Dental Service &amp; Procedure Fee</div>
           <div class="form-group">
             <label for="book-treatment-select">Dental Procedure / Treatment <span class="required">*</span></label>
             <select id="book-treatment-select" required onchange="handleWalkInTreatmentChange()">
@@ -683,29 +683,15 @@
             </select>
           </div>
 
-          <!-- 30% Booking Fee & Balance Card (Same as online booking) -->
-          <div id="walkin-fee-banner-card" style="background: linear-gradient(135deg, rgba(14, 116, 144, 0.06), rgba(6, 182, 212, 0.10)); border: 1px solid rgba(14, 116, 144, 0.22); border-radius: 12px; padding: 14px 16px; margin-bottom: 18px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px dashed rgba(14, 116, 144, 0.2);">
-              <div>
-                <strong id="walkin-fee-service-name" style="color: var(--primary-color); font-size: 0.92rem;">Dental Consultation</strong>
-                <span style="display: block; font-size: 0.72rem; color: #64748b;">Walk-In Clinical Service</span>
-              </div>
-              <div style="text-align: right;">
-                <span style="font-size: 0.70rem; color: #64748b; text-transform: uppercase; font-weight: 700; display: block;">Total Treatment Fee</span>
-                <strong id="walkin-fee-total-amount" style="font-size: 1.15rem; color: var(--primary-color);">₱0.00</strong>
-              </div>
+          <!-- Procedure Fee Summary Card -->
+          <div id="walkin-fee-banner-card" style="background: #f8fafc; border: 1.5px solid var(--border-color); border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong id="walkin-fee-service-name" style="color: var(--primary-color); font-size: 0.95rem;">Select Treatment Procedure</strong>
+              <span style="display: block; font-size: 0.74rem; color: #64748b;">Clinical Dental Service</span>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-              <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 8px 12px;">
-                <span style="display: block; font-size: 0.70rem; font-weight: 700; color: #065f46; text-transform: uppercase;">30% Booking Reservation Fee</span>
-                <strong id="walkin-booking-fee" style="font-size: 1.1rem; color: #059669; display: block;">₱0.00</strong>
-                <span style="font-size: 0.68rem; color: #64748b;">Deposit / Booking reservation</span>
-              </div>
-              <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px;">
-                <span style="display: block; font-size: 0.70rem; font-weight: 700; color: #475569; text-transform: uppercase;">70% Balance on Visit</span>
-                <strong id="walkin-remaining-balance" style="font-size: 1.1rem; color: #334155; display: block;">₱0.00</strong>
-                <span style="font-size: 0.68rem; color: #64748b;">Payable upon completion</span>
-              </div>
+            <div style="text-align: right;">
+              <span style="font-size: 0.70rem; color: #64748b; text-transform: uppercase; font-weight: 700; display: block;">Treatment Fee</span>
+              <strong id="walkin-fee-total-amount" style="font-size: 1.25rem; color: var(--primary-color);">₱0.00</strong>
             </div>
           </div>
 
@@ -723,9 +709,8 @@
             <div class="form-group">
               <label for="book-payment-settlement">Payment Collection Status</label>
               <select id="book-payment-settlement">
-                <option value="Unpaid" selected>Unpaid (Settle at Check-Out)</option>
-                <option value="Deposit">Collected 30% Booking Reservation Deposit</option>
-                <option value="Full">Collected Full Treatment Payment (100%)</option>
+                <option value="Unpaid" selected>Unpaid (To Settle at Check-Out / Counter)</option>
+                <option value="Full">Paid (Full Payment Collected at Front Desk)</option>
               </select>
             </div>
           </div>
@@ -771,25 +756,31 @@
           </div>
 
           <div class="form-group">
-            <label style="margin-bottom: 6px;">Reported Pre-existing Medical Conditions</label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.82rem;">
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer;">
-                <input type="checkbox" name="walkin_condition" value="Hypertension"> Hypertension
+            <label style="margin-bottom: 8px; font-weight: 600; color: #334155;">Reported Pre-existing Medical Conditions</label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+              <label class="condition-pill-label">
+                <input type="checkbox" name="walkin_condition" value="Hypertension" onchange="handleConditionCheckboxChange(this)">
+                <span>Hypertension</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer;">
-                <input type="checkbox" name="walkin_condition" value="Diabetes"> Diabetes
+              <label class="condition-pill-label">
+                <input type="checkbox" name="walkin_condition" value="Diabetes" onchange="handleConditionCheckboxChange(this)">
+                <span>Diabetes</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer;">
-                <input type="checkbox" name="walkin_condition" value="Bleeding Disorder"> Bleeding Disorder
+              <label class="condition-pill-label">
+                <input type="checkbox" name="walkin_condition" value="Bleeding Disorder" onchange="handleConditionCheckboxChange(this)">
+                <span>Bleeding Disorder</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer;">
-                <input type="checkbox" name="walkin_condition" value="Heart Condition"> Heart Condition
+              <label class="condition-pill-label">
+                <input type="checkbox" name="walkin_condition" value="Heart Condition" onchange="handleConditionCheckboxChange(this)">
+                <span>Heart Condition</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer;">
-                <input type="checkbox" name="walkin_condition" value="Pregnant"> Pregnancy
+              <label class="condition-pill-label">
+                <input type="checkbox" name="walkin_condition" value="Pregnant" onchange="handleConditionCheckboxChange(this)">
+                <span>Pregnancy</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer;">
-                <input type="checkbox" name="walkin_condition" value="None" checked> None / Good Health
+              <label class="condition-pill-label">
+                <input type="checkbox" name="walkin_condition" value="None" checked id="walkin-cond-none" onchange="handleConditionCheckboxChange(this)">
+                <span>None / Good Health</span>
               </label>
             </div>
           </div>
