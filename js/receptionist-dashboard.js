@@ -1760,7 +1760,7 @@ async function handleBookAppointment(e) {
   const btn = document.getElementById('btn-save-appointment');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="ti ti-loader ti-spin"></i> <span>Processing Walk-In...</span>`;
+    btn.innerHTML = `<i class="ti ti-loader ti-spin"></i> <span>Processing Booking...</span>`;
   }
 
   try {
@@ -2072,13 +2072,13 @@ function printAppointmentSlipById(apptId) {
 }
 window.printAppointmentSlipById = printAppointmentSlipById;
 
-// ─── Register Walk-In Patient Handler ─────────────────────────────────────────
+// ─── Register Patient Handler ─────────────────────────────────────────
 async function handleRegisterPatient(e) {
   e.preventDefault();
   const btn = document.getElementById('btn-save-patient');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="ti ti-loader-2 ti-spin"></i> <span>Saving Information...</span>`;
+    btn.innerHTML = `<i class="ti ti-loader-2 ti-spin"></i> <span>Registering Patient...</span>`;
   }
 
   try {
@@ -2096,19 +2096,19 @@ async function handleRegisterPatient(e) {
     const rawNotes = document.getElementById('reg-notes')?.value.trim() || '';
 
     if (!firstName || !lastName || !phone) {
-      throw new Error('First Name, Last Name, and Contact Number are required for walk-in registration.');
+      throw new Error('First Name, Last Name, and Contact Number are required.');
     }
 
-    // Auto-generate unique placeholder email if not provided for walk-in
+    // Auto-generate unique placeholder email if not provided
     if (!email) {
       const cleanFn = firstName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'patient';
-      const cleanLn = lastName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'walkin';
+      const cleanLn = lastName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'record';
       email = `${cleanFn}.${cleanLn}.${Date.now().toString().slice(-4)}@fanodental.local`;
     }
 
     // Combine chief complaint, emergency contact, and medical notes
     const noteParts = [];
-    if (concern) noteParts.push(`[Reason for Walk-In / Chief Complaint]: ${concern}`);
+    if (concern) noteParts.push(`[Chief Complaint / Concern]: ${concern}`);
     if (emergency) noteParts.push(`[Emergency Contact]: ${emergency}`);
     if (rawNotes) noteParts.push(rawNotes);
     const combinedMedicalNotes = noteParts.join('\n');
@@ -2137,17 +2137,15 @@ async function handleRegisterPatient(e) {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.message || 'Walk-in patient registration failed.');
+      throw new Error(err.message || 'Patient registration failed.');
     }
 
     const newUser = await res.json();
-    showToast(`Walk-in patient ${firstName} ${lastName} recorded successfully!`, 'success');
+    showToast(`Patient ${firstName} ${lastName} registered successfully!`, 'success');
     closeModal('modal-register-patient');
     document.getElementById('form-register-patient')?.reset();
 
     await loadDashboardData();
-
-    // Per requirement: Walk-in patients only have their information recorded; no appointment slot is booked.
 
   } catch (err) {
     console.error('[Register Patient Error]', err);
@@ -2155,7 +2153,7 @@ async function handleRegisterPatient(e) {
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<i class="ti ti-user-check"></i> <span>Save Walk-In Patient Information</span>`;
+      btn.innerHTML = `<i class="ti ti-user-check"></i> <span>Register &amp; Save Patient</span>`;
     }
   }
 }

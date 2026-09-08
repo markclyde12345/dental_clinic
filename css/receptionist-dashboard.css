@@ -1104,6 +1104,14 @@ body {
   animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.modal-dialog form {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
 .modal-dialog.modal-lg {
   max-width: 780px;
 }
@@ -1125,6 +1133,7 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   background: #ffffff;
+  flex-shrink: 0;
 }
 
 .modal-title {
@@ -1162,15 +1171,21 @@ body {
 .modal-body {
   padding: 24px 28px;
   overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .modal-footer {
   padding: 18px 28px;
   border-top: 1px solid var(--border-color);
-  background: #f8fafc;
+  background: #ffffff;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 /* Forms */
@@ -2337,20 +2352,14 @@ body {
 
   .btn-book-action {
     order: 1;
-    font-size: 0.82rem !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.01em;
-  }
-
-  .btn-walkin-action {
-    order: 2;
-    font-size: 0.82rem !important;
+    grid-column: 1 / -1;
+    font-size: 0.85rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.01em;
   }
 
   .btn-qr-action {
-    order: 3;
+    order: 2;
     background: #ffffff !important;
     border: 1.5px solid var(--primary-color, #0b3c4d) !important;
     color: var(--primary-color, #0b3c4d) !important;
@@ -2358,7 +2367,7 @@ body {
   }
 
   .btn-audit-action {
-    order: 4;
+    order: 3;
     background: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
     color: #475569 !important;
