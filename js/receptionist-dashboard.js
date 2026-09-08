@@ -415,8 +415,8 @@ function renderOverviewDentists() {
             <div style="font-size: 0.74rem; color: #10b981; font-weight: 600;">&bull; On Duty Today</div>
           </div>
         </div>
-        <button class="btn btn-sm btn-outline" onclick="openBookWithDentist('${d.id}')" title="Book Walk-In Appointment">
-          <i class="ti ti-walk"></i> Walk-In
+        <button class="btn btn-sm btn-outline" onclick="openBookWithDentist('${d.id}')" title="Book Appointment">
+          <i class="ti ti-calendar-plus"></i> Book
         </button>
       </div>
     `;
@@ -1236,8 +1236,8 @@ function renderPatientsTable(list) {
         </td>
         <td>
           <div style="display: flex; gap: 6px;">
-            <button class="btn btn-sm btn-primary" onclick="openBookForPatient('${patientId}')" title="Book Walk-In Appointment">
-              <i class="ti ti-walk"></i> Walk-In
+            <button class="btn btn-sm btn-primary" onclick="openBookForPatient('${patientId}')" title="Book Appointment">
+              <i class="ti ti-calendar-plus"></i> Book
             </button>
             <button class="btn btn-sm btn-outline" onclick="openPatientHistoryModal('${patientId}')" title="View Chart History">
               <i class="ti ti-file-invoice"></i>
@@ -1932,7 +1932,7 @@ async function handleBookAppointment(e) {
       }
     }
 
-    showToast('Walk-in appointment booked & checked in successfully!', 'success');
+    showToast('Appointment booked & recorded successfully!', 'success');
     closeModal('modal-book-appointment');
     document.getElementById('form-book-appointment')?.reset();
 
@@ -1948,18 +1948,18 @@ async function handleBookAppointment(e) {
     };
 
     setTimeout(() => {
-      if (confirm(`Walk-in registered for ${patientName}!\n\nWould you like to print the Walk-In Appointment Slip & Queue Pass Voucher for the patient?`)) {
+      if (confirm(`Appointment confirmed for ${patientName}!\n\nWould you like to print the Appointment Slip & Voucher for the patient?`)) {
         printWalkInAppointmentSlip(slipData);
       }
     }, 350);
 
   } catch (err) {
-    console.error('[Book Walk-In Error]', err);
+    console.error('[Book Appointment Error]', err);
     showToast(err.message, 'error');
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<i class="ti ti-check"></i> <span>Confirm &amp; Check In Walk-In Patient</span>`;
+      btn.innerHTML = `<i class="ti ti-calendar-check"></i> <span>Confirm &amp; Book Appointment</span>`;
     }
   }
 }
@@ -2088,23 +2088,42 @@ window.printAppointmentSlipById = printAppointmentSlipById;
 async function handleRegisterPatient(e) {
   e.preventDefault();
   const btn = document.getElementById('btn-save-patient');
-  if (btn) btn.disabled = true;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ti ti-loader-2 ti-spin"></i> <span>Saving Information...</span>`;
+  }
 
   try {
-    const firstName = document.getElementById('reg-first-name').value.trim();
-    const lastName = document.getElementById('reg-last-name').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const phone = document.getElementById('reg-phone').value.trim();
-    const address = document.getElementById('reg-address').value.trim();
-    const dob = document.getElementById('reg-dob').value;
-    const gender = document.getElementById('reg-gender').value;
-    const bloodType = document.getElementById('reg-blood').value;
-    const allergies = document.getElementById('reg-allergies').value.trim();
-    const medicalNotes = document.getElementById('reg-notes').value.trim();
+    const firstName = document.getElementById('reg-first-name')?.value.trim();
+    const lastName = document.getElementById('reg-last-name')?.value.trim();
+    let email = document.getElementById('reg-email')?.value.trim();
+    const phone = document.getElementById('reg-phone')?.value.trim();
+    const address = document.getElementById('reg-address')?.value.trim() || '';
+    const dob = document.getElementById('reg-dob')?.value || null;
+    const gender = document.getElementById('reg-gender')?.value || 'Male';
+    const bloodType = document.getElementById('reg-blood')?.value || 'Unknown';
+    const allergies = document.getElementById('reg-allergies')?.value.trim() || '';
+    const concern = document.getElementById('reg-concern')?.value.trim() || '';
+    const emergency = document.getElementById('reg-emergency')?.value.trim() || '';
+    const rawNotes = document.getElementById('reg-notes')?.value.trim() || '';
 
-    if (!firstName || !lastName || !email || !phone) {
-      throw new Error('First Name, Last Name, Email, and Phone are required.');
+    if (!firstName || !lastName || !phone) {
+      throw new Error('First Name, Last Name, and Contact Number are required for walk-in registration.');
     }
+
+    // Auto-generate unique placeholder email if not provided for walk-in
+    if (!email) {
+      const cleanFn = firstName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'patient';
+      const cleanLn = lastName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'walkin';
+      email = `${cleanFn}.${cleanLn}.${Date.now().toString().slice(-4)}@fanodental.local`;
+    }
+
+    // Combine chief complaint, emergency contact, and medical notes
+    const noteParts = [];
+    if (concern) noteParts.push(`[Reason for Walk-In / Chief Complaint]: ${concern}`);
+    if (emergency) noteParts.push(`[Emergency Contact]: ${emergency}`);
+    if (rawNotes) noteParts.push(rawNotes);
+    const combinedMedicalNotes = noteParts.join('\n');
 
     const res = await fetch(`${BASE_ORIGIN}/api/auth/users`, {
       method: 'POST',
@@ -2124,32 +2143,32 @@ async function handleRegisterPatient(e) {
         gender,
         bloodType,
         allergies,
-        medicalNotes
+        medicalNotes: combinedMedicalNotes
       })
     });
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.message || 'Registration failed.');
+      throw new Error(err.message || 'Walk-in patient registration failed.');
     }
 
     const newUser = await res.json();
-    showToast(`Walk-in patient ${firstName} registered successfully!`, 'success');
+    showToast(`Walk-in patient ${firstName} ${lastName} recorded successfully!`, 'success');
     closeModal('modal-register-patient');
     document.getElementById('form-register-patient')?.reset();
 
     await loadDashboardData();
 
-    // Prompt to book appointment immediately
-    if (confirm(`Would you like to book an appointment for ${firstName} ${lastName} right now?`)) {
-      openBookForPatient(newUser.id);
-    }
+    // Per requirement: Walk-in patients only have their information recorded; no appointment slot is booked.
 
   } catch (err) {
     console.error('[Register Patient Error]', err);
     showToast(err.message, 'error');
   } finally {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ti ti-user-check"></i> <span>Save Walk-In Patient Information</span>`;
+    }
   }
 }
 
