@@ -1323,6 +1323,25 @@ function setupFilters() {
     const allergies = document.getElementById('patient-allergies').value.trim();
     const medicalNotes = document.getElementById('patient-notes').value.trim();
 
+    const cleanEmail = email.toLowerCase();
+    const fullName = `${firstName} ${lastName}`.toLowerCase();
+    const cleanPhone = contactNumber.replace(/[\s\-\(\)\.]/g, '');
+
+    const isDuplicate = (allPatients || []).some(p => {
+      const u = p.user || p;
+      const uEmail = (u.email || '').toLowerCase();
+      const uName = (u.name || `${u.first_name || ''} ${u.last_name || ''}`).toLowerCase();
+      const uPhone = (u.contact_number || '').replace(/[\s\-\(\)\.]/g, '');
+      return (cleanEmail && uEmail === cleanEmail) ||
+             (cleanPhone && cleanPhone.length >= 7 && (uPhone === cleanPhone || (cleanPhone.length >= 10 && uPhone.endsWith(cleanPhone.slice(-9))))) ||
+             (fullName.length > 3 && uName === fullName);
+    });
+
+    if (isDuplicate) {
+      showToast(`A patient record with this email, contact number, or name already exists.`, 'error');
+      return;
+    }
+
     const payload = {
       firstName,
       lastName,
@@ -1350,13 +1369,14 @@ function setupFilters() {
       },
       body: JSON.stringify(payload)
     })
-    .then(res => res.json())
-    .then(data => {
-      if (data.message && !data.id) {
-        showToast(data.message, 'error');
-        return;
+    .then(async res => {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || (data.message && !data.id)) {
+        throw new Error(data.message || 'Failed to create patient profile');
       }
-      
+      return data;
+    })
+    .then(data => {
       // Optimistically update patient list immediately for snappy feel
       if (!allPatients) allPatients = [];
       let allergiesArray = [];
@@ -2511,16 +2531,20 @@ if (addStaffForm) {
     const password = document.getElementById('staff-password').value;
     const address = document.getElementById('staff-address').value.trim();
 
-    // Prevent duplicate accounts by email or full name
+    // Prevent duplicate accounts by email, full name, or contact number
     const fullName = `${firstName} ${lastName}`.toLowerCase();
+    const cleanPhone = contactNumber.replace(/[\s\-\(\)\.]/g, '');
     const isDuplicateAccount = (localUsers || []).some(u => {
       const uEmail = (u.email || '').toLowerCase();
       const uName = (u.name || `${u.first_name || ''} ${u.last_name || ''}`).toLowerCase();
-      return uEmail === email || (fullName.length > 3 && uName === fullName);
+      const uPhone = (u.contact_number || '').replace(/[\s\-\(\)\.]/g, '');
+      return uEmail === email ||
+             (fullName.length > 3 && uName === fullName) ||
+             (cleanPhone && cleanPhone.length >= 7 && (uPhone === cleanPhone || (cleanPhone.length >= 10 && uPhone.endsWith(cleanPhone.slice(-9)))));
     });
 
     if (isDuplicateAccount) {
-      showToast(`An account with email "${email}" or name "${firstName} ${lastName}" already exists!`, 'error');
+      showToast(`An account with this email, contact number, or name "${firstName} ${lastName}" already exists!`, 'error');
       return;
     }
 

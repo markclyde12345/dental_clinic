@@ -71,15 +71,70 @@ const mapUser = (row) => ({
 const registerUser = async (req, res) => {
   const { firstName, lastName, email, contactNumber, address, password } = req.body;
   try {
-    // Check if email already exists
-    const { data: existing } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanFirst = (firstName || '').trim();
+    const cleanLast = (lastName || '').trim();
+    const fullName = `${cleanFirst} ${cleanLast}`.trim();
+    const cleanPhone = (contactNumber || '').replace(/[\s\-\(\)\.]/g, '').trim();
 
-    if (existing) {
-      return res.status(400).json({ message: 'User already exists.' });
+    if (!cleanEmail) {
+      return res.status(400).json({ message: 'Email address is required.', field: 'email' });
+    }
+
+    // 1. Check if email already exists (case-insensitive)
+    const { data: existingEmails } = await supabase
+      .from('users')
+      .select('id, name, email')
+      .ilike('email', cleanEmail)
+      .limit(1);
+
+    const existingEmail = existingEmails && existingEmails.length > 0 ? existingEmails[0] : null;
+
+    if (existingEmail) {
+      return res.status(400).json({
+        message: `The email address "${cleanEmail}" is already registered. Please log in or use a different email.`,
+        field: 'email'
+      });
+    }
+
+    // 2. Check if contact number already exists
+    if (cleanPhone) {
+      const altPhone = cleanPhone.startsWith('+63')
+        ? '0' + cleanPhone.slice(3)
+        : (cleanPhone.startsWith('0') ? '+63' + cleanPhone.slice(1) : cleanPhone);
+
+      const { data: existingPhones } = await supabase
+        .from('users')
+        .select('id, name, email, contact_number')
+        .or(`contact_number.eq.${cleanPhone},contact_number.eq.${altPhone}`)
+        .limit(1);
+
+      const existingPhone = existingPhones && existingPhones.length > 0 ? existingPhones[0] : null;
+
+      if (existingPhone) {
+        return res.status(400).json({
+          message: `The contact number "${contactNumber}" is already in use by another user (${existingPhone.name}). Please log in or use a different number.`,
+          field: 'contactNumber'
+        });
+      }
+    }
+
+    // 3. Check if a user with the exact same name already exists
+    if (fullName) {
+      const { data: existingNames } = await supabase
+        .from('users')
+        .select('id, name, email, contact_number')
+        .ilike('name', fullName)
+        .limit(1);
+
+      const existingName = existingNames && existingNames.length > 0 ? existingNames[0] : null;
+
+      if (existingName) {
+        return res.status(400).json({
+          message: `A user account named "${fullName}" is already registered (${existingName.email}). If this is you, please log in.`,
+          field: 'name'
+        });
+      }
     }
 
     // Hash password with optimized salt rounds (fast & secure)
@@ -88,17 +143,16 @@ const registerUser = async (req, res) => {
 
     // Generate OTP
     const otp = String(Math.floor(100000 + Math.random() * 900000));
-    console.log(`\n🔑 [DEV OTP] Code for ${email} is: ${otp}\n`);
+    console.log(`\n🔑 [DEV OTP] Code for ${cleanEmail} is: ${otp}\n`);
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-    const fullName = `${firstName} ${lastName}`.trim();
 
     const { data: newUser, error: insertError } = await supabase
       .from('users')
       .insert([{
-        first_name: firstName,
-        last_name: lastName,
+        first_name: cleanFirst,
+        last_name: cleanLast,
         name: fullName,
-        email,
+        email: cleanEmail,
         contact_number: contactNumber,
         address,
         password: hashedPassword,
@@ -770,21 +824,75 @@ const getAllUsers = async (req, res) => {
 const createStaffUser = async (req, res) => {
   const { firstName, lastName, email, contactNumber, address, password, role, dob, gender, bloodType, allergies, medicalNotes } = req.body;
   try {
-    // Check if email already exists
-    const { data: existing } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanFirst = (firstName || '').trim();
+    const cleanLast = (lastName || '').trim();
+    const fullName = `${cleanFirst} ${cleanLast}`.trim();
+    const cleanPhone = (contactNumber || '').replace(/[\s\-\(\)\.]/g, '').trim();
 
-    if (existing) {
-      return res.status(400).json({ message: 'User already exists.' });
+    if (!cleanEmail) {
+      return res.status(400).json({ message: 'Email address is required.', field: 'email' });
+    }
+
+    // 1. Check if email already exists
+    const { data: existingEmails } = await supabase
+      .from('users')
+      .select('id, name, email, role')
+      .ilike('email', cleanEmail)
+      .limit(1);
+
+    const existingEmail = existingEmails && existingEmails.length > 0 ? existingEmails[0] : null;
+
+    if (existingEmail) {
+      return res.status(400).json({
+        message: `A user with email "${cleanEmail}" already exists in the clinic (${existingEmail.name}, ${existingEmail.role}).`,
+        field: 'email'
+      });
+    }
+
+    // 2. Check if contact number already exists
+    if (cleanPhone) {
+      const altPhone = cleanPhone.startsWith('+63')
+        ? '0' + cleanPhone.slice(3)
+        : (cleanPhone.startsWith('0') ? '+63' + cleanPhone.slice(1) : cleanPhone);
+
+      const { data: existingPhones } = await supabase
+        .from('users')
+        .select('id, name, email, role, contact_number')
+        .or(`contact_number.eq.${cleanPhone},contact_number.eq.${altPhone}`)
+        .limit(1);
+
+      const existingPhone = existingPhones && existingPhones.length > 0 ? existingPhones[0] : null;
+
+      if (existingPhone) {
+        return res.status(400).json({
+          message: `The contact number "${contactNumber}" is already in use by ${existingPhone.name} (${existingPhone.email}).`,
+          field: 'contactNumber'
+        });
+      }
+    }
+
+    // 3. Check if exact full name already exists
+    if (fullName) {
+      const { data: existingNames } = await supabase
+        .from('users')
+        .select('id, name, email, role, contact_number')
+        .ilike('name', fullName)
+        .limit(1);
+
+      const existingName = existingNames && existingNames.length > 0 ? existingNames[0] : null;
+
+      if (existingName) {
+        return res.status(400).json({
+          message: `A user record for "${fullName}" already exists with email ${existingName.email}.`,
+          field: 'name'
+        });
+      }
     }
 
     // Hash password with optimized salt rounds (fast & secure)
     const salt = await bcrypt.genSalt(8);
     const hashedPassword = await bcrypt.hash(password || 'patient123', salt);
-    const fullName = `${firstName} ${lastName}`.trim();
  
     // Enforce role restriction: Receptionist can only create Patients
     const assignedRole = req.user.role === 'Receptionist' ? 'Patient' : (role || 'Patient');
@@ -792,10 +900,10 @@ const createStaffUser = async (req, res) => {
     const { data: newUser, error: insertError } = await supabase
       .from('users')
       .insert([{
-        first_name: firstName,
-        last_name: lastName,
+        first_name: cleanFirst,
+        last_name: cleanLast,
         name: fullName,
-        email,
+        email: cleanEmail,
         contact_number: contactNumber,
         address,
         password: hashedPassword,
@@ -903,46 +1011,117 @@ const createStaffUser = async (req, res) => {
  };
  
  // ─── Admin: Delete User Account ────────────────────────────────────────────────
- // @route   DELETE /api/auth/users/:id
- // @access  Private (Admin)
- const deleteUser = async (req, res) => {
-   const { id } = req.params;
-   try {
-     const { error } = await supabase
-       .from('users')
-       .delete()
-       .eq('id', id);
- 
-     if (error) {
-       // Check for foreign key constraint violation
-       if (error.code === '23503') {
-         return res.status(409).json({ 
-           message: 'Cannot delete user because they have active billing or appointment records. Please deactivate their account instead.' 
-         });
-       }
-       return internalError(res, error);
-     }
+// @route   DELETE /api/auth/users/:id
+// @access  Private (Admin)
+const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  const force = req.query.force === 'true' || req.body?.force === true;
+  const reassignTo = req.query.reassignTo || req.body?.reassignTo;
 
-     // Auto-remove corresponding shift schedule from staff_schedules if it exists
-     try {
-       const { error: schedError } = await supabase
-         .from('staff_schedules')
-         .delete()
-         .eq('id', id);
+  try {
+    // 1. Verify user exists
+    const { data: targetUser, error: fetchErr } = await supabase
+      .from('users')
+      .select('id, name, email, role')
+      .eq('id', id)
+      .maybeSingle();
 
-       if (schedError) throw schedError;
+    if (fetchErr) return internalError(res, fetchErr);
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User account not found.' });
+    }
 
-       // Trigger non-blocking async backup
-       asyncBackupStaffSchedules();
-     } catch (err) {
-       console.error('[Sync Staff Schedule Delete Error]', err.message);
-     }
- 
-     return res.json({ success: true, message: 'User account deleted successfully' });
-   } catch (error) {
-     return internalError(res, error);
-   }
- };
+    // 2. Prevent admin self-deletion
+    if (req.user && req.user.id === id) {
+      return res.status(400).json({ message: 'You cannot delete your own administrative account.' });
+    }
+
+    // 3. Check for linked appointments & invoices
+    const { data: userAppts } = await supabase
+      .from('appointments')
+      .select('id')
+      .eq('patient_id', id);
+
+    const { data: userInvoices } = await supabase
+      .from('invoices')
+      .select('id')
+      .eq('patient_id', id);
+
+    const apptCount = userAppts?.length || 0;
+    const invoiceCount = userInvoices?.length || 0;
+
+    if (apptCount > 0 || invoiceCount > 0) {
+      if (reassignTo) {
+        // Ensure reassign target exists
+        const { data: destUser } = await supabase
+          .from('users')
+          .select('id, name, email')
+          .eq('id', reassignTo)
+          .maybeSingle();
+
+        if (!destUser) {
+          return res.status(400).json({ message: 'Target user for reassigning records was not found.' });
+        }
+
+        if (apptCount > 0) {
+          await supabase.from('appointments').update({ patient_id: destUser.id }).eq('patient_id', id);
+        }
+        if (invoiceCount > 0) {
+          await supabase.from('invoices').update({ patient_id: destUser.id }).eq('patient_id', id);
+        }
+      } else if (force) {
+        // Cascade delete dependent appointment treatments, invoices, and appointments
+        if (apptCount > 0) {
+          const apptIds = userAppts.map(a => a.id);
+          await supabase.from('treatments').delete().in('appointment_id', apptIds);
+        }
+        if (invoiceCount > 0) {
+          await supabase.from('invoices').delete().eq('patient_id', id);
+        }
+        if (apptCount > 0) {
+          await supabase.from('appointments').delete().eq('patient_id', id);
+        }
+      } else {
+        return res.status(409).json({
+          message: `Cannot delete user "${targetUser.name}" because they have ${apptCount} appointment(s) and ${invoiceCount} billing record(s). Please deactivate their account instead, or specify a target account to merge records.`,
+          apptCount,
+          invoiceCount
+        });
+      }
+    }
+
+    // 4. Cascade clean up auxiliary tables that reference users(id)
+    await supabase.from('patient_profiles').delete().eq('user_id', id);
+    await supabase.from('notifications').delete().eq('user_id', id);
+    await supabase.from('staff_schedules').delete().eq('id', id);
+
+    // 5. Delete the user record
+    const { error: delError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', id);
+
+    if (delError) {
+      if (delError.code === '23503') {
+        return res.status(409).json({
+          message: 'Cannot delete user because dependent records still reference this account. Please deactivate their account instead.'
+        });
+      }
+      return internalError(res, delError);
+    }
+
+    // Trigger non-blocking async backup of staff schedules
+    try {
+      asyncBackupStaffSchedules();
+    } catch (err) {
+      console.error('[Sync Staff Schedule Delete Error]', err.message);
+    }
+
+    return res.json({ success: true, message: `User account "${targetUser.name}" deleted successfully.` });
+  } catch (error) {
+    return internalError(res, error);
+  }
+};
  
  // ─── Social Authentication (Facebook, Google, etc.) ─────────────────────────
 // @route   POST /api/auth/social-login
@@ -990,12 +1169,21 @@ const socialLogin = async (req, res) => {
     const firstName = nameParts[0] || 'Patient';
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'User';
 
-    // Check if user already exists in clinic users table
-    const { data: existingUser, error: findError } = await supabase
+    // Check if user already exists in clinic users table (case-insensitive email or matching full name)
+    let { data: existingUser, error: findError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', email)
+      .ilike('email', email)
       .maybeSingle();
+
+    if (!existingUser && fullName && fullName.length > 2) {
+      const { data: userByName } = await supabase
+        .from('users')
+        .select('*')
+        .ilike('name', fullName)
+        .maybeSingle();
+      if (userByName) existingUser = userByName;
+    }
 
     if (findError) throw findError;
 

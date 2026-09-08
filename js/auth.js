@@ -234,7 +234,33 @@ document.addEventListener('DOMContentLoaded', () => {
           redirectByRole(data.role);
         }
       } else {
-        showError(data.message || 'Registration failed. Please try again.');
+        const errorMsg = data.message || 'Registration failed. Please try again.';
+        showError(errorMsg);
+
+        // Highlight field if specified by backend
+        if (data.field === 'email') {
+          const emailInput = document.getElementById('signup-email');
+          if (emailInput) {
+            emailInput.focus();
+            emailInput.style.borderColor = '#ef4444';
+            setTimeout(() => { emailInput.style.borderColor = ''; }, 4000);
+          }
+        } else if (data.field === 'contactNumber') {
+          const phoneInput = document.getElementById('signup-phone');
+          if (phoneInput) {
+            phoneInput.focus();
+            phoneInput.style.borderColor = '#ef4444';
+            setTimeout(() => { phoneInput.style.borderColor = ''; }, 4000);
+          }
+        } else if (data.field === 'name') {
+          const firstInput = document.getElementById('signup-firstname');
+          if (firstInput) {
+            firstInput.focus();
+            firstInput.style.borderColor = '#ef4444';
+            setTimeout(() => { firstInput.style.borderColor = ''; }, 4000);
+          }
+        }
+
         btn.textContent = 'Sign Up';
         btn.disabled    = false;
       }

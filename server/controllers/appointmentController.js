@@ -778,48 +778,81 @@ const createQrAppointment = async (req, res) => {
       });
     }
 
-    // 2. Find or create patient record in users table
+    // 2. Find or create patient record in users table (prevent duplicate users)
     let patientId = null;
     let existingUser = null;
 
-    if (patientEmail) {
-      const { data: userByEmail } = await supabase
+    const cleanEmail = (patientEmail || '').trim().toLowerCase();
+    const cleanPhone = (patientPhone || '').replace(/[\s\-\(\)\.]/g, '').trim();
+    const cleanName = (patientName || '').trim();
+
+    // 2a. Check by email (case-insensitive)
+    if (cleanEmail) {
+      const { data: usersByEmail } = await supabase
         .from('users')
         .select('id, name, email, contact_number')
-        .eq('email', patientEmail)
-        .maybeSingle();
-      if (userByEmail) existingUser = userByEmail;
+        .ilike('email', cleanEmail)
+        .limit(1);
+      if (usersByEmail && usersByEmail.length > 0) existingUser = usersByEmail[0];
     }
 
-    if (!existingUser && patientPhone) {
-      const { data: userByPhone } = await supabase
+    // 2b. Check by contact number (local or international format)
+    if (!existingUser && cleanPhone) {
+      const altPhone = cleanPhone.startsWith('+63')
+        ? '0' + cleanPhone.slice(3)
+        : (cleanPhone.startsWith('0') ? '+63' + cleanPhone.slice(1) : cleanPhone);
+
+      const { data: usersByPhone } = await supabase
         .from('users')
         .select('id, name, email, contact_number')
-        .eq('contact_number', patientPhone)
-        .maybeSingle();
-      if (userByPhone) existingUser = userByPhone;
+        .or(`contact_number.eq.${cleanPhone},contact_number.eq.${altPhone}`)
+        .limit(1);
+      if (usersByPhone && usersByPhone.length > 0) existingUser = usersByPhone[0];
+    }
+
+    // 2c. Check by matching full name
+    if (!existingUser && cleanName && cleanName.length > 2) {
+      const { data: usersByName } = await supabase
+        .from('users')
+        .select('id, name, email, contact_number')
+        .ilike('name', cleanName)
+        .limit(1);
+      if (usersByName && usersByName.length > 0) existingUser = usersByName[0];
     }
 
     if (existingUser) {
       patientId = existingUser.id;
+      // Enrich existing account if contact info was missing
+      const enrich = {};
+      if (!existingUser.contact_number && cleanPhone) enrich.contact_number = cleanPhone;
+      if (!existingUser.email && cleanEmail) enrich.email = cleanEmail;
+      if (Object.keys(enrich).length > 0) {
+        await supabase.from('users').update(enrich).eq('id', existingUser.id);
+      }
     } else {
       // Auto-create lightweight patient profile
       const bcrypt = require('bcryptjs');
       const tempPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
-      const salt = await bcrypt.genSalt(10);
+      const salt = await bcrypt.genSalt(8);
       const hashedPassword = await bcrypt.hash(tempPassword, salt);
-      const generatedEmail = patientEmail || `walkin.${Date.now()}@fanodental.local`;
+      const generatedEmail = cleanEmail || `walkin.${Date.now()}@fanodental.local`;
+
+      const nameParts = cleanName.split(/\s+/);
+      const firstName = nameParts[0] || 'Walk-in';
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Patient';
 
       const { data: newUser, error: createErr } = await supabase
         .from('users')
         .insert([{
-          name: patientName,
+          first_name: firstName,
+          last_name: lastName,
+          name: cleanName,
           email: generatedEmail,
           password: hashedPassword,
-          contact_number: patientPhone,
+          contact_number: cleanPhone || null,
           role: 'Patient',
           is_active: true,
-          email_verified: false
+          is_verified: true
         }])
         .select()
         .single();

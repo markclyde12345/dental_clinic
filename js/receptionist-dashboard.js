@@ -1793,33 +1793,53 @@ async function handleBookAppointment(e) {
         email = `${cleanFn}.${cleanLn}.${Date.now().toString().slice(-4)}@fanodental.local`;
       }
 
-      // Fast auto-register of new walk-in patient
-      const regRes = await fetch(`${BASE_ORIGIN}/api/auth/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          email,
-          contactNumber: phone,
-          address,
-          role: 'Patient',
-          password: 'patient123'
-        })
+      // Check if walk-in patient matches an existing patient in the clinic first
+      const fullName = `${firstName} ${lastName}`.toLowerCase().trim();
+      const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, '');
+      const existingMatch = (allPatients || []).find(p => {
+        const u = p.user || p;
+        const uName = (u.name || `${u.first_name || ''} ${u.last_name || ''}`).toLowerCase().trim();
+        const uEmail = (u.email || '').toLowerCase().trim();
+        const uPhone = (u.contact_number || '').replace(/[\s\-\(\)\.]/g, '');
+        return (cleanPhone && cleanPhone.length >= 7 && (uPhone === cleanPhone || (cleanPhone.length >= 10 && uPhone.endsWith(cleanPhone.slice(-9))))) ||
+               (email && !email.endsWith('@fanodental.local') && uEmail === email.toLowerCase()) ||
+               (fullName.length > 3 && uName === fullName);
       });
 
-      if (!regRes.ok) {
-        const regErr = await regRes.json();
-        throw new Error(regErr.message || 'Failed to register walk-in patient account.');
-      }
+      if (existingMatch) {
+        const u = existingMatch.user || existingMatch;
+        patientId = existingMatch.user_id || u.id || existingMatch.id;
+        patientName = u.name || `${firstName} ${lastName}`;
+        patientContact = u.contact_number || phone;
+      } else {
+        // Fast auto-register of new walk-in patient
+        const regRes = await fetch(`${BASE_ORIGIN}/api/auth/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            email,
+            contactNumber: phone,
+            address,
+            role: 'Patient',
+            password: 'patient123'
+          })
+        });
 
-      const newUser = await regRes.json();
-      patientId = newUser.id;
-      patientName = `${firstName} ${lastName}`;
-      patientContact = phone;
+        if (!regRes.ok) {
+          const regErr = await regRes.json();
+          throw new Error(regErr.message || 'Failed to register walk-in patient account.');
+        }
+
+        const newUser = await regRes.json();
+        patientId = newUser.id;
+        patientName = `${firstName} ${lastName}`;
+        patientContact = phone;
+      }
 
     } else {
       patientId = document.getElementById('book-patient-select')?.value;
@@ -2103,6 +2123,23 @@ async function handleRegisterPatient(e) {
 
     if (!firstName || !lastName || !phone) {
       throw new Error('First Name, Last Name, and Contact Number are required.');
+    }
+
+    // Check for duplicate patient in allPatients
+    const fullName = `${firstName} ${lastName}`.toLowerCase().trim();
+    const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, '');
+    const isDup = (allPatients || []).some(p => {
+      const u = p.user || p;
+      const uName = (u.name || `${u.first_name || ''} ${u.last_name || ''}`).toLowerCase().trim();
+      const uEmail = (u.email || '').toLowerCase().trim();
+      const uPhone = (u.contact_number || '').replace(/[\s\-\(\)\.]/g, '');
+      return (email && !email.endsWith('@fanodental.local') && uEmail === email.toLowerCase()) ||
+             (cleanPhone && cleanPhone.length >= 7 && (uPhone === cleanPhone || (cleanPhone.length >= 10 && uPhone.endsWith(cleanPhone.slice(-9))))) ||
+             (fullName.length > 3 && uName === fullName);
+    });
+
+    if (isDup) {
+      throw new Error(`A patient record with this name, phone, or email already exists in the clinic.`);
     }
 
     // Auto-generate unique placeholder email if not provided
