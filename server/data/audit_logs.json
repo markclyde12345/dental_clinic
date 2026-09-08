@@ -1,5 +1,22 @@
 [
   {
+    "id": "cf0af731-2810-4112-be2e-a3f8152a93a0",
+    "timestamp": "2026-09-08T13:05:46.367Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d0d69b76-d84c-4a03-aa51-bb9898c4e7f6",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user markycastillote@gmail.com (Patient)",
+    "metadata": {
+      "email": "markycastillote@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
     "id": "0b43d89f-ddc3-4cc8-9e1d-04226f994939",
     "timestamp": "2026-09-05T16:55:00.889Z",
     "action": "APPOINTMENT_STATUS_CHANGED",

@@ -415,8 +415,8 @@ function renderOverviewDentists() {
             <div style="font-size: 0.74rem; color: #10b981; font-weight: 600;">&bull; On Duty Today</div>
           </div>
         </div>
-        <button class="btn btn-sm btn-outline" onclick="openBookWithDentist('${d.id}')">
-          <i class="ti ti-plus"></i> Book
+        <button class="btn btn-sm btn-outline" onclick="openBookWithDentist('${d.id}')" title="Book Walk-In Appointment">
+          <i class="ti ti-walk"></i> Walk-In
         </button>
       </div>
     `;
@@ -429,6 +429,7 @@ function parseAppointmentNotes(rawNotes) {
 
   const parsed = {
     hasData: true,
+    type: '',
     branch: '',
     dentist: '',
     emergency: '',
@@ -440,10 +441,15 @@ function parseAppointmentNotes(rawNotes) {
     anxiety: '',
     reminderPref: '',
     patientAddr: '',
+    bookingFee: '',
+    remainingBalance: '',
+    totalTreatmentPrice: '',
+    paymentMethod: '',
+    settlement: '',
     freeNotes: ''
   };
 
-  const regex = /\[([^:]+):\s*([^\]]+)\]/g;
+  const regex = /\[([^:\]]+):\s*([^\]]+)\]/g;
   let match;
   let matchCount = 0;
 
@@ -452,7 +458,8 @@ function parseAppointmentNotes(rawNotes) {
     const key = match[1].trim().toLowerCase();
     const val = match[2].trim();
 
-    if (key === 'branch') parsed.branch = val;
+    if (key === 'type') parsed.type = val;
+    else if (key === 'branch') parsed.branch = val;
     else if (key === 'dentist') parsed.dentist = val;
     else if (key === 'emergency') parsed.emergency = val;
     else if (key === 'conditions') parsed.conditions = val;
@@ -463,6 +470,11 @@ function parseAppointmentNotes(rawNotes) {
     else if (key === 'anxietysupport') parsed.anxiety = val;
     else if (key === 'reminderpref') parsed.reminderPref = val;
     else if (key === 'patientaddr') parsed.patientAddr = val;
+    else if (key === 'bookingfee') parsed.bookingFee = val;
+    else if (key === 'remainingbalance') parsed.remainingBalance = val;
+    else if (key === 'totaltreatmentprice') parsed.totalTreatmentPrice = val;
+    else if (key === 'paymentmethod') parsed.paymentMethod = val;
+    else if (key === 'settlement') parsed.settlement = val;
   }
 
   // Remove brackets to isolate actual notes written by patient or front desk
@@ -597,6 +609,12 @@ function renderAppointmentsTable(list) {
 
     // Build intelligent chips
     let chipsHtml = '';
+    if (parsedNotes.type && parsedNotes.type.toLowerCase().includes('walk-in')) {
+      chipsHtml += `<span class="notes-chip" style="background: #eef6f8; color: #0b3c4d; border: 1px solid rgba(11,60,77,0.25); font-weight: 700;" title="Walk-In Patient Arrival"><i class="ti ti-walk"></i> Walk-In</span>`;
+    }
+    if (parsedNotes.bookingFee) {
+      chipsHtml += `<span class="notes-chip" style="background: rgba(16, 185, 129, 0.08); color: #065f46; border: 1px solid rgba(16, 185, 129, 0.25); font-weight: 600;" title="30% Booking Reservation Fee"><i class="ti ti-receipt-2"></i> Deposit: ${escapeHtml(parsedNotes.bookingFee)}</span>`;
+    }
     if (parsedNotes.concern && parsedNotes.concern !== 'None' && parsedNotes.concern !== 'N/A') {
       chipsHtml += `<span class="notes-chip chip-concern" title="Chief Concern"><i class="ti ti-tooth"></i> ${escapeHtml(parsedNotes.concern)}</span>`;
     }
@@ -677,6 +695,9 @@ function renderAppointmentsTable(list) {
     secondaryActions += `
       <button class="btn-action-icon btn-icon-view" title="View Full Intake Details" onclick="openApptIntakeDetails('${appt.id}')">
         <i class="ti ti-eye"></i>
+      </button>
+      <button class="btn-action-icon" title="Print Walk-In / Appointment Slip" onclick="printAppointmentSlipById('${appt.id}')">
+        <i class="ti ti-printer"></i>
       </button>
     `;
 
@@ -902,6 +923,24 @@ function openApptIntakeDetails(apptId) {
               <span class="intake-lbl">Clinic Branch</span>
               <span class="intake-val">${escapeHtml(parsed.branch || 'Fano Dental Clinic — Main Branch')}</span>
             </div>
+            ${parsed.bookingFee ? `
+            <div class="intake-field">
+              <span class="intake-lbl">30% Booking Reservation Deposit</span>
+              <span class="intake-val font-semibold" style="color: #059669;"><i class="ti ti-receipt-2"></i> ${escapeHtml(parsed.bookingFee)}</span>
+            </div>
+            ` : ''}
+            ${parsed.remainingBalance ? `
+            <div class="intake-field">
+              <span class="intake-lbl">70% Clinic Balance on Visit</span>
+              <span class="intake-val font-semibold" style="color: #475569;"><i class="ti ti-cash"></i> ${escapeHtml(parsed.remainingBalance)}</span>
+            </div>
+            ` : ''}
+            ${parsed.paymentMethod ? `
+            <div class="intake-field">
+              <span class="intake-lbl">Payment Mode &amp; Settlement</span>
+              <span class="intake-val">${escapeHtml(parsed.paymentMethod)} ${parsed.settlement ? `&bull; <strong>${escapeHtml(parsed.settlement)}</strong>` : ''}</span>
+            </div>
+            ` : ''}
           </div>
         </div>
 
@@ -965,7 +1004,12 @@ function openApptIntakeDetails(apptId) {
   }
 
   if (footer) {
-    let modalActionBtns = `<button type="button" class="btn btn-outline" onclick="closeModal('modal-appt-details')">Close</button>`;
+    let modalActionBtns = `
+      <button type="button" class="btn btn-outline" onclick="printAppointmentSlipById('${appt.id}')">
+        <i class="ti ti-printer"></i> Print Slip
+      </button>
+      <button type="button" class="btn btn-outline" onclick="closeModal('modal-appt-details')">Close</button>
+    `;
 
     if (appt.status === 'Pending') {
       modalActionBtns += `
@@ -1192,8 +1236,8 @@ function renderPatientsTable(list) {
         </td>
         <td>
           <div style="display: flex; gap: 6px;">
-            <button class="btn btn-sm btn-primary" onclick="openBookForPatient('${patientId}')" title="Book Appointment">
-              <i class="ti ti-calendar-plus"></i> Book
+            <button class="btn btn-sm btn-primary" onclick="openBookForPatient('${patientId}')" title="Book Walk-In Appointment">
+              <i class="ti ti-walk"></i> Walk-In
             </button>
             <button class="btn btn-sm btn-outline" onclick="openPatientHistoryModal('${patientId}')" title="View Chart History">
               <i class="ti ti-file-invoice"></i>
@@ -1291,8 +1335,8 @@ function renderDentistsRoster() {
         </div>
 
         <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="openBookWithDentist('${d.id}')">
-          <i class="ti ti-calendar-plus"></i>
-          <span>Schedule with Doctor</span>
+          <i class="ti ti-walk"></i>
+          <span>Book Walk-In with Doctor</span>
         </button>
       </div>
     `;
@@ -1520,35 +1564,146 @@ function populateModalSelects() {
   }
 }
 
-function openBookAppointmentModal() {
-  openModal('modal-book-appointment');
-  handleBookDateChange();
+// ─── Walk-In Patient Identification Toggle ────────────────────────────────────
+function toggleWalkInPatientMode(mode) {
+  const isNew = mode === 'new';
+  const existingWrap = document.getElementById('walkin-existing-patient-wrap');
+  const newWrap = document.getElementById('walkin-new-patient-wrap');
+  const labelExisting = document.getElementById('label-existing-patient');
+  const labelNew = document.getElementById('label-new-patient');
+
+  if (existingWrap) existingWrap.style.display = isNew ? 'none' : 'block';
+  if (newWrap) newWrap.style.display = isNew ? 'block' : 'none';
+
+  if (labelExisting) {
+    labelExisting.classList.toggle('active', !isNew);
+    labelExisting.style.border = !isNew ? '1.5px solid var(--primary-color)' : '1.5px solid var(--border-color)';
+    labelExisting.style.background = !isNew ? '#eef6f8' : '#fff';
+    const radio = labelExisting.querySelector('input[type="radio"]');
+    if (radio) radio.checked = !isNew;
+  }
+  if (labelNew) {
+    labelNew.classList.toggle('active', isNew);
+    labelNew.style.border = isNew ? '1.5px solid var(--primary-color)' : '1.5px solid var(--border-color)';
+    labelNew.style.background = isNew ? '#eef6f8' : '#fff';
+    const radio = labelNew.querySelector('input[type="radio"]');
+    if (radio) radio.checked = isNew;
+  }
+
+  const patSelect = document.getElementById('book-patient-select');
+  if (patSelect) patSelect.required = !isNew;
+
+  const fnInput = document.getElementById('walkin-first-name');
+  const lnInput = document.getElementById('walkin-last-name');
+  const phInput = document.getElementById('walkin-phone');
+  if (fnInput) fnInput.required = isNew;
+  if (lnInput) lnInput.required = isNew;
+  if (phInput) phInput.required = isNew;
 }
+window.toggleWalkInPatientMode = toggleWalkInPatientMode;
+
+// ─── 30% Booking Fee & Treatment Change Handler ──────────────────────────────
+function handleWalkInTreatmentChange() {
+  const treatmentSelect = document.getElementById('book-treatment-select');
+  if (!treatmentSelect) return;
+
+  const treatmentId = treatmentSelect.value;
+  const selectedTreat = (allTreatments || []).find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
+
+  const serviceNameElem = document.getElementById('walkin-fee-service-name');
+  const totalAmountElem = document.getElementById('walkin-fee-total-amount');
+  const bookingFeeElem = document.getElementById('walkin-booking-fee');
+  const remainingBalElem = document.getElementById('walkin-remaining-balance');
+
+  if (!selectedTreat) {
+    if (serviceNameElem) serviceNameElem.textContent = 'Select Treatment Procedure Above';
+    if (totalAmountElem) totalAmountElem.textContent = '₱0.00';
+    if (bookingFeeElem) bookingFeeElem.textContent = '₱0.00';
+    if (remainingBalElem) remainingBalElem.textContent = '₱0.00';
+    return;
+  }
+
+  const price = parseFloat(selectedTreat.price) || 0;
+  const BOOKING_FEE_RATE = 0.30;
+  const bookingFee = price > 0 ? Math.round(price * BOOKING_FEE_RATE * 100) / 100 : 0;
+  const remainingBalance = price > 0 ? Math.round((price - bookingFee) * 100) / 100 : 0;
+
+  if (serviceNameElem) serviceNameElem.textContent = selectedTreat.name;
+  if (totalAmountElem) totalAmountElem.textContent = `₱${price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (bookingFeeElem) bookingFeeElem.textContent = `₱${bookingFee.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (remainingBalElem) remainingBalElem.textContent = `₱${remainingBalance.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+window.handleWalkInTreatmentChange = handleWalkInTreatmentChange;
+
+// ─── Open Walk-In Appointment Modals ──────────────────────────────────────────
+function openBookAppointmentModal() {
+  const form = document.getElementById('form-book-appointment');
+  if (form) form.reset();
+
+  const today = new Date().toISOString().split('T')[0];
+  const dateInput = document.getElementById('book-date');
+  if (dateInput) dateInput.value = today;
+
+  toggleWalkInPatientMode('existing');
+  handleBookDateChange();
+  handleWalkInTreatmentChange();
+
+  openModal('modal-book-appointment');
+}
+window.openBookAppointmentModal = openBookAppointmentModal;
 
 function openBookForPatient(patientId) {
-  openModal('modal-book-appointment');
+  const form = document.getElementById('form-book-appointment');
+  if (form) form.reset();
+
+  const today = new Date().toISOString().split('T')[0];
+  const dateInput = document.getElementById('book-date');
+  if (dateInput) dateInput.value = today;
+
+  toggleWalkInPatientMode('existing');
+
   const patientSelect = document.getElementById('book-patient-select');
   if (patientSelect) patientSelect.value = patientId;
+
   handleBookDateChange();
+  handleWalkInTreatmentChange();
+
+  openModal('modal-book-appointment');
 }
+window.openBookForPatient = openBookForPatient;
 
 function openBookWithDentist(dentistId) {
-  openModal('modal-book-appointment');
+  const form = document.getElementById('form-book-appointment');
+  if (form) form.reset();
+
+  const today = new Date().toISOString().split('T')[0];
+  const dateInput = document.getElementById('book-date');
+  if (dateInput) dateInput.value = today;
+
+  toggleWalkInPatientMode('existing');
+
   const dentistSelect = document.getElementById('book-dentist-select');
   if (dentistSelect) dentistSelect.value = dentistId;
+
   handleBookDateChange();
+  handleWalkInTreatmentChange();
+
+  openModal('modal-book-appointment');
 }
+window.openBookWithDentist = openBookWithDentist;
 
 function switchModalToRegister() {
   closeModal('modal-book-appointment');
   openRegisterPatientModal();
 }
+window.switchModalToRegister = switchModalToRegister;
 
 function openRegisterPatientModal() {
   const form = document.getElementById('form-register-patient');
   if (form) form.reset();
   openModal('modal-register-patient');
 }
+window.openRegisterPatientModal = openRegisterPatientModal;
 
 // ─── Time Slot Generator ──────────────────────────────────────────────────────
 function handleBookDateChange() {
@@ -1577,27 +1732,141 @@ function handleBookDateChange() {
     const label = formatTime(`${dateVal}T${time}`);
     return `<option value="${time}" ${isTaken ? 'disabled style="color: #cbd5e1;"' : ''}>${label} ${isTaken ? '(Occupied)' : '(Available)'}</option>`;
   }).join('');
-}
 
-// ─── Appointment Booking Handler ──────────────────────────────────────────────
+  // Auto-select first available slot if currently none selected or selected is occupied
+  const firstAvail = standardSlots.find(t => !bookedTimes.includes(t));
+  if (firstAvail && (!timeSelect.value || bookedTimes.includes(timeSelect.value))) {
+    timeSelect.value = firstAvail;
+  }
+}
+window.handleBookDateChange = handleBookDateChange;
+
+// ─── Walk-In Appointment Booking Handler ──────────────────────────────────────
 async function handleBookAppointment(e) {
   e.preventDefault();
   const btn = document.getElementById('btn-save-appointment');
-  if (btn) btn.disabled = true;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ti ti-loader ti-spin"></i> <span>Processing Walk-In...</span>`;
+  }
 
   try {
-    const patientId = document.getElementById('book-patient-select').value;
-    const treatmentId = document.getElementById('book-treatment-select').value;
-    const dateVal = document.getElementById('book-date').value;
-    const timeVal = document.getElementById('book-time').value;
-    const statusVal = document.getElementById('book-status').value;
-    const notesVal = document.getElementById('book-notes').value;
+    const modeRadio = document.querySelector('input[name="walkin_patient_mode"]:checked');
+    const isNewPatient = modeRadio ? modeRadio.value === 'new' : false;
 
-    if (!patientId || !treatmentId || !dateVal || !timeVal) {
-      throw new Error('Please fill in all required fields.');
+    let patientId = null;
+    let patientName = '';
+    let patientContact = '';
+
+    if (isNewPatient) {
+      const firstName = document.getElementById('walkin-first-name')?.value.trim();
+      const lastName = document.getElementById('walkin-last-name')?.value.trim();
+      const phone = document.getElementById('walkin-phone')?.value.trim();
+      let email = document.getElementById('walkin-email')?.value.trim();
+      const address = document.getElementById('walkin-address')?.value.trim() || '';
+
+      if (!firstName || !lastName || !phone) {
+        throw new Error('Please enter First Name, Last Name, and Contact Number for the new walk-in patient.');
+      }
+
+      if (!email) {
+        const cleanFn = firstName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'patient';
+        const cleanLn = lastName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'walkin';
+        email = `${cleanFn}.${cleanLn}.${Date.now().toString().slice(-4)}@fanodental.local`;
+      }
+
+      // Fast auto-register of new walk-in patient
+      const regRes = await fetch(`${BASE_ORIGIN}/api/auth/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          contactNumber: phone,
+          address,
+          role: 'Patient',
+          password: 'patient123'
+        })
+      });
+
+      if (!regRes.ok) {
+        const regErr = await regRes.json();
+        throw new Error(regErr.message || 'Failed to register walk-in patient account.');
+      }
+
+      const newUser = await regRes.json();
+      patientId = newUser.id;
+      patientName = `${firstName} ${lastName}`;
+      patientContact = phone;
+
+    } else {
+      patientId = document.getElementById('book-patient-select')?.value;
+      if (!patientId) {
+        throw new Error('Please select an existing patient from the list.');
+      }
+
+      const patObj = (allPatients || []).find(p => p.id === patientId || p.user?.id === patientId);
+      if (patObj) {
+        const u = patObj.user || patObj;
+        patientName = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Patient';
+        patientContact = u.contact_number || '';
+      } else {
+        const opt = document.getElementById('book-patient-select')?.selectedOptions[0];
+        patientName = opt ? opt.textContent.trim() : 'Patient';
+      }
     }
 
-    const appointmentDateTime = `${dateVal}T${timeVal}`;
+    const treatmentId = document.getElementById('book-treatment-select')?.value;
+    const branchVal = document.getElementById('book-branch-select')?.value || 'Main Branch, Fano Dental Clinic';
+    const dentistId = document.getElementById('book-dentist-select')?.value;
+    const dateVal = document.getElementById('book-date')?.value;
+    const timeVal = document.getElementById('book-time')?.value;
+    const paymentMethod = document.getElementById('book-payment-method')?.value || 'Cash';
+    const paymentSettlement = document.getElementById('book-payment-settlement')?.value || 'Unpaid';
+    const statusVal = document.getElementById('book-status')?.value || 'Checked In';
+
+    const concern = document.getElementById('book-concern')?.value.trim() || 'Walk-In Consultation / Urgent Care';
+    const emergContact = document.getElementById('book-emergency-contact')?.value.trim() || 'N/A';
+    const allergies = document.getElementById('book-allergies')?.value.trim() || 'None';
+    const medications = document.getElementById('book-medications')?.value.trim() || 'None';
+    const anxiety = document.getElementById('book-anxiety')?.value || 'Standard';
+    const rawNotes = document.getElementById('book-notes')?.value.trim() || '';
+
+    if (!treatmentId || !dateVal || !timeVal) {
+      throw new Error('Please select treatment procedure, arrival date, and time slot.');
+    }
+
+    // Selected medical conditions
+    const conditions = [];
+    document.querySelectorAll('input[name="walkin_condition"]:checked').forEach(cb => {
+      if (cb.value !== 'None') conditions.push(cb.value);
+    });
+    const conditionsStr = conditions.length > 0 ? conditions.join(', ') : 'None';
+
+    // Dentist Name
+    let dentistName = 'Any Available Dentist';
+    if (dentistId) {
+      const dObj = (allDentists || []).find(d => d.id === dentistId || String(d.id) === String(dentistId));
+      if (dObj) dentistName = dObj.name;
+    }
+
+    // Calculate 30% booking reservation fee and 70% remaining balance
+    const selectedTreat = (allTreatments || []).find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
+    const treatmentPrice = selectedTreat?.price ? parseFloat(selectedTreat.price) : 0;
+    const bookingFee = treatmentPrice > 0 ? Math.round(treatmentPrice * 0.30 * 100) / 100 : 0;
+    const remainingBalance = treatmentPrice > 0 ? Math.round((treatmentPrice - bookingFee) * 100) / 100 : 0;
+
+    // Structured notes matching the online appointment format
+    const feeTag = `[BookingFee: ₱${bookingFee.toFixed(2)} (30%)] [RemainingBalance: ₱${remainingBalance.toFixed(2)} (70%)] [TotalTreatmentPrice: ₱${treatmentPrice.toFixed(2)}]`;
+    const settlementTag = `[Settlement: ${paymentSettlement}]`;
+    const structuredNotes = `[Type: Walk-In Intake] [Branch: ${branchVal}] [Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] ${settlementTag} ${feeTag} [Emergency: ${emergContact}] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [AnxietySupport: ${anxiety === 'Gentle' ? 'Yes (Gentle Care)' : 'Standard'}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`.trim();
+
+    const appointmentDateTime = timeVal.length === 5 ? `${dateVal}T${timeVal}:00` : `${dateVal}T${timeVal}`;
+    const isPaid = (paymentSettlement === 'Deposit' || paymentSettlement === 'Full');
 
     const res = await fetch(`${BASE_ORIGIN}/api/appointments`, {
       method: 'POST',
@@ -1610,7 +1879,12 @@ async function handleBookAppointment(e) {
         treatment_id: treatmentId,
         appointment_date: appointmentDateTime,
         status: statusVal,
-        notes: notesVal
+        notes: structuredNotes,
+        payment_method: paymentMethod,
+        payment_status: isPaid ? 'Paid' : 'Unpaid',
+        is_paid: isPaid,
+        booking_fee: bookingFee,
+        total_treatment_price: treatmentPrice
       })
     });
 
@@ -1619,18 +1893,196 @@ async function handleBookAppointment(e) {
       throw new Error(err.message || 'Booking failed.');
     }
 
-    showToast('Appointment booked successfully!', 'success');
+    const createdAppt = await res.json();
+
+    // Adjust invoice if deposit collected
+    if (paymentSettlement === 'Deposit' && createdAppt.invoice && createdAppt.invoice.id) {
+      try {
+        await fetch(`${BASE_ORIGIN}/api/invoices/${createdAppt.invoice.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            amount: bookingFee,
+            status: 'Paid',
+            notes: `30% Walk-In Booking Deposit collected via ${paymentMethod}. Remaining clinic balance: ₱${remainingBalance.toFixed(2)}`
+          })
+        });
+      } catch (e) {
+        console.warn('[Invoice update warning]', e);
+      }
+    } else if (paymentSettlement === 'Full' && createdAppt.invoice && createdAppt.invoice.id) {
+      try {
+        await fetch(`${BASE_ORIGIN}/api/invoices/${createdAppt.invoice.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            amount: treatmentPrice,
+            status: 'Paid',
+            notes: `Full 100% treatment payment collected at front desk counter via ${paymentMethod}.`
+          })
+        });
+      } catch (e) {
+        console.warn('[Invoice update warning]', e);
+      }
+    }
+
+    showToast('Walk-in appointment booked & checked in successfully!', 'success');
     closeModal('modal-book-appointment');
     document.getElementById('form-book-appointment')?.reset();
+
     await loadDashboardData();
 
+    const slipData = {
+      ...createdAppt,
+      patient: createdAppt.patient || { name: patientName, contact_number: patientContact },
+      treatment: createdAppt.treatment || selectedTreat || { name: 'Dental Service', price: treatmentPrice },
+      notes: structuredNotes,
+      status: statusVal,
+      appointment_date: appointmentDateTime
+    };
+
+    setTimeout(() => {
+      if (confirm(`Walk-in registered for ${patientName}!\n\nWould you like to print the Walk-In Appointment Slip & Queue Pass Voucher for the patient?`)) {
+        printWalkInAppointmentSlip(slipData);
+      }
+    }, 350);
+
   } catch (err) {
-    console.error('[Book Appointment Error]', err);
+    console.error('[Book Walk-In Error]', err);
     showToast(err.message, 'error');
   } finally {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ti ti-check"></i> <span>Confirm &amp; Check In Walk-In Patient</span>`;
+    }
   }
 }
+window.handleBookAppointment = handleBookAppointment;
+
+// ─── Print Walk-In Appointment Slip / Queue Voucher ──────────────────────────
+function printWalkInAppointmentSlip(appt) {
+  if (!appt) return;
+
+  const treatmentName = appt.treatment?.name || appt.reason || 'Dental Visit';
+  const price = appt.treatment?.price ? `₱${parseFloat(appt.treatment.price).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₱0.00';
+  const d = new Date(appt.appointment_date || appt.dateTime || new Date());
+  const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  const notesRaw = appt.notes || '';
+  const parsed = parseAppointmentNotes(notesRaw);
+
+  const branchName = parsed.branch || 'Main Branch — Balirong, City of Naga';
+  const dentistName = parsed.dentist || 'Assigned Dental Specialist';
+  const concern = parsed.concern || 'Clinical Consultation';
+  const paymentMethod = parsed.paymentMethod || 'Cash';
+  const settlement = parsed.settlement || 'Unpaid';
+  const bookingFeeStr = parsed.bookingFee || '';
+  const balanceStr = parsed.remainingBalance || '';
+
+  const patientName = appt.patient?.name || (appt.patient?.first_name ? `${appt.patient.first_name} ${appt.patient.last_name || ''}`.trim() : 'Walk-In Patient');
+  const patientContact = appt.patient?.contact_number || appt.patient?.phone || 'N/A';
+  const apptId = String(appt.id || Date.now()).slice(0, 8).toUpperCase();
+
+  let settlementBadgeColor = '#64748b';
+  let settlementBadgeText = 'Payment Pending (Check-Out)';
+  if (settlement === 'Deposit') {
+    settlementBadgeColor = '#059669';
+    settlementBadgeText = 'Collected 30% Booking Fee Deposit';
+  } else if (settlement === 'Full') {
+    settlementBadgeColor = '#0b3c4d';
+    settlementBadgeText = 'Collected 100% Full Payment';
+  }
+
+  const printWindow = window.open('', '_blank', 'width=680,height=800');
+  if (!printWindow) {
+    alert('Please allow pop-ups in your browser to print the Walk-In Appointment Slip.');
+    return;
+  }
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Walk-In Appointment Pass — Fano Dental Clinic</title>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 36px; color: #0f172a; margin: 0; background: #fff; }
+        .voucher-card { border: 2px solid #0b3c4d; border-radius: 16px; padding: 28px 32px; max-width: 580px; margin: 0 auto; box-shadow: 0 4px 18px rgba(0,0,0,0.06); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #cbd5e1; padding-bottom: 16px; margin-bottom: 18px; }
+        .logo-title { font-size: 20px; font-weight: 800; color: #0b3c4d; }
+        .badge-walkin { background: #eef6f8; color: #0b3c4d; font-weight: 700; padding: 6px 12px; border-radius: 6px; font-size: 11px; text-transform: uppercase; border: 1px solid rgba(11,60,77,0.2); }
+        .row { display: flex; justify-content: space-between; margin-bottom: 11px; font-size: 13.5px; border-bottom: 1px dotted #f1f5f9; padding-bottom: 6px; }
+        .label { color: #64748b; font-weight: 600; }
+        .val { font-weight: 700; color: #0f172a; text-align: right; }
+        .fee-highlight { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin: 16px 0; }
+        .footer { margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 11px; color: #94a3b8; text-align: center; line-height: 1.5; }
+      </style>
+    </head>
+    <body>
+      <div class="voucher-card">
+        <div class="header">
+          <div>
+            <div class="logo-title">🦷 Fano Dental Clinic</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 3px; font-weight: 600;">Official Walk-In Clinic Pass &amp; Queue Slip</div>
+          </div>
+          <span class="badge-walkin">${escapeHtml(appt.status || 'CHECKED IN')}</span>
+        </div>
+
+        <div class="row"><span class="label">Pass Voucher ID:</span><span class="val">#${apptId}</span></div>
+        <div class="row"><span class="label">Patient Name:</span><span class="val">${escapeHtml(patientName)}</span></div>
+        <div class="row"><span class="label">Contact Number:</span><span class="val">${escapeHtml(patientContact)}</span></div>
+        <div class="row"><span class="label">Arrival Date &amp; Slot:</span><span class="val">${dateStr} &bull; ${timeStr}</span></div>
+        <div class="row"><span class="label">Clinic Location:</span><span class="val">${escapeHtml(branchName)}</span></div>
+        <div class="row"><span class="label">Attending Dentist:</span><span class="val">${escapeHtml(dentistName)}</span></div>
+        <div class="row"><span class="label">Primary Concern:</span><span class="val">${escapeHtml(concern)}</span></div>
+        
+        <div class="fee-highlight">
+          <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 800; color: #0b3c4d; margin-bottom: 8px;">
+            <span>${escapeHtml(treatmentName)}</span>
+            <span>${price}</span>
+          </div>
+          ${bookingFeeStr ? `<div style="display: flex; justify-content: space-between; font-size: 12px; color: #059669; font-weight: 700; margin-bottom: 4px;"><span>30% Booking Reservation Fee:</span><span>${bookingFeeStr}</span></div>` : ''}
+          ${balanceStr ? `<div style="display: flex; justify-content: space-between; font-size: 12px; color: #475569; font-weight: 700; margin-bottom: 4px;"><span>70% Clinic Balance on Visit:</span><span>${balanceStr}</span></div>` : ''}
+          <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
+            <span style="color: #64748b; font-weight: 600;">Payment Status:</span>
+            <span style="font-weight: 700; color: ${settlementBadgeColor};">${settlementBadgeText} (${escapeHtml(paymentMethod)})</span>
+          </div>
+        </div>
+
+        ${parsed.conditions && parsed.conditions !== 'None' ? `<div class="row"><span class="label">Medical Alert:</span><span class="val" style="color: #dc2626;">${escapeHtml(parsed.conditions)}</span></div>` : ''}
+        ${parsed.allergies && parsed.allergies !== 'None' ? `<div class="row"><span class="label">Allergies:</span><span class="val" style="color: #dc2626;">${escapeHtml(parsed.allergies)}</span></div>` : ''}
+
+        <div class="footer">
+          Please relax in the clinic reception lounge. Your dentist will call you shortly.<br>
+          For reception inquiries, call (032) 489-1200 &bull; Fano Dental Clinic • Where Science Meets Artistry
+        </div>
+      </div>
+      <script>
+        window.onload = function() { window.print(); };
+      </script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+window.printWalkInAppointmentSlip = printWalkInAppointmentSlip;
+
+function printAppointmentSlipById(apptId) {
+  const appt = allAppointments.find(a => a.id === apptId || String(a.id) === String(apptId));
+  if (!appt) {
+    showToast('Appointment record not found.', 'error');
+    return;
+  }
+  printWalkInAppointmentSlip(appt);
+}
+window.printAppointmentSlipById = printAppointmentSlipById;
 
 // ─── Register Walk-In Patient Handler ─────────────────────────────────────────
 async function handleRegisterPatient(e) {
