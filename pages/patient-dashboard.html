@@ -565,16 +565,45 @@
                   Choose your preferred payment method for this appointment.
                 </p>
 
-                <!-- Fee Summary Box -->
-                <div class="booking-fee-banner">
-                  <div class="fee-banner-icon"><i class="ti ti-credit-card" style="font-size: 24px;"></i>
+                <!-- Fee & 30% Booking Deposit Breakdown Card -->
+                <div class="booking-fee-banner-card">
+                  <div class="fee-banner-top-row">
+                    <div class="fee-banner-icon">
+                      <i class="ti ti-receipt-2" style="font-size: 22px;"></i>
+                    </div>
+                    <div class="fee-banner-info">
+                      <span class="fee-service-name" id="wizard-fee-service">Selected Dental Service</span>
+                      <span class="fee-sub">Standard Clinic Procedure</span>
+                    </div>
+                    <div class="fee-service-total-wrap">
+                      <span class="fee-badge-total">Total Procedure Fee</span>
+                      <span class="fee-banner-amount" id="wizard-fee-amount">₱0.00</span>
+                    </div>
                   </div>
-                  <div class="fee-banner-info">
-                    <span class="fee-service-name" id="wizard-fee-service">Selected Dental Service</span>
-                    <span class="fee-sub">Total service fee to settle</span>
-                  </div>
-                  <div class="fee-banner-amount" id="wizard-fee-amount">
-                    ₱0.00
+
+                  <!-- 30% Booking Fee & 70% Clinic Balance Breakdown -->
+                  <div class="booking-deposit-breakdown">
+                    <div class="deposit-col deposit-now">
+                      <div class="deposit-col-header">
+                        <span class="deposit-tag deposit-tag-required"><i class="ti ti-shield-check"></i> Required Now</span>
+                        <span class="deposit-percent">30% Deposit</span>
+                      </div>
+                      <div class="deposit-amount" id="wizard-booking-fee">₱0.00</div>
+                      <span class="deposit-hint">Pay 30% fee to lock in &amp; confirm slot</span>
+                    </div>
+
+                    <div class="deposit-col-divider">
+                      <i class="ti ti-plus" style="font-size: 14px;"></i>
+                    </div>
+
+                    <div class="deposit-col deposit-later">
+                      <div class="deposit-col-header">
+                        <span class="deposit-tag deposit-tag-clinic"><i class="ti ti-building-hospital"></i> At Clinic</span>
+                        <span class="deposit-percent">70% Balance</span>
+                      </div>
+                      <div class="deposit-amount" id="wizard-remaining-balance">₱0.00</div>
+                      <span class="deposit-hint">Payable at counter upon appointment visit</span>
+                    </div>
                   </div>
                 </div>
 
@@ -590,8 +619,8 @@
                         <span class="choice-title">Pay Online Now with PayMongo</span>
                         <span class="choice-badge-green">Instant Checkout</span>
                       </div>
-                      <p class="choice-desc">
-                        Pay securely using your preferred mobile wallet, online bank, or credit/debit card. Your payment receipt is verified instantly.
+                      <p class="choice-desc" id="choice-desc-paymongo">
+                        Pay the <strong>30% booking reservation fee</strong> online now via GCash, Maya, cards, or BillEase to secure your slot immediately. The 70% balance is payable at the clinic counter.
                       </p>
                       <div class="choice-channels-row">
                         <span class="pms-chip gcash"><i class="ti ti-wallet"></i> GCash</span>
@@ -613,7 +642,7 @@
                         <span class="choice-badge-gray">Pay on Visit</span>
                       </div>
                       <p class="choice-desc">
-                        Settle at the receptionist counter upon arrival for your appointment. We accept Cash, GCash QR, or Clinic POS card swipe.
+                        Settle your 30% booking reservation fee (or full amount) at the receptionist counter upon arrival. We accept Cash, GCash QR, or Clinic POS card swipe.
                       </p>
                       <div class="choice-channels-row">
                         <span class="pms-chip counter"><i class="ti ti-cash-banknote"></i> Cash at Counter</span>
@@ -638,37 +667,37 @@
                   <!-- Primary Appointment Info -->
                   <div class="summary-grid-2" style="gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px;">
                     <div>
-                      <strong style="color: var(--accent); display: flex; align-items: center; gap: 5px; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
-                        <i class="ti ti-calendar-event" style="font-size: 14px;"></i> Date &amp; Time Slot
-                      </strong>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
+                         Date &amp; Time Slot</strong>
                       <span id="summary-datetime" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">—</span>
                     </div>
                     <div>
-                      <strong style="color: var(--accent); display: flex; align-items: center; gap: 5px; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
-                        <i class="ti ti-stethoscope" style="font-size: 14px;"></i> Assigned Dentist
-                      </strong>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Assigned Dentist</strong>
                       <span id="summary-dentist" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">—</span>
                     </div>
                     <div>
-                      <strong style="color: var(--accent); display: flex; align-items: center; gap: 5px; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
-                        <i class="ti ti-tooth" style="font-size: 14px;"></i> Dental Service &amp; Fee
-                      </strong>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Dental Service &amp; Total Fee</strong>
                       <span id="summary-service" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">—</span>
                     </div>
                     <div>
-                      <strong style="color: var(--accent); display: flex; align-items: center; gap: 5px; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
-                        <i class="ti ti-credit-card" style="font-size: 14px;"></i> Payment Method
-                      </strong>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Payment Method</strong>
                       <span id="summary-payment-method" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">Pay Online with PayMongo</span>
                     </div>
+                    <div>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Required Booking Fee (30% Deposit)</strong>
+                      <span id="summary-booking-fee" style="font-weight: 800; color: #059669; font-size: 1.08rem;">₱0.00</span>
+                    </div>
+                    <div>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Remaining Balance on Visit (70%)</strong>
+                      <span id="summary-remaining-balance" style="font-weight: 700; color: var(--text-secondary); font-size: 1.05rem;">₱0.00</span>
+                    </div>
                     <div style="grid-column: 1 / -1;">
-                      <strong style="color: var(--accent); display: flex; align-items: center; gap: 5px; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
-                        <i class="ti ti-building-hospital" style="font-size: 14px;"></i> Assigned Clinic Branch
-                      </strong>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Assigned Clinic Branch</strong>
                       <span id="summary-branch" style="font-weight: 700; color: var(--text-primary); font-size: 1.02rem;">Main Branch, Fano Dental Clinic</span>
                     </div>
                   </div>
 
+                      
                   <!-- Detailed Health & Patient Summary -->
                   <div class="summary-grid-2" style="gap: 14px; font-size: 0.85rem;">
                     <div>
@@ -1483,8 +1512,12 @@
           </div>
           <div class="pbc-service" id="pm-invoice-service">Dental Treatment / Consultation</div>
           <div class="pbc-amount-wrap">
-            <span class="pbc-amount-label">Total Amount Due</span>
+            <span class="pbc-amount-label" id="pm-invoice-label">Total Amount Due</span>
             <span class="pbc-amount-value" id="pm-invoice-amount">₱0.00</span>
+          </div>
+          <div id="pm-fee-note" style="display: none; margin-top: 10px; padding: 8px 12px; background: rgba(14, 116, 144, 0.08); border: 1px solid rgba(14, 116, 144, 0.2); border-radius: 8px; font-size: 0.78rem; color: var(--accent); justify-content: space-between; align-items: center;">
+            <span><i class="ti ti-info-circle"></i> Remaining 70% Balance on Visit:</span>
+            <strong id="pm-remaining-balance-note">₱0.00</strong>
           </div>
         </div>
 

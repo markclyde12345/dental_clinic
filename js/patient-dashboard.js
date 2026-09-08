@@ -1467,6 +1467,26 @@ function openPaymongoModal(invoiceId) {
   safeSet('pm-invoice-amount', `₱${amount}`);
   safeSet('pm-active-invoice-id', inv.id);
 
+  // Check if invoice corresponds to an appointment with a 30% booking fee
+  const notes = inv.appointment?.notes || '';
+  const bookingFeeMatch = notes.match(/\[BookingFee:\s*([^\]]+)\]/i);
+  const balanceMatch = notes.match(/\[RemainingBalance:\s*([^\]]+)\]/i);
+
+  const labelEl = document.getElementById('pm-invoice-label');
+  const noteEl = document.getElementById('pm-fee-note');
+  const remBalanceNote = document.getElementById('pm-remaining-balance-note');
+
+  if (bookingFeeMatch && bookingFeeMatch[1]) {
+    if (labelEl) labelEl.textContent = '30% Booking Reservation Fee Deposit Due';
+    if (noteEl) noteEl.style.display = 'flex';
+    if (remBalanceNote && balanceMatch) {
+      remBalanceNote.textContent = balanceMatch[1];
+    }
+  } else {
+    if (labelEl) labelEl.textContent = 'Total Amount Due';
+    if (noteEl) noteEl.style.display = 'none';
+  }
+
   const modal = document.getElementById('modal-paymongo-checkout');
   if (modal) {
     modal.classList.add('active');
@@ -2199,23 +2219,45 @@ function renderPaymentDetails() {
   const selectedTreat = (allTreatments || []).find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
   const feeService = document.getElementById('wizard-fee-service');
   const feeAmount = document.getElementById('wizard-fee-amount');
+  const bookingFeeEl = document.getElementById('wizard-booking-fee');
+  const remainingBalanceEl = document.getElementById('wizard-remaining-balance');
+  const paymongoDescEl = document.getElementById('choice-desc-paymongo');
+
+  let price = 0;
+  let serviceName = 'General Dental Consultation';
 
   if (selectedTreat) {
-    if (feeService) feeService.textContent = selectedTreat.name;
-    if (feeAmount) {
-      const price = parseFloat(selectedTreat.price) || 0;
-      feeAmount.textContent = price > 0 ? `₱${price.toFixed(2)}` : 'Free Consultation';
-    }
+    serviceName = selectedTreat.name;
+    price = parseFloat(selectedTreat.price) || 0;
   } else {
     const existingSummary = document.getElementById('summary-service')?.textContent;
     if (existingSummary && existingSummary.includes('₱')) {
       const match = existingSummary.match(/\(₱([0-9.,]+)\)/);
-      const name = existingSummary.split('(')[0].trim();
-      if (feeService) feeService.textContent = name;
-      if (feeAmount && match) feeAmount.textContent = `₱${parseFloat(match[1].replace(/,/g, '')).toFixed(2)}`;
+      serviceName = existingSummary.split('(')[0].trim();
+      if (match) price = parseFloat(match[1].replace(/,/g, '')) || 0;
+    }
+  }
+
+  const BOOKING_FEE_RATE = 0.30;
+  const bookingFee = price > 0 ? Math.round(price * BOOKING_FEE_RATE * 100) / 100 : 0;
+  const remainingBalance = price > 0 ? Math.round((price - bookingFee) * 100) / 100 : 0;
+
+  if (feeService) feeService.textContent = serviceName;
+  if (feeAmount) {
+    feeAmount.textContent = price > 0 ? `₱${price.toFixed(2)}` : 'Free (₱0.00)';
+  }
+  if (bookingFeeEl) {
+    bookingFeeEl.textContent = bookingFee > 0 ? `₱${bookingFee.toFixed(2)}` : '₱0.00';
+  }
+  if (remainingBalanceEl) {
+    remainingBalanceEl.textContent = remainingBalance > 0 ? `₱${remainingBalance.toFixed(2)}` : '₱0.00';
+  }
+
+  if (paymongoDescEl) {
+    if (bookingFee > 0) {
+      paymongoDescEl.innerHTML = `Pay the <strong>30% booking reservation fee (₱${bookingFee.toFixed(2)})</strong> online now via GCash, Maya, cards, or BillEase to secure your slot immediately. The remaining ₱${remainingBalance.toFixed(2)} (70%) is payable at the clinic counter.`;
     } else {
-      if (feeService) feeService.textContent = 'General Dental Consultation';
-      if (feeAmount) feeAmount.textContent = '₱0.00';
+      paymongoDescEl.innerHTML = `Pay securely using your preferred mobile wallet, online bank, or credit/debit card. Your payment receipt is verified instantly.`;
     }
   }
 }
@@ -2546,9 +2588,26 @@ function renderConfirmationDetails() {
   safeSet('summary-insurance-care', `${hmo}${hmoId ? ' (' + hmoId + ')' : ''} • ${anxiety ? 'Gentle Care Requested' : 'Standard Care'} • Reminders via ${reminderPref}`);
 
   const paymentMethod = document.getElementById('wizard-payment-method')?.value || 'paymongo';
+
+  // Calculate 30% booking fee and 70% remaining balance
+  let price = 0;
+  if (selectedTreat) {
+    price = parseFloat(selectedTreat.price) || 0;
+  } else {
+    const match = serviceName.match(/₱([0-9.,]+)/);
+    if (match) price = parseFloat(match[1].replace(/,/g, '')) || 0;
+  }
+
+  const BOOKING_FEE_RATE = 0.30;
+  const bookingFee = price > 0 ? Math.round(price * BOOKING_FEE_RATE * 100) / 100 : 0;
+  const remainingBalance = price > 0 ? Math.round((price - bookingFee) * 100) / 100 : 0;
+
+  safeSet('summary-booking-fee', bookingFee > 0 ? `₱${bookingFee.toFixed(2)}` : '₱0.00 (No fee)');
+  safeSet('summary-remaining-balance', remainingBalance > 0 ? `₱${remainingBalance.toFixed(2)}` : '₱0.00');
+
   const paymentLabel = paymentMethod === 'paymongo'
-    ? 'Pay Online via PayMongo (GCash, Maya, Cards)'
-    : 'Pay at Clinic Front Desk (Cash / Counter POS)';
+    ? (bookingFee > 0 ? `Pay Online via PayMongo (₱${bookingFee.toFixed(2)} 30% Deposit)` : 'Pay Online via PayMongo')
+    : (bookingFee > 0 ? `Pay at Clinic Front Desk (₱${bookingFee.toFixed(2)} 30% Deposit or Full)` : 'Pay at Clinic Front Desk');
   safeSet('summary-payment-method', paymentLabel);
 }
 
@@ -2571,6 +2630,11 @@ function submitBooking() {
   const rawNotes = document.getElementById('wizard-notes').value.trim();
   const paymentMethod = document.getElementById('wizard-payment-method')?.value || 'paymongo';
 
+  const selectedTreat = (allTreatments || []).find(t => t.id === treatmentId || String(t.id) === String(treatmentId));
+  const treatmentPrice = selectedTreat?.price ? parseFloat(selectedTreat.price) : 0;
+  const bookingFee = treatmentPrice > 0 ? Math.round(treatmentPrice * 0.30 * 100) / 100 : 0;
+  const remainingBalance = treatmentPrice > 0 ? Math.round((treatmentPrice - bookingFee) * 100) / 100 : 0;
+
   // Selected medical conditions
   const conditions = [];
   document.querySelectorAll('input[name="med_condition"]:checked').forEach(cb => {
@@ -2578,8 +2642,9 @@ function submitBooking() {
   });
   const conditionsStr = conditions.length > 0 ? conditions.join(', ') : 'None';
 
-  // Combine branch, dentist and comprehensive medical details into structured notes string
-  const notes = `[Branch: ${branchVal}] [Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] [Emergency: ${emergName} (${emergPhone})] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [HMO: ${hmo} / ${hmoId}] [AnxietySupport: ${anxiety}] [ReminderPref: ${reminderPref}] [PatientAddr: ${patientAddr}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`;
+  // Combine branch, dentist, booking fee metadata and comprehensive medical details into structured notes string
+  const feeTag = `[BookingFee: ₱${bookingFee.toFixed(2)} (30%)] [RemainingBalance: ₱${remainingBalance.toFixed(2)} (70%)] [TotalTreatmentPrice: ₱${treatmentPrice.toFixed(2)}]`;
+  const notes = `[Branch: ${branchVal}] [Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] ${feeTag} [Emergency: ${emergName} (${emergPhone})] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [HMO: ${hmo} / ${hmoId}] [AnxietySupport: ${anxiety}] [ReminderPref: ${reminderPref}] [PatientAddr: ${patientAddr}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`;
 
   // Parse preferred date & time into ISO string
   const [time, modifier] = timeVal.split(' ');
@@ -2602,7 +2667,9 @@ function submitBooking() {
       treatment_id: treatmentId,
       appointment_date: isoDateTime,
       notes: notes,
-      payment_method: paymentMethod
+      payment_method: paymentMethod,
+      booking_fee: bookingFee,
+      total_treatment_price: treatmentPrice
     })
   })
     .then(res => res.json())
@@ -2632,7 +2699,7 @@ function submitBooking() {
       loadInvoices(); // CRITICAL: Updates unpaid balance and pending payments immediately!
 
       if (paymentMethod === 'paymongo' && data.invoice && data.invoice.id) {
-        showToast('Appointment booked! Opening PayMongo Checkout...', 'success');
+        showToast('Appointment booked! Opening PayMongo Checkout for 30% reservation fee...', 'success');
         setTimeout(() => {
           openPaymongoModal(data.invoice.id);
         }, 700);
@@ -2708,6 +2775,10 @@ function openAppointmentDetailsModal(apptId) {
   let cleanNotes = notesRaw.replace(/\[[^\]]+\]/g, '').trim();
   // Extract specific clinical metadata tags for display
   const alertsList = [];
+  const feeMatch = notesRaw.match(/\[BookingFee:\s*([^\]]+)\]/i);
+  const balanceMatch = notesRaw.match(/\[RemainingBalance:\s*([^\]]+)\]/i);
+  if (feeMatch) alertsList.push(`• 30% Booking Fee Deposit: ${feeMatch[1]}`);
+  if (balanceMatch) alertsList.push(`• 70% Remaining Balance on Visit: ${balanceMatch[1]}`);
   const condMatch = notesRaw.match(/\[Conditions:\s*([^\]]+)\]/i);
   if (condMatch && condMatch[1] !== 'None') alertsList.push(`• Medical Conditions: ${condMatch[1]}`);
   const allergMatch = notesRaw.match(/\[Allergies:\s*([^\]]+)\]/i);
@@ -2981,8 +3052,12 @@ function printAppointmentSlip() {
   const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
   let branchName = 'Fano Dental Clinic — Main Branch (Balirong)';
-  const branchMatch = (appt.notes || '').match(/\[Branch:\s*([^\]]+)\]/i);
+  const notesRaw = appt.notes || '';
+  const branchMatch = notesRaw.match(/\[Branch:\s*([^\]]+)\]/i);
   if (branchMatch) branchName = branchMatch[1];
+
+  const feeMatch = notesRaw.match(/\[BookingFee:\s*([^\]]+)\]/i);
+  const balanceMatch = notesRaw.match(/\[RemainingBalance:\s*([^\]]+)\]/i);
 
   const printWindow = window.open('', '_blank', 'width=650,height=750');
   printWindow.document.write(`
@@ -3015,7 +3090,9 @@ function printAppointmentSlip() {
         <div class="row"><span class="label">Dental Service:</span><span class="val">${escapeHTML(treatmentName)}</span></div>
         <div class="row"><span class="label">Date &amp; Time:</span><span class="val">${dateStr} at ${timeStr}</span></div>
         <div class="row"><span class="label">Clinic Location:</span><span class="val">${escapeHTML(branchName)}</span></div>
-        <div class="row"><span class="label">Estimated Fee:</span><span class="val">${price}</span></div>
+        <div class="row"><span class="label">Total Procedure Fee:</span><span class="val">${price}</span></div>
+        ${feeMatch ? `<div class="row"><span class="label">Booking Deposit (30%):</span><span class="val" style="color: #059669;">${escapeHTML(feeMatch[1])}</span></div>` : ''}
+        ${balanceMatch ? `<div class="row"><span class="label">Balance on Visit (70%):</span><span class="val">${escapeHTML(balanceMatch[1])}</span></div>` : ''}
         <div class="row"><span class="label">Appointment Pass ID:</span><span class="val">#${appt.id.slice(0, 8).toUpperCase()}</span></div>
         <div class="footer">
           Please arrive 10 minutes prior to your schedule. For assistance, contact (032) 489-1200.<br>

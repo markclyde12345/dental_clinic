@@ -22,7 +22,7 @@ const createPaymongoCheckout = async (req, res) => {
       .select(`
         id, amount, status, issued_at, paid_at, patient_id, appointment_id,
         patient:patient_id ( id, name, email, contact_number ),
-        appointment:appointment_id ( id, appointment_date, notes )
+        appointment:appointment_id ( id, appointment_date, notes, treatment:treatment_id ( id, name, price ) )
       `)
       .eq('id', invoice_id)
       .single();
@@ -61,10 +61,22 @@ const createPaymongoCheckout = async (req, res) => {
       ? `${refererBase}?payment=cancelled&invoice_id=${invoice.id}`
       : `${origin}/pages/patient-dashboard.html?payment=cancelled&invoice_id=${invoice.id}`;
 
+    const invoiceRef = invoice.id.slice(0, 8).toUpperCase();
+    const apptNotes = invoice.appointment?.notes || '';
+    const isBookingFee = apptNotes.includes('[BookingFee:');
+    const treatmentName = invoice.appointment?.treatment?.name || 'Dental Service';
+
+    const lineItemName = isBookingFee
+      ? `30% Booking Reservation Fee - ${treatmentName}`
+      : `Dental Treatment - Invoice #${invoiceRef}`;
+
+    const lineItemDesc = isBookingFee
+      ? `30% Reservation Deposit to confirm appointment slot • Remaining 70% balance payable at clinic • Invoice Ref #${invoiceRef}`
+      : `Professional Dental Healthcare Service • Invoice Ref #${invoiceRef}`;
+
     // 2. If valid PayMongo secret key is configured, invoke PayMongo Checkout API
     if (isLiveKey) {
       const authHeader = 'Basic ' + Buffer.from(secretKey + ':').toString('base64');
-      const invoiceRef = invoice.id.slice(0, 8).toUpperCase();
 
       const paymongoPayload = {
         data: {
@@ -77,14 +89,16 @@ const createPaymongoCheckout = async (req, res) => {
             send_email_receipt: true,
             show_description: true,
             show_line_items: true,
-            description: `Payment for Fano Dental Clinic Invoice #${invoiceRef}`,
+            description: isBookingFee
+              ? `30% Booking Fee for ${treatmentName} (Invoice #${invoiceRef})`
+              : `Payment for Fano Dental Clinic Invoice #${invoiceRef}`,
             line_items: [
               {
                 currency: 'PHP',
                 amount: amountInCentavos,
-                name: `Dental Treatment - Invoice #${invoiceRef}`,
+                name: lineItemName,
                 quantity: 1,
-                description: `Professional Dental Healthcare Service • Invoice Ref #${invoiceRef}`
+                description: lineItemDesc
               }
             ],
             payment_method_types: ['gcash', 'paymaya', 'card', 'grab_pay', 'dob', 'billease'],
@@ -120,6 +134,7 @@ const createPaymongoCheckout = async (req, res) => {
         checkout_id: paymongoData.data.id,
         invoice_id: invoice.id,
         amount: amountFloat,
+        is_booking_fee: isBookingFee,
         message: 'PayMongo checkout session initialized.'
       });
     }
@@ -132,7 +147,9 @@ const createPaymongoCheckout = async (req, res) => {
       checkout_id: sandboxId,
       invoice_id: invoice.id,
       amount: amountFloat,
-      invoice_ref: invoice.id.slice(0, 8).toUpperCase(),
+      is_booking_fee: isBookingFee,
+      service_name: treatmentName,
+      invoice_ref: invoiceRef,
       patient_name: invoice.patient?.name || req.user.name,
       message: 'PayMongo sandbox mode active. Set PAYMONGO_SECRET_KEY in server/.env for live hosted PayMongo checkout.'
     });

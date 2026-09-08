@@ -274,13 +274,34 @@ const createAppointment = async (req, res) => {
       ? req.body.status
       : 'Pending';
 
+    // Calculate 30% booking reservation fee and 70% remaining balance
+    let treatmentPrice = 0;
+    if (treatment_id || treatmentId) {
+      const { data: tData } = await supabase
+        .from('treatments')
+        .select('price')
+        .eq('id', treatment_id || treatmentId)
+        .maybeSingle();
+      if (tData?.price) treatmentPrice = parseFloat(tData.price) || 0;
+    }
+
+    const BOOKING_FEE_RATE = 0.30;
+    const bookingFee = treatmentPrice > 0 ? Math.round(treatmentPrice * BOOKING_FEE_RATE * 100) / 100 : 0;
+    const remainingBalance = treatmentPrice > 0 ? Math.round((treatmentPrice - bookingFee) * 100) / 100 : 0;
+
+    let finalNotes = notes || '';
+    if (!finalNotes.includes('[BookingFee:')) {
+      const feeTag = `[BookingFee: ₱${bookingFee.toFixed(2)} (30%)] [RemainingBalance: ₱${remainingBalance.toFixed(2)} (70%)] [TotalTreatmentPrice: ₱${treatmentPrice.toFixed(2)}]`;
+      finalNotes = finalNotes ? `${finalNotes} ${feeTag}` : feeTag;
+    }
+
     const { data: appointment, error } = await supabase
       .from('appointments')
       .insert([{
         patient_id: assignedPatientId,
         treatment_id: treatment_id || treatmentId || null,
         appointment_date: targetDate,
-        notes,
+        notes: finalNotes,
         status: initialStatus
       }])
       .select(`
@@ -292,28 +313,24 @@ const createAppointment = async (req, res) => {
 
     if (error) throw error;
 
-    // Auto-generate invoice for this appointment with treatment price
+    // Auto-generate invoice for this appointment with 30% booking fee if online payment (PayMongo)
     let createdInvoice = null;
     try {
-      let treatmentPrice = 0;
-      if (appointment.treatment?.price) {
-        treatmentPrice = parseFloat(appointment.treatment.price) || 0;
-      } else if (treatment_id || treatmentId) {
-        const { data: tData } = await supabase
-          .from('treatments')
-          .select('price')
-          .eq('id', treatment_id || treatmentId)
-          .maybeSingle();
-        if (tData?.price) treatmentPrice = parseFloat(tData.price) || 0;
+      const isPaidInitial = req.body.is_paid || req.body.payment_status === 'Paid';
+      const paymentMethod = req.body.payment_method || req.body.paymentMethod || 'paymongo';
+
+      // PayMongo charges the 30% reservation deposit to lock in appointment
+      let invoiceAmount = treatmentPrice;
+      if (paymentMethod === 'paymongo' && bookingFee > 0) {
+        invoiceAmount = bookingFee;
       }
 
-      const isPaidInitial = req.body.is_paid || req.body.payment_status === 'Paid';
       const { data: inv, error: invErr } = await supabase
         .from('invoices')
         .insert([{
           patient_id: assignedPatientId,
           appointment_id: appointment.id,
-          amount: treatmentPrice,
+          amount: invoiceAmount,
           status: isPaidInitial ? 'Paid' : 'Unpaid',
           paid_at: isPaidInitial ? new Date().toISOString() : null
         }])
@@ -830,8 +847,25 @@ const createQrAppointment = async (req, res) => {
 
     // 3. Prepare notes & reference code
     const refCode = 'APT-QR-' + Math.floor(100000 + Math.random() * 900000);
+
+    let treatmentPrice = 0;
+    if (treatment_id || treatmentId) {
+      const { data: tData } = await supabase
+        .from('treatments')
+        .select('price')
+        .eq('id', treatment_id || treatmentId)
+        .maybeSingle();
+      if (tData?.price) treatmentPrice = parseFloat(tData.price) || 0;
+    }
+
+    const BOOKING_FEE_RATE = 0.30;
+    const bookingFee = treatmentPrice > 0 ? Math.round(treatmentPrice * BOOKING_FEE_RATE * 100) / 100 : 0;
+    const remainingBalance = treatmentPrice > 0 ? Math.round((treatmentPrice - bookingFee) * 100) / 100 : 0;
+    const feeTag = `[BookingFee: ₱${bookingFee.toFixed(2)} (30%)] [RemainingBalance: ₱${remainingBalance.toFixed(2)} (70%)] [TotalTreatmentPrice: ₱${treatmentPrice.toFixed(2)}]`;
+
     const combinedNotes = [
       `[QR Standee / Portal Booking • Ref: ${refCode}]`,
+      feeTag,
       branch ? `Branch: ${branch}` : null,
       dentist_name ? `Requested Dentist: ${dentist_name}` : null,
       notes ? `Notes: ${notes}` : null
@@ -856,19 +890,10 @@ const createQrAppointment = async (req, res) => {
 
     if (apptErr) throw apptErr;
 
-    // 5. Generate invoice if treatment selected
+    // 5. Generate invoice if treatment selected (30% booking fee if online payment)
     let createdInvoice = null;
-    let treatmentPrice = 0;
-    if (appointment.treatment?.price) {
-      treatmentPrice = parseFloat(appointment.treatment.price) || 0;
-    } else if (treatment_id || treatmentId) {
-      const { data: tData } = await supabase
-        .from('treatments')
-        .select('price')
-        .eq('id', treatment_id || treatmentId)
-        .maybeSingle();
-      if (tData?.price) treatmentPrice = parseFloat(tData.price) || 0;
-    }
+    const isPaymongo = (payment_method || '').toLowerCase() === 'paymongo';
+    const invoiceAmount = (isPaymongo && bookingFee > 0) ? bookingFee : treatmentPrice;
 
     try {
       const { data: inv, error: invErr } = await supabase
@@ -876,7 +901,7 @@ const createQrAppointment = async (req, res) => {
         .insert([{
           patient_id: patientId,
           appointment_id: appointment.id,
-          amount: treatmentPrice,
+          amount: invoiceAmount,
           status: 'Unpaid',
           paid_at: null
         }])
