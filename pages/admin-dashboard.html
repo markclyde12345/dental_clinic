@@ -75,11 +75,12 @@
         <!-- CLINIC Section -->
         <div class="sb-section-label">CLINIC</div>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="appointments" id="sb-nav-appointments">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="appointments" id="sb-nav-appointments" onclick="selectAdminMainClinicAppointments(event)" title="Main Clinic Appointments">
           <span class="sb-nav-icon">
             <i class="ti ti-calendar" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Appointments</span>
+          <span class="sb-subnav-badge" id="main-clinic-sidebar-badge" title="Main Clinic Appointments">0</span>
         </a>
 
         <!-- Clinic Branches Expandable Dropdown -->
@@ -94,16 +95,6 @@
             </span>
           </div>
           <div class="sb-subnav-list" id="sb-branches-subnav">
-            <a href="#" class="sb-subnav-item active" data-branch="all" onclick="selectAdminBranch('all', event)">
-              <span class="sb-subnav-bullet"></span>
-              <span class="sb-subnav-text">All Branches</span>
-              <span class="sb-subnav-badge" id="branch-badge-all">0</span>
-            </a>
-            <a href="#" class="sb-subnav-item" data-branch="Main Branch" onclick="selectAdminBranch('Main Branch', event)">
-              <span class="sb-subnav-bullet"></span>
-              <span class="sb-subnav-text">Main Branch (Naga)</span>
-              <span class="sb-subnav-badge" id="branch-badge-main">0</span>
-            </a>
             <a href="#" class="sb-subnav-item" data-branch="Minglanilla" onclick="selectAdminBranch('Minglanilla', event)">
               <span class="sb-subnav-bullet"></span>
               <span class="sb-subnav-text">Minglanilla Branch</span>
@@ -113,6 +104,16 @@
               <span class="sb-subnav-bullet"></span>
               <span class="sb-subnav-text">Talisay Branch</span>
               <span class="sb-subnav-badge" id="branch-badge-talisay">0</span>
+            </a>
+            <a href="#" class="sb-subnav-item active" data-branch="Main Branch" onclick="selectAdminBranch('Main Branch', event)">
+              <span class="sb-subnav-bullet"></span>
+              <span class="sb-subnav-text">Main Branch (Naga)</span>
+              <span class="sb-subnav-badge" id="branch-badge-main">0</span>
+            </a>
+            <a href="#" class="sb-subnav-item" data-branch="all" onclick="selectAdminBranch('all', event)">
+              <span class="sb-subnav-bullet"></span>
+              <span class="sb-subnav-text">All Branches</span>
+              <span class="sb-subnav-badge" id="branch-badge-all">0</span>
             </a>
           </div>
         </div>
@@ -555,20 +556,24 @@
           </div>
 
           <!-- Active Branch Banner -->
-          <div id="active-branch-banner" style="display: none; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; align-items: center; justify-content: space-between;">
+          <div id="active-branch-banner" style="display: flex; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 10px; font-size: 0.88rem; font-weight: 600; color: #0369a1;">
-              <i class="ti ti-map-pin" style="font-size: 1.2rem; color: #0284c7;"></i>
-              <span>Filtering Bookings for: <strong id="active-branch-banner-name" style="color: #0b3c4d;">Main Branch</strong> (<span id="active-branch-banner-count">0</span> appointments)</span>
+              <i class="ti ti-building-hospital" style="font-size: 1.25rem; color: #0284c7;"></i>
+              <span>Active Clinic View: <strong id="active-branch-banner-name" style="color: #0b3c4d;">Main Clinic (Naga)</strong> (<span id="active-branch-banner-count">0</span> appointments)</span>
             </div>
-            <button type="button" onclick="selectAdminBranch('all')" style="background: white; border: 1px solid #7dd3fc; color: #0284c7; padding: 5px 12px; border-radius: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background 0.15s ease;">
-              <span>Show All Branches</span>
-              <i class="ti ti-x" style="font-size: 12px;"></i>
-            </button>
+            <div style="display: flex; gap: 8px; align-items: center;" id="active-branch-banner-actions">
+              <button type="button" id="btn-banner-main-clinic" onclick="selectAdminBranch('Main Branch')" style="background: white; border: 1px solid #7dd3fc; color: #0284c7; padding: 5px 12px; border-radius: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background 0.15s ease;">
+                <span>Main Clinic</span>
+              </button>
+              <button type="button" id="btn-banner-all-branches" onclick="selectAdminBranch('all')" style="background: white; border: 1px solid #7dd3fc; color: #0284c7; padding: 5px 12px; border-radius: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background 0.15s ease;">
+                <span>All Branches</span>
+              </button>
+            </div>
           </div>
 
           <!-- Appointments Agenda Calendar Grid -->
           <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
-            <h3 style="margin-bottom: 20px; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.1rem; text-transform: none; letter-spacing: normal;">Appointments Agenda List</h3>
+            <h3 id="appointments-table-heading" style="margin-bottom: 20px; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.1rem; text-transform: none; letter-spacing: normal;">Appointments Agenda — Main Clinic (Naga)</h3>
             <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
               <thead>
                 <tr style="border-bottom: 2px solid var(--border-color); color: var(--secondary-color); font-weight: 600;">

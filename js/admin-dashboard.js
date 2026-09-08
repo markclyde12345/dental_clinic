@@ -272,6 +272,12 @@ function setupTabs() {
     tab.addEventListener('click', (e) => {
       e.preventDefault();
       const targetTab = tab.getAttribute('data-tab');
+      if (targetTab === 'appointments' && !window._skipBranchReset) {
+        currentAdminBranch = 'Main Branch';
+        document.querySelectorAll('#sb-branches-subnav .sb-subnav-item').forEach(item => {
+          item.classList.toggle('active', item.getAttribute('data-branch') === 'Main Branch');
+        });
+      }
       activateTab(targetTab);
       // Auto-close mobile drawer when user taps a nav item on mobile
       if (window.innerWidth <= 768) {
@@ -294,7 +300,7 @@ function setupTabs() {
 }
 
 // ─── Clinic Branches Sidebar Navigation & Filtering ──────────────────────────
-let currentAdminBranch = 'all';
+let currentAdminBranch = 'Main Branch';
 
 function getAppointmentBranch(a) {
   if (!a) return 'Main Branch, Fano Dental';
@@ -341,12 +347,20 @@ window.toggleSidebarBranches = function(e) {
   } catch (_) {}
 };
 
+window.selectAdminMainClinicAppointments = function(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  selectAdminBranch('Main Branch');
+};
+
 window.selectAdminBranch = function(branchId, e) {
   if (e) {
     e.preventDefault();
     e.stopPropagation();
   }
-  currentAdminBranch = branchId || 'all';
+  currentAdminBranch = branchId || 'Main Branch';
 
   // Ensure branches toggle is open
   const toggle = document.getElementById('sb-branches-toggle');
@@ -355,23 +369,29 @@ window.selectAdminBranch = function(branchId, e) {
   if (subnav) subnav.classList.remove('collapsed');
 
   // Highlight active subnav item
-  document.querySelectorAll('.sb-subnav-item').forEach(item => {
+  document.querySelectorAll('#sb-branches-subnav .sb-subnav-item').forEach(item => {
     const b = item.getAttribute('data-branch');
-    if (b === currentAdminBranch || (currentAdminBranch === 'all' && b === 'all')) {
+    if (b === currentAdminBranch) {
       item.classList.add('active');
     } else {
       item.classList.remove('active');
     }
   });
 
-  // Sync select dropdown in Appointments tab
-  const branchSelect = document.getElementById('filter-branch');
-  if (branchSelect) {
-    branchSelect.value = currentAdminBranch;
+  // Highlight main Appointments nav tab if Main Branch is active
+  const apptNavTab = document.getElementById('sb-nav-appointments') || document.querySelector('.sb-nav-item[data-tab="appointments"]');
+  if (apptNavTab) {
+    if (currentAdminBranch === 'Main Branch') {
+      apptNavTab.classList.add('active');
+    } else {
+      apptNavTab.classList.remove('active');
+    }
   }
 
   // Switch to Appointments tab
+  window._skipBranchReset = true;
   activateTab('appointments');
+  window._skipBranchReset = false;
 
   // Filter and render appointments
   filterAndRenderAppointments();
@@ -380,14 +400,20 @@ window.selectAdminBranch = function(branchId, e) {
 function updateSidebarBranchBadges() {
   const badgeAll = document.getElementById('branch-badge-all');
   const badgeMain = document.getElementById('branch-badge-main');
+  const badgeMainSidebar = document.getElementById('main-clinic-sidebar-badge');
   const badgeMing = document.getElementById('branch-badge-minglanilla');
   const badgeTalisay = document.getElementById('branch-badge-talisay');
 
   const appts = allAppointments || [];
+  const mainCount = appts.filter(a => doesAppointmentMatchBranch(a, 'Main Branch')).length;
+  const mingCount = appts.filter(a => doesAppointmentMatchBranch(a, 'Minglanilla')).length;
+  const talisayCount = appts.filter(a => doesAppointmentMatchBranch(a, 'Talisay')).length;
+
   if (badgeAll) badgeAll.textContent = appts.length;
-  if (badgeMain) badgeMain.textContent = appts.filter(a => doesAppointmentMatchBranch(a, 'Main Branch')).length;
-  if (badgeMing) badgeMing.textContent = appts.filter(a => doesAppointmentMatchBranch(a, 'Minglanilla')).length;
-  if (badgeTalisay) badgeTalisay.textContent = appts.filter(a => doesAppointmentMatchBranch(a, 'Talisay')).length;
+  if (badgeMain) badgeMain.textContent = mainCount;
+  if (badgeMainSidebar) badgeMainSidebar.textContent = mainCount;
+  if (badgeMing) badgeMing.textContent = mingCount;
+  if (badgeTalisay) badgeTalisay.textContent = talisayCount;
 }
 window.updateSidebarBranchBadges = updateSidebarBranchBadges;
 
@@ -1467,23 +1493,29 @@ function filterAndRenderAppointments() {
     return true;
   });
 
-  // Update Active Branch Banner
+  // Update Active Branch Banner & Table Heading
   const banner = document.getElementById('active-branch-banner');
   const bannerName = document.getElementById('active-branch-banner-name');
   const bannerCount = document.getElementById('active-branch-banner-count');
+  const heading = document.getElementById('appointments-table-heading');
+
+  const branchDisplayNames = {
+    'Main Branch': 'Main Clinic (Naga City)',
+    'Minglanilla': 'Minglanilla Branch',
+    'Talisay': 'Talisay Branch',
+    'all': 'All Clinic Branches'
+  };
+
+  const displayName = branchDisplayNames[branchVal] || branchVal;
+
+  if (heading) {
+    heading.textContent = `Appointments Agenda — ${displayName}`;
+  }
+
   if (banner) {
-    if (branchVal !== 'all') {
-      const branchDisplayNames = {
-        'Main Branch': 'Main Branch (Naga City)',
-        'Minglanilla': 'Minglanilla Branch',
-        'Talisay': 'Talisay Branch'
-      };
-      if (bannerName) bannerName.textContent = branchDisplayNames[branchVal] || branchVal;
-      if (bannerCount) bannerCount.textContent = filtered.length;
-      banner.style.display = 'flex';
-    } else {
-      banner.style.display = 'none';
-    }
+    if (bannerName) bannerName.textContent = displayName;
+    if (bannerCount) bannerCount.textContent = filtered.length;
+    banner.style.display = 'flex';
   }
 
   const tbody = document.getElementById('appointments-table-body');
