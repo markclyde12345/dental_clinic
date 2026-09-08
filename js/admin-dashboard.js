@@ -1438,7 +1438,7 @@ function setupFilters() {
 function filterAndRenderAppointments() {
   const roomVal = document.getElementById('filter-room')?.value || 'all';
   const statusVal = document.getElementById('filter-status')?.value || 'all';
-  const branchVal = document.getElementById('filter-branch')?.value || currentAdminBranch || 'all';
+  const branchVal = currentAdminBranch || 'all';
   const searchVal = (document.getElementById('appt-search')?.value || '').toLowerCase().trim();
 
   currentAdminBranch = branchVal;
@@ -4121,17 +4121,13 @@ function onAdminNotificationClick(notifId, index) {
           }
         }
         if (act.filterBranch) {
-          const branchSelect = document.getElementById('filter-branch');
-          if (branchSelect) {
-            const fb = act.filterBranch.toLowerCase();
-            let matchedValue = 'all';
-            if (fb.includes('minglanilla')) matchedValue = 'Minglanilla';
-            else if (fb.includes('talisay')) matchedValue = 'Talisay';
-            else if (fb.includes('main') || fb.includes('naga')) matchedValue = 'Main Branch';
-            branchSelect.value = matchedValue;
-            if (typeof selectAdminBranch === 'function') {
-              selectAdminBranch(matchedValue);
-            }
+          const fb = act.filterBranch.toLowerCase();
+          let matchedValue = 'all';
+          if (fb.includes('minglanilla')) matchedValue = 'Minglanilla';
+          else if (fb.includes('talisay')) matchedValue = 'Talisay';
+          else if (fb.includes('main') || fb.includes('naga')) matchedValue = 'Main Branch';
+          if (typeof selectAdminBranch === 'function') {
+            selectAdminBranch(matchedValue);
           }
         }
         if (typeof filterAndRenderAppointments === 'function') {
