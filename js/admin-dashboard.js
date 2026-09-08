@@ -225,6 +225,9 @@ window.activateTab = function(targetTab, skipDataLoad = false) {
     if (targetTab === 'overview') {
       loadStats();
     } else if (targetTab === 'appointments') {
+      if (Array.isArray(allAppointments) && allAppointments.length > 0) {
+        filterAndRenderAppointments();
+      }
       loadAppointments();
     } else if (targetTab === 'patients') {
       loadPatients();
@@ -1030,20 +1033,85 @@ function renderExpensesBreakdown(invoices, period) {
 
 // ─── 2. Appointments Agenda & Filters ───────────────────────────────────────
 function loadAppointments() {
+  const tbody = document.getElementById('appointments-table-body');
+
+  // 1. Immediately render cached appointments if available to prevent any waiting
+  if (Array.isArray(allAppointments) && allAppointments.length > 0) {
+    filterAndRenderAppointments();
+  }
+
+  // 2. If no auth token is found, prompt login immediately instead of hanging
+  if (!token) {
+    if (tbody && (!allAppointments || allAppointments.length === 0)) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="padding: 36px 16px; text-align: center; color: #64748b;">
+            <div style="font-size: 1.8rem; margin-bottom: 8px;">🔒</div>
+            <div style="font-size: 1.05rem; font-weight: 600; color: #1e293b; margin-bottom: 6px;">Authentication Required</div>
+            <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 16px;">You must be logged in as an Administrator to view live appointment records.</p>
+            <a href="login.html" class="btn-primary" style="display: inline-block; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-size: 0.88rem;">Log In to Admin Portal</a>
+          </td>
+        </tr>
+      `;
+    }
+    return;
+  }
+
+  // 3. Fetch latest data from server
   fetch(APPT_API, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.message) {
+  .then(async res => {
+    if (res.status === 401 || res.status === 403) {
+      if (tbody && (!allAppointments || allAppointments.length === 0)) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="padding: 36px 16px; text-align: center; color: #64748b;">
+              <div style="font-size: 1.8rem; margin-bottom: 8px;">🔑</div>
+              <div style="font-size: 1.05rem; font-weight: 600; color: #1e293b; margin-bottom: 6px;">Session Expired or Unauthorized</div>
+              <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 16px;">Your session has expired. Please log in again to view appointment records.</p>
+              <a href="login.html" class="btn-primary" style="display: inline-block; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-size: 0.88rem;">Log In Again</a>
+            </td>
+          </tr>
+        `;
+      }
+      showToast('Session expired. Please log in again.', 'error');
+      return;
+    }
+
+    const data = await res.json();
+    if (data && data.message && !Array.isArray(data)) {
+      if (tbody && (!allAppointments || allAppointments.length === 0)) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="padding: 32px 16px; text-align: center; color: #e53e3e;">
+              <div style="font-weight: 600; margin-bottom: 8px;">⚠️ Failed to load appointments</div>
+              <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 14px;">${escapeHTML(data.message)}</p>
+              <button type="button" class="btn-secondary" onclick="loadAppointments()" style="padding: 6px 16px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;">🔄 Retry</button>
+            </td>
+          </tr>
+        `;
+      }
       showToast(data.message, 'error');
       return;
     }
-    allAppointments = data || [];
+
+    allAppointments = Array.isArray(data) ? data : [];
     filterAndRenderAppointments();
   })
   .catch(err => {
     console.error('Error loading appointments:', err);
+    if (tbody && (!allAppointments || allAppointments.length === 0)) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="padding: 32px 16px; text-align: center; color: #e53e3e;">
+            <div style="font-weight: 600; margin-bottom: 8px;">⚠️ Network or Server Connection Error</div>
+            <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 14px;">Could not connect to the appointment server. Please check if the server is running.</p>
+            <button type="button" class="btn-secondary" onclick="loadAppointments()" style="padding: 6px 16px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;">🔄 Retry</button>
+          </td>
+        </tr>
+      `;
+    }
     showToast('Failed to load appointments agenda', 'error');
   });
 }
@@ -1317,7 +1385,7 @@ function filterAndRenderAppointments() {
 
     const actionButtonsHtml = `
       <div class="table-action-group">
-        <button type="button" class="btn-action-btn btn-edit" onclick="event.preventDefault(); openEditApptModal('${a.id}', '${escapeJS(pName)}', '${a.appointment_date}', '${escapeJS(location)}', '${a.status}', '${escapeJS(notesStr)}')">✏️ Edit</button>
+        <button type="button" class="btn-action-btn btn-edit" onclick="event.preventDefault(); openEditApptModal('${a.id}')">✏️ Edit</button>
         <button type="button" class="btn-action-btn btn-delete" onclick="event.preventDefault(); deleteAppt('${a.id}')">🗑️ Delete</button>
       </div>
     `;
@@ -1506,8 +1574,27 @@ window.deleteAppt = function(apptId) {
 };
 
 window.openEditApptModal = function(apptId, name, dateIso, location, status, rawNotes) {
-  document.getElementById('edit-appt-id').value = apptId;
-  document.getElementById('edit-appt-patient-name').value = name;
+  if (apptId) {
+    const appt = (allAppointments || []).find(item => String(item.id) === String(apptId));
+    if (appt) {
+      name = appt.patient ? (appt.patient.name || `${appt.patient.first_name || ''} ${appt.patient.last_name || ''}`.trim() || 'Unknown Patient') : (name || 'Unknown Patient');
+      dateIso = appt.appointment_date || dateIso;
+      rawNotes = appt.notes || rawNotes || '';
+      let loc = 'Main Branch, Fano Dental';
+      if (rawNotes.includes('[Location: ')) {
+        const start = rawNotes.indexOf('[Location: ') + 11;
+        const end = rawNotes.indexOf(']', start);
+        if (end !== -1) {
+          loc = rawNotes.substring(start, end);
+        }
+      }
+      location = loc;
+      status = appt.status || status || 'Pending';
+    }
+  }
+
+  document.getElementById('edit-appt-id').value = apptId || '';
+  document.getElementById('edit-appt-patient-name').value = name || '';
   
   if (dateIso) {
     const d = new Date(dateIso);
@@ -1518,16 +1605,21 @@ window.openEditApptModal = function(apptId, name, dateIso, location, status, raw
     document.getElementById('edit-appt-date').value = '';
   }
 
-  document.getElementById('edit-appt-location').value = location;
-  document.getElementById('edit-appt-status').value = status;
+  document.getElementById('edit-appt-location').value = location || 'Main Branch, Fano Dental';
+  document.getElementById('edit-appt-status').value = status || 'Pending';
   
-  document.getElementById('edit-appointment-form').setAttribute('data-raw-notes', rawNotes);
+  document.getElementById('edit-appointment-form').setAttribute('data-raw-notes', rawNotes || '');
   document.getElementById('modal-edit-appointment').classList.add('active');
 };
 
 function escapeJS(str) {
   if (!str) return '';
-  return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+  return String(str)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
 }
 
 // ─── 4. Billing Ledger & Collections ──────────────────────────────────────────
@@ -2574,21 +2666,40 @@ if (modalConfirmDelete) {
 
 // ─── 10. Visits History Tab Functions ──────────────────────────────────────────
 function loadVisitsHistory() {
+  const tbody = document.getElementById('history-table-body');
   if (allAppointments.length === 0) {
+    if (!token) {
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #888;">Please log in as an administrator to view visits history.</td></tr>';
+      }
+      return;
+    }
     fetch(APPT_API, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.json())
-    .then(data => {
-      if (data.message) {
+    .then(async res => {
+      if (res.status === 401 || res.status === 403) {
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #888;">Session expired. Please <a href="login.html" style="color: var(--secondary-color); font-weight: 600;">log in</a> to view visits history.</td></tr>';
+        }
+        return;
+      }
+      const data = await res.json();
+      if (data && data.message && !Array.isArray(data)) {
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="5" style="padding: 24px; text-align: center; color: #e53e3e;">Failed to load history: ${escapeHTML(data.message)}</td></tr>`;
+        }
         showToast(data.message, 'error');
         return;
       }
-      allAppointments = data || [];
+      allAppointments = Array.isArray(data) ? data : [];
       filterAndRenderHistory();
     })
     .catch(err => {
       console.error('Error loading history:', err);
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #e53e3e;">Failed to load visits history. Please check connection.</td></tr>';
+      }
       showToast('Failed to load visits history', 'error');
     });
   } else {
