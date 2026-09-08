@@ -810,7 +810,7 @@ const createStaffUser = async (req, res) => {
       return internalError(res, insertError);
     }
  
-    if (role === 'Patient') {
+    if (assignedRole === 'Patient') {
       try {
         let allergiesArray = [];
         if (Array.isArray(allergies)) {

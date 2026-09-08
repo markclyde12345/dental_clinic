@@ -1216,7 +1216,7 @@ function renderPatientsTable(list) {
       allergiesStr = `<span class="badge-cancelled status-badge" style="font-size: 0.72rem;">⚠️ ${escapeHtml(p.allergies.join(', '))}</span>`;
     }
 
-    const patientId = p.id || userObj.id;
+    const patientId = userObj.id || p.user_id || p.id;
 
     return `
       <tr>
@@ -1541,7 +1541,7 @@ function populateModalSelects() {
         const u = p.user || {};
         const name = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Patient';
         const phone = u.contact_number ? `(${u.contact_number})` : '';
-        const id = p.id || u.id;
+        const id = u.id || p.user_id || p.id;
         return `<option value="${id}">${escapeHtml(name)} ${phone}</option>`;
       }).join('');
   }
@@ -1822,11 +1822,12 @@ async function handleBookAppointment(e) {
         throw new Error('Please select an existing patient from the list.');
       }
 
-      const patObj = (allPatients || []).find(p => p.id === patientId || p.user?.id === patientId);
+      const patObj = (allPatients || []).find(p => p.id === patientId || p.user_id === patientId || p.user?.id === patientId);
       if (patObj) {
         const u = patObj.user || patObj;
         patientName = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Patient';
         patientContact = u.contact_number || '';
+        patientId = patObj.user_id || u.id || patientId;
       } else {
         const opt = document.getElementById('book-patient-select')?.selectedOptions[0];
         patientName = opt ? opt.textContent.trim() : 'Patient';
@@ -2316,36 +2317,60 @@ async function openPatientHistoryModal(patientId) {
   if (body) body.innerHTML = `<div class="text-center py-4 text-muted"><i class="ti ti-loader-2 ti-spin"></i> Loading chart history...</div>`;
 
   try {
+    if (!patientId) throw new Error('Patient record ID is missing.');
+
     const res = await fetch(`${BASE_ORIGIN}/api/patients/${patientId}/history`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
-    if (!res.ok) throw new Error('Could not fetch patient chart.');
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.message || `Could not fetch patient chart (${res.status}).`);
+    }
     const data = await res.json();
 
-    const patient = data.patient || {};
+    const u = data.user || data.patient?.user || {};
+    const p = data.patient || data || {};
+
+    const patient = {
+      id: p.id || u.id || patientId,
+      user_id: p.user_id || u.id || patientId,
+      name: p.name || u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Patient',
+      email: p.email || u.email || 'N/A',
+      contact_number: p.contact_number || u.contact_number || p.phone || 'N/A',
+      address: p.address || u.address || 'N/A',
+      date_of_birth: p.date_of_birth || p.dob || 'N/A',
+      gender: p.gender || 'Not specified',
+      blood_type: p.blood_type || 'Unknown',
+      allergies: Array.isArray(p.allergies) ? p.allergies : (typeof p.allergies === 'string' && p.allergies ? p.allergies.split(',') : []),
+      medical_notes: p.medical_notes || p.medicalHistory || 'None recorded.'
+    };
+
     const appointments = data.appointments || [];
     const prescriptions = data.prescriptions || [];
 
-    if (sub) sub.textContent = `Chart for ${patient.name || 'Patient'} &bull; ${patient.email || ''}`;
+    if (sub) {
+      sub.innerHTML = `Viewing clinic records for <strong>${escapeHtml(patient.name)}</strong>${patient.email !== 'N/A' ? ' &bull; ' + escapeHtml(patient.email) : ''}`;
+    }
+
     if (bookBtn) {
       bookBtn.onclick = () => {
         closeModal('modal-patient-history');
-        openBookForPatient(patientId);
+        openBookForPatient(patient.user_id || patient.id || patientId);
       };
     }
 
     body.innerHTML = `
       <div class="info-callout" style="margin-bottom: 20px;">
-        <h4 style="margin: 0 0 6px 0; color: var(--primary-color);">${escapeHtml(patient.name || 'Patient')}</h4>
+        <h4 style="margin: 0 0 6px 0; color: var(--primary-color);">${escapeHtml(patient.name)}</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.82rem;">
-          <div><strong>Phone:</strong> ${patient.contact_number || 'N/A'}</div>
-          <div><strong>Email:</strong> ${patient.email || 'N/A'}</div>
-          <div><strong>DOB / Gender:</strong> ${patient.date_of_birth || 'N/A'} &bull; ${patient.gender || 'N/A'}</div>
-          <div><strong>Blood Type:</strong> ${patient.blood_type || 'Unknown'}</div>
+          <div><strong>Phone:</strong> ${escapeHtml(patient.contact_number)}</div>
+          <div><strong>Email:</strong> ${escapeHtml(patient.email)}</div>
+          <div><strong>DOB / Gender:</strong> ${escapeHtml(patient.date_of_birth)} &bull; ${escapeHtml(patient.gender)}</div>
+          <div><strong>Blood Type:</strong> ${escapeHtml(patient.blood_type)}</div>
           <div style="grid-column: span 2;">
             <strong>Allergies:</strong>
-            ${Array.isArray(patient.allergies) && patient.allergies.length ? `<span class="badge-cancelled status-badge">${patient.allergies.join(', ')}</span>` : 'No known drug allergies'}
+            ${Array.isArray(patient.allergies) && patient.allergies.length ? `<span class="badge-cancelled status-badge">${escapeHtml(patient.allergies.join(', '))}</span>` : 'No known drug allergies'}
           </div>
           <div style="grid-column: span 2;">
             <strong>Medical Notes:</strong> ${escapeHtml(patient.medical_notes || 'None recorded.')}
@@ -2377,7 +2402,7 @@ async function openPatientHistoryModal(patientId) {
             </tbody>
           </table>
         </div>
-      ` : '<p class="text-muted" style="font-size: 0.85rem;">No previous appointment history.</p>'}
+      ` : '<p class="text-muted" style="font-size: 0.85rem; margin-bottom: 18px;">No previous appointment history.</p>'}
 
       <h4 class="form-section-title"><i class="ti ti-pill"></i> Prescriptions History (${prescriptions.length})</h4>
       ${prescriptions.length ? `
@@ -2391,11 +2416,11 @@ async function openPatientHistoryModal(patientId) {
               </tr>
             </thead>
             <tbody>
-              ${prescriptions.map(p => `
+              ${prescriptions.map(pItem => `
                 <tr>
-                  <td><strong>${escapeHtml(p.medication || '')}</strong></td>
-                  <td>${escapeHtml(p.dosage || '')}</td>
-                  <td><small>${escapeHtml(p.instructions || '')}</small></td>
+                  <td><strong>${escapeHtml(pItem.medication || '')}</strong></td>
+                  <td>${escapeHtml(pItem.dosage || '')}</td>
+                  <td><small>${escapeHtml(pItem.instructions || '')}</small></td>
                 </tr>
               `).join('')}
             </tbody>
@@ -2406,7 +2431,15 @@ async function openPatientHistoryModal(patientId) {
 
   } catch (err) {
     console.error('[Chart History Error]', err);
-    if (body) body.innerHTML = `<div class="text-center py-4 text-danger"><i class="ti ti-alert-circle"></i> Error loading patient chart history.</div>`;
+    if (body) {
+      body.innerHTML = `
+        <div class="text-center py-4 text-danger">
+          <i class="ti ti-alert-circle" style="font-size: 1.8rem; display: block; margin-bottom: 8px;"></i>
+          <strong>Error loading patient chart history</strong>
+          <p style="font-size: 0.82rem; color: #64748b; margin-top: 4px;">${escapeHtml(err.message || 'Could not retrieve patient records.')}</p>
+        </div>
+      `;
+    }
   }
 }
 
