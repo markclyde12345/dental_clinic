@@ -2186,6 +2186,217 @@ body.dark-theme .and-desc {
   }
 }
 
+/* ─── Compact & Colored Branch Location Badges ───────────────────────── */
+.branch-location-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 10px;
+  border-radius: 8px;
+  max-width: 180px;
+  box-sizing: border-box;
+  text-decoration: none;
+  cursor: default;
+  line-height: 1.25;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
 
+.branch-location-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
 
+.blb-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
 
+.blb-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.blb-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.blb-sub {
+  font-size: 0.70rem;
+  font-weight: 500;
+  padding-left: 13px;
+  opacity: 0.88;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 155px;
+  margin-top: 1px;
+}
+
+/* Branch Color: Main (Naga) -> Royal Sky Blue */
+.branch-badge-main {
+  background: #f0f7ff;
+  border: 1px solid #bae6fd;
+}
+.branch-badge-main .blb-dot {
+  background: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25);
+}
+.branch-badge-main .blb-title {
+  color: #0369a1;
+}
+.branch-badge-main .blb-sub {
+  color: #0284c7;
+}
+
+/* Branch Color: Minglanilla -> Fresh Emerald Green */
+.branch-badge-minglanilla {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+.branch-badge-minglanilla .blb-dot {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+}
+.branch-badge-minglanilla .blb-title {
+  color: #047857;
+}
+.branch-badge-minglanilla .blb-sub {
+  color: #059669;
+}
+
+/* Branch Color: Talisay -> Royal Purple */
+.branch-badge-talisay {
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+}
+.branch-badge-talisay .blb-dot {
+  background: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+}
+.branch-badge-talisay .blb-title {
+  color: #6d28d9;
+}
+.branch-badge-talisay .blb-sub {
+  color: #7c3aed;
+}
+
+/* Branch Color: Other / Neutral -> Slate Gray */
+.branch-badge-other {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+.branch-badge-other .blb-dot {
+  background: #64748b;
+  box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.25);
+}
+.branch-badge-other .blb-title {
+  color: #334155;
+}
+.branch-badge-other .blb-sub {
+  color: #64748b;
+}
+
+/* Sidebar Subnav Matching Color Theme */
+.sb-subnav-item[data-branch="Main Branch"] .sb-subnav-bullet {
+  background: #0284c7;
+}
+.sb-subnav-item[data-branch="Main Branch"]:hover,
+.sb-subnav-item[data-branch="Main Branch"].active {
+  background: #f0f7ff !important;
+  color: #0369a1 !important;
+}
+.sb-subnav-item[data-branch="Main Branch"].active .sb-subnav-bullet {
+  background: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+}
+.sb-subnav-item[data-branch="Main Branch"] .sb-subnav-badge {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.sb-subnav-item[data-branch="Minglanilla"] .sb-subnav-bullet {
+  background: #10b981;
+}
+.sb-subnav-item[data-branch="Minglanilla"]:hover,
+.sb-subnav-item[data-branch="Minglanilla"].active {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+}
+.sb-subnav-item[data-branch="Minglanilla"].active .sb-subnav-bullet {
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+.sb-subnav-item[data-branch="Minglanilla"] .sb-subnav-badge {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.sb-subnav-item[data-branch="Talisay"] .sb-subnav-bullet {
+  background: #8b5cf6;
+}
+.sb-subnav-item[data-branch="Talisay"]:hover,
+.sb-subnav-item[data-branch="Talisay"].active {
+  background: #f5f3ff !important;
+  color: #6d28d9 !important;
+}
+.sb-subnav-item[data-branch="Talisay"].active .sb-subnav-bullet {
+  background: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+}
+.sb-subnav-item[data-branch="Talisay"] .sb-subnav-badge {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.sb-subnav-item[data-branch="all"] .sb-subnav-bullet {
+  background: #64748b;
+}
+.sb-subnav-item[data-branch="all"]:hover,
+.sb-subnav-item[data-branch="all"].active {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+}
+.sb-subnav-item[data-branch="all"].active .sb-subnav-bullet {
+  background: #64748b;
+  box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.25);
+}
+.sb-subnav-item[data-branch="all"] .sb-subnav-badge {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+/* Dark Theme Support */
+body.dark-theme .branch-badge-main {
+  background: #0c2d48 !important;
+  border-color: #0369a1 !important;
+}
+body.dark-theme .branch-badge-main .blb-title { color: #7dd3fc !important; }
+body.dark-theme .branch-badge-main .blb-sub { color: #38bdf8 !important; }
+
+body.dark-theme .branch-badge-minglanilla {
+  background: #064e3b !important;
+  border-color: #047857 !important;
+}
+body.dark-theme .branch-badge-minglanilla .blb-title { color: #6ee7b7 !important; }
+body.dark-theme .branch-badge-minglanilla .blb-sub { color: #34d399 !important; }
+
+body.dark-theme .branch-badge-talisay {
+  background: #3b0764 !important;
+  border-color: #6d28d9 !important;
+}
+body.dark-theme .branch-badge-talisay .blb-title { color: #c4b5fd !important; }
+body.dark-theme .branch-badge-talisay .blb-sub { color: #a78bfa !important; }
+
+body.dark-theme .branch-badge-other {
+  background: #1e293b !important;
+  border-color: #475569 !important;
+}
+body.dark-theme .branch-badge-other .blb-title { color: #cbd5e1 !important; }
+body.dark-theme .branch-badge-other .blb-sub { color: #94a3b8 !important; }

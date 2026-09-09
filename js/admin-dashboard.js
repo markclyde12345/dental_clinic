@@ -371,6 +371,53 @@ function doesAppointmentMatchBranch(a, targetBranch) {
   return b.includes(t);
 }
 
+function renderAppointmentBranchBadge(a) {
+  const rawLocation = getAppointmentBranch(a);
+  const locLower = String(rawLocation || '').toLowerCase();
+
+  let branchKey = 'main';
+  let branchName = 'Main Branch (Naga)';
+  let branchSub = 'Balirong Highway';
+
+  if (locLower.includes('minglanilla')) {
+    branchKey = 'minglanilla';
+    branchName = 'Minglanilla Branch';
+    branchSub = 'Poblacion Ward II';
+  } else if (locLower.includes('talisay') || locLower.includes('tabunok')) {
+    branchKey = 'talisay';
+    branchName = 'Talisay Branch';
+    branchSub = 'Tabunok / Bulacao';
+  } else if (locLower.includes('main') || locLower.includes('naga') || locLower.includes('balirong')) {
+    branchKey = 'main';
+    branchName = 'Main Branch (Naga)';
+    branchSub = 'Balirong Highway';
+  } else if (rawLocation && rawLocation !== 'Main Branch, Fano Dental') {
+    branchKey = 'other';
+    // Strip redundant leading "Fano Dental Clinic — "
+    branchName = rawLocation.replace(/^Fano Dental Clinic\s*[—–-]\s*/i, '').trim() || 'Fano Clinic';
+    // If there is an address in parentheses, extract it cleanly into subtitle
+    const parenMatch = branchName.match(/^(.*?)\s*\((.*?)\)$/);
+    if (parenMatch) {
+      branchName = parenMatch[1].trim();
+      branchSub = parenMatch[2].trim();
+    } else {
+      branchSub = '';
+    }
+  }
+
+  const tooltip = escapeHTML(rawLocation || branchName);
+
+  return `
+    <div class="branch-location-badge branch-badge-${branchKey}" title="${tooltip}">
+      <div class="blb-header">
+        <span class="blb-dot"></span>
+        <span class="blb-title">${escapeHTML(branchName)}</span>
+      </div>
+      ${branchSub ? `<span class="blb-sub" title="${escapeHTML(branchSub)}">${escapeHTML(branchSub)}</span>` : ''}
+    </div>
+  `;
+}
+
 window.toggleSidebarBranches = function(e) {
   if (e) {
     e.preventDefault();
@@ -1634,10 +1681,8 @@ function filterAndRenderAppointments() {
         <td style="padding: 14px 16px;">${escapeHTML(email)}</td>
         <td style="padding: 14px 16px;">${escapeHTML(contact)}</td>
         <td style="padding: 14px 16px;">${escapeHTML(dateStr)}</td>
-        <td style="padding: 14px 16px;">
-          <span class="info-pill branch-pill" style="display:inline-flex; align-items:center; gap:5px; font-size:0.8rem; background:#f0f9ff; color:#0369a1; padding:3px 9px; border-radius:6px; font-weight:600; border: 1px solid #bae6fd;">
-            <i class="ti ti-map-pin" style="font-size:12px;"></i> ${escapeHTML(location)}
-          </span>
+        <td style="padding: 12px 16px; vertical-align: middle;">
+          ${renderAppointmentBranchBadge(a)}
         </td>
         <td style="padding: 14px 16px;">${statusSelectHtml}</td>
         <td style="padding: 14px 16px; text-align: right;">${actionButtonsHtml}</td>
@@ -1822,15 +1867,7 @@ window.openEditApptModal = function(apptId, name, dateIso, location, status, raw
       name = appt.patient ? (appt.patient.name || `${appt.patient.first_name || ''} ${appt.patient.last_name || ''}`.trim() || 'Unknown Patient') : (name || 'Unknown Patient');
       dateIso = appt.appointment_date || dateIso;
       rawNotes = appt.notes || rawNotes || '';
-      let loc = 'Main Branch, Fano Dental';
-      if (rawNotes.includes('[Location: ')) {
-        const start = rawNotes.indexOf('[Location: ') + 11;
-        const end = rawNotes.indexOf(']', start);
-        if (end !== -1) {
-          loc = rawNotes.substring(start, end);
-        }
-      }
-      location = loc;
+      location = getAppointmentBranch(appt) || location || 'Main Branch, Fano Dental';
       status = appt.status || status || 'Pending';
     }
   }
