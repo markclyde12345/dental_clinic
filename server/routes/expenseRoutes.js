@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { getExpenses, createExpense, updateExpense, deleteExpense } = require('../controllers/expenseController');
+const { getExpenses, createExpense, updateExpense, deleteExpense, clearAllExpenses } = require('../controllers/expenseController');
 const { protect, authorize } = require('../middleware/auth');
 
 router.route('/')
   .get(protect, authorize('Accounting', 'Admin'), getExpenses)
-  .post(protect, authorize('Accounting', 'Admin'), createExpense);
+  .post(protect, authorize('Accounting', 'Admin'), createExpense)
+  .delete(protect, authorize('Accounting', 'Admin'), clearAllExpenses);
 
 router.route('/:id')
   .put(protect, authorize('Accounting', 'Admin'), updateExpense)
