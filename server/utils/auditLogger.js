@@ -64,6 +64,8 @@ async function logAuditAction(entry) {
 
     console.log(`\x1b[36m[AUDIT LOG]\x1b[0m \x1b[1m${logItem.action}\x1b[0m by \x1b[33m${logItem.user_name} (${logItem.user_role})\x1b[0m: ${logItem.details}`);
 
+    let supabaseSaved = false;
+
     // 1. Attempt writing to Supabase audit_logs table
     try {
       const { error } = await supabase.from('audit_logs').insert([{
@@ -80,30 +82,37 @@ async function logAuditAction(entry) {
         created_at: logItem.timestamp
       }]);
 
-      if (error && error.code !== 'PGRST205') {
+      if (!error) {
+        supabaseSaved = true;
+      } else if (error.code !== 'PGRST205') {
         console.warn('[Audit Supabase Notice]', error.message);
       }
     } catch (_) {}
 
-    // 2. Persist to local JSON data store as primary/fallback audit trail
-    try {
-      ensureAuditFile();
-      const raw = fs.readFileSync(AUDIT_FILE, 'utf8');
-      let logs = [];
+    // In-memory caching
+    if (!global._inMemoryAuditLogs) global._inMemoryAuditLogs = [];
+    global._inMemoryAuditLogs.unshift(logItem);
+    if (global._inMemoryAuditLogs.length > 500) global._inMemoryAuditLogs = global._inMemoryAuditLogs.slice(0, 500);
+
+    // 2. Only persist to local JSON if Supabase failed or offline (prevents hot-reloading dev servers)
+    if (!supabaseSaved) {
       try {
-        logs = JSON.parse(raw);
-        if (!Array.isArray(logs)) logs = [];
-      } catch (e) {
-        logs = [];
+        ensureAuditFile();
+        const raw = fs.readFileSync(AUDIT_FILE, 'utf8');
+        let logs = [];
+        try {
+          logs = JSON.parse(raw);
+          if (!Array.isArray(logs)) logs = [];
+        } catch (e) {
+          logs = [];
+        }
+
+        logs.unshift(logItem);
+        if (logs.length > 1000) logs = logs.slice(0, 1000);
+        fs.writeFileSync(AUDIT_FILE, JSON.stringify(logs, null, 2), 'utf8');
+      } catch (fsErr) {
+        console.error('[Audit File Save Error]', fsErr.message);
       }
-
-      logs.unshift(logItem);
-      // Keep last 1,000 logs in JSON file to prevent unbounded growth
-      if (logs.length > 1000) logs = logs.slice(0, 1000);
-
-      fs.writeFileSync(AUDIT_FILE, JSON.stringify(logs, null, 2), 'utf8');
-    } catch (fsErr) {
-      console.error('[Audit File Save Error]', fsErr.message);
     }
 
     return logItem;
