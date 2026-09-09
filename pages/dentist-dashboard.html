@@ -705,78 +705,138 @@
         <!-- ==================== 11. DENTIST PROFILE TAB ==================== -->
         <section id="tab-profile" class="tab-panel" hidden>
           <div class="profile-tab-grid">
-            <!-- Profile Overview Card -->
+            <!-- Doctor Executive Credentials Card -->
             <div class="panel-card profile-bio-card">
-              <div class="profile-header-avatar">
-                <div class="profile-large-avatar" id="prof-avatar">D</div>
-                <h3 id="prof-name" style="margin:12px 0 4px 0; color:var(--primary-color);">Dr. Dentist</h3>
-                <span class="badge badge-confirmed" id="prof-specialty">General Dentist & Orthodontics</span>
+              <div class="dentist-cover-banner">
+                <div class="dentist-cover-pattern"></div>
+                <div class="dentist-verified-badge">
+                  <i class="fa-solid fa-certificate"></i>
+                  <span>PRC Board Certified</span>
+                </div>
               </div>
+
+              <div class="dentist-avatar-wrapper">
+                <div class="profile-large-avatar" id="prof-avatar">D</div>
+                <span class="dentist-status-beacon" title="Active on Duty"></span>
+              </div>
+
+              <div class="dentist-header-meta">
+                <h3 id="prof-name" class="dentist-profile-name">Dr. Dentist</h3>
+                <div class="dentist-specialty-pill" id="prof-specialty">General Dentist &amp; Orthodontics</div>
+                <div class="dentist-onduty-badge">
+                  <span class="onduty-pulse"></span>
+                  <span>On Duty &bull; Clinical Practitioner</span>
+                </div>
+              </div>
+
+              <!-- Doctor Performance Metrics -->
+              <div class="dentist-stats-grid">
+                <div class="dentist-stat-item">
+                  <span class="dstat-num">1,250+</span>
+                  <span class="dstat-lbl">Patients</span>
+                </div>
+                <div class="dentist-stat-item">
+                  <span class="dstat-num">99.2%</span>
+                  <span class="dstat-lbl">Satisfaction</span>
+                </div>
+                <div class="dentist-stat-item">
+                  <span class="dstat-num">10+ Yrs</span>
+                  <span class="dstat-lbl">Experience</span>
+                </div>
+              </div>
+
+              <!-- Doctor Meta Specs -->
               <div class="profile-meta-list">
                 <div class="meta-item">
-                  <i class="fa-solid fa-id-card"></i>
-                  <div>
-                    <small>License Number</small>
+                  <div class="meta-icon-box"><i class="fa-solid fa-id-card"></i></div>
+                  <div class="meta-text-wrap">
+                    <small>PRC License Number</small>
                     <strong id="prof-license">PRC-0089421</strong>
                   </div>
                 </div>
                 <div class="meta-item">
-                  <i class="fa-solid fa-envelope"></i>
-                  <div>
-                    <small>Email</small>
+                  <div class="meta-icon-box"><i class="fa-solid fa-envelope"></i></div>
+                  <div class="meta-text-wrap">
+                    <small>Official Clinic Email</small>
                     <strong id="prof-email">dentist@fanoclinic.com</strong>
                   </div>
                 </div>
                 <div class="meta-item">
-                  <i class="fa-solid fa-phone"></i>
-                  <div>
-                    <small>Contact</small>
+                  <div class="meta-icon-box"><i class="fa-solid fa-phone"></i></div>
+                  <div class="meta-text-wrap">
+                    <small>Direct Line / Mobile</small>
                     <strong id="prof-contact">+63 917 555 0192</strong>
                   </div>
                 </div>
                 <div class="meta-item">
-                  <i class="fa-solid fa-clock"></i>
-                  <div>
-                    <small>Clinical Hours</small>
+                  <div class="meta-icon-box"><i class="fa-solid fa-clock"></i></div>
+                  <div class="meta-text-wrap">
+                    <small>Standard Practice Hours</small>
                     <strong>Mon - Sat: 9:00 AM - 6:00 PM</strong>
+                  </div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-icon-box"><i class="fa-solid fa-hospital"></i></div>
+                  <div class="meta-text-wrap">
+                    <small>Assigned Practice Clinic</small>
+                    <strong>Fano Dental Clinic — Main Branch</strong>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Profile Edit Form -->
-            <div class="panel-card">
+            <div class="panel-card dentist-edit-card">
               <div class="panel-header">
                 <div>
-                  <h3>Update Professional Profile</h3>
-                  <p class="panel-sub">Manage your credentials, clinic information, and bio</p>
+                  <h3 class="dentist-form-title">Professional Credentials &amp; Practice Details</h3>
+                  <p class="panel-sub">Update doctor identification, clinical specialty, and patient-facing biography.</p>
                 </div>
               </div>
+
               <form id="dentist-profile-form" onsubmit="handleSaveProfile(event)">
-                <div class="form-grid">
-                  <label class="field">
-                    Full Name
-                    <input type="text" id="edit-dentist-name" class="input" required>
-                  </label>
-                  <label class="field">
-                    Dental Specialization
-                    <input type="text" id="edit-dentist-spec" class="input" value="Orthodontics & General Dentistry">
-                  </label>
-                  <label class="field">
-                    PRC License Number
-                    <input type="text" id="edit-dentist-license" class="input" value="PRC-0089421">
-                  </label>
-                  <label class="field">
-                    Contact Number
-                    <input type="tel" id="edit-dentist-phone" class="input">
+                <!-- Section 1: Doctor Credentials -->
+                <div class="dentist-form-section">
+                  <h4 class="dentist-section-heading">
+                    <i class="fa-solid fa-user-doctor"></i>
+                    <span>Doctor Credentials</span>
+                  </h4>
+                  <div class="form-grid">
+                    <label class="field">
+                      <span>Full Professional Name <strong style="color:#ef4444;">*</strong></span>
+                      <input type="text" id="edit-dentist-name" class="input" required placeholder="e.g. Dr. Jane Santos, DMD">
+                    </label>
+                    <label class="field">
+                      <span>Dental Specialization</span>
+                      <input type="text" id="edit-dentist-spec" class="input" value="Orthodontics & General Dentistry" placeholder="e.g. Orthodontics & Cosmetic Surgery">
+                    </label>
+                    <label class="field">
+                      <span>PRC Board License Number</span>
+                      <input type="text" id="edit-dentist-license" class="input" value="PRC-0089421" placeholder="e.g. PRC-0089421">
+                    </label>
+                    <label class="field">
+                      <span>Direct Contact Number</span>
+                      <input type="tel" id="edit-dentist-phone" class="input" placeholder="+63 9XX XXX XXXX">
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Section 2: Clinical Philosophy & Bio -->
+                <div class="dentist-form-section" style="margin-top: 24px;">
+                  <h4 class="dentist-section-heading">
+                    <i class="fa-solid fa-book-medical"></i>
+                    <span>Clinical Biography &amp; Patient Philosophy</span>
+                  </h4>
+                  <label class="field" style="margin-top: 10px;">
+                    <textarea id="edit-dentist-bio" class="input textarea" rows="4" placeholder="Share your clinical background, years of practice, and philosophy in patient dental healthcare...">Dedicated dental practitioner with over 10 years of experience in restorative, cosmetic, and orthodontic dentistry. Committed to gentle, patient-centered care and precision treatments.</textarea>
                   </label>
                 </div>
-                <label class="field">
-                  Professional Bio & Clinical Philosophy
-                  <textarea id="edit-dentist-bio" class="input textarea" rows="4">Dedicated dental practitioner with over 10 years of experience in restorative, cosmetic, and orthodontic dentistry. Committed to gentle, patient-centered care and precision treatments.</textarea>
-                </label>
-                <div class="form-actions mt-3">
-                  <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+
+                <div class="form-actions mt-4" style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                  <button type="submit" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; font-weight: 700; border-radius: 12px;">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Save Profile Changes</span>
+                  </button>
                 </div>
               </form>
             </div>

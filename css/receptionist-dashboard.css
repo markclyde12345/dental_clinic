@@ -3419,4 +3419,142 @@ body {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PREMIUM 50X RECEPTIONIST STAFF PROFILE MODAL
+═══════════════════════════════════════════════════════════════ */
+.staff-profile-modal-card {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 440px;
+  max-width: 92vw;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(11, 60, 77, 0.1);
+  animation: modalScaleIn 0.22s ease-out;
+  margin: auto;
+}
+.staff-profile-modal-cover {
+  height: 95px;
+  background: linear-gradient(135deg, #0b3c4d 0%, #155e75 60%, #10b981 100%);
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 18px;
+}
+.staff-profile-modal-tag {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.staff-profile-modal-close {
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  color: #ffffff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+.staff-avatar-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: -40px auto 10px;
+  z-index: 3;
+}
+.staff-modal-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0b3c4d, #059669);
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #ffffff;
+  box-shadow: 0 6px 20px rgba(11, 60, 77, 0.2);
+}
+.staff-online-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 3px solid #ffffff;
+}
+.staff-profile-modal-body {
+  padding: 0 24px 24px;
+  text-align: center;
+}
+.staff-modal-name {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0b131e;
+  margin: 0 0 2px;
+}
+.staff-modal-email {
+  font-size: 0.84rem;
+  color: #64748b;
+  margin: 0 0 10px;
+}
+.staff-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  margin-bottom: 18px;
+}
+.staff-spec-list {
+  text-align: left;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.staff-spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+.staff-spec-row .spec-lbl {
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.staff-spec-row .spec-val {
+  color: #0f172a;
+  font-weight: 600;
+}
+
 

@@ -184,7 +184,7 @@
 
       <!-- Sidebar Footer -->
       <div class="sb-footer">
-        <div class="sb-user-row">
+        <div class="sb-user-row" onclick="openAdminProfileModal()" style="cursor: pointer;" title="View Administrator Profile">
           <div class="sb-user-avatar" id="user-avatar">A</div>
           <div class="sb-user-info">
             <div class="sb-user-name" id="user-name">Loading...</div>
@@ -1006,39 +1006,80 @@
 
           <!-- SECTION 1: Clinic Profile & Branches -->
           <div id="settings-sec-profile" class="settings-sec-pane">
-            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px;">
-              <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-                <h3 style="margin: 0 0 20px 0; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.15rem; font-weight: 700;">Clinic Profile</h3>
-                <form id="settings-clinic-form" style="display: flex; flex-direction: column; gap: 16px;">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div>
-                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Clinic Name</label>
-                      <input type="text" id="set-clinic-name" value="Fano Dental Clinic" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
-                    </div>
-                    <div>
-                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Support Email</label>
-                      <input type="email" id="set-clinic-email" value="contact@fanoclinic.com" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
-                    </div>
+            <div class="admin-profile-suite-grid">
+              <!-- Official Clinic Enterprise Card -->
+              <div class="admin-clinic-card">
+                <div class="clinic-profile-banner">
+                  <div class="clinic-banner-overlay"></div>
+                  <div class="clinic-accreditation-tags">
+                    <span class="accredit-pill doh"><i class="ti ti-certificate"></i> DOH Licensed Clinic</span>
+                    <span class="accredit-pill philhealth"><i class="ti ti-shield-check"></i> PhilHealth Accredited</span>
                   </div>
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div>
-                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Contact Phone</label>
-                      <input type="text" id="set-clinic-phone" value="+63 917 555 1234" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
-                    </div>
-                    <div>
-                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Working Hours</label>
-                      <select id="set-clinic-hours" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: white; font-size: 0.9rem; box-sizing: border-box;">
-                        <option value="08:00 - 17:00">08:00 AM - 05:00 PM</option>
-                        <option value="09:00 - 18:00">09:00 AM - 06:00 PM</option>
-                        <option value="08:00 - 19:00">08:00 AM - 07:00 PM</option>
-                      </select>
-                    </div>
+                </div>
+
+                <div class="clinic-profile-header">
+                  <div class="clinic-brand-logo-wrap">
+                    <img src="../Resources/logo.png" alt="Fano Dental Clinic Seal" class="clinic-brand-logo-img">
                   </div>
                   <div>
-                    <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Street Address</label>
-                    <input type="text" id="set-clinic-address" value="123 Dental Suite, Main Boulevard, Manila, Philippines" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+                    <h3 class="clinic-brand-name">Fano Dental Clinic Organization</h3>
+                    <p class="clinic-brand-sub">Primary Oral Healthcare &bull; Multi-Branch Clinic Operating System</p>
                   </div>
-                  <button type="submit" class="btn-primary" style="align-self: flex-start; padding: 10px 20px; border-radius: 8px; border: none; background: var(--secondary-color); color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: background 0.3s; width: auto;">Save Profile</button>
+                </div>
+
+                <form id="settings-clinic-form" class="clinic-settings-modern-form">
+                  <div class="form-row-2col">
+                    <div class="form-field-modern">
+                      <label for="set-clinic-name">Registered Business Name</label>
+                      <div class="field-icon-wrap">
+                        <i class="ti ti-building-hospital field-icon"></i>
+                        <input type="text" id="set-clinic-name" value="Fano Dental Clinic" required placeholder="Clinic Name">
+                      </div>
+                    </div>
+                    <div class="form-field-modern">
+                      <label for="set-clinic-email">Official Support &amp; Inquiries Email</label>
+                      <div class="field-icon-wrap">
+                        <i class="ti ti-mail field-icon"></i>
+                        <input type="email" id="set-clinic-email" value="contact@fanoclinic.com" required placeholder="support@fanoclinic.com">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-row-2col">
+                    <div class="form-field-modern">
+                      <label for="set-clinic-phone">Clinic Hotline / Contact Phone</label>
+                      <div class="field-icon-wrap">
+                        <i class="ti ti-phone field-icon"></i>
+                        <input type="text" id="set-clinic-phone" value="+63 917 555 1234" required placeholder="+63 9XX XXX XXXX">
+                      </div>
+                    </div>
+                    <div class="form-field-modern">
+                      <label for="set-clinic-hours">Clinical Operating Shift Window</label>
+                      <div class="field-icon-wrap">
+                        <i class="ti ti-clock field-icon"></i>
+                        <select id="set-clinic-hours">
+                          <option value="08:00 - 17:00">08:00 AM - 05:00 PM</option>
+                          <option value="09:00 - 18:00">09:00 AM - 06:00 PM</option>
+                          <option value="08:00 - 19:00">08:00 AM - 07:00 PM</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-field-modern">
+                    <label for="set-clinic-address">Main Headquarters &amp; Flagship Address</label>
+                    <div class="field-icon-wrap">
+                      <i class="ti ti-map-pin field-icon"></i>
+                      <input type="text" id="set-clinic-address" value="123 Dental Suite, Main Boulevard, Naga City, Cebu, Philippines" required placeholder="Main Address">
+                    </div>
+                  </div>
+
+                  <div class="clinic-form-submit-row">
+                    <button type="submit" class="btn-save-clinic-profile">
+                      <i class="ti ti-device-floppy"></i>
+                      <span>Save Organization Profile</span>
+                    </button>
+                  </div>
                 </form>
               </div>
 
@@ -1757,6 +1798,50 @@
           <i class="ti ti-trash" style="font-size: 15px;"></i>
           Delete Record
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADMINISTRATOR PROFILE MODAL ================= -->
+  <div class="modal-overlay" id="modal-admin-profile" style="display: none;">
+    <div class="admin-profile-modal-card">
+      <div class="admin-profile-modal-cover">
+        <div class="admin-profile-modal-tag"><i class="ti ti-shield-lock"></i> Master Security Level 1</div>
+        <button type="button" class="admin-profile-modal-close" onclick="closeAdminProfileModal()">&times;</button>
+      </div>
+      <div class="admin-profile-modal-avatar-row">
+        <div class="admin-modal-avatar" id="admin-modal-avatar">A</div>
+        <span class="admin-online-dot" title="Authenticated Super Admin"></span>
+      </div>
+      <div class="admin-profile-modal-body">
+        <h3 id="admin-modal-name" class="admin-modal-name">Administrator</h3>
+        <p id="admin-modal-email" class="admin-modal-email">admin@fanoclinic.com</p>
+        <div class="admin-role-badge"><i class="ti ti-shield-check"></i> Primary System Administrator</div>
+
+        <div class="admin-spec-list">
+          <div class="admin-spec-row">
+            <span class="spec-lbl"><i class="ti ti-key"></i> Clearance</span>
+            <strong class="spec-val">Superuser (Full Read / Write / Delete)</strong>
+          </div>
+          <div class="admin-spec-row">
+            <span class="spec-lbl"><i class="ti ti-lock"></i> Two-Factor Auth</span>
+            <strong class="spec-val" style="color: #15803d;"><i class="ti ti-circle-check"></i> Enabled &amp; Active</strong>
+          </div>
+          <div class="admin-spec-row">
+            <span class="spec-lbl"><i class="ti ti-building-hospital"></i> Network Scope</span>
+            <strong class="spec-val">All Multi-Branch Locations</strong>
+          </div>
+          <div class="admin-spec-row">
+            <span class="spec-lbl"><i class="ti ti-device-laptop"></i> Active Session</span>
+            <strong class="spec-val">Protected Session &bull; Active Now</strong>
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-table-action btn-action-pay" style="width: 100%; justify-content: center; padding: 10px;" onclick="closeAdminProfileModal()">
+            <i class="ti ti-check"></i> Done
+          </button>
+        </div>
       </div>
     </div>
   </div>

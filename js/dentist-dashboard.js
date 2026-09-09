@@ -1414,18 +1414,37 @@ async function loadReportsView() {
 // ─── 11. PROFILE MODULE ─────────────────────────────────────────
 function handleSaveProfile(e) {
   e.preventDefault();
-  const name = document.getElementById('edit-dentist-name').value;
-  const spec = document.getElementById('edit-dentist-spec').value;
-  const license = document.getElementById('edit-dentist-license').value;
-  const phone = document.getElementById('edit-dentist-phone').value;
+  const name = document.getElementById('edit-dentist-name')?.value || '';
+  const spec = document.getElementById('edit-dentist-spec')?.value || '';
+  const license = document.getElementById('edit-dentist-license')?.value || '';
+  const phone = document.getElementById('edit-dentist-phone')?.value || '';
 
-  document.getElementById('user-name').textContent = name;
-  document.getElementById('prof-name').textContent = name;
-  document.getElementById('prof-specialty').textContent = spec;
-  document.getElementById('prof-license').textContent = license;
-  document.getElementById('prof-contact').textContent = phone;
+  const userNameEl = document.getElementById('user-name');
+  const profNameEl = document.getElementById('prof-name');
+  const profSpecEl = document.getElementById('prof-specialty');
+  const profLicenseEl = document.getElementById('prof-license');
+  const profContactEl = document.getElementById('prof-contact');
+  const profAvatarEl = document.getElementById('prof-avatar');
 
-  alert('Profile updated successfully.');
+  if (userNameEl) userNameEl.textContent = name;
+  if (profNameEl) profNameEl.textContent = name;
+  if (profSpecEl) profSpecEl.textContent = spec;
+  if (profLicenseEl) profLicenseEl.textContent = license;
+  if (profContactEl) profContactEl.textContent = phone;
+
+  const initial = name.replace(/^Dr\.\s*/i, '').charAt(0).toUpperCase() || 'D';
+  if (profAvatarEl) profAvatarEl.textContent = initial;
+
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    const originalHTML = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Profile Saved!</span>';
+    submitBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    setTimeout(() => {
+      submitBtn.innerHTML = originalHTML;
+      submitBtn.style.background = '';
+    }, 2500);
+  }
 }
 window.handleSaveProfile = handleSaveProfile;
 

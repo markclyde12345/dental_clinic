@@ -2600,3 +2600,315 @@ body.dark-theme .status-pill-written-off {
   border-color: rgba(100, 116, 139, 0.3) !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PREMIUM 50X ADMIN PROFILE & CLINIC SUITE
+═══════════════════════════════════════════════════════════════ */
+.admin-profile-suite-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 1024px) {
+  .admin-profile-suite-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-clinic-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  padding: 0 0 24px 0;
+}
+.clinic-profile-banner {
+  height: 90px;
+  background: linear-gradient(135deg, #0b3c4d 0%, #155e75 60%, #0d9488 100%);
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 16px;
+}
+.clinic-banner-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  background-image: radial-gradient(#ffffff 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+.clinic-accreditation-tags {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.accredit-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.clinic-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 24px;
+  margin-top: -32px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 3;
+}
+.clinic-brand-logo-wrap {
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 3px solid #ffffff;
+  box-shadow: 0 8px 20px rgba(11, 60, 77, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.clinic-brand-logo-img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+.clinic-brand-name {
+  font-family: var(--font-display);
+  font-size: 1.22rem;
+  font-weight: 700;
+  color: var(--secondary-color);
+  margin: 0;
+}
+.clinic-brand-sub {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.clinic-settings-modern-form {
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .form-row-2col {
+    grid-template-columns: 1fr;
+  }
+}
+.form-field-modern label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--dark-color);
+}
+.field-icon-wrap {
+  position: relative;
+}
+.field-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 16px;
+  pointer-events: none;
+}
+.field-icon-wrap input,
+.field-icon-wrap select {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  outline: none;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: var(--dark-color);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.field-icon-wrap input:focus,
+.field-icon-wrap select:focus {
+  border-color: #0b3c4d;
+  box-shadow: 0 0 0 3px rgba(11, 60, 77, 0.1);
+}
+.btn-save-clinic-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);
+  transition: all 0.2s ease;
+}
+.btn-save-clinic-profile:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.38);
+}
+.btn-save-clinic-profile:active {
+  transform: scale(0.97);
+}
+
+/* Administrator Profile Modal */
+.admin-profile-modal-card {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 440px;
+  max-width: 92vw;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(11, 60, 77, 0.1);
+  animation: modalScaleIn 0.22s ease-out;
+  margin: auto;
+}
+.admin-profile-modal-cover {
+  height: 95px;
+  background: linear-gradient(135deg, #0b3c4d 0%, #1e293b 100%);
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 18px;
+}
+.admin-profile-modal-tag {
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.admin-profile-modal-close {
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  color: #ffffff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+.admin-profile-modal-avatar-row {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: -40px auto 10px;
+  z-index: 3;
+}
+.admin-modal-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0b3c4d, #c59b27);
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #ffffff;
+  box-shadow: 0 6px 20px rgba(11, 60, 77, 0.2);
+}
+.admin-online-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 3px solid #ffffff;
+}
+.admin-profile-modal-body {
+  padding: 0 24px 24px;
+  text-align: center;
+}
+.admin-modal-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0b131e;
+  margin: 0 0 2px;
+}
+.admin-modal-email {
+  font-size: 0.84rem;
+  color: #64748b;
+  margin: 0 0 10px;
+}
+.admin-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #eef6f8;
+  color: #0b3c4d;
+  border: 1px solid #bae6fd;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  margin-bottom: 18px;
+}
+.admin-spec-list {
+  text-align: left;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.admin-spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+.spec-lbl {
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.spec-val {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+

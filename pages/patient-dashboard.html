@@ -913,100 +913,179 @@
           </div>
         </div>
 
-        <div class="two-col-layout">
-          <!-- Profile Card -->
-          <div class="card profile-hero-card">
-            <div class="profile-hero-avatar" id="profile-hero-avatar">P</div>
+        <div class="profile-two-col">
+          <!-- Profile Identity & Stats Showcase -->
+          <div class="profile-hero-card">
+            <div class="profile-cover-banner">
+              <div class="profile-cover-pattern"></div>
+              <div class="profile-verified-badge-top">
+                <i class="ti ti-shield-check"></i>
+                <span>Verified Account</span>
+              </div>
+            </div>
+
+            <div class="profile-avatar-wrapper">
+              <div class="profile-hero-avatar" id="profile-hero-avatar">P</div>
+              <span class="profile-online-beacon" title="Active Patient Account"></span>
+            </div>
+
             <h2 class="profile-hero-name" id="profile-hero-name">Loading...</h2>
             <p class="profile-hero-email" id="profile-hero-email">—</p>
+
             <div class="profile-badges">
-              <span class="profile-badge verified"><i class="ti ti-check" style="font-size: 12px;"></i>
-                Verified
+              <span class="profile-badge-pill verified">
+                <i class="ti ti-circle-check"></i>
+                <span>Verified Patient</span>
               </span>
-              <span class="profile-badge patient">Patient</span>
+              <span class="profile-badge-pill branch">
+                <i class="ti ti-building-hospital"></i>
+                <span>Fano Dental Member</span>
+              </span>
             </div>
-            <div class="profile-stats">
-              <div class="profile-stat">
+
+            <!-- Interactive Metric Tiles -->
+            <div class="profile-stats-grid">
+              <div class="profile-stat-box" title="Completed & Approved Dental Visits">
+                <i class="ti ti-calendar-heart profile-stat-icon"></i>
                 <span class="pstat-val" id="pstat-visits">0</span>
                 <span class="pstat-label">Visits</span>
               </div>
-              <div class="profile-stat-divider"></div>
-              <div class="profile-stat">
+              <div class="profile-stat-box" title="Total Invoices Issued">
+                <i class="ti ti-receipt-2 profile-stat-icon"></i>
                 <span class="pstat-val" id="pstat-invoices">0</span>
                 <span class="pstat-label">Invoices</span>
               </div>
-              <div class="profile-stat-divider"></div>
-              <div class="profile-stat">
+              <div class="profile-stat-box" title="Current Outstanding Balance">
+                <i class="ti ti-wallet profile-stat-icon"></i>
                 <span class="pstat-val" id="pstat-balance">₱0</span>
                 <span class="pstat-label">Balance</span>
               </div>
             </div>
+
+            <!-- Profile Readiness Widget -->
+            <div class="profile-completion-card">
+              <div class="completion-header">
+                <span>Profile Status</span>
+                <span style="color: #059669; font-weight: 800;">100% Complete</span>
+              </div>
+              <div class="completion-track">
+                <div class="completion-bar"></div>
+              </div>
+              <div class="completion-hint">
+                <i class="ti ti-check" style="font-size: 13px;"></i>
+                <span>Medical identity &amp; address records verified</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Edit Profile Form -->
-          <div class="card">
-            <h3 class="form-heading">Edit Personal Information</h3>
+          <!-- Edit Profile Form Card -->
+          <div class="profile-form-card">
+            <div class="profile-form-header">
+              <div>
+                <h3 class="profile-form-title">Personal Demographics &amp; Details</h3>
+                <p class="profile-form-sub">Keep your contact information and residential address updated for appointments and medical records.</p>
+              </div>
+            </div>
+
             <form id="profile-form">
-              <div class="form-row">
+              <!-- Fieldset 1: Identity -->
+              <div class="profile-form-fieldset">
+                <div class="fieldset-legend">
+                  <i class="ti ti-id" style="color: var(--primary-color);"></i>
+                  <span>Patient Identification</span>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="profile-first-name" class="form-label">First Name <span style="color: #ef4444;">*</span></label>
+                    <div class="input-with-icon">
+                      <i class="ti ti-user input-icon-prefix"></i>
+                      <input type="text" id="profile-first-name" class="form-input" placeholder="First name" required>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="profile-last-name" class="form-label">Last Name <span style="color: #ef4444;">*</span></label>
+                    <div class="input-with-icon">
+                      <i class="ti ti-user input-icon-prefix"></i>
+                      <input type="text" id="profile-last-name" class="form-input" placeholder="Last name" required>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="form-group">
-                  <label for="profile-first-name" class="form-label">First Name</label>
-                  <input type="text" id="profile-first-name" class="form-input" placeholder="First name" required>
+                  <label for="profile-email" class="form-label">Registered Account Email</label>
+                  <div class="input-with-icon">
+                    <i class="ti ti-mail input-icon-prefix"></i>
+                    <input type="email" id="profile-email" class="form-input" disabled style="background: #f8fafc; color: #64748b; cursor: not-allowed;">
+                  </div>
+                  <span class="form-hint" style="display: flex; align-items: center; gap: 4px; margin-top: 5px;">
+                    <i class="ti ti-lock" style="font-size: 12px; color: #10b981;"></i>
+                    <span>Primary healthcare login email is locked for account safety. Contact reception to change.</span>
+                  </span>
                 </div>
+              </div>
+
+              <!-- Fieldset 2: Contact & Location -->
+              <div class="profile-form-fieldset">
+                <div class="fieldset-legend">
+                  <i class="ti ti-map-pin" style="color: var(--primary-color);"></i>
+                  <span>Contact &amp; Home Address</span>
+                </div>
+
                 <div class="form-group">
-                  <label for="profile-last-name" class="form-label">Last Name</label>
-                  <input type="text" id="profile-last-name" class="form-input" placeholder="Last name" required>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="profile-email" class="form-label">Email Address</label>
-                <input type="email" id="profile-email" class="form-input" disabled>
-                <span class="form-hint">Email cannot be changed. Contact support if needed.</span>
-              </div>
-              <div class="form-group">
-                <label for="profile-phone" class="form-label">Contact Number</label>
-                <input type="tel" id="profile-phone" class="form-input" placeholder="+63 9XX XXX XXXX">
-              </div>
-              <!-- Home Address — Province / City / Barangay selector -->
-              <div class="form-group address-selector-group">
-                <label class="form-label">Home Address</label>
-
-                <!-- Row 1: Province + City/Municipality -->
-                <div class="addr-row">
-                  <div class="addr-col">
-                    <label class="addr-sublabel">Province</label>
-                    <select id="profile-province" class="form-input addr-select">
-                      <option value="Cebu">Cebu</option>
-                    </select>
+                  <label for="profile-phone" class="form-label">Primary Mobile Number</label>
+                  <div class="input-with-icon">
+                    <i class="ti ti-phone input-icon-prefix"></i>
+                    <input type="tel" id="profile-phone" class="form-input" placeholder="+63 9XX XXX XXXX">
                   </div>
-                  <div class="addr-col">
-                    <label class="addr-sublabel">City / Municipality</label>
-                    <select id="profile-city" class="form-input addr-select">
-                      <option value="">— Select City / Municipality —</option>
-                    </select>
-                  </div>
+                  <span class="form-hint">Used for automated appointment SMS reminders &amp; OTP security.</span>
                 </div>
 
-                <!-- Row 2: Barangay + Street -->
-                <div class="addr-row" style="margin-top:8px;">
-                  <div class="addr-col">
-                    <label class="addr-sublabel">Barangay</label>
-                    <select id="profile-barangay" class="form-input addr-select">
-                      <option value="">— Select Barangay —</option>
-                    </select>
-                  </div>
-                  <div class="addr-col">
-                    <label class="addr-sublabel">Street / Purok (optional)</label>
-                    <input type="text" id="profile-street" class="form-input" placeholder="e.g. Purok 3, Mahogany St.">
-                  </div>
-                </div>
+                <!-- Home Address — Province / City / Barangay selector -->
+                <div class="form-group address-selector-group" style="margin-top: 14px;">
+                  <label class="form-label" style="font-weight: 600; color: #1e293b;">Residential Home Address</label>
 
-                <!-- Hidden field keeps composed address for submission -->
-                <input type="hidden" id="profile-address">
+                  <!-- Row 1: Province + City/Municipality -->
+                  <div class="addr-row">
+                    <div class="addr-col">
+                      <label class="addr-sublabel">Province</label>
+                      <select id="profile-province" class="form-input addr-select">
+                        <option value="Cebu">Cebu</option>
+                      </select>
+                    </div>
+                    <div class="addr-col">
+                      <label class="addr-sublabel">City / Municipality</label>
+                      <select id="profile-city" class="form-input addr-select">
+                        <option value="">— Select City / Municipality —</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Row 2: Barangay + Street -->
+                  <div class="addr-row" style="margin-top: 10px;">
+                    <div class="addr-col">
+                      <label class="addr-sublabel">Barangay</label>
+                      <select id="profile-barangay" class="form-input addr-select">
+                        <option value="">— Select Barangay —</option>
+                      </select>
+                    </div>
+                    <div class="addr-col">
+                      <label class="addr-sublabel">Street / Purok / House No.</label>
+                      <input type="text" id="profile-street" class="form-input" placeholder="e.g. Purok 3, Mahogany St.">
+                    </div>
+                  </div>
+
+                  <!-- Hidden field keeps composed address for submission -->
+                  <input type="hidden" id="profile-address">
+                </div>
               </div>
-              <button type="submit" class="primary-btn full-width">
-                <i class="ti ti-check" style="font-size: 16px;"></i>
-                Save Changes
-              </button>
+
+              <div style="margin-top: 24px;">
+                <button type="submit" class="btn-save-profile">
+                  <i class="ti ti-device-floppy" style="font-size: 18px;"></i>
+                  <span>Save Profile Updates</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>

@@ -109,6 +109,35 @@ function setupUserInterface() {
   loadReceptionistNotifications();
 }
 
+// ─── Front Desk Staff Profile Modal Controller ─────────────────────────────────
+function openReceptionistProfileModal() {
+  const modal = document.getElementById('modal-receptionist-profile');
+  if (!modal) return;
+  const fullName = currentUser?.name || `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || 'Front Desk Staff';
+  const initial = fullName.charAt(0).toUpperCase() || 'R';
+  const email = currentUser?.email || 'reception@fanoclinic.com';
+  const branch = currentUser?.branch || 'Makati Main Clinic';
+
+  const nameEl = document.getElementById('staff-modal-name');
+  const avatarEl = document.getElementById('staff-modal-avatar');
+  const emailEl = document.getElementById('staff-modal-email');
+  const branchEl = document.getElementById('staff-modal-branch');
+
+  if (nameEl) nameEl.textContent = fullName;
+  if (avatarEl) avatarEl.textContent = initial;
+  if (emailEl) emailEl.textContent = email;
+  if (branchEl) branchEl.textContent = branch;
+
+  modal.style.display = 'flex';
+}
+
+function closeReceptionistProfileModal() {
+  const modal = document.getElementById('modal-receptionist-profile');
+  if (modal) modal.style.display = 'none';
+}
+window.openReceptionistProfileModal = openReceptionistProfileModal;
+window.closeReceptionistProfileModal = closeReceptionistProfileModal;
+
 // ─── Mobile Sidebar Drawer Controller ──────────────────────────────────────────
 function toggleMobileSidebar(forceState) {
   const sidebar = document.getElementById('sidebar');

@@ -113,6 +113,31 @@ function renderAdminSidebar() {
   if (mobileAvatar) mobileAvatar.textContent = initial;
 }
 
+// ─── Administrator Profile Modal Controller ────────────────────────────────────
+function openAdminProfileModal() {
+  const modal = document.getElementById('modal-admin-profile');
+  if (!modal) return;
+  const displayName = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Administrator';
+  const initial = displayName.charAt(0).toUpperCase();
+  const email = user.email || 'admin@fanoclinic.com';
+
+  const nameEl = document.getElementById('admin-modal-name');
+  const avatarEl = document.getElementById('admin-modal-avatar');
+  const emailEl = document.getElementById('admin-modal-email');
+  if (nameEl) nameEl.textContent = displayName;
+  if (avatarEl) avatarEl.textContent = initial;
+  if (emailEl) emailEl.textContent = email;
+
+  modal.style.display = 'flex';
+}
+
+function closeAdminProfileModal() {
+  const modal = document.getElementById('modal-admin-profile');
+  if (modal) modal.style.display = 'none';
+}
+window.openAdminProfileModal = openAdminProfileModal;
+window.closeAdminProfileModal = closeAdminProfileModal;
+
 // ─── Mobile Sidebar Drawer Controller ──────────────────────────────────────────
 function toggleAdminMobileSidebar(forceState) {
   const sidebar = document.getElementById('sidebar');

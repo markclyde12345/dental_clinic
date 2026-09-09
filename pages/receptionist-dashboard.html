@@ -107,7 +107,7 @@
       
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
-        <div class="user-info">
+        <div class="user-info" onclick="openReceptionistProfileModal()" style="cursor: pointer;" title="View Front Desk Staff Profile">
           <div class="user-avatar" id="user-avatar">R</div>
           <div class="user-details">
             <h4 id="user-name">Loading...</h4>
@@ -1363,6 +1363,50 @@
       <span class="taskbar-label">Directory</span>
     </button>
   </nav>
+
+  <!-- ================= RECEPTIONIST STAFF PROFILE MODAL ================= -->
+  <div class="modal-overlay" id="modal-receptionist-profile" style="display: none;">
+    <div class="staff-profile-modal-card">
+      <div class="staff-profile-modal-cover">
+        <div class="staff-profile-modal-tag"><i class="ti ti-user-check"></i> Front Desk Officer</div>
+        <button type="button" class="staff-profile-modal-close" onclick="closeReceptionistProfileModal()">&times;</button>
+      </div>
+      <div class="staff-avatar-wrapper">
+        <div class="staff-modal-avatar" id="staff-modal-avatar">R</div>
+        <span class="staff-online-dot" title="Active on Duty"></span>
+      </div>
+      <div class="staff-profile-modal-body">
+        <h3 id="staff-modal-name" class="staff-modal-name">Reception Staff</h3>
+        <p id="staff-modal-email" class="staff-modal-email">reception@fanoclinic.com</p>
+        <div class="staff-role-badge"><i class="ti ti-clipboard-check"></i> Patient Queue &amp; Reception Operations</div>
+
+        <div class="staff-spec-list">
+          <div class="staff-spec-row">
+            <span class="spec-lbl"><i class="ti ti-building-hospital"></i> Assigned Branch</span>
+            <strong class="spec-val" id="staff-modal-branch">Makati Main Clinic</strong>
+          </div>
+          <div class="staff-spec-row">
+            <span class="spec-lbl"><i class="ti ti-clock"></i> Shift Schedule</span>
+            <strong class="spec-val">08:00 AM - 05:00 PM (Regular Shift)</strong>
+          </div>
+          <div class="staff-spec-row">
+            <span class="spec-lbl"><i class="ti ti-receipt"></i> Checkout Authority</span>
+            <strong class="spec-val" style="color: #15803d;"><i class="ti ti-circle-check"></i> Cash &amp; Invoices Collection</strong>
+          </div>
+          <div class="staff-spec-row">
+            <span class="spec-lbl"><i class="ti ti-shield-check"></i> Access Role</span>
+            <strong class="spec-val">Front Desk Staff (Level 2)</strong>
+          </div>
+        </div>
+
+        <div class="staff-modal-footer">
+          <button type="button" class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="closeReceptionistProfileModal()">
+            <i class="ti ti-check"></i> Close Profile
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>

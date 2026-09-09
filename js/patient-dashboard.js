@@ -1322,6 +1322,10 @@ function renderFinancialWidgets() {
 
   safeSet('insurance-claims-val', insuranceClaims);
   safeSet('insurance-claims-trend', insuranceClaims > 0 ? `${insuranceClaims} pending review` : 'No active claims');
+
+  // Update Profile Metric Tiles
+  safeSet('pstat-invoices', allInvoices.length);
+  safeSet('pstat-balance', `₱${pendingAmount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`);
 }
 
 function renderFinancialActivity() {
