@@ -1645,9 +1645,13 @@ input:checked + .custom-slider:before {
 }
 
 /* ═════════════════════ INVENTORY COST STICKY SUMMARY FOOTER ═════════════════════ */
+#tab-inventory {
+  margin-bottom: -50px;
+}
+
 .inv-cost-summary {
   position: sticky;
-  bottom: 12px;
+  bottom: 0;
   z-index: 35;
   display: flex;
   align-items: center;
@@ -1657,30 +1661,33 @@ input:checked + .custom-slider:before {
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid #cbd5e1;
-  border-radius: 14px;
-  padding: 14px 24px;
-  margin-top: 20px;
-  box-shadow: 0 -6px 24px rgba(11, 60, 77, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-top: 1.5px solid #cbd5e1;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 0 0 17px 17px;
+  padding: 10px 24px;
+  margin: 16px -24px -24px -24px;
+  box-shadow: 0 -4px 20px rgba(11, 60, 77, 0.1);
   box-sizing: border-box;
 }
 
 .inv-summary-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1 1 180px;
-  min-width: 170px;
+  gap: 10px;
+  flex: 1 1 170px;
+  min-width: 150px;
 }
 
 .inv-summary-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   flex-shrink: 0;
 }
 
@@ -1711,24 +1718,24 @@ input:checked + .custom-slider:before {
 .inv-summary-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .inv-summary-label {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   color: #64748b;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .inv-summary-val {
   font-family: var(--font-main, 'Plus Jakarta Sans', sans-serif);
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: #0f172a;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .inv-summary-val.val-primary {
@@ -1745,22 +1752,26 @@ input:checked + .custom-slider:before {
 
 .inv-summary-divider {
   width: 1px;
-  height: 36px;
+  height: 30px;
   background: #e2e8f0;
   flex-shrink: 0;
 }
 
 @media (max-width: 900px) {
+  #tab-inventory {
+    margin-bottom: -30px;
+  }
   .inv-summary-divider {
     display: none;
   }
   .inv-cost-summary {
-    gap: 12px;
-    padding: 12px 16px;
-    bottom: 8px;
+    gap: 10px;
+    padding: 10px 16px;
+    margin: 16px -16px -16px -16px;
+    border-radius: 0 0 12px 12px;
   }
   .inv-summary-item {
-    flex: 1 1 calc(50% - 12px);
+    flex: 1 1 calc(50% - 10px);
   }
 }
 
