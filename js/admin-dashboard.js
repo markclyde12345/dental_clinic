@@ -1952,27 +1952,60 @@ function loadBilling() {
       const issuedVal = inv.issued_at || inv.created_at;
       const issuedDateStr = issuedVal ? new Date(issuedVal).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
 
-      let statusBadge = `<span style="background:#fef0f0; color:#f56c6c; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:4px; text-transform:uppercase;">Unpaid</span>`;
-      if (inv.status?.toLowerCase() === 'paid') {
-        statusBadge = `<span style="background:#f0f9eb; color:#67c23a; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:4px; text-transform:uppercase;">Paid</span>`;
-      } else if (inv.status?.toLowerCase() === 'partial') {
-        statusBadge = `<span style="background:#fdf6ec; color:#e6a23c; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:4px; text-transform:uppercase;">Partial</span>`;
+      let statusBadge = `
+        <span class="financial-status-pill status-pill-unpaid">
+          <span class="financial-status-dot"></span>
+          <span>Unpaid</span>
+        </span>
+      `;
+      const invStatus = (inv.status || 'Unpaid').toLowerCase();
+      if (invStatus === 'paid') {
+        statusBadge = `
+          <span class="financial-status-pill status-pill-paid">
+            <span class="financial-status-dot"></span>
+            <span>Paid</span>
+          </span>
+        `;
+      } else if (invStatus === 'partial') {
+        statusBadge = `
+          <span class="financial-status-pill status-pill-partial">
+            <span class="financial-status-dot"></span>
+            <span>Partial</span>
+          </span>
+        `;
+      } else if (invStatus === 'written off') {
+        statusBadge = `
+          <span class="financial-status-pill status-pill-written-off">
+            <span class="financial-status-dot"></span>
+            <span>Written Off</span>
+          </span>
+        `;
       }
 
-      const isPaid = inv.status?.toLowerCase() === 'paid';
+      const isPaid = invStatus === 'paid';
       const actionButton = isPaid 
-        ? `<button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #ccc; color: #aaa; width: auto;" disabled>Settled</button>`
-        : `<button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #2ecc71; color: #2ecc71; width: auto;" onclick="openMarkPaidModal('${inv.id}', '${escapeJS(patientName)}', ${total}, '${escapeJS(inv.status || 'Unpaid')}', ${paid})">Mark Paid</button>`;
+        ? `
+          <span class="badge-table-settled" title="Invoice fully paid & settled">
+            <i class="ti ti-circle-check"></i>
+            <span>Settled</span>
+          </span>
+        `
+        : `
+          <button type="button" class="btn-table-action btn-action-pay" onclick="openMarkPaidModal('${inv.id}', '${escapeJS(patientName)}', ${total}, '${escapeJS(inv.status || 'Unpaid')}', ${paid})" title="Collect payment and mark as paid">
+            <i class="ti ti-cash"></i>
+            <span>Mark Paid</span>
+          </button>
+        `;
 
       return `
         <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color);">
           <td style="padding: 14px 16px; font-weight: 600;">#INV-${invoiceNum}</td>
           <td style="padding: 14px 16px;">${escapeHTML(patientName)}</td>
-          <td style="padding: 14px 16px;">${getCurrencySymbol()}${total.toFixed(2)}</td>
+          <td style="padding: 14px 16px; font-weight: 600;">${getCurrencySymbol()}${total.toFixed(2)}</td>
           <td style="padding: 14px 16px;">${getCurrencySymbol()}${paid.toFixed(2)}</td>
           <td style="padding: 14px 16px;">${escapeHTML(issuedDateStr)}</td>
-          <td style="padding: 14px 16px;">${statusBadge}</td>
-          <td style="padding: 14px 16px; text-align: right;">${actionButton}</td>
+          <td style="padding: 14px 16px; vertical-align: middle;">${statusBadge}</td>
+          <td style="padding: 14px 16px; text-align: right; vertical-align: middle;">${actionButton}</td>
         </tr>
       `;
     }).join('');

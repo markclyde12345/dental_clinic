@@ -657,13 +657,13 @@
             <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
               <thead>
                 <tr style="border-bottom: 2px solid var(--border-color); color: var(--secondary-color); font-weight: 600;">
-                  <th style="padding: 12px 16px; width: 15%;">Invoice ID</th>
-                  <th style="padding: 12px 16px; width: 25%;">Patient</th>
-                  <th style="padding: 12px 16px; width: 15%;">Billed Amount</th>
-                  <th style="padding: 12px 16px; width: 15%;">Paid Amount</th>
-                  <th style="padding: 12px 16px; width: 15%;">Issued Date</th>
+                  <th style="padding: 12px 16px; width: 14%;">Invoice ID</th>
+                  <th style="padding: 12px 16px; width: 22%;">Patient</th>
+                  <th style="padding: 12px 16px; width: 14%;">Billed Amount</th>
+                  <th style="padding: 12px 16px; width: 14%;">Paid Amount</th>
+                  <th style="padding: 12px 16px; width: 14%;">Issued Date</th>
                   <th style="padding: 12px 16px; width: 10%;">Status</th>
-                  <th style="padding: 12px 16px; width: 10%; text-align: right;">Action</th>
+                  <th style="padding: 12px 16px; width: 12%; text-align: right;">Action</th>
                 </tr>
               </thead>
               <tbody id="billing-table-body">
@@ -1729,8 +1729,8 @@
           <input type="number" id="mark-paid-amount" min="0" step="0.01" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
         </div>
         <div style="display: flex; gap: 12px; align-items: center; justify-content: flex-end; margin-top: 10px;">
-          <button type="button" id="btn-cancel-mark-paid" style="padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border-color); background: white; cursor: pointer; font-size: 0.9rem; font-weight: 600;">Cancel</button>
-          <button type="submit" style="padding: 10px 20px; border-radius: 8px; border: none; background: #2ecc71; color: white; cursor: pointer; font-size: 0.9rem; font-weight: 600;">Confirm Payment</button>
+          <button type="button" id="btn-cancel-mark-paid" style="padding: 10px 18px; border-radius: 10px; border: 1px solid var(--border-color); background: white; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: #64748b;">Cancel</button>
+          <button type="submit" class="btn-confirm-payment"><i class="ti ti-check" style="font-size: 15px;"></i> Confirm Payment</button>
         </div>
       </form>
     </div>
