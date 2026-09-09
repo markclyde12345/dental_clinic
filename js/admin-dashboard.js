@@ -161,11 +161,25 @@ function initDashboard() {
   loadAppointments();        // Initial fetch and cache of all clinic appointments & branch badges
   setInterval(() => loadAdminNotifications(), 30000); // Polling every 30s
 
-  // Open to saved tab or hash link or 'overview' by default
+  // Always default to 'overview' (Dashboard Overview) when opening or logging in,
+  // unless an explicit hash anchor is in the URL (e.g. #appointments)
   const validTabs = ['overview', 'appointments', 'patients', 'billing', 'staff', 'inventory', 'users', 'history', 'logs', 'settings'];
   const hashTab = (window.location.hash || '').replace('#', '').trim();
-  const savedTab = localStorage.getItem('admin_active_tab');
-  const initialTab = validTabs.includes(hashTab) ? hashTab : (validTabs.includes(savedTab) ? savedTab : 'overview');
+  
+  // Clean up any stale admin_active_tab in localStorage so it never forces logs or other tabs on fresh launch
+  try {
+    localStorage.removeItem('admin_active_tab');
+  } catch (_) {}
+
+  // Only restore from sessionStorage during an active navigation session (never 'logs')
+  let sessionTab = '';
+  try {
+    sessionTab = sessionStorage.getItem('admin_active_tab');
+  } catch (_) {}
+
+  const initialTab = (hashTab && validTabs.includes(hashTab))
+    ? hashTab
+    : (sessionTab && validTabs.includes(sessionTab) && sessionTab !== 'logs' ? sessionTab : 'overview');
 
   // Restore branches toggle state (default open)
   const branchesOpen = localStorage.getItem('admin_sidebar_branches_open');
@@ -208,6 +222,13 @@ function activateTab(targetTab, skipDataLoad = false) {
     }
   });
 
+  // If not on appointments tab, ensure branch subnav items are not highlighted
+  if (targetTab !== 'appointments') {
+    document.querySelectorAll('#sb-branches-subnav .sb-subnav-item').forEach(item => {
+      item.classList.remove('active');
+    });
+  }
+
   // Update breadcrumb label
   const breadcrumbMap = {
     overview: 'Dashboard Overview',
@@ -242,9 +263,14 @@ function activateTab(targetTab, skipDataLoad = false) {
     }
   }
 
-  // Persist current active tab so refreshes stay on the exact same page/tab
+  // Persist current active tab: Clean up localStorage so fresh logins/reloads default to dashboard
   try {
-    localStorage.setItem('admin_active_tab', targetTab);
+    localStorage.removeItem('admin_active_tab');
+    if (targetTab && targetTab !== 'logs' && targetTab !== 'overview') {
+      sessionStorage.setItem('admin_active_tab', targetTab);
+    } else {
+      sessionStorage.removeItem('admin_active_tab');
+    }
     // Keep the URL clean — no #hash fragments appended
     if (window.history && window.history.replaceState && window.location.hash) {
       window.history.replaceState(null, null, window.location.pathname);

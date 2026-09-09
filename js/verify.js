@@ -222,6 +222,10 @@ async function handleVerifySubmit(e) {
           window.location.href = 'login.html?verified=true';
         }, 2000);
       } else {
+        // Clear stored tab state so admin portal opens cleanly to Dashboard
+        localStorage.removeItem('admin_active_tab');
+        sessionStorage.removeItem('admin_active_tab');
+
         // Save token and login
         const userInfo = {
           _id: data._id,

@@ -104,6 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (ok) {
+        // Clear stored tab state so admin portal opens cleanly to Dashboard
+        localStorage.removeItem('admin_active_tab');
+        sessionStorage.removeItem('admin_active_tab');
+
         // Persist session based on "Remember me"
         if (remember) {
           localStorage.setItem('token', data.token);

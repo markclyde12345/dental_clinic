@@ -52,6 +52,10 @@ if (!token) {
 }
 
 function redirectByRole(role) {
+  if (role === 'Admin') {
+    localStorage.removeItem('admin_active_tab');
+    sessionStorage.removeItem('admin_active_tab');
+  }
   const map = {
     'Admin':            'admin-dashboard.html',
     'Dentist':          'dentist-dashboard.html',

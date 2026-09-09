@@ -105,7 +105,7 @@
               <span class="sb-subnav-text">Talisay Branch</span>
               <span class="sb-subnav-badge" id="branch-badge-talisay">0</span>
             </a>
-            <a href="#" class="sb-subnav-item active" data-branch="Main Branch" onclick="selectAdminBranch('Main Branch', event)">
+            <a href="#" class="sb-subnav-item" data-branch="Main Branch" onclick="selectAdminBranch('Main Branch', event)">
               <span class="sb-subnav-bullet"></span>
               <span class="sb-subnav-text">Main Branch (Naga)</span>
               <span class="sb-subnav-badge" id="branch-badge-main">0</span>
@@ -206,7 +206,7 @@
       <header class="admin-top-bar">
         <div class="admin-top-bar-left">
           <div class="admin-breadcrumb">
-            <span class="admin-breadcrumb-root"><i class="ti ti-shield-check"></i> Admin Portal</span>
+            <span class="admin-breadcrumb-root" onclick="activateTab('overview')" style="cursor: pointer;" title="Return to Dashboard Overview"><i class="ti ti-shield-check"></i> Admin Portal</span>
             <span class="admin-breadcrumb-sep">/</span>
             <span class="admin-breadcrumb-current" id="admin-breadcrumb-label">Dashboard Overview</span>
           </div>
