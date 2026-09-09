@@ -328,7 +328,7 @@
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px;">
                 
                 <!-- Financial Overview Bar Chart -->
-                <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
+                <div id="fin-overview-card" style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color); position: relative;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Financial Overview</span>
                     <select id="financial-period-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.75rem; outline: none; background: white; font-weight: 600; cursor: pointer;">
@@ -341,44 +341,106 @@
                     </select>
                   </div>
                   <div style="display: flex; gap: 16px; margin-bottom: 16px; font-size: 0.8rem; font-weight: 600;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
+                    <div id="fin-legend-income" style="display: flex; align-items: center; gap: 6px; cursor: pointer;" title="Hover to highlight Income bars">
                       <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #0d6efd;"></span>
                       <span>Income: <span id="fin-income-total" style="color:#0d6efd;">₱0.00</span> <span style="color:#2ecc71; font-size:0.75rem;">▲ 0.0%</span></span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 6px;">
+                    <div id="fin-legend-costs" style="display: flex; align-items: center; gap: 6px; cursor: pointer;" title="Hover to highlight Costs bars">
                       <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #2ecc71;"></span>
                       <span>Costs: <span id="fin-costs-total" style="color:#2ecc71;">₱0.00</span> <span style="color:#2ecc71; font-size:0.75rem;">▼ 0.0%</span></span>
                     </div>
                   </div>
                   
-                  <!-- SVG Bar Chart -->
-                  <svg viewBox="0 0 300 130" style="width: 100%; height: auto; overflow: visible;">
-                    <rect id="fin-bar-inc-0" x="20" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                    <rect id="fin-bar-cost-0" x="30" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
-                    
-                    <rect id="fin-bar-inc-1" x="65" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                    <rect id="fin-bar-cost-1" x="75" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
-                    
-                    <rect id="fin-bar-inc-2" x="110" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                    <rect id="fin-bar-cost-2" x="120" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
-                    
-                    <rect id="fin-bar-inc-3" x="155" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                    <rect id="fin-bar-cost-3" x="165" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
-                    
-                    <rect id="fin-bar-inc-4" x="200" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                    <rect id="fin-bar-cost-4" x="210" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
-                    
-                    <rect id="fin-bar-inc-5" x="245" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                    <rect id="fin-bar-cost-5" x="255" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                  <!-- Chart Wrapper for Tooltip Positioning -->
+                  <div id="fin-chart-container" style="position: relative; width: 100%;">
+                    <!-- Interactive Floating Tooltip -->
+                    <div id="fin-chart-tooltip" class="fin-chart-tooltip">
+                      <div id="fin-tooltip-header" class="fin-tooltip-header">Sep 2026</div>
+                      <div class="fin-tooltip-row">
+                        <span class="fin-tooltip-label" style="color: #93c5fd;">
+                          <span class="fin-tooltip-dot" style="background: #0d6efd;"></span>
+                          Income:
+                        </span>
+                        <span id="fin-tooltip-income" class="fin-tooltip-val" style="color: #60a5fa;">₱0.00</span>
+                      </div>
+                      <div class="fin-tooltip-row">
+                        <span class="fin-tooltip-label" style="color: #86efac;">
+                          <span class="fin-tooltip-dot" style="background: #2ecc71;"></span>
+                          Costs:
+                        </span>
+                        <span id="fin-tooltip-costs" class="fin-tooltip-val" style="color: #4ade80;">₱0.00</span>
+                      </div>
+                      <div class="fin-tooltip-footer">
+                        <span style="color: #94a3b8; font-weight: 500;">Net Margin:</span>
+                        <span id="fin-tooltip-net" class="fin-tooltip-val" style="color: #facc15;">+₱0.00</span>
+                      </div>
+                    </div>
 
-                    <line x1="10" y1="110" x2="280" y2="110" stroke="#f1f3f7" stroke-width="1"></line>
-                    <text id="fin-axis-label-0" x="29" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle">Jan</text>
-                    <text id="fin-axis-label-1" x="74" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle">Feb</text>
-                    <text id="fin-axis-label-2" x="119" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle">Mar</text>
-                    <text id="fin-axis-label-3" x="164" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle">Apr</text>
-                    <text id="fin-axis-label-4" x="209" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle">May</text>
-                    <text id="fin-axis-label-5" x="254" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle">Jun</text>
-                  </svg>
+                    <!-- SVG Bar Chart -->
+                    <svg id="fin-overview-svg" viewBox="0 0 300 130" style="width: 100%; height: auto; overflow: visible; cursor: pointer;">
+                      <!-- Subtle Grid Reference Lines -->
+                      <line x1="10" y1="30" x2="280" y2="30" stroke="#f1f5f9" stroke-dasharray="3 3" stroke-width="1"></line>
+                      <line x1="10" y1="70" x2="280" y2="70" stroke="#f1f5f9" stroke-dasharray="3 3" stroke-width="1"></line>
+                      <line x1="10" y1="110" x2="280" y2="110" stroke="#e2e8f0" stroke-width="1"></line>
+
+                      <!-- Column Hover Highlights (Backdrop) -->
+                      <g id="fin-col-highlights">
+                        <rect id="fin-col-bg-0" x="14" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-1" x="59" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-2" x="104" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-3" x="149" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-4" x="194" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-5" x="239" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                      </g>
+
+                      <!-- Bar Elements -->
+                      <g id="fin-bars">
+                        <rect id="fin-bar-inc-0" class="fin-chart-bar" x="20" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
+                        <rect id="fin-bar-cost-0" class="fin-chart-bar" x="30" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        
+                        <rect id="fin-bar-inc-1" class="fin-chart-bar" x="65" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
+                        <rect id="fin-bar-cost-1" class="fin-chart-bar" x="75" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        
+                        <rect id="fin-bar-inc-2" class="fin-chart-bar" x="110" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
+                        <rect id="fin-bar-cost-2" class="fin-chart-bar" x="120" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        
+                        <rect id="fin-bar-inc-3" class="fin-chart-bar" x="155" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
+                        <rect id="fin-bar-cost-3" class="fin-chart-bar" x="165" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        
+                        <rect id="fin-bar-inc-4" class="fin-chart-bar" x="200" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
+                        <rect id="fin-bar-cost-4" class="fin-chart-bar" x="210" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        
+                        <rect id="fin-bar-inc-5" class="fin-chart-bar" x="245" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
+                        <rect id="fin-bar-cost-5" class="fin-chart-bar" x="255" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                      </g>
+
+                      <!-- Floating Bar Value Labels in SVG -->
+                      <g id="fin-hover-values" style="display: none; pointer-events: none;">
+                        <text id="fin-hover-val-inc" x="0" y="0" fill="#0d6efd" font-size="7" font-weight="700" text-anchor="middle"></text>
+                        <text id="fin-hover-val-cost" x="0" y="0" fill="#2ecc71" font-size="7" font-weight="700" text-anchor="middle"></text>
+                      </g>
+
+                      <!-- Axis Labels -->
+                      <g id="fin-axis-labels">
+                        <text id="fin-axis-label-0" x="29" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle" style="transition: fill 0.2s, font-weight 0.2s;">Jan</text>
+                        <text id="fin-axis-label-1" x="74" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle" style="transition: fill 0.2s, font-weight 0.2s;">Feb</text>
+                        <text id="fin-axis-label-2" x="119" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle" style="transition: fill 0.2s, font-weight 0.2s;">Mar</text>
+                        <text id="fin-axis-label-3" x="164" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle" style="transition: fill 0.2s, font-weight 0.2s;">Apr</text>
+                        <text id="fin-axis-label-4" x="209" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle" style="transition: fill 0.2s, font-weight 0.2s;">May</text>
+                        <text id="fin-axis-label-5" x="254" y="122" fill="#888" font-size="8" font-weight="600" text-anchor="middle" style="transition: fill 0.2s, font-weight 0.2s;">Jun</text>
+                      </g>
+
+                      <!-- Seamless Hitboxes for Column Hovering -->
+                      <g id="fin-hitboxes">
+                        <rect class="fin-hitbox" data-idx="0" x="10" y="5" width="45" height="120" fill="transparent" style="cursor: pointer;"></rect>
+                        <rect class="fin-hitbox" data-idx="1" x="55" y="5" width="45" height="120" fill="transparent" style="cursor: pointer;"></rect>
+                        <rect class="fin-hitbox" data-idx="2" x="100" y="5" width="45" height="120" fill="transparent" style="cursor: pointer;"></rect>
+                        <rect class="fin-hitbox" data-idx="3" x="145" y="5" width="45" height="120" fill="transparent" style="cursor: pointer;"></rect>
+                        <rect class="fin-hitbox" data-idx="4" x="190" y="5" width="45" height="120" fill="transparent" style="cursor: pointer;"></rect>
+                        <rect class="fin-hitbox" data-idx="5" x="235" y="5" width="45" height="120" fill="transparent" style="cursor: pointer;"></rect>
+                      </g>
+                    </svg>
+                  </div>
                 </div>
 
                 <!-- Combined demographics and popular treatments side elements -->

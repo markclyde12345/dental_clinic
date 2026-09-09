@@ -1050,6 +1050,8 @@ function renderFinancialOverview(invoices, period) {
   }
 
   const maxVal = Math.max(...incomeValues, ...costValues, 0);
+  const curSymbol = getCurrencySymbol();
+
   for (let i = 0; i < 6; i++) {
     const incBar = document.getElementById(`fin-bar-inc-${i}`);
     const costBar = document.getElementById(`fin-bar-cost-${i}`);
@@ -1074,7 +1076,188 @@ function renderFinancialOverview(invoices, period) {
         costBar.setAttribute('y', String(110 - costHeight));
         costBar.setAttribute('height', String(costHeight));
       }
+
+      // Populate accessibility titles and data values
+      incBar.setAttribute('data-val', incomeValues[i]);
+      costBar.setAttribute('data-val', costValues[i]);
+      incBar.setAttribute('title', `Income: ${curSymbol}${incomeValues[i].toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${labels[i]})`);
+      costBar.setAttribute('title', `Costs: ${curSymbol}${costValues[i].toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${labels[i]})`);
     }
+  }
+
+  // Store data globally for interactive hover inspection
+  window.currentFinancialOverviewData = { labels, incomeValues, costValues, totalIncome, totalCosts, maxVal };
+
+  // Initialize or refresh hover listeners
+  setupFinancialOverviewInteractions();
+}
+
+function setupFinancialOverviewInteractions() {
+  const svg = document.getElementById('fin-overview-svg');
+  const container = document.getElementById('fin-chart-container');
+  const tooltip = document.getElementById('fin-chart-tooltip');
+  if (!svg || !container || !tooltip) return;
+
+  if (svg.dataset.interactionsBound) return;
+  svg.dataset.interactionsBound = 'true';
+
+  function handlePointer(e) {
+    const data = window.currentFinancialOverviewData;
+    if (!data) return;
+    const { labels, incomeValues, costValues } = data;
+
+    const rect = svg.getBoundingClientRect();
+    const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : null);
+    const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : null);
+    if (clientX === null || clientY === null) return;
+
+    const mouseX = clientX - rect.left;
+    const mouseY = clientY - rect.top;
+    const svgX = (mouseX / rect.width) * 300;
+
+    // Detect column index 0-5
+    let idx = -1;
+    if (e.target && e.target.dataset && e.target.dataset.idx !== undefined) {
+      idx = parseInt(e.target.dataset.idx, 10);
+    } else if (e.target && e.target.id && e.target.id.startsWith('fin-bar-')) {
+      const parts = e.target.id.split('-');
+      idx = parseInt(parts[parts.length - 1], 10);
+    }
+
+    if (idx < 0 || idx > 5 || isNaN(idx)) {
+      idx = Math.floor((svgX - 10) / 45);
+      if (idx < 0) idx = 0;
+      if (idx > 5) idx = 5;
+    }
+
+    const inc = incomeValues[idx] || 0;
+    const cost = costValues[idx] || 0;
+    const net = inc - cost;
+    const cur = getCurrencySymbol();
+    const lbl = labels[idx] || `Column ${idx + 1}`;
+
+    // Fill tooltip details
+    const tipHeader = document.getElementById('fin-tooltip-header');
+    const tipInc = document.getElementById('fin-tooltip-income');
+    const tipCosts = document.getElementById('fin-tooltip-costs');
+    const tipNet = document.getElementById('fin-tooltip-net');
+
+    if (tipHeader) tipHeader.textContent = lbl;
+    if (tipInc) tipInc.textContent = `${cur}${inc.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    if (tipCosts) tipCosts.textContent = `${cur}${cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    if (tipNet) {
+      const sign = net >= 0 ? '+' : '';
+      tipNet.textContent = `${sign}${cur}${net.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      tipNet.style.color = net >= 0 ? '#10b981' : '#ef4444';
+    }
+
+    // Highlight hovered column background & axis label
+    for (let c = 0; c < 6; c++) {
+      const bg = document.getElementById(`fin-col-bg-${c}`);
+      const axisLbl = document.getElementById(`fin-axis-label-${c}`);
+      if (bg) bg.setAttribute('opacity', c === idx ? '0.08' : '0');
+      if (axisLbl) {
+        axisLbl.setAttribute('fill', c === idx ? '#0d6efd' : '#888');
+        axisLbl.setAttribute('font-weight', c === idx ? '800' : '600');
+      }
+    }
+
+    // Floating SVG badges directly above the bars
+    const hoverValGroup = document.getElementById('fin-hover-values');
+    const hoverValInc = document.getElementById('fin-hover-val-inc');
+    const hoverValCost = document.getElementById('fin-hover-val-cost');
+    const incBar = document.getElementById(`fin-bar-inc-${idx}`);
+    const costBar = document.getElementById(`fin-bar-cost-${idx}`);
+    const incY = incBar ? parseFloat(incBar.getAttribute('y') || '110') : 110;
+    const costY = costBar ? parseFloat(costBar.getAttribute('y') || '110') : 110;
+
+    if (hoverValGroup && hoverValInc && hoverValCost) {
+      if (inc > 0 || cost > 0) {
+        hoverValInc.setAttribute('x', String(24 + idx * 45));
+        hoverValInc.setAttribute('y', String(Math.max(incY - 3, 10)));
+        hoverValInc.textContent = inc > 0 ? `${cur}${inc >= 1000 ? (inc / 1000).toFixed(1) + 'k' : inc.toFixed(0)}` : '';
+
+        hoverValCost.setAttribute('x', String(34 + idx * 45));
+        hoverValCost.setAttribute('y', String(Math.max(costY - 3, 10)));
+        hoverValCost.textContent = cost > 0 ? `${cur}${cost >= 1000 ? (cost / 1000).toFixed(1) + 'k' : cost.toFixed(0)}` : '';
+
+        hoverValGroup.style.display = 'block';
+      } else {
+        hoverValGroup.style.display = 'none';
+      }
+    }
+
+    // Position HTML tooltip relative to container
+    const colCenterSvgX = 29 + idx * 45;
+    const colCenterPixelX = (colCenterSvgX / 300) * rect.width;
+    const contRect = container.getBoundingClientRect();
+    const clampedX = Math.min(Math.max(colCenterPixelX, 75), contRect.width - 75);
+
+    const highestBarY = Math.min(incY, costY);
+    const highestBarPixelY = (highestBarY / 130) * rect.height;
+
+    if (highestBarPixelY < 45 || mouseY < 45) {
+      tooltip.style.left = `${clampedX}px`;
+      tooltip.style.top = `${highestBarPixelY + 28}px`;
+      tooltip.style.transform = 'translate(-50%, 0)';
+      tooltip.classList.add('tooltip-bottom');
+    } else {
+      tooltip.style.left = `${clampedX}px`;
+      tooltip.style.top = `${Math.min(highestBarPixelY, mouseY) - 8}px`;
+      tooltip.style.transform = 'translate(-50%, -100%)';
+      tooltip.classList.remove('tooltip-bottom');
+    }
+
+    tooltip.classList.add('active');
+  }
+
+  function handleLeave() {
+    tooltip.classList.remove('active');
+    for (let c = 0; c < 6; c++) {
+      const bg = document.getElementById(`fin-col-bg-${c}`);
+      const axisLbl = document.getElementById(`fin-axis-label-${c}`);
+      if (bg) bg.setAttribute('opacity', '0');
+      if (axisLbl) {
+        axisLbl.setAttribute('fill', '#888');
+        axisLbl.setAttribute('font-weight', '600');
+      }
+    }
+    const hoverValGroup = document.getElementById('fin-hover-values');
+    if (hoverValGroup) hoverValGroup.style.display = 'none';
+  }
+
+  svg.addEventListener('mousemove', handlePointer);
+  svg.addEventListener('mouseleave', handleLeave);
+  svg.addEventListener('touchstart', handlePointer, { passive: true });
+  svg.addEventListener('touchmove', handlePointer, { passive: true });
+  svg.addEventListener('touchend', handleLeave, { passive: true });
+
+  // Legend hovers
+  const legendInc = document.getElementById('fin-legend-income');
+  const legendCost = document.getElementById('fin-legend-costs');
+  if (legendInc) {
+    legendInc.addEventListener('mouseenter', () => {
+      document.querySelectorAll('.fin-chart-bar[id^="fin-bar-inc-"]').forEach(el => {
+        el.style.filter = 'brightness(1.25) drop-shadow(0 0 6px rgba(13, 110, 253, 0.7))';
+      });
+    });
+    legendInc.addEventListener('mouseleave', () => {
+      document.querySelectorAll('.fin-chart-bar[id^="fin-bar-inc-"]').forEach(el => {
+        el.style.filter = '';
+      });
+    });
+  }
+  if (legendCost) {
+    legendCost.addEventListener('mouseenter', () => {
+      document.querySelectorAll('.fin-chart-bar[id^="fin-bar-cost-"]').forEach(el => {
+        el.style.filter = 'brightness(1.25) drop-shadow(0 0 6px rgba(46, 204, 113, 0.7))';
+      });
+    });
+    legendCost.addEventListener('mouseleave', () => {
+      document.querySelectorAll('.fin-chart-bar[id^="fin-bar-cost-"]').forEach(el => {
+        el.style.filter = '';
+      });
+    });
   }
 }
 
@@ -1161,9 +1344,17 @@ function renderPatientData(appointments, period) {
   if (retTextEl) retTextEl.textContent = `${retPct.toFixed(1)}% Returning`;
 
   const newBar = document.getElementById('patient-bar-new');
-  if (newBar) newBar.style.width = `${newPct}%`;
+  if (newBar) {
+    newBar.style.width = `${newPct}%`;
+    newBar.style.cursor = 'pointer';
+    newBar.setAttribute('title', `New Patients: ${newCount} (${newPct.toFixed(1)}%)`);
+  }
   const retBar = document.getElementById('patient-bar-ret');
-  if (retBar) retBar.style.width = `${retPct}%`;
+  if (retBar) {
+    retBar.style.width = `${retPct}%`;
+    retBar.style.cursor = 'pointer';
+    retBar.setAttribute('title', `Returning Patients: ${returningCount} (${retPct.toFixed(1)}%)`);
+  }
 }
 
 function renderExpensesBreakdown(invoices, period) {
