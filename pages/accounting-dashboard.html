@@ -6,7 +6,7 @@
   <title>Accounting & Financial Control — Fano Dental Clinic</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/accounting-dashboard.css?v=20260909_04">
+  <link rel="stylesheet" href="../css/accounting-dashboard.css?v=20260909_05">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 </head>
 <body>
@@ -701,23 +701,52 @@
               </table>
             </div>
 
-            <!-- Inventory Cost Summary Footer -->
+            <!-- Inventory Cost Summary Sticky Footer -->
             <div id="inv-cost-summary" class="inv-cost-summary" style="display: none;">
               <div class="inv-summary-item">
-                <span>Total Items:</span>
-                <strong id="inv-summary-count">0</strong>
+                <div class="inv-summary-icon icon-items">
+                  <i class="ti ti-packages"></i>
+                </div>
+                <div class="inv-summary-info">
+                  <span class="inv-summary-label">Total Items</span>
+                  <div class="inv-summary-val" id="inv-summary-count">0</div>
+                </div>
               </div>
+
+              <div class="inv-summary-divider"></div>
+
               <div class="inv-summary-item">
-                <span>Total Stock Value:</span>
-                <strong id="inv-summary-value" style="color: var(--primary-color);">₱0.00</strong>
+                <div class="inv-summary-icon icon-val">
+                  <i class="ti ti-coin"></i>
+                </div>
+                <div class="inv-summary-info">
+                  <span class="inv-summary-label">Total Stock Value</span>
+                  <div class="inv-summary-val val-primary" id="inv-summary-value">₱0.00</div>
+                </div>
               </div>
+
+              <div class="inv-summary-divider"></div>
+
               <div class="inv-summary-item">
-                <span>Low Stock Items:</span>
-                <strong id="inv-summary-low" style="color: #f59e0b;">0</strong>
+                <div class="inv-summary-icon icon-low">
+                  <i class="ti ti-alert-triangle"></i>
+                </div>
+                <div class="inv-summary-info">
+                  <span class="inv-summary-label">Low Stock Items</span>
+                  <div class="inv-summary-val val-warning" id="inv-summary-low">0</div>
+                </div>
               </div>
+
+              <div class="inv-summary-divider"></div>
+
               <div class="inv-summary-item">
-                <span>Estimated Reorder Budget:</span>
-                <strong id="inv-summary-reorder" style="color: #10b981;">₱0.00</strong>
+                <div class="inv-summary-icon icon-reorder">
+                  <i class="ti ti-shopping-cart"></i>
+                </div>
+                <div class="inv-summary-info">
+                  <span class="inv-summary-label">Estimated Reorder Budget</span>
+                  <div class="inv-summary-val val-success" id="inv-summary-reorder">₱0.00</div>
+                </div>
               </div>
             </div>
           </div>

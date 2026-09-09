@@ -1772,7 +1772,7 @@
     setText('inv-summary-low', String(lowCount));
     setText('inv-summary-reorder', formatMoney(reorderCost));
     const sumEl = document.getElementById('inv-cost-summary');
-    if (sumEl) sumEl.style.display = 'grid';
+    if (sumEl) sumEl.style.display = 'flex';
 
     renderInventoryTable(allInventory);
   }
