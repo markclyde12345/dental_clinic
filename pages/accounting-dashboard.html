@@ -50,8 +50,7 @@
             </a>
           </li>
           <li>
-            <a href="#" class="nav-tab" d
-            ata-tab="hmo">
+            <a href="#" class="nav-tab" data-tab="hmo">
               <span class="nav-icon">🏥</span>
               <span>HMO & Insurance</span>
             </a>
@@ -250,7 +249,7 @@
                   </div>
                 </button>
 
-                <button type="button" class="action-tile" onclick="runFinancialReconciliation()">
+                <button type="button" class="action-tile" onclick="runFinancialReconciliation(true)">
                   <span class="action-tile-icon">⚖️</span>
                   <div>
                     <div class="action-tile-title">Run Reconciliation</div>
@@ -287,7 +286,7 @@
                 </h3>
                 <span style="font-size: 0.8rem; color: #64748b;">Cross-references completed clinic visits against issued invoices and payments. Restricts billing modification to Accounting &amp; Admin.</span>
               </div>
-              <button type="button" class="btn-primary-action" onclick="runFinancialReconciliation()" style="padding: 8px 16px; font-size: 0.85rem;">
+              <button type="button" class="btn-primary-action" onclick="runFinancialReconciliation(true)" style="padding: 8px 16px; font-size: 0.85rem;">
                 <i class="ti ti-refresh"></i> Run Audit Check
               </button>
             </div>

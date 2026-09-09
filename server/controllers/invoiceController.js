@@ -254,23 +254,25 @@ const reconcileInvoices = async (req, res) => {
 
     const isReconciled = unbilledAppointments.length === 0 && discrepancies.length === 0;
 
-    // Log reconciliation run to audit
-    const { logAuditAction } = require('../utils/auditLogger');
-    logAuditAction({
-      action: 'FINANCIAL_RECONCILIATION_RUN',
-      entityType: 'invoice',
-      entityId: 'reconciliation_summary',
-      details: `${req.user?.name || 'Accountant'} performed financial reconciliation: ${isReconciled ? 'CLEAN (No discrepancies)' : `${unbilledAppointments.length} unbilled appts, ${discrepancies.length} mismatches`}`,
-      metadata: {
-        totalBilled,
-        totalCollected,
-        totalUnpaid,
-        unbilledCount: unbilledAppointments.length,
-        discrepancyCount: discrepancies.length,
-        isReconciled
-      },
-      req
-    }).catch(() => {});
+    // Log reconciliation run to audit ONLY if manually triggered (e.g. ?log=true)
+    if (req.query && (req.query.log === 'true' || req.query.manual === 'true')) {
+      const { logAuditAction } = require('../utils/auditLogger');
+      logAuditAction({
+        action: 'FINANCIAL_RECONCILIATION_RUN',
+        entityType: 'invoice',
+        entityId: 'reconciliation_summary',
+        details: `${req.user?.name || 'Accountant'} performed financial reconciliation: ${isReconciled ? 'CLEAN (No discrepancies)' : `${unbilledAppointments.length} unbilled appts, ${discrepancies.length} mismatches`}`,
+        metadata: {
+          totalBilled,
+          totalCollected,
+          totalUnpaid,
+          unbilledCount: unbilledAppointments.length,
+          discrepancyCount: discrepancies.length,
+          isReconciled
+        },
+        req
+      }).catch(() => {});
+    }
 
     return res.json({
       success: true,

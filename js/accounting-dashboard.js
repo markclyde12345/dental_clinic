@@ -196,7 +196,7 @@
     }
 
     renderAllViews();
-    runFinancialReconciliation();
+    runFinancialReconciliation(false);
   }
 
   async function loadPatients() {
@@ -1872,9 +1872,10 @@
   };
 
   // ─── Financial Reconciliation & Separation of Duties Audit ───────────────────
-  window.runFinancialReconciliation = async function() {
+  window.runFinancialReconciliation = async function(isManual = false) {
     try {
-      const res = await fetch(`${INVOICE_API}/reconciliation`, {
+      const url = isManual ? `${INVOICE_API}/reconciliation?log=true` : `${INVOICE_API}/reconciliation`;
+      const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Reconciliation check failed');
@@ -1918,7 +1919,7 @@
         }
       }
 
-      if (typeof showToast === 'function') {
+      if (isManual && typeof showToast === 'function') {
         showToast(data.isReconciled ? '✓ Financial ledger fully reconciled.' : '⚠️ Reconciliation detected items requiring review.', data.isReconciled ? 'success' : 'warning');
       }
     } catch (err) {
