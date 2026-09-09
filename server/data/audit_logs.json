@@ -1,5 +1,312 @@
 [
   {
+    "id": "a10d4626-6e50-4e3a-a44f-d22583dc31f9",
+    "timestamp": "2026-09-09T04:20:15.351Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_id": "system",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Successful login for user finance@fanoclinic.com (Accounting)",
+    "metadata": {
+      "email": "finance@fanoclinic.com",
+      "role": "Accounting"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "e861881e-58e0-4361-9510-295b2ffed18e",
+    "timestamp": "2026-09-09T04:14:07.412Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "562a2d21-e480-41f8-add0-588ecaef2197",
+    "timestamp": "2026-09-09T04:14:05.504Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "96cf574d-c4e2-4a7f-a9fd-1c1e5b25e4f0",
+    "timestamp": "2026-09-09T04:14:03.645Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "ee4e1ae4-4ffd-4a1d-ae04-be6bd3a1e529",
+    "timestamp": "2026-09-09T04:14:01.359Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "a339bdd7-0e90-4b0d-8ef0-589b32613df2",
+    "timestamp": "2026-09-09T04:13:59.079Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "6cb181d7-8e43-4298-b43f-63effdabcf9a",
+    "timestamp": "2026-09-09T04:13:56.974Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "983e45d3-36f4-455c-a190-75b6e992a654",
+    "timestamp": "2026-09-09T04:13:54.964Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "52821dba-ba33-40e8-aec9-996721230842",
+    "timestamp": "2026-09-09T04:13:52.997Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "272e7b6d-de4e-4275-ab50-e14975ee488a",
+    "timestamp": "2026-09-09T04:13:51.051Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "c2edfda7-b74e-47de-b114-9733da333f45",
+    "timestamp": "2026-09-09T04:13:48.979Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "356bf92b-af24-48f4-974e-57797941a51e",
+    "timestamp": "2026-09-09T04:13:46.756Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "e78b331f-4413-4cba-94ef-490977889f01",
+    "timestamp": "2026-09-09T04:13:44.618Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "66a7c92e-fa9f-49e0-a08d-9ffec2242a70",
+    "timestamp": "2026-09-09T04:13:42.687Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "aa51a37a-ef5c-44f1-98ff-2037d085903c",
+    "timestamp": "2026-09-09T04:13:39.651Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_id": "system",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Successful login for user finance@fanoclinic.com (Accounting)",
+    "metadata": {
+      "email": "finance@fanoclinic.com",
+      "role": "Accounting"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
     "id": "19f6884e-5d3e-445a-b063-09aed0c095ad",
     "timestamp": "2026-09-09T03:52:21.467Z",
     "action": "FINANCIAL_RECONCILIATION_RUN",

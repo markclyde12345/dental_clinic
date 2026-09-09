@@ -307,6 +307,56 @@
 
     document.getElementById('hmo-share-val').textContent = `${formatMoney(hmoTotal)} (${hmoPct}%)`;
     document.getElementById('hmo-bar').style.width = `${hmoPct}%`;
+
+    updateSidebarBadges();
+  }
+
+  function updateSidebarBadges() {
+    // 1. Invoices badge: unpaid active invoices count
+    let unpaidInvoices = 0;
+    let hmoCount = 0;
+    (allInvoices || []).forEach(inv => {
+      const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
+      const isWrittenOff = (inv.status || '').toLowerCase() === 'written off';
+      const isHMO = (inv.status || '').toLowerCase() === 'hmo' || (inv.notes && inv.notes.toLowerCase().includes('hmo'));
+      if (isHMO && !isPaid) {
+        hmoCount++;
+      } else if (!isPaid && !isWrittenOff) {
+        unpaidInvoices++;
+      }
+    });
+
+    const invBadge = document.getElementById('sb-invoices-badge');
+    if (invBadge) {
+      if (unpaidInvoices > 0) {
+        invBadge.textContent = unpaidInvoices;
+        invBadge.style.display = 'inline-block';
+      } else {
+        invBadge.style.display = 'none';
+      }
+    }
+
+    const hmoBadge = document.getElementById('sb-hmo-badge');
+    if (hmoBadge) {
+      if (hmoCount > 0) {
+        hmoBadge.textContent = hmoCount;
+        hmoBadge.style.display = 'inline-block';
+      } else {
+        hmoBadge.style.display = 'none';
+      }
+    }
+
+    // 2. Expenses badge: unpaid/overdue bills count
+    const unpaidExpenses = (allExpenses || []).filter(e => e.status !== 'Paid').length;
+    const expBadge = document.getElementById('sb-expenses-badge');
+    if (expBadge) {
+      if (unpaidExpenses > 0) {
+        expBadge.textContent = unpaidExpenses;
+        expBadge.style.display = 'inline-block';
+      } else {
+        expBadge.style.display = 'none';
+      }
+    }
   }
 
   function getStatusBadge(status, isPaid, balance = 1) {
@@ -1348,6 +1398,7 @@
   function renderExpensesTab() {
     renderExpenseKPIs();
     renderExpensesTable(allExpenses);
+    updateSidebarBadges();
   }
 
   function renderExpenseKPIs() {

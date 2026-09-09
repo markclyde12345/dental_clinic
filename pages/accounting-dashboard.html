@@ -14,7 +14,7 @@
   <div class="dashboard-layout">
     <!-- ═════════════════════ SIDEBAR ═════════════════════ -->
     <aside class="sidebar">
-      <div>
+      <div class="sidebar-main">
         <a href="../pages/landing-page.html" class="sidebar-logo">
           <img src="../Resources/logo.png" alt="Fano Dental Clinic Logo">
           <span>Fano Clinic</span>
@@ -30,56 +30,82 @@
         </div>
         
         <!-- Navigation Menu -->
-        <ul class="sidebar-menu">
-          <li>
-            <a href="#" class="nav-tab active" data-tab="overview">
-              <span class="nav-icon">📊</span>
-              <span>Financial Overview</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="nav-tab" data-tab="invoices">
-              <span class="nav-icon">🧾</span>
-              <span>Invoices Ledger</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="nav-tab" data-tab="payments">
-              <span class="nav-icon">💳</span>
-              <span>Payments & Collections</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="nav-tab" data-tab="hmo">
-              <span class="nav-icon">🏥</span>
-              <span>HMO & Insurance</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="nav-tab" data-tab="expenses">
-              <span class="nav-icon">💸</span>
-              <span>Expenses & Bills</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="nav-tab" data-tab="inventory">
-              <span class="nav-icon">📦</span>
-              <span>Inventory Costs</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="nav-tab" data-tab="reports">
-              <span class="nav-icon">📈</span>
-              <span>Financial Reports</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="nav-tab" data-tab="settings">
-              <span class="nav-icon">⚙️</span>
-              <span>Financial Settings</span>
-            </a>
-          </li>
-        </ul>
+        <div class="sidebar-nav-container">
+          <div class="sidebar-section-header">
+            <span>Main Menu</span>
+          </div>
+          <ul class="sidebar-menu">
+            <li>
+              <a href="#" class="nav-tab active" data-tab="overview">
+                <span class="nav-icon"><i class="ti ti-layout-dashboard"></i></span>
+                <span class="nav-label">Financial Overview</span>
+              </a>
+            </li>
+          </ul>
+
+          <div class="sidebar-section-header">
+            <span>Revenue & Billing</span>
+          </div>
+          <ul class="sidebar-menu">
+            <li>
+              <a href="#" class="nav-tab" data-tab="invoices">
+                <span class="nav-icon"><i class="ti ti-file-invoice"></i></span>
+                <span class="nav-label">Invoices Ledger</span>
+                <span class="sidebar-badge badge-pending" id="sb-invoices-badge" style="display: none;">0</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-tab" data-tab="payments">
+                <span class="nav-icon"><i class="ti ti-credit-card"></i></span>
+                <span class="nav-label">Payments & Collections</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-tab" data-tab="hmo">
+                <span class="nav-icon"><i class="ti ti-shield-check"></i></span>
+                <span class="nav-label">HMO & Insurance</span>
+                <span class="sidebar-badge badge-hmo" id="sb-hmo-badge" style="display: none;">0</span>
+              </a>
+            </li>
+          </ul>
+
+          <div class="sidebar-section-header">
+            <span>Cost Management</span>
+          </div>
+          <ul class="sidebar-menu">
+            <li>
+              <a href="#" class="nav-tab" data-tab="expenses">
+                <span class="nav-icon"><i class="ti ti-receipt-2"></i></span>
+                <span class="nav-label">Expenses & Bills</span>
+                <span class="sidebar-badge badge-pending" id="sb-expenses-badge" style="display: none;">0</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-tab" data-tab="inventory">
+                <span class="nav-icon"><i class="ti ti-package"></i></span>
+                <span class="nav-label">Inventory Costs</span>
+              </a>
+            </li>
+          </ul>
+
+          <div class="sidebar-section-header">
+            <span>Analytics & Setup</span>
+          </div>
+          <ul class="sidebar-menu">
+            <li>
+              <a href="#" class="nav-tab" data-tab="reports">
+                <span class="nav-icon"><i class="ti ti-report-analytics"></i></span>
+                <span class="nav-label">Financial Reports</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-tab" data-tab="settings">
+                <span class="nav-icon"><i class="ti ti-settings"></i></span>
+                <span class="nav-label">Financial Settings</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
       
       <div class="sidebar-footer">
