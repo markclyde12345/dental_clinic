@@ -396,6 +396,35 @@ function doesAppointmentMatchBranch(a, targetBranch) {
   return b.includes(t);
 }
 
+function getInvoiceBranch(inv) {
+  if (!inv) return 'Main Branch, Fano Dental';
+  if (inv.branch) return inv.branch;
+  if (inv.appointment) {
+    return getAppointmentBranch(inv.appointment);
+  }
+  const notesStr = inv.notes || '';
+  const branchMatch = notesStr.match(/\[Branch:\s*([^\]]+)\]/i) || notesStr.match(/\[Location:\s*([^\]]+)\]/i);
+  if (branchMatch) return branchMatch[1].trim();
+  return 'Main Branch, Fano Dental';
+}
+
+function doesInvoiceMatchBranch(inv, targetBranch) {
+  if (!targetBranch || targetBranch === 'all') return true;
+  const b = getInvoiceBranch(inv).toLowerCase();
+  const t = targetBranch.toLowerCase();
+
+  if (t === 'main' || t.includes('main') || t.includes('naga')) {
+    return b.includes('main') || b.includes('naga') || (!b.includes('minglanilla') && !b.includes('talisay'));
+  }
+  if (t === 'minglanilla' || t.includes('minglanilla')) {
+    return b.includes('minglanilla');
+  }
+  if (t === 'talisay' || t.includes('talisay')) {
+    return b.includes('talisay');
+  }
+  return b.includes(t);
+}
+
 function renderAppointmentBranchBadge(a) {
   const rawLocation = getAppointmentBranch(a);
   const locLower = String(rawLocation || '').toLowerCase();
@@ -467,6 +496,33 @@ window.selectAdminMainClinicAppointments = function(e) {
   selectAdminBranch('Main Branch');
 };
 
+let cachedBranchAnalytics = null;
+
+window.selectAdminAnalyticsBranch = function(branchId, e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  currentAdminBranch = branchId || 'all';
+
+  // Highlight active sidebar subnav item
+  document.querySelectorAll('#sb-branches-subnav .sb-subnav-item').forEach(item => {
+    item.classList.toggle('active', item.getAttribute('data-branch') === currentAdminBranch);
+  });
+
+  renderDashboardAnalytics(currentAdminBranch);
+  renderBranchComparisonMatrix(cachedBranchAnalytics);
+  filterAndRenderAppointments();
+
+  const branchDisplayNames = {
+    'all': 'All Branches (Consolidated)',
+    'Main Branch': 'Main Branch (Naga)',
+    'Minglanilla': 'Minglanilla Branch',
+    'Talisay': 'Talisay Branch'
+  };
+  showToast(`Branch Analytics Scoped: ${branchDisplayNames[currentAdminBranch] || currentAdminBranch}`, 'info');
+};
+
 window.selectAdminBranch = function(branchId, e) {
   if (e) {
     e.preventDefault();
@@ -493,20 +549,23 @@ window.selectAdminBranch = function(branchId, e) {
   // Highlight main Appointments nav tab if Main Branch is active
   const apptNavTab = document.getElementById('sb-nav-appointments') || document.querySelector('.sb-nav-item[data-tab="appointments"]');
   if (apptNavTab) {
-    if (currentAdminBranch === 'Main Branch') {
-      apptNavTab.classList.add('active');
-    } else {
-      apptNavTab.classList.remove('active');
-    }
+    apptNavTab.classList.toggle('active', currentAdminBranch === 'Main Branch');
   }
 
-  // Switch to Appointments tab
-  window._skipBranchReset = true;
-  activateTab('appointments');
-  window._skipBranchReset = false;
-
-  // Filter and render appointments
-  filterAndRenderAppointments();
+  // If user is currently on the Overview / Dashboard tab, update the branch analytics!
+  const overviewPane = document.getElementById('tab-overview');
+  if (overviewPane && overviewPane.classList.contains('active')) {
+    renderDashboardAnalytics(currentAdminBranch);
+    renderBranchComparisonMatrix(cachedBranchAnalytics);
+    filterAndRenderAppointments();
+  } else {
+    // Switch to Appointments tab
+    window._skipBranchReset = true;
+    activateTab('appointments');
+    window._skipBranchReset = false;
+    filterAndRenderAppointments();
+    renderDashboardAnalytics(currentAdminBranch);
+  }
 };
 
 function updateSidebarBranchBadges() {
@@ -515,6 +574,11 @@ function updateSidebarBranchBadges() {
   const badgeMainSidebar = document.getElementById('main-clinic-sidebar-badge');
   const badgeMing = document.getElementById('branch-badge-minglanilla');
   const badgeTalisay = document.getElementById('branch-badge-talisay');
+
+  const pillAll = document.getElementById('pill-badge-all');
+  const pillMain = document.getElementById('pill-badge-main');
+  const pillMing = document.getElementById('pill-badge-minglanilla');
+  const pillTalisay = document.getElementById('pill-badge-talisay');
 
   const appts = allAppointments || [];
   const mainCount = appts.filter(a => doesAppointmentMatchBranch(a, 'Main Branch')).length;
@@ -526,8 +590,199 @@ function updateSidebarBranchBadges() {
   if (badgeMainSidebar) badgeMainSidebar.textContent = mainCount;
   if (badgeMing) badgeMing.textContent = mingCount;
   if (badgeTalisay) badgeTalisay.textContent = talisayCount;
+
+  if (pillAll) pillAll.textContent = appts.length;
+  if (pillMain) pillMain.textContent = mainCount;
+  if (pillMing) pillMing.textContent = mingCount;
+  if (pillTalisay) pillTalisay.textContent = talisayCount;
 }
 window.updateSidebarBranchBadges = updateSidebarBranchBadges;
+
+function renderDashboardAnalytics(branchId = currentAdminBranch) {
+  const branch = branchId || 'all';
+  const branchInvoices = (branch === 'all')
+    ? (allInvoices || [])
+    : (allInvoices || []).filter(inv => doesInvoiceMatchBranch(inv, branch));
+
+  const branchAppointments = (branch === 'all')
+    ? (allAppointments || [])
+    : (allAppointments || []).filter(a => doesAppointmentMatchBranch(a, branch));
+
+  // 1. Update active branch pills
+  document.querySelectorAll('#branch-analytics-pills .branch-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-branch') === branch);
+  });
+
+  // 2. Update active branch notification banner
+  const banner = document.getElementById('analytics-branch-banner');
+  const bannerName = document.getElementById('analytics-branch-banner-name');
+  const bannerStat = document.getElementById('analytics-branch-banner-stat');
+
+  const branchDisplayNames = {
+    'all': 'All Branches (Consolidated)',
+    'Main Branch': 'Main Branch (Naga)',
+    'Minglanilla': 'Minglanilla Branch',
+    'Talisay': 'Talisay Branch'
+  };
+
+  if (banner && bannerName && bannerStat) {
+    if (branch === 'all') {
+      banner.style.display = 'none';
+    } else {
+      banner.style.display = 'flex';
+      bannerName.textContent = branchDisplayNames[branch] || branch;
+      bannerStat.textContent = `${branchAppointments.length} appointments • ${branchInvoices.length} invoices recorded`;
+    }
+  }
+
+  // 3. Highlight corresponding card in Multi-Branch Matrix
+  document.querySelectorAll('.branch-matrix-card').forEach(card => {
+    card.classList.toggle('active-selected', card.getAttribute('data-branch') === branch);
+  });
+
+  // 4. Calculate Top KPI Cards for the chosen branch
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayAppts = branchAppointments.filter(a => a.appointment_date && a.appointment_date.startsWith(todayStr));
+  const seenToday = todayAppts.filter(a => (a.status || '').toLowerCase() === 'completed').length;
+  const noShowsToday = todayAppts.filter(a => (a.status || '').toLowerCase() === 'cancelled').length;
+
+  let revenueToday = 0;
+  let revenueMonth = 0;
+  const curMonth = todayStr.substring(0, 7);
+
+  branchInvoices.forEach(inv => {
+    const amt = parseFloat(inv.amount || inv.total_amount || 0);
+    const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
+    const paid = isPaid ? amt : (parseFloat(inv.paid_amount) || 0);
+
+    const issuedDate = inv.issued_at || inv.created_at || '';
+    if (issuedDate.startsWith(todayStr)) revenueToday += paid;
+    if (issuedDate.startsWith(curMonth)) revenueMonth += paid;
+  });
+
+  const seenEl = document.getElementById('today-seen');
+  if (seenEl) seenEl.textContent = seenToday;
+  const noShowEl = document.getElementById('today-noshows');
+  if (noShowEl) noShowEl.textContent = noShowsToday;
+  const todayRevEl = document.getElementById('today-revenue');
+  if (todayRevEl) todayRevEl.textContent = `${getCurrencySymbol()}${revenueToday.toFixed(2)}`;
+  const monthRevEl = document.getElementById('month-revenue');
+  if (monthRevEl) monthRevEl.textContent = `${getCurrencySymbol()}${revenueMonth.toFixed(2)}`;
+
+  // 5. Update Today's Schedule Timeline for the chosen branch
+  const timeline = document.getElementById('today-appointments-timeline');
+  if (timeline) {
+    if (todayAppts.length > 0) {
+      timeline.innerHTML = todayAppts.map(a => {
+        const timeStr = new Date(a.appointment_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const pName = a.patient ? a.patient.name : 'Unknown Patient';
+        const contact = a.patient?.contact_number || 'No Phone';
+        const bBadge = renderAppointmentBranchBadge(a);
+        return `
+          <div class="activity-item">
+            <div class="activity-main">
+              <h5>${escapeHTML(pName)}</h5>
+              <p>Time: ${timeStr} | Contact: ${escapeHTML(contact)}</p>
+              <div style="margin-top: 4px;">${bBadge}</div>
+            </div>
+            <div style="text-align: right;">
+              <span class="badge-staff" style="background:#e3fcef; color:#0e6245; font-size:0.7rem; font-weight:600; text-transform:uppercase;">${a.status || 'Scheduled'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      timeline.innerHTML = `
+        <div style="text-align: center; padding: 32px 12px; color: #888;">
+          <span style="font-size: 2rem;">🗓️</span>
+          <p style="margin-top: 8px; font-size: 0.9rem;">No appointments scheduled for ${escapeHTML(branchDisplayNames[branch] || branch)} today.</p>
+        </div>
+      `;
+    }
+  }
+
+  // 6. Render Charts with filtered data
+  renderRevenueChart(branchInvoices, currentRevenuePeriod);
+  renderFinancialOverview(branchInvoices, currentFinancialPeriod);
+  renderPatientData(branchAppointments, currentPatientPeriod);
+  renderExpensesBreakdown(branchInvoices, currentExpensesPeriod);
+}
+
+function renderBranchComparisonMatrix(branchAnalytics) {
+  const container = document.getElementById('branch-matrix-grid');
+  if (!container) return;
+
+  const appts = allAppointments || [];
+  const invs = allInvoices || [];
+  const totalRev = invs.reduce((sum, i) => sum + parseFloat(i.amount || i.total_amount || 0), 0) || 1;
+
+  const branches = [
+    { key: 'Main Branch', cardClass: 'card-main', defaultName: 'Main Branch (Naga)', defaultLoc: 'Balirong Highway, City of Naga' },
+    { key: 'Minglanilla', cardClass: 'card-minglanilla', defaultName: 'Minglanilla Branch', defaultLoc: 'Poblacion Ward II, Minglanilla' },
+    { key: 'Talisay', cardClass: 'card-talisay', defaultName: 'Talisay Branch', defaultLoc: 'Tabunok / Bulacao, Talisay City' }
+  ];
+
+  container.innerHTML = branches.map(b => {
+    const bAppts = appts.filter(a => doesAppointmentMatchBranch(a, b.key));
+    const bInvs = invs.filter(i => doesInvoiceMatchBranch(i, b.key));
+
+    const totalAppointments = bAppts.length;
+    const completedAppointments = bAppts.filter(a => (a.status || '').toLowerCase() === 'completed').length;
+    const pendingAppointments = bAppts.filter(a => (a.status || '').toLowerCase() === 'pending').length;
+
+    const bRev = bInvs.reduce((sum, i) => sum + parseFloat(i.amount || i.total_amount || 0), 0);
+    const sharePct = Math.round((bRev / totalRev) * 100);
+
+    const isSelected = currentAdminBranch === b.key;
+
+    return `
+      <div class="branch-matrix-card ${b.cardClass} ${isSelected ? 'active-selected' : ''}" data-branch="${b.key}">
+        <div>
+          <div class="bmc-top">
+            <div>
+              <div class="bmc-name">${escapeHTML(b.defaultName)}</div>
+              <div class="bmc-loc"><i class="ti ti-map-pin" style="font-size:12px;"></i> ${escapeHTML(b.defaultLoc)}</div>
+            </div>
+            <span class="bmc-badge bmc-badge-live"><i class="ti ti-activity" style="font-size:10px;"></i> Active</span>
+          </div>
+
+          <div class="bmc-metrics">
+            <div class="bmc-metric-item">
+              <span class="bmc-metric-label">Billed Revenue</span>
+              <span class="bmc-metric-value" style="color: #0b3c4d;">${getCurrencySymbol()}${bRev.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div class="bmc-metric-item">
+              <span class="bmc-metric-label">Total Visits</span>
+              <span class="bmc-metric-value" style="color: #0284c7;">${totalAppointments}</span>
+            </div>
+            <div class="bmc-metric-item">
+              <span class="bmc-metric-label">Completed</span>
+              <span class="bmc-metric-value" style="color: #10b981;">${completedAppointments}</span>
+            </div>
+            <div class="bmc-metric-item">
+              <span class="bmc-metric-label">Pending</span>
+              <span class="bmc-metric-value" style="color: #f59e0b;">${pendingAppointments}</span>
+            </div>
+          </div>
+
+          <div class="bmc-share-bar-wrap">
+            <div class="bmc-share-header">
+              <span>Revenue Contribution</span>
+              <strong style="color: var(--dark-color);">${sharePct}%</strong>
+            </div>
+            <div class="bmc-progress-track">
+              <div class="bmc-progress-fill" style="width: ${Math.max(sharePct, 4)}%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="bmc-action-btn" onclick="selectAdminAnalyticsBranch('${b.key}', event)">
+          <i class="ti ti-chart-bar"></i> ${isSelected ? 'Currently Scoped' : 'Inspect Branch Analytics'}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
 
 // ─── 1. Load Home Overview Stats ──────────────────────────────────────────────
 let currentRevenuePeriod = '12months';
@@ -552,51 +807,10 @@ function loadStats() {
     if (Array.isArray(data.allAppointments) && data.allAppointments.length > 0) {
       allAppointments = data.allAppointments;
     }
+    cachedBranchAnalytics = data.branchAnalytics || null;
+
     updateSidebarBranchBadges();
     loadAdminNotifications();
-
-    // Fills widgets safely
-    const seenEl = document.getElementById('today-seen');
-    if (seenEl) seenEl.textContent = data.stats?.seenToday || 0;
-    
-    const noShowEl = document.getElementById('today-noshows');
-    if (noShowEl) noShowEl.textContent = data.stats?.noShowsToday || 0;
-    
-    const todayRevEl = document.getElementById('today-revenue');
-    if (todayRevEl) todayRevEl.textContent = `${getCurrencySymbol()}${(data.stats?.revenueToday || 0).toFixed(2)}`;
-    
-    const monthRevEl = document.getElementById('month-revenue');
-    if (monthRevEl) monthRevEl.textContent = `${getCurrencySymbol()}${(data.stats?.revenueMonth || 0).toFixed(2)}`;
-
-    // Populate timeline list safely
-    const timeline = document.getElementById('today-appointments-timeline');
-    if (timeline) {
-      if (data.todayAppointments && data.todayAppointments.length > 0) {
-        timeline.innerHTML = data.todayAppointments.map(a => {
-          const timeStr = new Date(a.appointment_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-          const pName = a.patient ? a.patient.name : 'Unknown Patient';
-          const contact = a.patient?.contact_number || 'No Phone';
-          return `
-            <div class="activity-item">
-              <div class="activity-main">
-                <h5>${escapeHTML(pName)}</h5>
-                <p>Time: ${timeStr} | Contact: ${escapeHTML(contact)}</p>
-              </div>
-              <div style="text-align: right;">
-                <span class="badge-staff" style="background:#e3fcef; color:#0e6245; font-size:0.7rem; font-weight:600; text-transform:uppercase;">${a.status}</span>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } else {
-        timeline.innerHTML = `
-          <div style="text-align: center; padding: 32px 12px; color: #888;">
-            <span style="font-size: 2rem;">🗓️</span>
-            <p style="margin-top: 8px; font-size: 0.9rem;">No appointments scheduled for today.</p>
-          </div>
-        `;
-      }
-    }
 
     // Populate alerts panel safely
     const alertsList = document.getElementById('overview-alerts-list');
@@ -625,11 +839,9 @@ function loadStats() {
       }
     }
 
-    // Render all clinical dashboard cards dynamically based on Supabase database!
-    renderRevenueChart(allInvoices, currentRevenuePeriod);
-    renderFinancialOverview(allInvoices, currentFinancialPeriod);
-    renderPatientData(allAppointments, currentPatientPeriod);
-    renderExpensesBreakdown(allInvoices, currentExpensesPeriod);
+    // Render Multi-Branch Matrix & Scoped Overview Analytics
+    renderBranchComparisonMatrix(cachedBranchAnalytics);
+    renderDashboardAnalytics(currentAdminBranch);
 
     // Initialize Period Select listener once
     if (!chartSelectInitialized) {
@@ -637,7 +849,7 @@ function loadStats() {
       if (periodSelect) {
         periodSelect.addEventListener('change', (e) => {
           currentRevenuePeriod = e.target.value;
-          renderRevenueChart(allInvoices, currentRevenuePeriod);
+          renderDashboardAnalytics(currentAdminBranch);
         });
       }
 
@@ -645,7 +857,7 @@ function loadStats() {
       if (finSelect) {
         finSelect.addEventListener('change', (e) => {
           currentFinancialPeriod = e.target.value;
-          renderFinancialOverview(allInvoices, currentFinancialPeriod);
+          renderDashboardAnalytics(currentAdminBranch);
           showToast(`Financial Overview updated to: ${e.target.selectedOptions[0].text}`, 'success');
         });
       }
@@ -654,7 +866,7 @@ function loadStats() {
       if (patSelect) {
         patSelect.addEventListener('change', (e) => {
           currentPatientPeriod = e.target.value;
-          renderPatientData(allAppointments, currentPatientPeriod);
+          renderDashboardAnalytics(currentAdminBranch);
           showToast(`Patient demographics updated to: ${e.target.selectedOptions[0].text}`, 'success');
         });
       }
@@ -663,7 +875,7 @@ function loadStats() {
       if (expSelect) {
         expSelect.addEventListener('change', (e) => {
           currentExpensesPeriod = e.target.value;
-          renderExpensesBreakdown(allInvoices, currentExpensesPeriod);
+          renderDashboardAnalytics(currentAdminBranch);
           showToast(`Expenses breakdown updated to: ${e.target.selectedOptions[0].text}`, 'success');
         });
       }
@@ -671,7 +883,7 @@ function loadStats() {
       chartSelectInitialized = true;
     }
 
-    logConsoleEvent('[INFO] Overview stats and dynamic chart rendered.');
+    logConsoleEvent('[INFO] Overview stats and dynamic branch analytics rendered.');
   })
   .catch(err => {
     console.error('Error loading stats:', err);

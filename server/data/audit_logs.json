@@ -1,5 +1,26 @@
 [
   {
+    "id": "6ee69d1e-ff4f-416a-8328-9b38d08f41de",
+    "timestamp": "2026-09-09T06:06:23.969Z",
+    "action": "FINANCIAL_RECONCILIATION_RUN",
+    "entity_type": "invoice",
+    "entity_id": "reconciliation_summary",
+    "user_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Jane Finance performed financial reconciliation: CLEAN (No discrepancies)",
+    "metadata": {
+      "totalBilled": 2005,
+      "totalCollected": 80,
+      "totalUnpaid": 1925,
+      "unbilledCount": 0,
+      "discrepancyCount": 0,
+      "isReconciled": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
     "id": "a10d4626-6e50-4e3a-a44f-d22583dc31f9",
     "timestamp": "2026-09-09T04:20:15.351Z",
     "action": "USER_LOGIN_SUCCESS",

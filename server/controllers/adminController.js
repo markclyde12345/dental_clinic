@@ -270,17 +270,98 @@ const getDetailedStats = async (req, res) => {
       .from('appointments')
       .select(`
         id, appointment_date, status, notes,
-        patient:patient_id ( id, name, email, contact_number )
+        patient:patient_id ( id, name, email, contact_number ),
+        treatment:treatment_id ( id, name, price )
       `);
 
     if (apptError) throw apptError;
 
-    // 2. Fetch invoices
+    // 2. Fetch invoices with appointment details
     const { data: invoices, error: invError } = await supabase
       .from('invoices')
-      .select('*');
+      .select(`
+        *,
+        appointment:appointment_id ( id, appointment_date, notes, treatment:treatment_id ( id, name, price ) )
+      `);
 
     if (invError) throw invError;
+
+    // ─── Multi-Branch Analytics Compilation ─────────────────────────────────
+    const extractBranchKey = (notes) => {
+      const n = (notes || '').toLowerCase();
+      if (n.includes('minglanilla')) return 'Minglanilla';
+      if (n.includes('talisay')) return 'Talisay';
+      return 'Main Branch';
+    };
+
+    const branchAnalytics = {
+      'Main Branch': {
+        key: 'Main Branch',
+        name: 'Main Branch (Naga)',
+        location: 'Balirong Highway, City of Naga',
+        totalAppointments: 0,
+        completedAppointments: 0,
+        pendingAppointments: 0,
+        cancelledAppointments: 0,
+        todayAppointments: 0,
+        totalRevenue: 0,
+        paidRevenue: 0,
+        unpaidRevenue: 0
+      },
+      'Minglanilla': {
+        key: 'Minglanilla',
+        name: 'Minglanilla Branch',
+        location: 'Poblacion Ward II, Minglanilla',
+        totalAppointments: 0,
+        completedAppointments: 0,
+        pendingAppointments: 0,
+        cancelledAppointments: 0,
+        todayAppointments: 0,
+        totalRevenue: 0,
+        paidRevenue: 0,
+        unpaidRevenue: 0
+      },
+      'Talisay': {
+        key: 'Talisay',
+        name: 'Talisay Branch',
+        location: 'Tabunok / Bulacao, Talisay City',
+        totalAppointments: 0,
+        completedAppointments: 0,
+        pendingAppointments: 0,
+        cancelledAppointments: 0,
+        todayAppointments: 0,
+        totalRevenue: 0,
+        paidRevenue: 0,
+        unpaidRevenue: 0
+      }
+    };
+
+    (appointments || []).forEach(a => {
+      const bKey = extractBranchKey(a.notes);
+      if (branchAnalytics[bKey]) {
+        branchAnalytics[bKey].totalAppointments++;
+        const s = (a.status || '').toLowerCase();
+        if (s === 'completed') branchAnalytics[bKey].completedAppointments++;
+        else if (s === 'cancelled') branchAnalytics[bKey].cancelledAppointments++;
+        else branchAnalytics[bKey].pendingAppointments++;
+
+        if (a.appointment_date && a.appointment_date.startsWith(todayStr)) {
+          branchAnalytics[bKey].todayAppointments++;
+        }
+      }
+    });
+
+    (invoices || []).forEach(inv => {
+      const bKey = extractBranchKey(inv.appointment?.notes || inv.notes);
+      if (branchAnalytics[bKey]) {
+        const amt = parseFloat(inv.amount || inv.total_amount || 0);
+        const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
+        const paid = isPaid ? amt : (parseFloat(inv.paid_amount) || 0);
+        branchAnalytics[bKey].totalRevenue += amt;
+        branchAnalytics[bKey].paidRevenue += paid;
+        branchAnalytics[bKey].unpaidRevenue += Math.max(0, amt - paid);
+      }
+    });
 
     // ─── Compile Today's stats ───────────────────────────────────────────────
     const todayAppts = appointments.filter(a => {
@@ -360,6 +441,7 @@ const getDetailedStats = async (req, res) => {
         revenueMonth
       },
       alerts,
+      branchAnalytics,
       invoices: invoices || [],
       allAppointments: appointments || []
     });

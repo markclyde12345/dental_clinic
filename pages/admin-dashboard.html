@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin-dashboard.css?v=20260906_mobile">
+  <link rel="stylesheet" href="../css/admin-dashboard.css?v=20260909_branch">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 </head>
@@ -261,6 +261,70 @@
             <div class="header-title-block">
               <h2 id="admin-page-title" style="margin: 0 0 4px 0; font-family: var(--font-display); font-size: 1.85rem; font-weight: 700; color: var(--dark-color);">Executive Control Center</h2>
               <p class="header-subtitle" id="admin-page-subtitle" style="margin: 0; color: #64748b; font-size: 0.9rem;">Comprehensive analytics, executive clinic operations, and management</p>
+            </div>
+          </div>
+
+          <!-- Multi-Branch Analytics Control Bar -->
+          <div class="branch-analytics-control-bar">
+            <div class="branch-pills-label-group">
+              <div class="branch-pills-icon">
+                <i class="ti ti-building-hospital"></i>
+              </div>
+              <div>
+                <div class="branch-pills-title">Branch Analytics Scope</div>
+                <div class="branch-pills-subtitle">Separate overview charts, revenue &amp; operations by branch</div>
+              </div>
+            </div>
+
+            <div class="branch-analytics-pills" id="branch-analytics-pills">
+              <button type="button" class="branch-pill-btn active" data-branch="all" onclick="selectAdminAnalyticsBranch('all', event)" title="View consolidated metrics across all clinic locations">
+                <span class="pill-dot"></span>
+                <span>All Branches</span>
+                <span class="branch-pill-badge" id="pill-badge-all">0</span>
+              </button>
+              <button type="button" class="branch-pill-btn" data-branch="Main Branch" onclick="selectAdminAnalyticsBranch('Main Branch', event)" title="Filter analytics to Main Naga Clinic">
+                <span class="pill-dot"></span>
+                <span>Main Branch (Naga)</span>
+                <span class="branch-pill-badge" id="pill-badge-main">0</span>
+              </button>
+              <button type="button" class="branch-pill-btn" data-branch="Minglanilla" onclick="selectAdminAnalyticsBranch('Minglanilla', event)" title="Filter analytics to Minglanilla Branch">
+                <span class="pill-dot"></span>
+                <span>Minglanilla Branch</span>
+                <span class="branch-pill-badge" id="pill-badge-minglanilla">0</span>
+              </button>
+              <button type="button" class="branch-pill-btn" data-branch="Talisay" onclick="selectAdminAnalyticsBranch('Talisay', event)" title="Filter analytics to Talisay Branch">
+                <span class="pill-dot"></span>
+                <span>Talisay Branch</span>
+                <span class="branch-pill-badge" id="pill-badge-talisay">0</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Scope Notification Banner -->
+          <div id="analytics-branch-banner" class="branch-active-scope-banner" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i class="ti ti-filter" style="font-size: 16px;"></i>
+              <span>Active Analytics View: <strong id="analytics-branch-banner-name">All Branches</strong> • <span id="analytics-branch-banner-stat">0 appointments</span></span>
+            </div>
+            <button type="button" class="branch-scope-reset-btn" onclick="selectAdminAnalyticsBranch('all', event)">
+              <i class="ti ti-rotate-clockwise"></i> Reset to All Branches
+            </button>
+          </div>
+
+          <!-- Multi-Branch Performance Comparison Matrix -->
+          <div class="branch-matrix-container" id="branch-matrix-container">
+            <div class="branch-matrix-header">
+              <div>
+                <h3><i class="ti ti-layout-grid"></i> Multi-Branch Operations &amp; Performance Matrix</h3>
+                <p>Real-time cross-branch comparison: patient volume, gross revenue, and collection efficiency</p>
+              </div>
+              <div style="font-size: 0.78rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px;">
+                <i class="ti ti-check"></i> Multi-Branch Live Sync
+              </div>
+            </div>
+
+            <div class="branch-matrix-grid" id="branch-matrix-grid">
+              <!-- Populated dynamically by renderBranchComparisonMatrix() -->
             </div>
           </div>
 
@@ -1912,7 +1976,7 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/admin-dashboard.js?v=20260906_mobile"></script>
+  <script src="../js/admin-dashboard.js?v=20260909_branch"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>
 </html>
