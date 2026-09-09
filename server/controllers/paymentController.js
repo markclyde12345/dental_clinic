@@ -73,9 +73,15 @@ const createPaymongoCheckout = async (req, res) => {
       : `${origin}/pages/patient-dashboard.html?payment=cancelled&invoice_id=${invoice.id}`;
 
     const invoiceRef = invoice.id.slice(0, 8).toUpperCase();
+    const apptNotes = invoice.appointment?.notes || '';
+    const isBookingFee = Boolean(apptNotes && apptNotes.includes('[BookingFee:'));
     const treatmentName = invoice.appointment?.treatment?.name || 'Dental Service';
-    const lineItemName = `${treatmentName} - Invoice #${invoiceRef}`;
-    const lineItemDesc = `Professional Dental Healthcare Service • Invoice Ref #${invoiceRef}`;
+    const lineItemName = isBookingFee
+      ? `30% Booking Reservation Fee - ${treatmentName}`
+      : `${treatmentName} - Invoice #${invoiceRef}`;
+    const lineItemDesc = isBookingFee
+      ? `30% Reservation Deposit to confirm appointment slot • Remaining 70% balance payable at clinic • Invoice Ref #${invoiceRef}`
+      : `Professional Dental Healthcare Service • Invoice Ref #${invoiceRef}`;
 
     // 2. If valid PayMongo secret key is configured, invoke PayMongo Checkout API
     if (isLiveKey) {
@@ -223,11 +229,40 @@ const verifyPaymongoPayment = async (req, res) => {
         status: 'Paid',
         paid_at: new Date().toISOString()
       })
-      .eq('id', invoice_id)
+      .eq('id', cleanInvoiceId)
       .select()
       .single();
 
     if (updateError) throw updateError;
+
+    // 4. Update corresponding appointment payment status if applicable
+    if (invoice.appointment_id) {
+      await supabase
+        .from('appointments')
+        .update({ payment_status: 'Paid', is_paid: true })
+        .eq('id', invoice.appointment_id);
+    }
+
+    // 5. Audit log
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      const invoiceRef = cleanInvoiceId.slice(0, 8).toUpperCase();
+      logAuditAction({
+        action: 'PAYMENT_COLLECTED',
+        entityType: 'invoice',
+        entityId: cleanInvoiceId,
+        details: `PayMongo online payment confirmed: ₱${updatedInvoice.amount} for Invoice #${invoiceRef}`,
+        metadata: {
+          invoice_id: cleanInvoiceId,
+          amount: updatedInvoice.amount,
+          payment_method: 'PayMongo (Online)',
+          checkout_id: checkout_id || 'online_checkout'
+        },
+        req
+      });
+    } catch (auditErr) {
+      console.warn('[PayMongo Verify] Audit log skipped:', auditErr?.message);
+    }
 
     return res.json({
       success: true,
@@ -266,7 +301,7 @@ const handlePaymongoWebhook = async (req, res) => {
         // Find invoice starting with this ID
         const { data: invoices } = await supabase
           .from('invoices')
-          .select('id, amount, status');
+          .select('id, amount, status, appointment_id');
 
         const targetInvoice = invoices?.find(inv => inv.id.toLowerCase().startsWith(refIdPrefix));
         if (targetInvoice && targetInvoice.status !== 'Paid') {
@@ -277,6 +312,13 @@ const handlePaymongoWebhook = async (req, res) => {
               paid_at: new Date().toISOString()
             })
             .eq('id', targetInvoice.id);
+
+          if (targetInvoice.appointment_id) {
+            await supabase
+              .from('appointments')
+              .update({ payment_status: 'Paid', is_paid: true })
+              .eq('id', targetInvoice.appointment_id);
+          }
 
           console.log(`[PayMongo Webhook] Successfully reconciled Invoice ${targetInvoice.id}`);
         }
