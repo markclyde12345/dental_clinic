@@ -1,0 +1,38 @@
+[
+  {
+    "id": "branch-main",
+    "key": "Main Branch",
+    "name": "Main Branch (Naga)",
+    "location": "Balirong Highway, City of Naga, Cebu",
+    "contactNumber": "0917-123-4567",
+    "operatingHours": "Mon–Sat 8:00 AM – 6:00 PM",
+    "lat": 10.2098,
+    "lng": 123.758,
+    "isMain": true,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "branch-minglanilla",
+    "key": "Minglanilla",
+    "name": "Minglanilla Branch",
+    "location": "Poblacion Ward II, Minglanilla, Cebu",
+    "contactNumber": "0918-234-5678",
+    "operatingHours": "Mon–Sun 8:30 AM – 6:30 PM",
+    "lat": 10.245,
+    "lng": 123.796,
+    "isMain": false,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "branch-talisay",
+    "key": "Talisay",
+    "name": "Talisay Branch",
+    "location": "Tabunok / Bulacao, Talisay City, Cebu",
+    "contactNumber": "0919-345-6789",
+    "operatingHours": "Mon–Sat 9:00 AM – 5:00 PM",
+    "lat": 10.26,
+    "lng": 123.834,
+    "isMain": false,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  }
+]

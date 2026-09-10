@@ -59,9 +59,14 @@ let localUsers = [];
 let allSystemLogs = [];
 let logsPollingInterval = null;
 let adminNotificationsList = [];
-let currentAdminBranch = 'Main Branch';
+let currentAdminBranch = 'all';
 let onDeleteConfirmCallback = null;
-
+let adminClinicBranches = [];
+const defaultClinicBranches = [
+  { id: 'branch-main', key: 'Main Branch', name: 'Main Branch (Naga)', location: 'Balirong Highway, City of Naga', contactNumber: '+63 917 555 0101', operatingHours: 'Mon–Sat 8:00 AM – 5:00 PM', isMain: true, lat: 10.2098, lng: 123.7580 },
+  { id: 'branch-minglanilla', key: 'Minglanilla', name: 'Minglanilla Branch', location: 'Poblacion Ward II, Minglanilla', contactNumber: '+63 917 555 0102', operatingHours: 'Mon–Sat 8:30 AM – 5:00 PM', isMain: false, lat: 10.2444, lng: 123.7972 },
+  { id: 'branch-talisay', key: 'Talisay', name: 'Talisay Branch', location: 'Tabunok / Bulacao, Talisay City', contactNumber: '+63 917 555 0103', operatingHours: 'Mon–Sat 9:00 AM – 5:00 PM', isMain: false, lat: 10.2600, lng: 123.8340 }
+];
 
 const defaultAdmin = {
   id: 'admin-default-id',
@@ -184,6 +189,7 @@ function initDashboard() {
   setupAdminNotifications(); // Attach admin alert center listeners
   loadAdminNotifications();  // Initial fetch of admin notifications
   loadAppointments();        // Initial fetch and cache of all clinic appointments & branch badges
+  loadAdminBranches();       // Initial fetch and synchronization of clinic branches
   setInterval(() => loadAdminNotifications(), 30000); // Polling every 30s
 
   // Always default to 'overview' (Dashboard Overview) when opening or logging in,
@@ -339,9 +345,9 @@ function setupTabs() {
       e.preventDefault();
       const targetTab = tab.getAttribute('data-tab');
       if (targetTab === 'appointments' && !window._skipBranchReset) {
-        currentAdminBranch = 'Main Branch';
+        currentAdminBranch = 'all';
         document.querySelectorAll('#sb-branches-subnav .sb-subnav-item').forEach(item => {
-          item.classList.toggle('active', item.getAttribute('data-branch') === 'Main Branch');
+          item.classList.toggle('active', item.getAttribute('data-branch') === 'all');
         });
       }
       activateTab(targetTab);
@@ -379,21 +385,32 @@ function getAppointmentBranch(a) {
   return 'Main Branch, Fano Dental';
 }
 
+function isMatchingOtherBranch(b) {
+  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
+  return branches.some(br => {
+    if (br.isMain || br.key === 'Main Branch') return false;
+    const bk = br.key.toLowerCase();
+    const bn = (br.name || '').toLowerCase();
+    return b.includes(bk) || (bn && b.includes(bn));
+  });
+}
+
 function doesAppointmentMatchBranch(a, targetBranch) {
   if (!targetBranch || targetBranch === 'all') return true;
   const b = getAppointmentBranch(a).toLowerCase();
   const t = targetBranch.toLowerCase();
 
-  if (t === 'main' || t.includes('main') || t.includes('naga')) {
-    return b.includes('main') || b.includes('naga') || (!b.includes('minglanilla') && !b.includes('talisay'));
+  if (t === 'main branch' || t === 'main' || t.includes('main') || t.includes('naga')) {
+    if (b.includes('main') || b.includes('naga') || b.includes('balirong')) return true;
+    return !isMatchingOtherBranch(b);
   }
-  if (t === 'minglanilla' || t.includes('minglanilla')) {
-    return b.includes('minglanilla');
+
+  if (b.includes(t)) return true;
+  const matchedBranch = (adminClinicBranches || []).find(br => br.key.toLowerCase() === t || br.name.toLowerCase() === t);
+  if (matchedBranch) {
+    return b.includes(matchedBranch.key.toLowerCase()) || b.includes(matchedBranch.name.toLowerCase());
   }
-  if (t === 'talisay' || t.includes('talisay')) {
-    return b.includes('talisay');
-  }
-  return b.includes(t);
+  return false;
 }
 
 function getInvoiceBranch(inv) {
@@ -413,16 +430,17 @@ function doesInvoiceMatchBranch(inv, targetBranch) {
   const b = getInvoiceBranch(inv).toLowerCase();
   const t = targetBranch.toLowerCase();
 
-  if (t === 'main' || t.includes('main') || t.includes('naga')) {
-    return b.includes('main') || b.includes('naga') || (!b.includes('minglanilla') && !b.includes('talisay'));
+  if (t === 'main branch' || t === 'main' || t.includes('main') || t.includes('naga')) {
+    if (b.includes('main') || b.includes('naga') || b.includes('balirong')) return true;
+    return !isMatchingOtherBranch(b);
   }
-  if (t === 'minglanilla' || t.includes('minglanilla')) {
-    return b.includes('minglanilla');
+
+  if (b.includes(t)) return true;
+  const matchedBranch = (adminClinicBranches || []).find(br => br.key.toLowerCase() === t || br.name.toLowerCase() === t);
+  if (matchedBranch) {
+    return b.includes(matchedBranch.key.toLowerCase()) || b.includes(matchedBranch.name.toLowerCase());
   }
-  if (t === 'talisay' || t.includes('talisay')) {
-    return b.includes('talisay');
-  }
-  return b.includes(t);
+  return false;
 }
 
 function renderAppointmentBranchBadge(a) {
@@ -433,7 +451,33 @@ function renderAppointmentBranchBadge(a) {
   let branchName = 'Main Branch (Naga)';
   let branchSub = 'Balirong Highway';
 
-  if (locLower.includes('minglanilla')) {
+  // Check against loaded branches first
+  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
+  const matchedBranch = branches.find(br => {
+    const bk = br.key.toLowerCase();
+    const bn = (br.name || '').toLowerCase();
+    return locLower.includes(bk) || (bn && locLower.includes(bn));
+  });
+
+  if (matchedBranch) {
+    if (matchedBranch.isMain || matchedBranch.key === 'Main Branch') {
+      branchKey = 'main';
+      branchName = matchedBranch.name || 'Main Branch (Naga)';
+      branchSub = matchedBranch.location || 'Balirong Highway';
+    } else if (matchedBranch.key === 'Minglanilla') {
+      branchKey = 'minglanilla';
+      branchName = matchedBranch.name || 'Minglanilla Branch';
+      branchSub = matchedBranch.location || 'Poblacion Ward II';
+    } else if (matchedBranch.key === 'Talisay') {
+      branchKey = 'talisay';
+      branchName = matchedBranch.name || 'Talisay Branch';
+      branchSub = matchedBranch.location || 'Tabunok / Bulacao';
+    } else {
+      branchKey = 'other';
+      branchName = matchedBranch.name;
+      branchSub = matchedBranch.location || '';
+    }
+  } else if (locLower.includes('minglanilla')) {
     branchKey = 'minglanilla';
     branchName = 'Minglanilla Branch';
     branchSub = 'Poblacion Ward II';
@@ -447,9 +491,7 @@ function renderAppointmentBranchBadge(a) {
     branchSub = 'Balirong Highway';
   } else if (rawLocation && rawLocation !== 'Main Branch, Fano Dental') {
     branchKey = 'other';
-    // Strip redundant leading "Fano Dental Clinic — "
     branchName = rawLocation.replace(/^Fano Dental Clinic\s*[—–-]\s*/i, '').trim() || 'Fano Clinic';
-    // If there is an address in parentheses, extract it cleanly into subtitle
     const parenMatch = branchName.match(/^(.*?)\s*\((.*?)\)$/);
     if (parenMatch) {
       branchName = parenMatch[1].trim();
@@ -498,6 +540,13 @@ window.selectAdminMainClinicAppointments = function(e) {
 
 let cachedBranchAnalytics = null;
 
+window.getBranchDisplayName = function(bk) {
+  if (!bk || bk === 'all') return 'All Branches (Consolidated)';
+  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
+  const found = branches.find(b => b.key.toLowerCase() === bk.toLowerCase() || b.name.toLowerCase() === bk.toLowerCase());
+  return found ? found.name : bk;
+};
+
 window.selectAdminAnalyticsBranch = function(branchId, e) {
   if (e) {
     e.preventDefault();
@@ -514,13 +563,7 @@ window.selectAdminAnalyticsBranch = function(branchId, e) {
   renderBranchComparisonMatrix(cachedBranchAnalytics);
   filterAndRenderAppointments();
 
-  const branchDisplayNames = {
-    'all': 'All Branches (Consolidated)',
-    'Main Branch': 'Main Branch (Naga)',
-    'Minglanilla': 'Minglanilla Branch',
-    'Talisay': 'Talisay Branch'
-  };
-  showToast(`Branch Analytics Scoped: ${branchDisplayNames[currentAdminBranch] || currentAdminBranch}`, 'info');
+  showToast(`Branch Analytics Scoped: ${getBranchDisplayName(currentAdminBranch)}`, 'info');
 };
 
 window.selectAdminBranch = function(branchId, e) {
@@ -568,33 +611,157 @@ window.selectAdminBranch = function(branchId, e) {
   }
 };
 
+async function loadAdminBranches() {
+  try {
+    const res = await fetch(`${ADMIN_API}/branches`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        adminClinicBranches = data;
+      } else {
+        adminClinicBranches = [...defaultClinicBranches];
+      }
+    } else {
+      adminClinicBranches = [...defaultClinicBranches];
+    }
+  } catch (err) {
+    console.warn('[Admin] Failed to fetch branches, using defaults:', err);
+    adminClinicBranches = [...defaultClinicBranches];
+  }
+
+  renderSidebarBranches();
+  renderBranchPills();
+  renderBranchComparisonMatrix(cachedBranchAnalytics);
+  renderBranchesList();
+  populateBranchDropdowns();
+  updateSidebarBranchBadges();
+}
+window.loadAdminBranches = loadAdminBranches;
+
+function renderSidebarBranches() {
+  const container = document.getElementById('sb-branches-subnav');
+  if (!container) return;
+
+  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
+
+  const branchItemsHtml = branches.map(b => {
+    const slug = b.key.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const badgeId = (b.key === 'Main Branch') ? 'branch-badge-main' : `branch-badge-${slug}`;
+    const isActive = currentAdminBranch === b.key;
+
+    return `
+      <a href="#" class="sb-subnav-item ${isActive ? 'active' : ''}" data-branch="${escapeHTML(b.key)}" onclick="selectAdminBranch('${escapeHTML(b.key)}', event)">
+        <span class="sb-subnav-bullet"></span>
+        <span class="sb-subnav-text">${escapeHTML(b.name)}</span>
+        <span class="sb-subnav-badge" id="${badgeId}">0</span>
+      </a>
+    `;
+  }).join('');
+
+  const isAllActive = currentAdminBranch === 'all';
+  const allBranchesHtml = `
+    <a href="#" class="sb-subnav-item ${isAllActive ? 'active' : ''}" data-branch="all" onclick="selectAdminBranch('all', event)">
+      <span class="sb-subnav-bullet"></span>
+      <span class="sb-subnav-text">All Branches</span>
+      <span class="sb-subnav-badge" id="branch-badge-all">0</span>
+    </a>
+  `;
+
+  const addBranchBtnHtml = `
+    <a href="#" class="sb-subnav-item sb-subnav-add-branch" onclick="openAddBranchModal(event)" style="color: #0284c7; font-weight: 600; padding-top: 8px; border-top: 1px dashed rgba(2,132,199,0.2); margin-top: 4px;">
+      <span class="sb-subnav-bullet" style="background: #0284c7;"></span>
+      <span class="sb-subnav-text" style="color: #0284c7;"><i class="ti ti-plus" style="font-size: 11px;"></i> Add New Branch</span>
+    </a>
+  `;
+
+  container.innerHTML = branchItemsHtml + allBranchesHtml + addBranchBtnHtml;
+  updateSidebarBranchBadges();
+}
+window.renderSidebarBranches = renderSidebarBranches;
+
+function renderBranchPills() {
+  const container = document.getElementById('branch-analytics-pills');
+  if (!container) return;
+
+  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
+  const isAllActive = currentAdminBranch === 'all';
+
+  let html = `
+    <button type="button" class="branch-pill-btn ${isAllActive ? 'active' : ''}" data-branch="all" onclick="selectAdminAnalyticsBranch('all', event)" title="View consolidated metrics across all clinic locations">
+      <span class="pill-dot"></span>
+      <span>All Branches</span>
+      <span class="branch-pill-badge" id="pill-badge-all">0</span>
+    </button>
+  `;
+
+  branches.forEach(b => {
+    const slug = b.key.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const badgeId = (b.key === 'Main Branch') ? 'pill-badge-main' : `pill-badge-${slug}`;
+    const isActive = currentAdminBranch === b.key;
+
+    html += `
+      <button type="button" class="branch-pill-btn ${isActive ? 'active' : ''}" data-branch="${escapeHTML(b.key)}" onclick="selectAdminAnalyticsBranch('${escapeHTML(b.key)}', event)" title="Filter analytics to ${escapeHTML(b.name)}">
+        <span class="pill-dot"></span>
+        <span>${escapeHTML(b.name)}</span>
+        <span class="branch-pill-badge" id="${badgeId}">0</span>
+      </button>
+    `;
+  });
+
+  html += `
+    <button type="button" class="branch-pill-btn" onclick="openAddBranchModal(event)" style="border: 1px dashed #0284c7; background: #f0f9ff; color: #0284c7;" title="Register a new clinic branch">
+      <i class="ti ti-plus" style="font-size: 12px; margin-right: 4px;"></i>
+      <span>Add Branch</span>
+    </button>
+  `;
+
+  container.innerHTML = html;
+  updateSidebarBranchBadges();
+}
+window.renderBranchPills = renderBranchPills;
+
+function populateBranchDropdowns() {
+  const editLocationSelect = document.getElementById('edit-appt-location');
+  if (editLocationSelect) {
+    const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
+    const currentVal = editLocationSelect.value;
+    editLocationSelect.innerHTML = branches.map(b => `<option value="${escapeHTML(b.name)}">${escapeHTML(b.name)}</option>`).join('');
+    if (currentVal && branches.some(b => b.name === currentVal)) {
+      editLocationSelect.value = currentVal;
+    }
+  }
+}
+window.populateBranchDropdowns = populateBranchDropdowns;
+
 function updateSidebarBranchBadges() {
-  const badgeAll = document.getElementById('branch-badge-all');
-  const badgeMain = document.getElementById('branch-badge-main');
-  const badgeMainSidebar = document.getElementById('main-clinic-sidebar-badge');
-  const badgeMing = document.getElementById('branch-badge-minglanilla');
-  const badgeTalisay = document.getElementById('branch-badge-talisay');
-
-  const pillAll = document.getElementById('pill-badge-all');
-  const pillMain = document.getElementById('pill-badge-main');
-  const pillMing = document.getElementById('pill-badge-minglanilla');
-  const pillTalisay = document.getElementById('pill-badge-talisay');
-
   const appts = allAppointments || [];
-  const mainCount = appts.filter(a => doesAppointmentMatchBranch(a, 'Main Branch')).length;
-  const mingCount = appts.filter(a => doesAppointmentMatchBranch(a, 'Minglanilla')).length;
-  const talisayCount = appts.filter(a => doesAppointmentMatchBranch(a, 'Talisay')).length;
-
+  const badgeAll = document.getElementById('branch-badge-all');
+  const pillAll = document.getElementById('pill-badge-all');
   if (badgeAll) badgeAll.textContent = appts.length;
-  if (badgeMain) badgeMain.textContent = mainCount;
-  if (badgeMainSidebar) badgeMainSidebar.textContent = mainCount;
-  if (badgeMing) badgeMing.textContent = mingCount;
-  if (badgeTalisay) badgeTalisay.textContent = talisayCount;
-
   if (pillAll) pillAll.textContent = appts.length;
-  if (pillMain) pillMain.textContent = mainCount;
-  if (pillMing) pillMing.textContent = mingCount;
-  if (pillTalisay) pillTalisay.textContent = talisayCount;
+
+  const mainCount = appts.filter(a => doesAppointmentMatchBranch(a, 'Main Branch')).length;
+  const badgeMainSidebar = document.getElementById('main-clinic-sidebar-badge');
+  if (badgeMainSidebar) badgeMainSidebar.textContent = mainCount;
+
+  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
+
+  branches.forEach(b => {
+    const slug = b.key.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const count = appts.filter(a => doesAppointmentMatchBranch(a, b.key)).length;
+
+    const badgeEl = (b.key === 'Main Branch') 
+      ? (document.getElementById('branch-badge-main') || document.getElementById(`branch-badge-${slug}`))
+      : document.getElementById(`branch-badge-${slug}`);
+    if (badgeEl) badgeEl.textContent = count;
+
+    const pillEl = (b.key === 'Main Branch')
+      ? (document.getElementById('pill-badge-main') || document.getElementById(`pill-badge-${slug}`))
+      : document.getElementById(`pill-badge-${slug}`);
+    if (pillEl) pillEl.textContent = count;
+  });
 }
 window.updateSidebarBranchBadges = updateSidebarBranchBadges;
 
@@ -618,19 +785,12 @@ function renderDashboardAnalytics(branchId = currentAdminBranch) {
   const bannerName = document.getElementById('analytics-branch-banner-name');
   const bannerStat = document.getElementById('analytics-branch-banner-stat');
 
-  const branchDisplayNames = {
-    'all': 'All Branches (Consolidated)',
-    'Main Branch': 'Main Branch (Naga)',
-    'Minglanilla': 'Minglanilla Branch',
-    'Talisay': 'Talisay Branch'
-  };
-
   if (banner && bannerName && bannerStat) {
     if (branch === 'all') {
       banner.style.display = 'none';
     } else {
       banner.style.display = 'flex';
-      bannerName.textContent = branchDisplayNames[branch] || branch;
+      bannerName.textContent = getBranchDisplayName(branch);
       bannerStat.textContent = `${branchAppointments.length} appointments • ${branchInvoices.length} invoices recorded`;
     }
   }
@@ -695,7 +855,7 @@ function renderDashboardAnalytics(branchId = currentAdminBranch) {
       timeline.innerHTML = `
         <div style="text-align: center; padding: 32px 12px; color: #888;">
           <span style="font-size: 2rem;">🗓️</span>
-          <p style="margin-top: 8px; font-size: 0.9rem;">No appointments scheduled for ${escapeHTML(branchDisplayNames[branch] || branch)} today.</p>
+          <p style="margin-top: 8px; font-size: 0.9rem;">No appointments scheduled for ${escapeHTML(getBranchDisplayName(branch))} today.</p>
         </div>
       `;
     }
@@ -716,11 +876,7 @@ function renderBranchComparisonMatrix(branchAnalytics) {
   const invs = allInvoices || [];
   const totalRev = invs.reduce((sum, i) => sum + parseFloat(i.amount || i.total_amount || 0), 0) || 1;
 
-  const branches = [
-    { key: 'Main Branch', cardClass: 'card-main', defaultName: 'Main Branch (Naga)', defaultLoc: 'Balirong Highway, City of Naga' },
-    { key: 'Minglanilla', cardClass: 'card-minglanilla', defaultName: 'Minglanilla Branch', defaultLoc: 'Poblacion Ward II, Minglanilla' },
-    { key: 'Talisay', cardClass: 'card-talisay', defaultName: 'Talisay Branch', defaultLoc: 'Tabunok / Bulacao, Talisay City' }
-  ];
+  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
 
   container.innerHTML = branches.map(b => {
     const bAppts = appts.filter(a => doesAppointmentMatchBranch(a, b.key));
@@ -735,15 +891,29 @@ function renderBranchComparisonMatrix(branchAnalytics) {
 
     const isSelected = currentAdminBranch === b.key;
 
+    let cardClass = 'card-custom';
+    if (b.key === 'Main Branch') cardClass = 'card-main';
+    else if (b.key === 'Minglanilla') cardClass = 'card-minglanilla';
+    else if (b.key === 'Talisay') cardClass = 'card-talisay';
+
+    const canDelete = !b.isMain && b.key !== 'Main Branch';
+
     return `
-      <div class="branch-matrix-card ${b.cardClass} ${isSelected ? 'active-selected' : ''}" data-branch="${b.key}">
+      <div class="branch-matrix-card ${cardClass} ${isSelected ? 'active-selected' : ''}" data-branch="${escapeHTML(b.key)}">
         <div>
           <div class="bmc-top">
-            <div>
-              <div class="bmc-name">${escapeHTML(b.defaultName)}</div>
-              <div class="bmc-loc"><i class="ti ti-map-pin" style="font-size:12px;"></i> ${escapeHTML(b.defaultLoc)}</div>
+            <div style="flex: 1; min-width: 0;">
+              <div class="bmc-name" title="${escapeHTML(b.name)}">${escapeHTML(b.name)}</div>
+              <div class="bmc-loc" title="${escapeHTML(b.location)}"><i class="ti ti-map-pin" style="font-size:12px;"></i> ${escapeHTML(b.location)}</div>
             </div>
-            <span class="bmc-badge bmc-badge-live"><i class="ti ti-activity" style="font-size:10px;"></i> Active</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="bmc-badge bmc-badge-live"><i class="ti ti-activity" style="font-size:10px;"></i> Active</span>
+              ${canDelete ? `
+                <button type="button" class="bmc-delete-btn" title="Delete ${escapeHTML(b.name)}" onclick="deleteCustomBranch('${escapeHTML(b.id || b.key)}', '${escapeHTML(b.name)}', event)" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; cursor: pointer; padding: 4px 6px; font-size: 13px; border-radius: 6px; transition: 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+                  <i class="ti ti-trash"></i>
+                </button>
+              ` : ''}
+            </div>
           </div>
 
           <div class="bmc-metrics">
@@ -776,13 +946,123 @@ function renderBranchComparisonMatrix(branchAnalytics) {
           </div>
         </div>
 
-        <button type="button" class="bmc-action-btn" onclick="selectAdminAnalyticsBranch('${b.key}', event)">
+        <button type="button" class="bmc-action-btn" onclick="selectAdminAnalyticsBranch('${escapeHTML(b.key)}', event)">
           <i class="ti ti-chart-bar"></i> ${isSelected ? 'Currently Scoped' : 'Inspect Branch Analytics'}
         </button>
       </div>
     `;
   }).join('');
 }
+
+window.openAddBranchModal = function(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  const modal = document.getElementById('modal-add-branch');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.getElementById('modal-branch-name')?.focus();
+  }
+};
+
+window.closeAddBranchModal = function() {
+  const modal = document.getElementById('modal-add-branch');
+  if (modal) {
+    modal.style.display = 'none';
+    const form = document.getElementById('modal-add-branch-form');
+    if (form) form.reset();
+  }
+};
+
+window.submitAddBranch = async function(e) {
+  if (e) e.preventDefault();
+  const nameInput = document.getElementById('modal-branch-name');
+  const locInput = document.getElementById('modal-branch-location');
+  const phoneInput = document.getElementById('modal-branch-contact');
+  const hoursInput = document.getElementById('modal-branch-hours');
+  const latInput = document.getElementById('modal-branch-lat');
+  const lngInput = document.getElementById('modal-branch-lng');
+
+  const name = nameInput?.value.trim();
+  const location = locInput?.value.trim();
+  const contactNumber = phoneInput?.value.trim() || '';
+  const operatingHours = hoursInput?.value.trim() || 'Mon–Sat 8:00 AM – 5:00 PM';
+  const lat = parseFloat(latInput?.value) || 10.2098;
+  const lng = parseFloat(lngInput?.value) || 123.7580;
+
+  if (!name || !location) {
+    showToast('Branch name and location are required.', 'error');
+    return;
+  }
+
+  const submitBtn = document.getElementById('btn-submit-add-branch');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="ti ti-loader"></i> Saving...';
+  }
+
+  try {
+    const res = await fetch(`${ADMIN_API}/branches`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ name, location, contactNumber, operatingHours, lat, lng })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      showToast(data.message || 'Failed to add branch.', 'error');
+      return;
+    }
+
+    showToast(`Branch "${data.name}" added successfully!`, 'success');
+    closeAddBranchModal();
+    await loadAdminBranches();
+    loadStats();
+    selectAdminBranch(data.key);
+  } catch (err) {
+    showToast('Network error while creating branch.', 'error');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="ti ti-plus"></i> Save Branch';
+    }
+  }
+};
+
+window.deleteCustomBranch = async function(id, name, e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  const confirmed = window.confirm(`Are you sure you want to delete branch "${name}"? This action cannot be undone.`);
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`${ADMIN_API}/branches/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showToast(data.message || 'Failed to delete branch.', 'error');
+      return;
+    }
+
+    showToast(data.message || `Branch "${name}" deleted.`, 'success');
+    if (currentAdminBranch === id || currentAdminBranch === name || currentAdminBranch.toLowerCase() === name.toLowerCase()) {
+      currentAdminBranch = 'all';
+    }
+    await loadAdminBranches();
+    loadStats();
+  } catch (err) {
+    showToast('Network error while deleting branch.', 'error');
+  }
+};
 
 // ─── 1. Load Home Overview Stats ──────────────────────────────────────────────
 let currentRevenuePeriod = '12months';
@@ -808,6 +1088,13 @@ function loadStats() {
       allAppointments = data.allAppointments;
     }
     cachedBranchAnalytics = data.branchAnalytics || null;
+
+    if (Array.isArray(data.branches) && data.branches.length > 0) {
+      adminClinicBranches = data.branches;
+      renderSidebarBranches();
+      renderBranchPills();
+      populateBranchDropdowns();
+    }
 
     updateSidebarBranchBadges();
     loadAdminNotifications();
@@ -3678,19 +3965,13 @@ function updateAdminMapMarkers() {
   adminBranchMarkers.forEach(m => adminMap.removeLayer(m));
   adminBranchMarkers = [];
 
-  const defaultDetailed = [
-    { name: 'Fano Dental Clinic — Main Branch', address: 'Balirong Highway, City of Naga, Cebu', lat: 10.2098, lng: 123.7580 },
-    { name: 'Fano Dental Clinic — Minglanilla Branch', address: 'Poblacion Ward II, Minglanilla, Cebu', lat: 10.2450, lng: 123.7960 },
-    { name: 'Fano Dental Clinic — Talisay Branch', address: 'Tabunok, Talisay City, Cebu', lat: 10.2600, lng: 123.8340 }
-  ];
-
-  const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || defaultDetailed;
+  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
 
   const bounds = [];
-  detailedBranches.forEach(b => {
+  branches.forEach(b => {
     if (b.lat && b.lng) {
       const marker = L.marker([b.lat, b.lng]).addTo(adminMap);
-      marker.bindPopup(`<b>${escapeHTML(b.name)}</b><br>${escapeHTML(b.address || 'Clinic Branch')}`);
+      marker.bindPopup(`<b>${escapeHTML(b.name)}</b><br>${escapeHTML(b.location || 'Clinic Branch')}`);
       adminBranchMarkers.push(marker);
       bounds.push([b.lat, b.lng]);
     }
@@ -3705,45 +3986,43 @@ window.renderBranchesList = function() {
   const listContainer = document.getElementById('settings-branches-list');
   if (!listContainer) return;
 
-  const defaultDetailed = [
-    { name: 'Fano Dental Clinic — Main Branch', address: 'Balirong Highway, City of Naga, Cebu', lat: 10.2098, lng: 123.7580 },
-    { name: 'Fano Dental Clinic — Minglanilla Branch', address: 'Poblacion Ward II, Minglanilla, Cebu', lat: 10.2450, lng: 123.7960 },
-    { name: 'Fano Dental Clinic — Talisay Branch', address: 'Tabunok, Talisay City, Cebu', lat: 10.2600, lng: 123.8340 }
-  ];
+  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
 
-  const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || defaultDetailed;
-  localStorage.setItem('set-clinic-branches-detailed', JSON.stringify(detailedBranches));
-
-  // Maintain string list for legacy selects
-  const branchNames = detailedBranches.map(b => typeof b === 'string' ? b : b.name);
-  localStorage.setItem('set-clinic-branches', JSON.stringify(branchNames));
-
-  if (detailedBranches.length === 0) {
+  if (branches.length === 0) {
     listContainer.innerHTML = '<span style="font-size:0.85rem; color:#888; font-style:italic;">No branches configured.</span>';
   } else {
-    listContainer.innerHTML = detailedBranches.map((b, idx) => {
-      const name = typeof b === 'string' ? b : b.name;
-      const addr = typeof b === 'object' && b.address ? b.address : '';
-      const lat = typeof b === 'object' && b.lat ? b.lat : '';
-      const lng = typeof b === 'object' && b.lng ? b.lng : '';
+    listContainer.innerHTML = branches.map((b, idx) => {
+      const name = b.name;
+      const addr = b.location || '';
+      const phone = b.contactNumber || '';
+      const hours = b.operatingHours || '';
+      const lat = b.lat || '';
+      const lng = b.lng || '';
+      const canDelete = !b.isMain && b.key !== 'Main Branch';
 
       return `
         <div style="display:flex; justify-content:space-between; align-items:center; background:#f9f9f9; border:1px solid #eee; border-radius:10px; padding:10px 14px; font-size:0.85rem; color:var(--dark-color);">
           <div>
-            <div style="font-weight:700; color:var(--secondary-color);">${escapeHTML(name)}</div>
-            ${addr ? `<div style="font-size:0.78rem; color:#666;">📍 ${escapeHTML(addr)}</div>` : ''}
-            ${lat && lng ? `<div style="font-size:0.74rem; color:#888;">Coordinates: ${lat}, ${lng}</div>` : ''}
+            <div style="font-weight:700; color:var(--secondary-color); display:flex; align-items:center; gap:8px;">
+              <span>${escapeHTML(name)}</span>
+              ${b.isMain ? '<span style="font-size:0.7rem; font-weight:700; background:#e0f2fe; color:#0284c7; padding:2px 8px; border-radius:12px;">Headquarters</span>' : ''}
+            </div>
+            ${addr ? `<div style="font-size:0.78rem; color:#666; margin-top:2px;">📍 ${escapeHTML(addr)}</div>` : ''}
+            <div style="display:flex; gap:12px; margin-top:3px; font-size:0.74rem; color:#888;">
+              ${phone ? `<span>📞 ${escapeHTML(phone)}</span>` : ''}
+              ${hours ? `<span>🕒 ${escapeHTML(hours)}</span>` : ''}
+              ${lat && lng ? `<span>🌐 (${lat}, ${lng})</span>` : ''}
+            </div>
           </div>
-          <button class="btn-danger-action" style="padding:4px 10px; font-size:0.75rem; border-radius:6px; width:auto; height:auto;" onclick="deleteBranch(${idx})">Delete</button>
+          ${canDelete ? `
+            <button type="button" class="btn-danger-action" style="padding:4px 10px; font-size:0.75rem; border-radius:6px; width:auto; height:auto; cursor:pointer;" onclick="deleteCustomBranch('${escapeHTML(b.id || b.key)}', '${escapeHTML(name)}', event)">Delete</button>
+          ` : '<span style="font-size:0.74rem; color:#94a3b8; font-weight:600;">Default</span>'}
         </div>
       `;
     }).join('');
   }
 
-  const editSelect = document.getElementById('edit-appt-location');
-  if (editSelect) {
-    editSelect.innerHTML = branchNames.map(b => `<option value="${escapeHTML(b)}">${escapeHTML(b)}</option>`).join('');
-  }
+  populateBranchDropdowns();
 
   // Initialize/refresh map
   setTimeout(() => {
@@ -3752,20 +4031,16 @@ window.renderBranchesList = function() {
 };
 
 window.deleteBranch = function(idx) {
-  const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || [];
-  detailedBranches.splice(idx, 1);
-  localStorage.setItem('set-clinic-branches-detailed', JSON.stringify(detailedBranches));
-
-  const branchNames = detailedBranches.map(b => typeof b === 'string' ? b : b.name);
-  localStorage.setItem('set-clinic-branches', JSON.stringify(branchNames));
-
-  renderBranchesList();
-  showToast('Branch removed successfully', 'success');
+  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
+  const target = branches[idx];
+  if (target) {
+    deleteCustomBranch(target.id || target.key, target.name);
+  }
 };
 
 const addBranchForm = document.getElementById('add-branch-form');
 if (addBranchForm) {
-  addBranchForm.addEventListener('submit', (e) => {
+  addBranchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const nameInput = document.getElementById('branch-input-name');
     const addrInput = document.getElementById('branch-input-address');
@@ -3773,7 +4048,7 @@ if (addBranchForm) {
     const lngInput = document.getElementById('branch-input-lng');
 
     const name = nameInput?.value.trim();
-    const address = addrInput?.value.trim() || '';
+    const location = addrInput?.value.trim() || '';
     const lat = parseFloat(latInput?.value) || 10.2098;
     const lng = parseFloat(lngInput?.value) || 123.7580;
 
@@ -3782,30 +4057,37 @@ if (addBranchForm) {
       return;
     }
 
-    const detailedBranches = JSON.parse(localStorage.getItem('set-clinic-branches-detailed')) || [];
-    if (detailedBranches.some(b => (typeof b === 'string' ? b : b.name).toLowerCase() === name.toLowerCase())) {
-      showToast('A branch with this name already exists', 'error');
-      return;
+    try {
+      const res = await fetch(`${ADMIN_API}/branches`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ name, location, lat, lng })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.message || 'Failed to add branch', 'error');
+        return;
+      }
+
+      showToast(`Branch "${data.name}" added successfully!`, 'success');
+      nameInput.value = '';
+      if (addrInput) addrInput.value = '';
+      if (latInput) latInput.value = '';
+      if (lngInput) lngInput.value = '';
+
+      if (adminNewMarker && adminMap) {
+        adminMap.removeLayer(adminNewMarker);
+        adminNewMarker = null;
+      }
+
+      await loadAdminBranches();
+      loadStats();
+    } catch (err) {
+      showToast('Failed to create branch.', 'error');
     }
-
-    detailedBranches.push({ name, address, lat, lng });
-    localStorage.setItem('set-clinic-branches-detailed', JSON.stringify(detailedBranches));
-
-    const branchNames = detailedBranches.map(b => b.name);
-    localStorage.setItem('set-clinic-branches', JSON.stringify(branchNames));
-
-    nameInput.value = '';
-    if (addrInput) addrInput.value = '';
-    if (latInput) latInput.value = '';
-    if (lngInput) lngInput.value = '';
-
-    if (adminNewMarker && adminMap) {
-      adminMap.removeLayer(adminNewMarker);
-      adminNewMarker = null;
-    }
-
-    renderBranchesList();
-    showToast('New clinic branch & pin added successfully!', 'success');
   });
 }
 

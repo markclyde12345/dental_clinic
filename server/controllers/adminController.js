@@ -10,6 +10,69 @@ const DATA_DIR = process.env.DATA_DIR || '/tmp/dental_clinic_backups';
 const INVENTORY_FILE = path.join(DATA_DIR, 'inventory.json');
 const STAFF_FILE = path.join(DATA_DIR, 'staff_schedules.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+const BRANCHES_DATA_PATH = path.join(__dirname, '../data/branches.json');
+
+const defaultBranches = [
+  {
+    id: 'branch-main',
+    key: 'Main Branch',
+    name: 'Main Branch (Naga)',
+    location: 'Balirong Highway, City of Naga, Cebu',
+    contactNumber: '0917-123-4567',
+    operatingHours: 'Mon–Sat 8:00 AM – 6:00 PM',
+    lat: 10.2098,
+    lng: 123.7580,
+    isMain: true,
+    createdAt: '2026-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'branch-minglanilla',
+    key: 'Minglanilla',
+    name: 'Minglanilla Branch',
+    location: 'Poblacion Ward II, Minglanilla, Cebu',
+    contactNumber: '0918-234-5678',
+    operatingHours: 'Mon–Sun 8:30 AM – 6:30 PM',
+    lat: 10.2450,
+    lng: 123.7960,
+    isMain: false,
+    createdAt: '2026-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'branch-talisay',
+    key: 'Talisay',
+    name: 'Talisay Branch',
+    location: 'Tabunok / Bulacao, Talisay City, Cebu',
+    contactNumber: '0919-345-6789',
+    operatingHours: 'Mon–Sat 9:00 AM – 5:00 PM',
+    lat: 10.2600,
+    lng: 123.8340,
+    isMain: false,
+    createdAt: '2026-01-01T00:00:00.000Z'
+  }
+];
+
+function getStoredBranches() {
+  try {
+    if (fs.existsSync(BRANCHES_DATA_PATH)) {
+      const content = fs.readFileSync(BRANCHES_DATA_PATH, 'utf8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (err) {
+    console.warn('[Admin] Failed to read branches.json:', err.message);
+  }
+  return [...defaultBranches];
+}
+
+function saveStoredBranches(branches) {
+  try {
+    const dir = path.dirname(BRANCHES_DATA_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(BRANCHES_DATA_PATH, JSON.stringify(branches, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('[Admin] Failed to save branches.json:', err.message);
+  }
+}
 
 // Only enable local file backups when running on your own machine.
 // Vercel's serverless filesystem is temporary and doesn't support this.
@@ -287,57 +350,50 @@ const getDetailedStats = async (req, res) => {
     if (invError) throw invError;
 
     // ─── Multi-Branch Analytics Compilation ─────────────────────────────────
-    const extractBranchKey = (notes) => {
+    const branchesList = getStoredBranches();
+    const branchAnalytics = {};
+
+    branchesList.forEach(b => {
+      branchAnalytics[b.key] = {
+        id: b.id,
+        key: b.key,
+        name: b.name,
+        location: b.location,
+        contactNumber: b.contactNumber || '',
+        operatingHours: b.operatingHours || '',
+        lat: b.lat,
+        lng: b.lng,
+        isMain: !!b.isMain,
+        totalAppointments: 0,
+        completedAppointments: 0,
+        pendingAppointments: 0,
+        cancelledAppointments: 0,
+        todayAppointments: 0,
+        totalRevenue: 0,
+        paidRevenue: 0,
+        unpaidRevenue: 0
+      };
+    });
+
+    const extractBranchKey = (notes, branchField) => {
       const n = (notes || '').toLowerCase();
-      if (n.includes('minglanilla')) return 'Minglanilla';
-      if (n.includes('talisay')) return 'Talisay';
+      const bf = (branchField || '').toLowerCase();
+
+      for (const b of branchesList) {
+        const bk = b.key.toLowerCase();
+        const bn = b.name.toLowerCase();
+        if (bf && (bf === bk || bf.includes(bk) || bf === bn || bf.includes(bn))) {
+          return b.key;
+        }
+        if (n && (n.includes(bk) || n.includes(bn))) {
+          return b.key;
+        }
+      }
       return 'Main Branch';
     };
 
-    const branchAnalytics = {
-      'Main Branch': {
-        key: 'Main Branch',
-        name: 'Main Branch (Naga)',
-        location: 'Balirong Highway, City of Naga',
-        totalAppointments: 0,
-        completedAppointments: 0,
-        pendingAppointments: 0,
-        cancelledAppointments: 0,
-        todayAppointments: 0,
-        totalRevenue: 0,
-        paidRevenue: 0,
-        unpaidRevenue: 0
-      },
-      'Minglanilla': {
-        key: 'Minglanilla',
-        name: 'Minglanilla Branch',
-        location: 'Poblacion Ward II, Minglanilla',
-        totalAppointments: 0,
-        completedAppointments: 0,
-        pendingAppointments: 0,
-        cancelledAppointments: 0,
-        todayAppointments: 0,
-        totalRevenue: 0,
-        paidRevenue: 0,
-        unpaidRevenue: 0
-      },
-      'Talisay': {
-        key: 'Talisay',
-        name: 'Talisay Branch',
-        location: 'Tabunok / Bulacao, Talisay City',
-        totalAppointments: 0,
-        completedAppointments: 0,
-        pendingAppointments: 0,
-        cancelledAppointments: 0,
-        todayAppointments: 0,
-        totalRevenue: 0,
-        paidRevenue: 0,
-        unpaidRevenue: 0
-      }
-    };
-
     (appointments || []).forEach(a => {
-      const bKey = extractBranchKey(a.notes);
+      const bKey = extractBranchKey(a.notes, a.branch);
       if (branchAnalytics[bKey]) {
         branchAnalytics[bKey].totalAppointments++;
         const s = (a.status || '').toLowerCase();
@@ -352,7 +408,7 @@ const getDetailedStats = async (req, res) => {
     });
 
     (invoices || []).forEach(inv => {
-      const bKey = extractBranchKey(inv.appointment?.notes || inv.notes);
+      const bKey = extractBranchKey(inv.appointment?.notes || inv.notes, inv.branch || inv.appointment?.branch);
       if (branchAnalytics[bKey]) {
         const amt = parseFloat(inv.amount || inv.total_amount || 0);
         const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
@@ -442,6 +498,7 @@ const getDetailedStats = async (req, res) => {
       },
       alerts,
       branchAnalytics,
+      branches: branchesList,
       invoices: invoices || [],
       allAppointments: appointments || []
     });
@@ -875,6 +932,97 @@ const triggerDatabaseBackup = async (req, res) => {
   }
 };
 
+// @desc    Get all clinic branches
+// @route   GET /api/admin/branches
+// @access  Private (Admin, Receptionist, Dentist, Accounting)
+const getBranches = async (req, res) => {
+  try {
+    const branches = getStoredBranches();
+    res.json(branches);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @desc    Add a new clinic branch
+// @route   POST /api/admin/branches
+// @access  Private (Admin)
+const addBranch = async (req, res) => {
+  try {
+    const { name, location, contactNumber, operatingHours, lat, lng } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: 'Branch name is required.' });
+    }
+
+    const cleanName = name.trim();
+    const cleanLocation = (location || '').trim() || 'Cebu, Philippines';
+    const branches = getStoredBranches();
+
+    // Check duplicate
+    const exists = branches.some(b => 
+      b.name.toLowerCase() === cleanName.toLowerCase() || 
+      b.key.toLowerCase() === cleanName.toLowerCase() ||
+      b.key.toLowerCase() === cleanName.replace(/branch$/i, '').trim().toLowerCase()
+    );
+    if (exists) {
+      return res.status(409).json({ message: `A branch named "${cleanName}" already exists.` });
+    }
+
+    const id = 'branch-' + Date.now();
+    const key = cleanName.replace(/\s*branch$/i, '').trim();
+
+    const newBranch = {
+      id,
+      key,
+      name: cleanName.toLowerCase().includes('branch') ? cleanName : `${cleanName} Branch`,
+      location: cleanLocation,
+      contactNumber: (contactNumber || '').trim(),
+      operatingHours: (operatingHours || 'Mon–Sat 8:00 AM – 5:00 PM').trim(),
+      lat: parseFloat(lat) || 10.2098,
+      lng: parseFloat(lng) || 123.7580,
+      isMain: false,
+      createdAt: new Date().toISOString()
+    };
+
+    branches.push(newBranch);
+    saveStoredBranches(branches);
+
+    recordServerLog('SUCCESS', 'BRANCHES', `New clinic branch added: "${newBranch.name}" (${newBranch.location})`);
+
+    res.status(201).json(newBranch);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @desc    Delete a clinic branch
+// @route   DELETE /api/admin/branches/:id
+// @access  Private (Admin)
+const deleteBranch = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let branches = getStoredBranches();
+    const target = branches.find(b => b.id === id || b.key === id);
+
+    if (!target) {
+      return res.status(404).json({ message: 'Branch not found.' });
+    }
+
+    if (target.isMain || target.key === 'Main Branch') {
+      return res.status(400).json({ message: 'Cannot delete the primary Main Branch.' });
+    }
+
+    branches = branches.filter(b => b.id !== id && b.key !== id);
+    saveStoredBranches(branches);
+
+    recordServerLog('INFO', 'BRANCHES', `Clinic branch deleted: "${target.name}"`);
+
+    res.json({ message: `Branch "${target.name}" has been successfully removed.`, branches });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = { 
   getAdminStats, 
   getAdminAnalytics, 
@@ -893,5 +1041,8 @@ module.exports = {
   clearSystemLogs,
   recordServerLog,
   getDatabaseStatus,
-  triggerDatabaseBackup
+  triggerDatabaseBackup,
+  getBranches,
+  addBranch,
+  deleteBranch
 };

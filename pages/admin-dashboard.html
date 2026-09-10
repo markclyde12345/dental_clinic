@@ -318,8 +318,13 @@
                 <h3><i class="ti ti-layout-grid"></i> Multi-Branch Operations &amp; Performance Matrix</h3>
                 <p>Real-time cross-branch comparison: patient volume, gross revenue, and collection efficiency</p>
               </div>
-              <div style="font-size: 0.78rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px;">
-                <i class="ti ti-check"></i> Multi-Branch Live Sync
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn-primary" onclick="openAddBranchModal()" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; padding: 6px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; background: #0284c7; color: white; transition: 0.2s;">
+                  <i class="ti ti-plus"></i> Add Branch
+                </button>
+                <div style="font-size: 0.78rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px;">
+                  <i class="ti ti-check"></i> Multi-Branch Live Sync
+                </div>
               </div>
             </div>
 
@@ -1969,6 +1974,63 @@
           </button>
         </div>
       </div>
+    </div>
+  <!-- Add Branch Modal -->
+  <div id="modal-add-branch" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="width: 520px; max-width: 95vw;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+            <i class="ti ti-building-hospital"></i>
+          </div>
+          <div>
+            <h4 style="margin: 0; color: var(--secondary-color); font-weight: 700; font-size: 1.15rem;">Add New Clinic Branch</h4>
+            <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #64748b;">Expand multi-branch operations and reporting</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeAddBranchModal()" style="background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; padding: 4px;">&times;</button>
+      </div>
+
+      <form id="modal-add-branch-form" onsubmit="submitAddBranch(event)" style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Branch Name <span style="color: #ef4444;">*</span></label>
+          <input type="text" id="modal-branch-name" placeholder="e.g. Carcar Branch or Mandaue Clinic" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box;">
+        </div>
+
+        <div>
+          <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Physical Address / Location <span style="color: #ef4444;">*</span></label>
+          <input type="text" id="modal-branch-location" placeholder="e.g. Poblacion I, Carcar City, Cebu" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Hotline / Contact Phone</label>
+            <input type="text" id="modal-branch-contact" placeholder="+63 917 555 0199" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Operating Shift Hours</label>
+            <input type="text" id="modal-branch-hours" placeholder="Mon–Sat 8:00 AM – 5:00 PM" value="Mon–Sat 8:00 AM – 5:00 PM" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box;">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Map Latitude (Optional)</label>
+            <input type="number" step="any" id="modal-branch-lat" placeholder="10.2098" value="10.2098" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Map Longitude (Optional)</label>
+            <input type="number" step="any" id="modal-branch-lng" placeholder="123.7580" value="123.7580" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box;">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+          <button type="button" onclick="closeAddBranchModal()" style="padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border-color); background: white; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: #475569;">Cancel</button>
+          <button type="submit" id="btn-submit-add-branch" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 8px; border: none; background: #0284c7; color: white; cursor: pointer; font-size: 0.88rem; font-weight: 600;">
+            <i class="ti ti-plus"></i> Save Branch
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

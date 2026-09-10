@@ -1,7 +1,15 @@
 const supabase = require('../config/db');
 
 // In-memory fallback if Supabase table is not yet migrated
-let fallbackExpenses = [];
+let fallbackExpenses = [
+  { id: 'exp-001', ref_no: 'MERALCO-2026-08', vendor: 'MERALCO', category: 'Utilities', description: 'Monthly electricity bill – August 2026', amount: 18500, due_date: '2026-08-25', paid_date: '2026-08-27', status: 'Paid', payment_method: 'Bank Transfer', reference_no: 'BDO-TXN-2091833' },
+  { id: 'exp-002', ref_no: 'MAYNILAD-2026-08', vendor: 'Maynilad Water Services', category: 'Utilities', description: 'Monthly water bill – August 2026', amount: 3200, due_date: '2026-09-05', paid_date: null, status: 'Unpaid', payment_method: 'Auto-Debit', reference_no: '' },
+  { id: 'exp-003', ref_no: 'BDO-LEASE-2026-08', vendor: 'BDO Unibank (Landlord)', category: 'Rent', description: 'Monthly clinic lease – Ground Floor, Fano Bldg.', amount: 55000, due_date: '2026-09-01', paid_date: null, status: 'Overdue', payment_method: 'Check', reference_no: '' },
+  { id: 'exp-004', ref_no: 'PAYROLL-2026-08', vendor: 'Fano Dental Staff', category: 'Salaries', description: 'Monthly payroll for all clinic staff – August 2026', amount: 132000, due_date: '2026-09-07', paid_date: null, status: 'Unpaid', payment_method: 'Bank Transfer', reference_no: '' },
+  { id: 'exp-005', ref_no: 'PLDT-2026-08', vendor: 'PLDT Fiber', category: 'Utilities', description: 'Internet & business landline – August 2026', amount: 4200, due_date: '2026-08-20', paid_date: '2026-08-20', status: 'Paid', payment_method: 'Auto-Debit', reference_no: 'PLDT-AUT-28821' },
+  { id: 'exp-006', ref_no: 'SUPPLY-2026-07', vendor: 'Dental Supply Corp.', category: 'Supplies', description: 'Monthly dental consumables restock order', amount: 24300, due_date: '2026-08-10', paid_date: '2026-08-12', status: 'Paid', payment_method: 'Check', reference_no: 'CHK-00219' },
+  { id: 'exp-007', ref_no: 'MAINT-2026-08', vendor: 'TechServ Clinic Solutions', category: 'Maintenance', description: 'Dental chair servicing & autoclave calibration', amount: 8750, due_date: '2026-09-12', paid_date: null, status: 'Unpaid', payment_method: 'Cash', reference_no: '' }
+];
 
 // @desc    Get all clinic expenses/bills
 // @route   GET /api/expenses
@@ -14,7 +22,10 @@ const getExpenses = async (req, res) => {
       .order('due_date', { ascending: false });
 
     if (error) throw error;
-    res.json(expenses || []);
+    if (Array.isArray(expenses) && expenses.length > 0) {
+      return res.json(expenses);
+    }
+    res.json(fallbackExpenses || []);
   } catch (error) {
     console.warn('[Expenses Supabase Fallback]', error.message);
     res.json(fallbackExpenses || []);

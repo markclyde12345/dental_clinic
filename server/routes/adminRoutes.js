@@ -17,7 +17,10 @@ const {
   addSystemLog,
   clearSystemLogs,
   getDatabaseStatus,
-  triggerDatabaseBackup
+  triggerDatabaseBackup,
+  getBranches,
+  addBranch,
+  deleteBranch
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -53,5 +56,13 @@ router.route('/staff-schedules')
 router.route('/staff-schedules/:id')
   .put(protect, authorize('Admin'), updateStaffSchedule)
   .delete(protect, authorize('Admin'), deleteStaffSchedule);
+
+// Branch management routes
+router.route('/branches')
+  .get(protect, authorize('Admin', 'Receptionist', 'Dentist', 'Accounting'), getBranches)
+  .post(protect, authorize('Admin'), addBranch);
+
+router.route('/branches/:id')
+  .delete(protect, authorize('Admin'), deleteBranch);
 
 module.exports = router;

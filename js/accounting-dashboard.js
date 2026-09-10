@@ -750,7 +750,7 @@
       const invId = inv.id ? (inv.id.length > 8 ? `#INV-${inv.id.slice(0, 8).toUpperCase()}` : `#INV-${inv.id}`) : '#INV-000';
       const patientName = inv.patient ? (inv.patient.name || 'Patient') : 'Walk-in Patient';
       const amount = parseFloat(inv.amount || inv.total_amount || 0);
-      const methods = ['💵 Cash', '📱 GCash / E-Wallet', '💳 Credit Card', '🏥 HMO Claim'];
+      const methods = ['Cash', 'GCash / E-Wallet', 'Credit Card', 'HMO Claim'];
       const method = inv.payment_method || methods[idx % methods.length];
 
       return `
@@ -1331,7 +1331,20 @@
   const EXPENSE_STORAGE_KEY = 'fano_clinic_expenses';
 
   function getDefaultExpenses() {
-    return [];
+    const today = new Date();
+    const fmt = (d) => d.toISOString().slice(0, 10);
+    const past = (n) => { const d = new Date(today); d.setDate(d.getDate() - n); return fmt(d); };
+    const future = (n) => { const d = new Date(today); d.setDate(d.getDate() + n); return fmt(d); };
+
+    return [
+      { id: 'exp-001', ref: 'MERALCO-2026-08', vendor: 'MERALCO', category: 'Utilities', desc: 'Monthly electricity bill – August 2026', amount: 18500, dueDate: past(5), paidDate: past(3), status: 'Paid', payMethod: 'Bank Transfer', payRef: 'BDO-TXN-2091833' },
+      { id: 'exp-002', ref: 'MAYNILAD-2026-08', vendor: 'Maynilad Water Services', category: 'Utilities', desc: 'Monthly water bill – August 2026', amount: 3200, dueDate: future(5), paidDate: null, status: 'Unpaid', payMethod: 'Auto-Debit', payRef: '' },
+      { id: 'exp-003', ref: 'BDO-LEASE-2026-08', vendor: 'BDO Unibank (Landlord)', category: 'Rent', desc: 'Monthly clinic lease – Ground Floor, Fano Bldg.', amount: 55000, dueDate: past(1), paidDate: null, status: 'Overdue', payMethod: 'Check', payRef: '' },
+      { id: 'exp-004', ref: 'PAYROLL-2026-08', vendor: 'Fano Dental Staff', category: 'Salaries', desc: 'Monthly payroll for all clinic staff – August 2026', amount: 132000, dueDate: future(3), paidDate: null, status: 'Unpaid', payMethod: 'Bank Transfer', payRef: '' },
+      { id: 'exp-005', ref: 'PLDT-2026-08', vendor: 'PLDT Fiber', category: 'Utilities', desc: 'Internet & business landline – August 2026', amount: 4200, dueDate: past(10), paidDate: past(10), status: 'Paid', payMethod: 'Auto-Debit', payRef: 'PLDT-AUT-28821' },
+      { id: 'exp-006', ref: 'SUPPLY-2026-07', vendor: 'Dental Supply Corp.', category: 'Supplies', desc: 'Monthly dental consumables restock order', amount: 24300, dueDate: past(20), paidDate: past(18), status: 'Paid', payMethod: 'Check', payRef: 'CHK-00219' },
+      { id: 'exp-007', ref: 'MAINT-2026-08', vendor: 'TechServ Clinic Solutions', category: 'Maintenance', desc: 'Dental chair servicing & autoclave calibration', amount: 8750, dueDate: future(10), paidDate: null, status: 'Unpaid', payMethod: 'Cash', payRef: '' },
+    ];
   }
 
   async function loadExpenses() {
@@ -1341,7 +1354,7 @@
       });
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           allExpenses = data.map(d => ({
             id: d.id,
             ref: d.ref_no || d.ref,
@@ -1367,12 +1380,12 @@
     try {
       const raw = localStorage.getItem(EXPENSE_STORAGE_KEY);
       let parsed = raw ? JSON.parse(raw) : [];
-      if (!Array.isArray(parsed)) parsed = [];
-      // Clean up legacy mock seeded expenses (exp-001 to exp-007)
-      parsed = parsed.filter(e => !['exp-001', 'exp-002', 'exp-003', 'exp-004', 'exp-005', 'exp-006', 'exp-007'].includes(e.id));
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        parsed = getDefaultExpenses();
+      }
       allExpenses = parsed;
     } catch {
-      allExpenses = [];
+      allExpenses = getDefaultExpenses();
     }
     saveExpenses();
     renderExpensesTab();
