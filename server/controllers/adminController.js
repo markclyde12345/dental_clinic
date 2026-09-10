@@ -349,6 +349,20 @@ const getDetailedStats = async (req, res) => {
 
     if (invError) throw invError;
 
+    // 3. Fetch inventory
+    let inventory = [];
+    try {
+      const { data: invData } = await supabase.from('inventory').select('*').order('created_at', { ascending: true });
+      if (Array.isArray(invData)) inventory = invData;
+    } catch (_) {}
+
+    // 4. Fetch expenses
+    let expenses = [];
+    try {
+      const { data: expData } = await supabase.from('expenses').select('*').order('due_date', { ascending: false });
+      if (Array.isArray(expData)) expenses = expData;
+    } catch (_) {}
+
     // ─── Multi-Branch Analytics Compilation ─────────────────────────────────
     const branchesList = getStoredBranches();
     const branchAnalytics = {};
@@ -500,7 +514,9 @@ const getDetailedStats = async (req, res) => {
       branchAnalytics,
       branches: branchesList,
       invoices: invoices || [],
-      allAppointments: appointments || []
+      allAppointments: appointments || [],
+      inventory: inventory || [],
+      expenses: expenses || []
     });
   } catch (error) {
     console.error('[Admin Detailed Stats Error]', error.message);

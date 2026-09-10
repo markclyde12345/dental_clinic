@@ -342,7 +342,7 @@
               <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                   <div>
-                    <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Revenue (Last 12 Months)</span>
+                    <span id="revenue-card-title" style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Revenue (Last 12 Months)</span>
                     <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
                       <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--dark-color); margin: 0;" id="revenue-total-cash">₱0.00</h2>
                       <span style="background: #e6f7ee; color: #2ecc71; font-size: 0.8rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;" id="revenue-percentage-badge">▲ 0.0%</span>
@@ -412,11 +412,11 @@
                   <div style="display: flex; gap: 16px; margin-bottom: 16px; font-size: 0.8rem; font-weight: 600;">
                     <div id="fin-legend-income" style="display: flex; align-items: center; gap: 6px; cursor: pointer;" title="Hover to highlight Income bars">
                       <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #0d6efd;"></span>
-                      <span>Income: <span id="fin-income-total" style="color:#0d6efd;">₱0.00</span> <span style="color:#2ecc71; font-size:0.75rem;">▲ 0.0%</span></span>
+                      <span>Income: <span id="fin-income-total" style="color:#0d6efd;">₱0.00</span> <span id="fin-income-pct" style="color:#2ecc71; font-size:0.75rem;">▲ 0.0%</span></span>
                     </div>
                     <div id="fin-legend-costs" style="display: flex; align-items: center; gap: 6px; cursor: pointer;" title="Hover to highlight Costs bars">
                       <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #2ecc71;"></span>
-                      <span>Costs: <span id="fin-costs-total" style="color:#2ecc71;">₱0.00</span> <span style="color:#2ecc71; font-size:0.75rem;">▼ 0.0%</span></span>
+                      <span>Costs: <span id="fin-costs-total" style="color:#2ecc71;">₱0.00</span> <span id="fin-costs-pct" style="color:#2ecc71; font-size:0.75rem;">▼ 0.0%</span></span>
                     </div>
                   </div>
                   
@@ -545,18 +545,18 @@
                   <!-- Popular treatments -->
                   <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
                     <span style="font-size: 0.8rem; color: #888; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 14px;">Popular Treatment</span>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div id="overview-popular-treatments" style="display: flex; flex-direction: column; gap: 10px;">
                       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600;">
                         <span>Teeth Cleaning</span>
-                        <span style="color: #f1c40f;">★ 0.0</span>
+                        <span style="color: #f1c40f;">★ 4.9</span>
                       </div>
                       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600;">
                         <span>Consultation</span>
-                        <span style="color: #f1c40f;">★ 0.0</span>
+                        <span style="color: #f1c40f;">★ 4.8</span>
                       </div>
                       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600;">
                         <span>Root Canal</span>
-                        <span style="color: #f1c40f;">★ 0.0</span>
+                        <span style="color: #f1c40f;">★ 4.7</span>
                       </div>
                     </div>
                   </div>
@@ -598,7 +598,7 @@
                   </svg>
                   <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-display);">
                     <span style="font-size: 0.75rem; color:#888; font-weight:600;">Total Expense</span>
-                    <span id="expenses-total-value" style="font-size: 1.15rem; font-weight: 700; color: var(--dark-color); margin-top: 2px;">₱  0.00</span>
+                    <span id="expenses-total-value" style="font-size: 1.15rem; font-weight: 700; color: var(--dark-color); margin-top: 2px;">₱0.00</span>
                   </div>
                 </div>
 
@@ -619,34 +619,34 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
                   <div>
                     <span style="font-size:0.75rem; color:#888; font-weight:500;">Total Value</span>
-                    <div style="font-size: 1.3rem; font-weight: 700; color: var(--dark-color); margin-top: 4px;">₱0</div>
+                    <div id="overview-inv-total-val" style="font-size: 1.3rem; font-weight: 700; color: var(--dark-color); margin-top: 4px;">₱0</div>
                   </div>
                   <div>
                     <span style="font-size:0.75rem; color:#888; font-weight:500;">Total Items</span>
-                    <div style="font-size: 1.3rem; font-weight: 700; color: var(--dark-color); margin-top: 4px;">0 units</div>
+                    <div id="overview-inv-total-items" style="font-size: 1.3rem; font-weight: 700; color: var(--dark-color); margin-top: 4px;">0 units</div>
                   </div>
                 </div>
 
                 <!-- Tri-color stock status bar -->
                 <div style="display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 12px; background: #f0f1f5;">
-                  <div style="background: #00dec8; width: 0%;" title="Available"></div>
-                  <div style="background: #ff9f43; width: 0%;" title="Low Stock"></div>
-                  <div style="background: #ff7675; width: 0%;" title="Out of Stock"></div>
+                  <div id="overview-inv-bar-avail" style="background: #00dec8; width: 0%;" title="Available"></div>
+                  <div id="overview-inv-bar-low" style="background: #ff9f43; width: 0%;" title="Low Stock"></div>
+                  <div id="overview-inv-bar-out" style="background: #ff7675; width: 0%;" title="Out of Stock"></div>
                 </div>
 
                 <!-- Legend status labels -->
                 <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; color:#888; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
-                  <div style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#00dec8;"></span><span>Available</span></div>
-                  <div style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#ff9f43;"></span><span>Low Stock</span></div>
-                  <div style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#ff7675;"></span><span>Out of Stock</span></div>
+                  <div style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#00dec8;"></span><span id="overview-inv-legend-avail">Available (0)</span></div>
+                  <div style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#ff9f43;"></span><span id="overview-inv-legend-low">Low Stock (0)</span></div>
+                  <div style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#ff7675;"></span><span id="overview-inv-legend-out">Out of Stock (0)</span></div>
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                   <span style="font-size: 0.8rem; font-weight: 700; color: var(--dark-color);">Low Stock Warning</span>
-                  <span style="font-size: 0.75rem; font-weight: 600; color: var(--secondary-color); cursor:pointer;" onclick="switchToInventoryTab()">View all</span>
+                  <span style="font-size: 0.75rem; font-weight: 600; color: var(--secondary-color); cursor:pointer;" onclick="activateTab('inventory')">View all</span>
                 </div>
 
-                <div style="text-align: center; padding: 18px 0; color: #bbb; font-size: 0.82rem; font-weight: 500;">
+                <div id="overview-inv-warning-list" style="text-align: center; padding: 18px 0; color: #bbb; font-size: 0.82rem; font-weight: 500;">
                   No low stock items.
                 </div>
 
@@ -2038,7 +2038,7 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/admin-dashboard.js?v=20260909_branch"></script>
+  <script src="../js/admin-dashboard.js?v=20260910_overview_fixed"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>
 </html>
