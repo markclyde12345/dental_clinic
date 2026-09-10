@@ -1307,6 +1307,27 @@ async function loadStats() {
   });
 }
 
+// Live Real-Time Dashboard Synchronization (every 25 seconds & on window focus)
+if (!window._adminDashboardSyncInterval) {
+  window._adminDashboardSyncInterval = setInterval(() => {
+    if (!document.hidden) {
+      const overviewTab = document.getElementById('tab-overview');
+      if (overviewTab && overviewTab.classList.contains('active')) {
+        loadStats();
+      }
+    }
+  }, 25000);
+}
+
+window.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const overviewTab = document.getElementById('tab-overview');
+    if (overviewTab && overviewTab.classList.contains('active')) {
+      loadStats();
+    }
+  }
+});
+
 function renderRevenueChart(invoices, period) {
   const svg = document.getElementById('revenue-svg');
   if (!svg) return;
