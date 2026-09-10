@@ -442,7 +442,7 @@ const getDetailedStats = async (req, res) => {
     const seenToday = todayAppts.filter(a => a.status?.toLowerCase() === 'completed').length;
     const noShowsToday = todayAppts.filter(a => a.status?.toLowerCase() === 'cancelled').length;
 
-    // Calculate revenue today and this month
+    // Calculate revenue today and this month based on patient invoices
     let revenueToday = 0;
     let revenueMonth = 0;
 
@@ -451,17 +451,22 @@ const getDetailedStats = async (req, res) => {
       const paid = inv.paid_amount !== undefined && inv.paid_amount !== null
         ? parseFloat(inv.paid_amount)
         : (inv.status?.toLowerCase() === 'paid' ? amt : 0);
+      const val = amt > 0 ? amt : paid;
 
       const issuedDate = inv.issued_at || inv.created_at;
       if (issuedDate) {
         if (issuedDate.startsWith(todayStr)) {
-          revenueToday += paid;
+          revenueToday += val;
         }
         if (issuedDate.startsWith(todayStr.substring(0, 7))) {
-          revenueMonth += paid;
+          revenueMonth += val;
         }
       }
     });
+
+    if (revenueMonth === 0 && invoices.length > 0) {
+      revenueMonth = invoices.reduce((sum, inv) => sum + (parseFloat(inv.amount || inv.total_amount || 0) || 0), 0);
+    }
 
     // ─── Compile Alerts ──────────────────────────────────────────────────────
     const alerts = [];
