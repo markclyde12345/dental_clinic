@@ -247,6 +247,7 @@ const authUser = async (req, res) => {
       if (lockRecord.lockedUntil > Date.now()) {
         const minutesRemaining = Math.max(1, Math.ceil((lockRecord.lockedUntil - Date.now()) / (60 * 1000)));
         return res.status(429).json({
+          field: 'password',
           message: `Account is temporarily locked due to 5 consecutive failed login attempts. Please try again in ${minutesRemaining} minute${minutesRemaining > 1 ? 's' : ''}.`,
           isLocked: true,
           lockedUntil: new Date(lockRecord.lockedUntil).toISOString()
@@ -260,10 +261,27 @@ const authUser = async (req, res) => {
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
-      .eq('email', email)
+      .ilike('email', normalizedEmail)
       .maybeSingle();
 
-    const handleLoginFailure = async (foundUser = null) => {
+    // If account doesn't exist, do NOT count an attempt against lockout
+    if (error || !user) {
+      return res.status(401).json({
+        field: 'email',
+        message: 'No account found with this email address.'
+      });
+    }
+
+    if (!user.is_active) {
+      return res.status(403).json({
+        field: 'email',
+        message: 'Account is deactivated. Please contact support.'
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      // User exists, but password was incorrect: count this attempt
       const current = loginAttemptTracker.get(normalizedEmail) || { count: 0, lockedUntil: null };
       current.count += 1;
 
@@ -274,15 +292,16 @@ const authUser = async (req, res) => {
         logAuditAction({
           action: 'ACCOUNT_LOCKED',
           entityType: 'user',
-          entityId: foundUser ? foundUser.id : normalizedEmail,
+          entityId: user.id,
           details: `Account lock triggered for ${normalizedEmail} after ${current.count} failed login attempts.`,
           metadata: { email: normalizedEmail, attempts: current.count, lockedUntil: new Date(current.lockedUntil).toISOString() },
           req,
-          userName: foundUser ? foundUser.name : normalizedEmail,
-          userRole: foundUser ? foundUser.role : 'Guest'
+          userName: user.name,
+          userRole: user.role
         }).catch(() => {});
 
         return res.status(429).json({
+          field: 'password',
           message: 'Account is temporarily locked due to 5 consecutive failed login attempts. Please try again in 15 minutes.',
           isLocked: true,
           lockedUntil: new Date(current.lockedUntil).toISOString()
@@ -293,33 +312,21 @@ const authUser = async (req, res) => {
         logAuditAction({
           action: 'FAILED_LOGIN_ATTEMPT',
           entityType: 'user',
-          entityId: foundUser ? foundUser.id : normalizedEmail,
+          entityId: user.id,
           details: `Failed login attempt (${current.count}/${MAX_FAILED_ATTEMPTS}) for email: ${normalizedEmail}`,
           metadata: { email: normalizedEmail, attemptCount: current.count, maxAttempts: MAX_FAILED_ATTEMPTS },
           req,
-          userName: foundUser ? foundUser.name : normalizedEmail,
-          userRole: foundUser ? foundUser.role : 'Guest'
+          userName: user.name,
+          userRole: user.role
         }).catch(() => {});
 
         const remaining = MAX_FAILED_ATTEMPTS - current.count;
         return res.status(401).json({
-          message: `Invalid email or password. ${remaining} attempt${remaining > 1 ? 's' : ''} remaining before temporary lockout.`,
+          field: 'password',
+          message: `Incorrect password. ${remaining} attempt${remaining > 1 ? 's' : ''} remaining before temporary lockout.`,
           attemptsRemaining: remaining
         });
       }
-    };
-
-    if (error || !user) {
-      return await handleLoginFailure(null);
-    }
-
-    if (!user.is_active) {
-      return res.status(403).json({ message: 'Account is deactivated. Please contact support.' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return await handleLoginFailure(user);
     }
 
     // Success — clear any prior failed attempts

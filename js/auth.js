@@ -11,6 +11,36 @@ const BASE_ORIGIN = (
 const API_BASE = `${BASE_ORIGIN}/api/auth`;
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
+function clearFieldErrors() {
+  document.querySelectorAll('.field-error-msg').forEach(el => {
+    el.style.display = 'none';
+    el.textContent = '';
+  });
+  document.querySelectorAll('.input-has-error').forEach(el => {
+    el.classList.remove('input-has-error');
+  });
+  const old = document.getElementById('auth-error');
+  if (old) old.remove();
+}
+
+function showFieldError(field, msg) {
+  clearFieldErrors();
+  const errorEl = document.getElementById(`${field}-error`);
+  const inputEl = document.getElementById(`login-${field}`) || document.getElementById(`signup-${field}`) || document.getElementById(field);
+
+  if (errorEl) {
+    errorEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><span>${msg}</span>`;
+    errorEl.style.display = 'flex';
+  }
+  if (inputEl) {
+    inputEl.classList.add('input-has-error');
+    inputEl.focus();
+  }
+  if (!errorEl && !inputEl) {
+    showError(msg);
+  }
+}
+
 function showError(msg) {
   const old = document.getElementById('auth-error');
   if (old) old.remove();
@@ -74,16 +104,39 @@ document.addEventListener('DOMContentLoaded', () => {
       showSuccess('Account verified! Please log in.');
     }
 
+    const emailInput = document.getElementById('login-email');
+    const passwordInput = document.getElementById('login-password');
+
+    // Real-time clearing of field error when user modifies input
+    [emailInput, passwordInput].forEach(input => {
+      if (input) {
+        input.addEventListener('input', () => {
+          input.classList.remove('input-has-error');
+          const field = input.id.replace('login-', '');
+          const errEl = document.getElementById(`${field}-error`);
+          if (errEl) {
+            errEl.style.display = 'none';
+            errEl.textContent = '';
+          }
+        });
+      }
+    });
+
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      clearFieldErrors();
 
-      const email    = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value;
+      const email    = emailInput?.value.trim() || '';
+      const password = passwordInput?.value || '';
       const btn      = document.getElementById('login-btn');
       const remember = document.getElementById('remember-me')?.checked;
 
-      if (!email || !password) {
-        showError('Please enter your email and password.');
+      if (!email) {
+        showFieldError('email', 'Please enter your email address.');
+        return;
+      }
+      if (!password) {
+        showFieldError('password', 'Please enter your password.');
         return;
       }
 
@@ -124,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
           window.location.href = `verify.html?email=${encodeURIComponent(data.email)}&channel=email&flow=signup`;
         }, 1500);
       } else if (status === 429) {
-        showError(data.message || 'Account is temporarily locked due to repeated failed login attempts.');
+        showFieldError('password', data.message || 'Account is temporarily locked due to repeated failed login attempts.');
         btn.textContent = 'Account Locked';
         btn.disabled    = true;
         setTimeout(() => {
@@ -132,9 +185,24 @@ document.addEventListener('DOMContentLoaded', () => {
           btn.disabled    = false;
         }, 10000);
       } else {
-        showError(data.message || 'Invalid email or password.');
         btn.textContent = 'Log In';
         btn.disabled    = false;
+
+        // Route error to specific field (email or password)
+        if (data.field === 'email') {
+          showFieldError('email', data.message || 'No account found with this email address.');
+        } else if (data.field === 'password') {
+          showFieldError('password', data.message || 'Incorrect password. Please try again.');
+        } else {
+          const msgLower = (data.message || '').toLowerCase();
+          if (msgLower.includes('email') || msgLower.includes('account')) {
+            showFieldError('email', data.message);
+          } else if (msgLower.includes('password')) {
+            showFieldError('password', data.message);
+          } else {
+            showError(data.message || 'Invalid email or password.');
+          }
+        }
       }
     });
   }

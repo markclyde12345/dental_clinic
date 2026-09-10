@@ -641,3 +641,38 @@ input::-ms-clear {
   }
 }
 
+/* ===== FIELD-LEVEL ERROR MESSAGES ===== */
+.field-error-msg {
+  font-size: 0.82rem;
+  color: #dc2626;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  line-height: 1.35;
+  animation: fieldErrorFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.field-error-msg svg {
+  flex-shrink: 0;
+  color: #dc2626;
+}
+
+.form-group-minimal input.input-has-error {
+  border-color: #dc2626 !important;
+  background: #fef2f2 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}
+
+@keyframes fieldErrorFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
