@@ -3610,7 +3610,7 @@ body.dark-theme .status-pill-written-off {
   background-position: right 10px center;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 6px 30px 6px 12px;
+  padding: 6px 30px 5px 12px;
   font-size: 0.78rem;
   font-weight: 600;
   color: #334155;
