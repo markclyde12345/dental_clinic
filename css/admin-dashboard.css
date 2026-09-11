@@ -4000,3 +4000,239 @@ body.dark-theme .status-pill-written-off {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ─── Unified High-End Data Tables System ─── */
+.admin-table-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03), 0 1px 3px 0 rgba(15, 23, 42, 0.02);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-table-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.admin-table-title {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-table-title i {
+  color: #0284c7;
+  font-size: 1.15rem;
+}
+
+.admin-table-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.admin-table thead tr {
+  background: #f8fafc;
+}
+
+.admin-table th {
+  padding: 14px 16px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.admin-table tbody tr {
+  transition: all 0.15s ease;
+  background: #ffffff;
+}
+
+.admin-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Badges */
+.admin-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+}
+
+.admin-status-pill.status-completed,
+.admin-status-pill.status-paid,
+.admin-status-pill.status-available {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.admin-status-pill.status-pending,
+.admin-status-pill.status-low {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.admin-status-pill.status-cancelled,
+.admin-status-pill.status-out {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.admin-status-pill.status-approved,
+.admin-status-pill.status-scheduled {
+  background: #f0f9ff;
+  color: #075985;
+  border: 1px solid #bae6fd;
+}
+
+/* Action Buttons inside Tables */
+.admin-btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-action:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.admin-btn-action.btn-danger {
+  color: #e11d48;
+  border-color: #fecdd3;
+  background: #fff1f2;
+}
+
+.admin-btn-action.btn-danger:hover {
+  background: #ffe4e6;
+  border-color: #fda4af;
+}
+
+/* ─── Settings Pill Navigation Bar ─── */
+.settings-pill-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: #ffffff;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.settings-pill-btn,
+.settings-inner-tab {
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.settings-pill-btn:hover,
+.settings-inner-tab:hover {
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+.settings-pill-btn.active,
+.settings-inner-tab.active {
+  background: #0284c7;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+  border-bottom: none !important;
+}
+
+/* ─── Filter Control Bar Styling ─── */
+.admin-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  background: #ffffff;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+  flex-wrap: wrap;
+}
+
+.admin-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+

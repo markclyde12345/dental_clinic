@@ -758,103 +758,122 @@
         <!-- 2. APPOINTMENTS TAB (Calendar & Filters) -->
         <div id="tab-appointments" class="tab-pane">
           <!-- Filters Header -->
-          <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color); margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <label style="font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Room/Chair:</label>
-              <select id="filter-room" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; outline: none; background: white;">
-                <option value="all">All Rooms</option>
-                <option value="Chair 1">Chair 1 (General)</option>
-                <option value="Chair 2">Chair 2 (Orthodontics)</option>
-                <option value="Room A">Room A (Surgery)</option>
-              </select>
+          <div class="admin-filter-bar">
+            <div class="admin-filter-controls">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">Room/Chair:</label>
+                <select id="filter-room" class="admin-select-pill">
+                  <option value="all">All Rooms</option>
+                  <option value="Chair 1">Chair 1 (General)</option>
+                  <option value="Chair 2">Chair 2 (Orthodontics)</option>
+                  <option value="Room A">Room A (Surgery)</option>
+                </select>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">Status:</label>
+                <select id="filter-status" class="admin-select-pill">
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="completed">Completed</option>  
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <label style="font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Status:</label>
-              <select id="filter-status" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; outline: none; background: white;">
-                <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="completed">Completed</option>  
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <label style="font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Search Patient:</label>
-              <input type="text" id="appt-search" placeholder="Type name..." style="padding: 8px 20px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; outline: none; width: 260px;">
+
+            <div class="search-input-wrapper" style="max-width: 340px;">
+              <i class="ti ti-search" style="font-size: 16px; color: #94a3b8;"></i>
+              <input type="text" id="appt-search" placeholder="Search patient name, contact, notes...">
             </div>
           </div>
 
           <!-- Active Branch Banner -->
-          <div id="active-branch-banner" style="display: flex; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div id="active-branch-banner" style="display: flex; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 14px; padding: 14px 20px; margin-bottom: 24px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
             <div style="display: flex; align-items: center; gap: 10px; font-size: 0.88rem; font-weight: 600; color: #0369a1;">
-              <i class="ti ti-building-hospital" style="font-size: 1.25rem; color: #0284c7;"></i>
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: #e0f2fe; display: flex; align-items: center; justify-content: center;">
+                <i class="ti ti-building-hospital" style="font-size: 1.15rem; color: #0284c7;"></i>
+              </div>
               <span>Active Clinic View: <strong id="active-branch-banner-name" style="color: #0b3c4d;">Main Clinic (Naga)</strong> (<span id="active-branch-banner-count">0</span> appointments)</span>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;" id="active-branch-banner-actions">
-              <button type="button" id="btn-banner-main-clinic" onclick="selectAdminBranch('Main Branch')" style="background: white; border: 1px solid #7dd3fc; color: #0284c7; padding: 5px 12px; border-radius: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background 0.15s ease;">
-                <span>Main Clinic</span>
+              <button type="button" id="btn-banner-main-clinic" onclick="selectAdminBranch('Main Branch')" class="admin-btn-action">
+                <i class="ti ti-map-pin"></i> <span>Main Clinic</span>
               </button>
-              <button type="button" id="btn-banner-all-branches" onclick="selectAdminBranch('all')" style="background: white; border: 1px solid #7dd3fc; color: #0284c7; padding: 5px 12px; border-radius: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background 0.15s ease;">
-                <span>All Branches</span>
+              <button type="button" id="btn-banner-all-branches" onclick="selectAdminBranch('all')" class="admin-btn-action">
+                <i class="ti ti-world"></i> <span>All Branches</span>
               </button>
             </div>
           </div>
 
           <!-- Appointments Agenda Calendar Grid -->
-          <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
-            <h3 id="appointments-table-heading" style="margin-bottom: 20px; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.1rem; text-transform: none; letter-spacing: normal;">Appointments Agenda — Main Clinic (Naga)</h3>
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-              <thead>
-                <tr style="border-bottom: 2px solid var(--border-color); color: var(--secondary-color); font-weight: 600;">
-                  <th style="padding: 12px 16px; width: 16%;">Patient Name</th>
-                  <th style="padding: 12px 16px; width: 16%;">Email</th>
-                  <th style="padding: 12px 16px; width: 12%;">Contact</th>
-                  <th style="padding: 12px 16px; width: 16%;">Date &amp; Time</th>
-                  <th style="padding: 12px 16px; width: 17%;">Clinic Location</th>
-                  <th style="padding: 12px 16px; width: 10%;">Status</th>
-                  <th style="padding: 12px 16px; width: 13%; text-align: right;">Action</th>
-                </tr>
-              </thead>
-              <tbody id="appointments-table-body">
-                <tr>
-                  <td colspan="7" style="padding: 24px; text-align: center; color: #888;">Loading agenda...</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="admin-table-card">
+            <div class="admin-table-card-header">
+              <div>
+                <h3 class="admin-table-title" id="appointments-table-heading">
+                  <i class="ti ti-calendar-event"></i> Appointments Agenda — Main Clinic (Naga)
+                </h3>
+                <p class="admin-table-subtitle">Live real-time operational roster of patient procedures and chair schedules</p>
+              </div>
+            </div>
+            
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 17%;">Patient Name</th>
+                    <th style="width: 17%;">Email</th>
+                    <th style="width: 12%;">Contact</th>
+                    <th style="width: 16%;">Date &amp; Time</th>
+                    <th style="width: 16%;">Clinic Location</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 12%; text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="appointments-table-body">
+                  <tr>
+                    <td colspan="7" style="padding: 28px; text-align: center; color: #888;">Loading agenda...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+
         <!-- 3. PATIENTS TAB (Roster & Medical Records) -->
         <div id="tab-patients" class="tab-pane">
-          <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-              <h3 style="font-family: var(--font-display); color: var(--secondary-color); font-size: 1.1rem; text-transform: none; letter-spacing: normal; margin: 0;">Clinic Patients Records</h3>
-              <button class="btn-primary" id="btn-add-patient" style="padding: 10px 20px; border-radius: 10px; font-size: 0.9rem; cursor: pointer; border: none; background: var(--secondary-color); color: white; font-weight: 600; transition: background 0.3s;">+ Add Patient</button>
+          <div class="admin-table-card">
+            <div class="admin-table-card-header">
+              <div>
+                <h3 class="admin-table-title"><i class="ti ti-users"></i> Clinic Patients Directory</h3>
+                <p class="admin-table-subtitle">Comprehensive patient medical records, contact profiles, and treatment histories</p>
+              </div>
+              <button class="btn-primary" id="btn-add-patient">+ Add Patient</button>
             </div>
 
             <!-- Filter Bar for Patients -->
-            <div class="filter-bar">
+            <div class="admin-filter-bar" style="margin-bottom: 20px; padding: 10px 14px;">
               <div class="search-input-wrapper" style="flex: 1;">
-                <i class="ti ti-search" style="font-size: 16px; color: #888;"></i>
+                <i class="ti ti-search" style="font-size: 16px; color: #94a3b8;"></i>
                 <input type="text" id="patient-search-input" placeholder="Search patients by name, email, or contact...">
               </div>
             </div>
 
-            <div style="overflow-x: auto;">
-              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
                 <thead>
-                  <tr style="border-bottom: 2px solid var(--border-color); color: var(--secondary-color); font-weight: 600;">
-                    <th style="padding: 12px 16px; width: 22%;">Name</th>
-                    <th style="padding: 12px 16px; width: 22%;">Email</th>
-                    <th style="padding: 12px 16px; width: 10%;">Gender</th>
-                    <th style="padding: 12px 16px; width: 12%;">Birth Date</th>
-                    <th style="padding: 12px 16px; width: 10%;">Blood Type</th>
-                    <th style="padding: 12px 16px; width: 14%;">Allergies</th>
-                    <th style="padding: 12px 16px; width: 10%; text-align: right;">Action</th>
+                  <tr>
+                    <th style="width: 22%;">Name</th>
+                    <th style="width: 22%;">Email</th>
+                    <th style="width: 10%;">Gender</th>
+                    <th style="width: 12%;">Birth Date</th>
+                    <th style="width: 10%;">Blood Type</th>
+                    <th style="width: 14%;">Allergies</th>
+                    <th style="width: 10%; text-align: right;">Action</th>
                   </tr>
                 </thead>
                 <tbody id="patients-table-body">
                   <tr>
-                    <td colspan="7" style="padding: 24px; text-align: center; color: #888;">Loading patients records...</td>
+                    <td colspan="7" style="padding: 28px; text-align: center; color: #888;">Loading patients records...</td>
                   </tr>
                 </tbody>
               </table>
@@ -865,62 +884,108 @@
         <!-- 4. BILLING & PAYMENTS TAB -->
         <div id="tab-billing" class="tab-pane">
           <!-- Quick Revenue Indicators -->
-          <div class="widgets-grid" style="margin-bottom: 24px; grid-template-columns: repeat(3, 1fr);">
-            <div class="widget-card">
-              <h3>Billed Revenue</h3>
-              <div class="value" id="billing-total-billed">₱0.00</div>
+          <div class="admin-kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px;">
+            <div class="admin-kpi-card kpi-blue">
+              <div class="admin-kpi-top">
+                <span class="admin-kpi-label">Billed Revenue</span>
+                <div class="admin-kpi-icon-wrap">
+                  <i class="ti ti-receipt"></i>
+                </div>
+              </div>
+              <div class="admin-kpi-body">
+                <h3 class="admin-kpi-value" id="billing-total-billed">₱0.00</h3>
+              </div>
+              <div class="admin-kpi-bottom">
+                <span class="admin-kpi-badge"><i class="ti ti-file-invoice"></i> Total Invoiced</span>
+                <span>All branches</span>
+              </div>
             </div>
-            <div class="widget-card">
-              <h3>Collected Revenue</h3>
-              <div class="value" id="billing-total-collected">₱0.00</div>
+
+            <div class="admin-kpi-card kpi-emerald">
+              <div class="admin-kpi-top">
+                <span class="admin-kpi-label">Collected Revenue</span>
+                <div class="admin-kpi-icon-wrap">
+                  <i class="ti ti-cash"></i>
+                </div>
+              </div>
+              <div class="admin-kpi-body">
+                <h3 class="admin-kpi-value" id="billing-total-collected">₱0.00</h3>
+              </div>
+              <div class="admin-kpi-bottom">
+                <span class="admin-kpi-badge"><i class="ti ti-circle-check"></i> Cleared Cash</span>
+                <span>Net received</span>
+              </div>
             </div>
-            <div class="widget-card">
-              <h3>Outstanding Balance</h3>
-              <div class="value" id="billing-outstanding" style="color: #e74c3c;">₱0.00</div>
+
+            <div class="admin-kpi-card kpi-rose">
+              <div class="admin-kpi-top">
+                <span class="admin-kpi-label">Outstanding Balance</span>
+                <div class="admin-kpi-icon-wrap">
+                  <i class="ti ti-alert-triangle"></i>
+                </div>
+              </div>
+              <div class="admin-kpi-body">
+                <h3 class="admin-kpi-value" id="billing-outstanding" style="color: #e11d48;">₱0.00</h3>
+              </div>
+              <div class="admin-kpi-bottom">
+                <span class="admin-kpi-badge"><i class="ti ti-clock"></i> Unpaid Receivables</span>
+                <span>Pending collection</span>
+              </div>
             </div>
           </div>
 
           <!-- Invoices List -->
-          <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
-            <h3 style="margin-bottom: 20px; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.1rem; text-transform: none; letter-spacing: normal;">Invoices Ledger</h3>
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-              <thead>
-                <tr style="border-bottom: 2px solid var(--border-color); color: var(--secondary-color); font-weight: 600;">
-                  <th style="padding: 12px 16px; width: 14%;">Invoice ID</th>
-                  <th style="padding: 12px 16px; width: 22%;">Patient</th>
-                  <th style="padding: 12px 16px; width: 14%;">Billed Amount</th>
-                  <th style="padding: 12px 16px; width: 14%;">Paid Amount</th>
-                  <th style="padding: 12px 16px; width: 14%;">Issued Date</th>
-                  <th style="padding: 12px 16px; width: 10%;">Status</th>
-                  <th style="padding: 12px 16px; width: 12%; text-align: right;">Action</th>
-                </tr>
-              </thead>
-              <tbody id="billing-table-body">
-                <tr>
-                  <td colspan="7" style="padding: 24px; text-align: center; color: #888;">Loading ledger...</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="admin-table-card">
+            <div class="admin-table-card-header">
+              <div>
+                <h3 class="admin-table-title"><i class="ti ti-file-invoice"></i> Invoices &amp; Payments Ledger</h3>
+                <p class="admin-table-subtitle">Official records of patient treatment billing statements, payments, and payment statuses</p>
+              </div>
+            </div>
+            
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 14%;">Invoice ID</th>
+                    <th style="width: 22%;">Patient</th>
+                    <th style="width: 14%;">Billed Amount</th>
+                    <th style="width: 14%;">Paid Amount</th>
+                    <th style="width: 14%;">Issued Date</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 12%; text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="billing-table-body">
+                  <tr>
+                    <td colspan="7" style="padding: 28px; text-align: center; color: #888;">Loading ledger...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
         <!-- 5. STAFF & DENTISTS TAB -->
         <div id="tab-staff" class="tab-pane">
-          <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-              <h3 style="font-family: var(--font-display); color: var(--secondary-color); font-size: 1.1rem; text-transform: none; letter-spacing: normal; margin: 0;">Clinic Staff Schedules & Availability</h3>
-              <button class="btn-primary" id="btn-add-staff" style="padding: 10px 20px; border-radius: 10px; font-size: 0.9rem; cursor: pointer; border: none; background: var(--secondary-color); color: white; font-weight: 600; transition: background 0.3s;">+ Add Staff</button>
+          <div class="admin-table-card">
+            <div class="admin-table-card-header">
+              <div>
+                <h3 class="admin-table-title"><i class="ti ti-stethoscope"></i> Clinic Staff Schedules &amp; Shift Availability</h3>
+                <p class="admin-table-subtitle">Roster of attending dentists, clinical assistants, and shift rotations</p>
+              </div>
+              <button class="btn-primary" id="btn-add-staff">+ Add Staff</button>
             </div>
 
             <!-- Filter Bar for Staff -->
-            <div class="filter-bar">
-              <div class="search-input-wrapper">
-                <i class="ti ti-search" style="font-size: 16px; color: #888;"></i>
+            <div class="admin-filter-bar" style="margin-bottom: 20px; padding: 10px 14px;">
+              <div class="search-input-wrapper" style="flex: 1;">
+                <i class="ti ti-search" style="font-size: 16px; color: #94a3b8;"></i>
                 <input type="text" id="staff-search-input" placeholder="Search staff by name or email...">
               </div>
               <div class="filter-group">
                 <span class="filter-group-label">Role:</span>
-                <select id="staff-role-filter">
+                <select id="staff-role-filter" class="admin-select-pill">
                   <option value="all">All Roles</option>
                   <option value="Admin">Admin</option>
                   <option value="Dentist">Dentist</option>
@@ -931,22 +996,22 @@
               </div>
             </div>
 
-            <div style="overflow-x: auto;">
-              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
                 <thead>
-                  <tr style="border-bottom: 2px solid var(--border-color); color: var(--secondary-color); font-weight: 600;">
-                    <th style="padding: 12px 16px; width: 20%;">Name</th>
-                    <th style="padding: 12px 16px; width: 15%;">Role</th>
-                    <th style="padding: 12px 16px; width: 20%;">Shift Hours</th>
-                    <th style="padding: 12px 16px; width: 15%;">Working Days</th>
-                    <th style="padding: 12px 16px; width: 15%;">Availability Status</th>
-                    <th style="padding: 12px 16px; width: 15%;">Contact</th>
-                    <th style="padding: 12px 16px; width: 10%; text-align: right;">Action</th>
+                  <tr>
+                    <th style="width: 20%;">Name</th>
+                    <th style="width: 15%;">Role</th>
+                    <th style="width: 20%;">Shift Hours</th>
+                    <th style="width: 15%;">Working Days</th>
+                    <th style="width: 15%;">Availability Status</th>
+                    <th style="width: 15%;">Contact</th>
+                    <th style="width: 10%; text-align: right;">Action</th>
                   </tr>
                 </thead>
                 <tbody id="staff-table-body">
                   <tr>
-                    <td colspan="7" style="padding: 24px; text-align: center; color: #888;">Loading shift schedules...</td>
+                    <td colspan="7" style="padding: 28px; text-align: center; color: #888;">Loading shift schedules...</td>
                   </tr>
                 </tbody>
               </table>
@@ -956,78 +1021,74 @@
 
         <!-- 6. INVENTORY TAB -->
         <div id="tab-inventory" class="tab-pane">
-          <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-
+          <div class="admin-table-card">
             <!-- Header Row -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <h3 style="font-family: var(--font-display); color: var(--secondary-color); font-size: 1.1rem; text-transform: none; letter-spacing: normal; margin: 0;">Dental Supplies Stock Ledger</h3>
+            <div class="admin-table-card-header">
+              <div>
+                <h3 class="admin-table-title"><i class="ti ti-packages"></i> Dental Supplies Stock Ledger</h3>
+                <p class="admin-table-subtitle">Clinical supplies inventory, reorder thresholds, and stock replenishment tracking</p>
+              </div>
               <div style="display: flex; gap: 12px; align-items: center;">
-                <span id="low-stock-count-badge" style="background:#fef0f0; color:#f56c6c; font-size:0.8rem; font-weight:600; padding:6px 12px; border-radius:6px; display:none;">0 Items Low Stock</span>
-                <button class="btn-primary" id="btn-add-inventory" style="padding: 10px 20px; border-radius: 10px; font-size: 0.9rem; cursor: pointer; border: none; background: var(--secondary-color); color: white; font-weight: 600; transition: background 0.3s;">+ Add Item</button>
+                <span id="low-stock-count-badge" style="background:#fef2f2; color:#ef4444; border: 1px solid #fecaca; font-size:0.78rem; font-weight:700; padding:6px 12px; border-radius:8px; display:none;">0 Items Low Stock</span>
+                <button class="btn-primary" id="btn-add-inventory">+ Add Item</button>
               </div>
             </div>
 
             <!-- Search & Filter Row -->
-            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
-              <!-- Search -->
-              <div style="position: relative; flex: 1; min-width: 180px;">
-                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 0.95rem; pointer-events: none;">🔍</span>
+            <div class="admin-filter-bar" style="margin-bottom: 20px; padding: 10px 14px;">
+              <div class="search-input-wrapper" style="flex: 1; min-width: 220px;">
+                <i class="ti ti-search" style="font-size: 16px; color: #94a3b8;"></i>
                 <input
                   type="text"
                   id="inventory-search"
                   placeholder="Search item name…"
-                  style="width: 100%; padding: 9px 12px 9px 36px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; background: #faf8f6; box-sizing: border-box; transition: border 0.2s;"
                   oninput="filterInventory()"
-                  onfocus="this.style.borderColor='var(--secondary-color)'"
-                  onblur="this.style.borderColor='var(--border-color)'"
                 >
               </div>
 
-              <!-- Category Dropdown -->
-              <select
-                id="inventory-filter-category"
-                onchange="filterInventory()"
-                style="padding: 9px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: #faf8f6; font-size: 0.88rem; color: var(--dark-color); cursor: pointer; min-width: 155px; transition: border 0.2s;"
-                onfocus="this.style.borderColor='var(--secondary-color)'"
-                onblur="this.style.borderColor='var(--border-color)'"
-              >
-                <option value="all">All Categories</option>
-                <option value="Restorative">Restorative</option>
-                <option value="Anesthetics">Anesthetics</option>
-                <option value="Disposables">Disposables</option>
-                <option value="Hygiene">Hygiene</option>
-                <option value="Surgical">Surgical</option>
-              </select>
+              <div class="admin-filter-controls">
+                <!-- Category Dropdown -->
+                <select
+                  id="inventory-filter-category"
+                  onchange="filterInventory()"
+                  class="admin-select-pill"
+                >
+                  <option value="all">All Categories</option>
+                  <option value="Restorative">Restorative</option>
+                  <option value="Anesthetics">Anesthetics</option>
+                  <option value="Disposables">Disposables</option>
+                  <option value="Hygiene">Hygiene</option>
+                  <option value="Surgical">Surgical</option>
+                </select>
 
-              <!-- Status Dropdown -->
-              <select
-                id="inventory-filter-status"
-                onchange="filterInventory()"
-                style="padding: 9px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: #faf8f6; font-size: 0.88rem; color: var(--dark-color); cursor: pointer; min-width: 135px; transition: border 0.2s;"
-                onfocus="this.style.borderColor='var(--secondary-color)'"
-                onblur="this.style.borderColor='var(--border-color)'"
-              >
-                <option value="all">All Statuses</option>
-                <option value="In Stock">In Stock</option>
-                <option value="Low Stock">Low Stock</option>
-              </select>
+                <!-- Status Dropdown -->
+                <select
+                  id="inventory-filter-status"
+                  onchange="filterInventory()"
+                  class="admin-select-pill"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="In Stock">In Stock</option>
+                  <option value="Low Stock">Low Stock</option>
+                </select>
+              </div>
             </div>
 
-            <div style="overflow-x: auto;">
-              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
                 <thead>
-                  <tr style="border-bottom: 2px solid var(--border-color); color: var(--secondary-color); font-weight: 600;">
-                    <th style="padding: 12px 16px; width: 25%;">Item Name</th>
-                    <th style="padding: 12px 16px; width: 20%;">Category</th>
-                    <th style="padding: 12px 16px; width: 15%;">Current Stock</th>
-                    <th style="padding: 12px 16px; width: 15%;">Reorder Threshold</th>
-                    <th style="padding: 12px 16px; width: 15%;">Status</th>
-                    <th style="padding: 12px 16px; width: 10%; text-align: right;">Action</th>
+                  <tr>
+                    <th style="width: 25%;">Item Name</th>
+                    <th style="width: 20%;">Category</th>
+                    <th style="width: 15%;">Current Stock</th>
+                    <th style="width: 15%;">Reorder Threshold</th>
+                    <th style="width: 15%;">Status</th>
+                    <th style="width: 10%; text-align: right;">Action</th>
                   </tr>
                 </thead>
                 <tbody id="inventory-table-body">
                   <tr>
-                    <td colspan="6" style="padding: 24px; text-align: center; color: #888;">Loading stock levels...</td>
+                    <td colspan="6" style="padding: 28px; text-align: center; color: #888;">Loading stock levels...</td>
                   </tr>
                 </tbody>
               </table>
@@ -1039,50 +1100,55 @@
 
         <!-- 8. MANAGE USERS TAB -->
         <div id="tab-users" class="tab-pane">
-          <div class="manage-users-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h3 style="font-family: var(--font-display); margin: 0; color: var(--dark-color); font-size: 1.25rem;">System Users</h3>
-            <button class="btn-primary" id="btn-add-staff-account" style="padding: 10px 20px; border-radius: 10px; font-size: 0.9rem; cursor: pointer; border: none; background: var(--secondary-color); color: white; font-weight: 600; transition: background 0.3s;">+ Add Staff</button>
-          </div>
-
-          <!-- Filter Bar for Users -->
-          <div class="filter-bar" style="margin-bottom: 20px; display: flex; gap: 16px; align-items: center; justify-content: space-between;">
-            <div class="search-input-wrapper" style="flex: 1; max-width: 400px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 14px; background: white;">
-              <i class="ti ti-search" style="font-size: 16px; color: #888;"></i>
-              <input type="text" id="user-search-input" placeholder="Search users by name, email, or contact..." style="border: none; outline: none; font-size: 0.9rem; width: 100%;">
+          <div class="admin-table-card">
+            <div class="admin-table-card-header">
+              <div>
+                <h3 class="admin-table-title"><i class="ti ti-user-cog"></i> System Users &amp; Permissions</h3>
+                <p class="admin-table-subtitle">Administrator, clinical staff, and patient account management with role-based access control</p>
+              </div>
+              <button class="btn-primary" id="btn-add-staff-account">+ Add Staff</button>
             </div>
-            <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
-              <span class="filter-group-label" style="font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Role:</span>
-              <select id="user-role-filter" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; outline: none; background: white;">
-                <option value="all">All Roles</option>
-                <option value="Admin">Admin</option>
-                <option value="Dentist">Dentist</option>
-                <option value="Receptionist">Receptionist</option>
-                <option value="Accounting">Accounting</option>
-                <option value="Assistant">Assistant</option>
-                <option value="Patient">Patient</option>
-              </select>
-            </div>
-          </div>
 
-          <!-- Users Table Container -->
-          <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-              <thead>
-                <tr style="border-bottom: 2px solid var(--border-color); color: var(--secondary-color); font-weight: 600;">
-                  <th style="padding: 12px 16px;">Name</th>
-                  <th style="padding: 12px 16px;">Email</th>
-                  <th style="padding: 12px 16px;">Role</th>
-                  <th style="padding: 12px 16px;">Contact</th>
-                  <th style="padding: 12px 16px;">Status</th>
-                  <th style="padding: 12px 16px; text-align: right;">Action</th>
-                </tr>
-              </thead>
-              <tbody id="users-table-body">
-                <tr>
-                  <td colspan="6" style="padding: 24px; text-align: center; color: #888;">Loading users...</td>
-                </tr>
-              </tbody>
-            </table>
+            <!-- Filter Bar for Users -->
+            <div class="admin-filter-bar" style="margin-bottom: 20px; padding: 10px 14px;">
+              <div class="search-input-wrapper" style="flex: 1; max-width: 420px;">
+                <i class="ti ti-search" style="font-size: 16px; color: #94a3b8;"></i>
+                <input type="text" id="user-search-input" placeholder="Search users by name, email, or contact...">
+              </div>
+              <div class="filter-group">
+                <span class="filter-group-label">Role:</span>
+                <select id="user-role-filter" class="admin-select-pill">
+                  <option value="all">All Roles</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Dentist">Dentist</option>
+                  <option value="Receptionist">Receptionist</option>
+                  <option value="Accounting">Accounting</option>
+                  <option value="Assistant">Assistant</option>
+                  <option value="Patient">Patient</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Users Table Container -->
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body">
+                  <tr>
+                    <td colspan="6" style="padding: 28px; text-align: center; color: #888;">Loading users...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -1174,20 +1240,23 @@
 
         <!-- 10. VISITS HISTORY TAB -->
         <div id="tab-history" class="tab-pane">
-          <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-              <h3 style="font-family: var(--font-display); color: var(--secondary-color); font-size: 1.1rem; text-transform: none; letter-spacing: normal; margin: 0;">Clinic Visits &amp; Appointment History</h3>
+          <div class="admin-table-card">
+            <div class="admin-table-card-header">
+              <div>
+                <h3 class="admin-table-title"><i class="ti ti-history"></i> Clinic Visits &amp; Appointment History</h3>
+                <p class="admin-table-subtitle">Historical records of completed, cancelled, and archived consultations</p>
+              </div>
             </div>
             
             <!-- Filter Bar for History -->
-            <div class="filter-bar">
-              <div class="search-input-wrapper">
-                <i class="ti ti-search" style="font-size: 16px; color: #888;"></i>
+            <div class="admin-filter-bar" style="margin-bottom: 20px; padding: 10px 14px;">
+              <div class="search-input-wrapper" style="flex: 1; min-width: 240px;">
+                <i class="ti ti-search" style="font-size: 16px; color: #94a3b8;"></i>
                 <input type="text" id="history-search-input" placeholder="Search history by patient name or treatment...">
               </div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <label for="history-status-filter" style="font-size: 0.85rem; font-weight: 600; color: var(--secondary-color); white-space: nowrap;">Status:</label>
-                <select id="history-status-filter" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; font-weight: 600; outline: none; background: white; color: var(--dark-color); cursor: pointer; min-width: 140px;">
+              <div class="filter-group">
+                <span class="filter-group-label">Status:</span>
+                <select id="history-status-filter" class="admin-select-pill">
                   <option value="all">All Statuses</option>
                   <option value="Completed">Completed</option>
                   <option value="Approved">Approved</option>
@@ -1197,20 +1266,20 @@
               </div>
             </div>
 
-            <div style="overflow-x: auto;">
-              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
                 <thead>
-                  <tr style="border-bottom: 2px solid var(--border-color); color: var(--secondary-color); font-weight: 600;">
-                    <th style="padding: 12px 16px; width: 25%;">Date &amp; Time</th>
-                    <th style="padding: 12px 16px; width: 25%;">Patient</th>
-                    <th style="padding: 12px 16px; width: 25%;">Treatment</th>
-                    <th style="padding: 12px 16px; width: 15%;">Status</th>
-                    <th style="padding: 12px 16px; width: 10%;">Dentist</th>
+                  <tr>
+                    <th style="width: 22%;">Date &amp; Time</th>
+                    <th style="width: 25%;">Patient</th>
+                    <th style="width: 25%;">Treatment</th>
+                    <th style="width: 15%;">Status</th>
+                    <th style="width: 13%;">Dentist</th>
                   </tr>
                 </thead>
                 <tbody id="history-table-body">
                   <tr>
-                    <td colspan="5" style="padding: 24px; text-align: center; color: #888;">Loading history...</td>
+                    <td colspan="5" style="padding: 28px; text-align: center; color: #888;">Loading history...</td>
                   </tr>
                 </tbody>
               </table>
@@ -1218,17 +1287,16 @@
           </div>
         </div>
 
-
         <!-- 11. CLINIC SETTINGS TAB -->
         <div id="tab-settings" class="tab-pane">
           
           <!-- Inner Navigation for Settings -->
-          <div class="settings-nav-bar" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; overflow-x: auto; white-space: nowrap;">
-            <button class="settings-inner-tab active" onclick="switchSettingsSection('profile', this)" style="padding: 10px 16px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: var(--secondary-color); border-bottom: 2px solid var(--secondary-color); cursor: pointer; transition: 0.2s;">Clinic Profile</button>
-            <button class="settings-inner-tab" onclick="switchSettingsSection('services', this)" style="padding: 10px 16px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: #888; cursor: pointer; transition: 0.2s;">Services &amp; Treatments</button>
-            <button class="settings-inner-tab" onclick="switchSettingsSection('preferences', this)" style="padding: 10px 16px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: #888; cursor: pointer; transition: 0.2s;">System Preferences</button>
-            <button class="settings-inner-tab" onclick="switchSettingsSection('twilio', this)" style="padding: 10px 16px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: #888; cursor: pointer; transition: 0.2s;">Twilio Gateway</button>
-            <button class="settings-inner-tab" onclick="switchSettingsSection('utilities', this)" style="padding: 10px 16px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: #888; cursor: pointer; transition: 0.2s;">Database &amp; Backup</button>
+          <div class="settings-pill-nav">
+            <button class="settings-inner-tab active" onclick="switchSettingsSection('profile', this)"><i class="ti ti-building-hospital"></i> Clinic Profile</button>
+            <button class="settings-inner-tab" onclick="switchSettingsSection('services', this)"><i class="ti ti-tools"></i> Services &amp; Treatments</button>
+            <button class="settings-inner-tab" onclick="switchSettingsSection('preferences', this)"><i class="ti ti-adjustments"></i> System Preferences</button>
+            <button class="settings-inner-tab" onclick="switchSettingsSection('twilio', this)"><i class="ti ti-message-2"></i> Twilio Gateway</button>
+            <button class="settings-inner-tab" onclick="switchSettingsSection('utilities', this)"><i class="ti ti-database"></i> Database &amp; Backup</button>
           </div>
 
           <!-- SUB-SECTIONS -->
@@ -1364,49 +1432,63 @@
           <div id="settings-sec-services" class="settings-sec-pane" style="display: none;">
             <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px;">
               <!-- Treatments Table -->
-              <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
-                <h3 style="margin: 0 0 20px 0; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.15rem; font-weight: 700;">Services &amp; Treatments Catalog</h3>
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-                  <thead>
-                    <tr style="border-bottom: 2px solid var(--border-color); color: var(--secondary-color); font-weight: 600;">
-                      <th style="padding: 10px 12px;">Service Name</th>
-                      <th style="padding: 10px 12px; width: 20%;">Price</th>
-                      <th style="padding: 10px 12px; width: 25%;">Duration</th>
-                      <th style="padding: 10px 12px; text-align: right; width: 20%;">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody id="settings-treatments-tbody">
-                    <!-- Dynamic treatments listed here -->
-                    <tr>
-                      <td colspan="4" style="padding: 20px; text-align: center; color: #888;">Loading services list...</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="admin-table-card">
+                <div class="admin-card-header" style="margin-bottom: 16px;">
+                  <div>
+                    <h3 class="admin-card-title">Services &amp; Treatments Catalog</h3>
+                    <p class="admin-card-subtitle">Active clinical procedure fees and durations</p>
+                  </div>
+                </div>
+                <div class="admin-table-wrapper">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Service Name</th>
+                        <th style="width: 20%;">Price</th>
+                        <th style="width: 25%;">Duration</th>
+                        <th style="text-align: right; width: 20%;">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="settings-treatments-tbody">
+                      <!-- Dynamic treatments listed here -->
+                      <tr>
+                        <td colspan="4" style="padding: 24px; text-align: center; color: #888;">Loading services list...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               <!-- Add Treatment Form -->
-              <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-                <h3 style="margin: 0 0 16px 0; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.15rem; font-weight: 700;">Add New Service</h3>
+              <div class="admin-card">
+                <div class="admin-card-header" style="margin-bottom: 16px;">
+                  <div>
+                    <h3 class="admin-card-title">Add New Service</h3>
+                    <p class="admin-card-subtitle">Define service details and default rate</p>
+                  </div>
+                </div>
                 <form id="settings-add-treatment-form" style="display: flex; flex-direction: column; gap: 16px;">
                   <div>
                     <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Service Name</label>
-                    <input type="text" id="set-treat-name" placeholder="e.g. Braces Consultation" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+                    <input type="text" id="set-treat-name" placeholder="e.g. Braces Consultation" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
                   </div>
                   <div>
                     <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Description</label>
-                    <textarea id="set-treat-desc" rows="2" placeholder="Brief details about the service..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box; resize: vertical;"></textarea>
+                    <textarea id="set-treat-desc" rows="2" placeholder="Brief details about the service..." style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box; resize: vertical;"></textarea>
                   </div>
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div>
                       <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Price (₱ / PHP)</label>
-                      <input type="number" id="set-treat-price" placeholder="150" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+                      <input type="number" id="set-treat-price" placeholder="150" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
                     </div>
                     <div>
                       <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Duration (mins)</label>
-                      <input type="number" id="set-treat-duration" placeholder="60" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+                      <input type="number" id="set-treat-duration" placeholder="60" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
                     </div>
                   </div>
-                  <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--secondary-color); color: white; font-weight: 600; cursor: pointer;">Save Service</button>
+                  <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--secondary-color); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="ti ti-plus"></i> Save Service
+                  </button>
                 </form>
               </div>
             </div>
@@ -1414,10 +1496,15 @@
 
           <!-- SECTION 3: System Preferences -->
           <div id="settings-sec-preferences" class="settings-sec-pane" style="display: none;">
-            <div style="max-width: 600px; background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-              <h3 style="margin: 0 0 20px 0; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.15rem; font-weight: 700;">System Preferences</h3>
+            <div class="admin-card" style="max-width: 640px;">
+              <div class="admin-card-header" style="margin-bottom: 20px;">
+                <div>
+                  <h3 class="admin-card-title">System Preferences</h3>
+                  <p class="admin-card-subtitle">Manage automated workflows, alerts, and display configuration</p>
+                </div>
+              </div>
               <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
                   <div>
                     <h4 style="margin: 0; font-size: 0.95rem; color: var(--dark-color); font-weight: 600;">Auto-Approve Bookings</h4>
                     <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #888;">Instantly approve patient appointments without manual review.</p>
@@ -1427,7 +1514,7 @@
                     <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;" class="toggle-slider"></span>
                   </label>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
                   <div>
                     <h4 style="margin: 0; font-size: 0.95rem; color: var(--dark-color); font-weight: 600;">Twilio SMS Reminders</h4>
                     <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #888;">Send automated text message appointment alerts via Twilio integration.</p>
@@ -1437,18 +1524,18 @@
                     <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;" class="toggle-slider"></span>
                   </label>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
                   <div>
                     <h4 style="margin: 0; font-size: 0.95rem; color: var(--dark-color); font-weight: 600;">Default Currency Symbol</h4>
                     <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #888;">Set the currency identifier used on invoices &amp; ledger lists.</p>
                   </div>
-                  <select id="set-currency" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; outline: none; background: white; width: 90px;">
+                  <select id="set-currency" class="admin-select-pill" style="width: auto; padding: 6px 12px; font-weight: 600;">
                     <option value="₱">₱ (PHP)</option>
                     <option value="$">$ (USD)</option>
                     <option value="€">€ (EUR)</option>
                   </select>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
                   <div>
                     <h4 style="margin: 0; font-size: 0.95rem; color: var(--dark-color); font-weight: 600;">Dark Theme Mode</h4>
                     <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #888;">Toggle a modern dark styling experience for the portal.</p>
@@ -1464,40 +1551,45 @@
 
           <!-- SECTION 4: Twilio Gateway Configuration -->
           <div id="settings-sec-twilio" class="settings-sec-pane" style="display: none;">
-            <div style="max-width: 600px; background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-              <h3 style="margin: 0 0 12px 0; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.15rem; font-weight: 700;">Twilio Gateway Credentials</h3>
-              <p style="margin: 0 0 20px 0; font-size: 0.85rem; color: #666; line-height: 1.4;">Configure credentials to allow sending automated booking status SMS alerts to patients.</p>
+            <div class="admin-card" style="max-width: 640px;">
+              <div class="admin-card-header" style="margin-bottom: 16px;">
+                <div>
+                  <h3 class="admin-card-title">Twilio Gateway Credentials</h3>
+                  <p class="admin-card-subtitle">Configure credentials to allow sending automated booking status SMS alerts to patients</p>
+                </div>
+              </div>
               <form id="settings-twilio-form" style="display: flex; flex-direction: column; gap: 16px;">
                 <div>
                   <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Twilio Account SID</label>
-                  <input type="text" id="set-twilio-sid" placeholder="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+                  <input type="text" id="set-twilio-sid" placeholder="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
                 </div>
                 <div>
                   <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Twilio Auth Token</label>
-                  <input type="password" id="set-twilio-token" placeholder="••••••••••••••••••••••••••••••••" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+                  <input type="password" id="set-twilio-token" placeholder="••••••••••••••••••••••••••••••••" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
                 </div>
                 <div>
                   <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Twilio Sender Number (SMS Enabled)</label>
-                  <input type="text" id="set-twilio-phone" placeholder="+1234567890" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+                  <input type="text" id="set-twilio-phone" placeholder="+1234567890" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
                 </div>
-                <button type="submit" class="btn-primary" style="align-self: flex-start; padding: 10px 20px; border-radius: 8px; border: none; background: var(--secondary-color); color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: background 0.3s; width: auto;">Save API Keys</button>
+                <button type="submit" class="btn-primary" style="align-self: flex-start; padding: 10px 20px; border-radius: 8px; border: none; background: var(--secondary-color); color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: background 0.3s; display: flex; align-items: center; gap: 8px;">
+                  <i class="ti ti-key"></i> Save API Keys
+                </button>
               </form>
             </div>
           </div>
 
           <!-- SECTION 5: Database & Backup Roster -->
-          <!-- SECTION 5: Database & Backup Roster -->
           <div id="settings-sec-utilities" class="settings-sec-pane" style="display: none;">
-            <div style="display: flex; flex-direction: column; gap: 24px; max-width: 800px;">
+            <div style="display: flex; flex-direction: column; gap: 24px; max-width: 840px;">
               
               <!-- Database Health & Storage Card -->
-              <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div class="admin-card">
+                <div class="admin-card-header" style="margin-bottom: 16px;">
                   <div>
-                    <h3 style="margin: 0; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.15rem; font-weight: 700;">Database Resilience &amp; Storage Health</h3>
-                    <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #666;">Live Supabase PostgreSQL metrics, anti-inactivity keep-alive monitor, and automated backups.</p>
+                    <h3 class="admin-card-title">Database Resilience &amp; Storage Health</h3>
+                    <p class="admin-card-subtitle">Live Supabase PostgreSQL metrics, anti-inactivity keep-alive monitor, and automated backups</p>
                   </div>
-                  <button type="button" id="btn-refresh-db-status" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: #f8fafc; color: var(--dark-color); font-weight: 600; font-size: 0.8rem; cursor: pointer;">
+                  <button type="button" id="btn-refresh-db-status" class="admin-btn-action" style="padding: 8px 14px; font-size: 0.8rem;">
                     <i class="ti ti-refresh" style="font-size: 14px;"></i> Refresh Status
                   </button>
                 </div>
@@ -1565,7 +1657,6 @@
                   </button>
                   <button type="button" id="btn-reset-seeder" style="border: 1px solid #fca5a5; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 12px 18px; border-radius: 10px; cursor: pointer; font-size: 0.9rem;">
                     <i class="ti ti-trash" style="font-size: 16px;"></i> Reset &amp; Seed DB
-                  </button>
                 </div>
               </div>
 

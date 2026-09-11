@@ -4154,13 +4154,11 @@ function filterAndRenderHistory() {
 window.switchSettingsSection = function(sectionId, element) {
   document.querySelectorAll('.settings-inner-tab').forEach(t => {
     t.classList.remove('active');
-    t.style.color = '#888';
-    t.style.borderBottom = 'none';
   });
   
-  element.classList.add('active');
-  element.style.color = 'var(--secondary-color)';
-  element.style.borderBottom = '2px solid var(--secondary-color)';
+  if (element) {
+    element.classList.add('active');
+  }
 
   document.querySelectorAll('.settings-sec-pane').forEach(p => {
     p.style.display = 'none';
