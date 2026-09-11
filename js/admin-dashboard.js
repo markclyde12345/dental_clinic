@@ -1082,11 +1082,19 @@ window.submitAddBranch = async function(e) {
       return;
     }
 
-    showToast(`Branch "${data.name}" added successfully!`, 'success');
+    showToast(`Branch "${data.name}" added and pinned to map!`, 'success');
     closeAddBranchModal();
     await loadAdminBranches();
     loadStats();
     selectAdminBranch(data.key);
+    if (typeof updateAdminMapMarkers === 'function') {
+      updateAdminMapMarkers();
+    }
+    if (typeof zoomToBranchPin === 'function' && data.lat && data.lng) {
+      setTimeout(() => {
+        zoomToBranchPin(data.lat, data.lng, data.name);
+      }, 300);
+    }
   } catch (err) {
     showToast('Network error while creating branch.', 'error');
   } finally {
@@ -4192,6 +4200,16 @@ window.switchSettingsSection = function(sectionId, element) {
   if (sectionId === 'utilities') {
     loadDatabaseHealthStatus();
   }
+  if (sectionId === 'profile') {
+    setTimeout(() => {
+      if (adminMap) {
+        adminMap.invalidateSize();
+        if (typeof updateAdminMapMarkers === 'function') {
+          updateAdminMapMarkers();
+        }
+      }
+    }, 150);
+  }
 };
 
 window.loadSettings = function() {
@@ -4269,26 +4287,160 @@ if (twilioForm) {
   });
 }
 
-// Branches management with Leaflet Interactive Map Pinning
+// ─── Branches Management with Leaflet Interactive Map Pinning ─────────────────
 let adminMap = null;
 let adminNewMarker = null;
 let adminBranchMarkers = [];
+
+// Custom clinic pin marker creator
+function createClinicPin(branch, isSelected = false) {
+  const isMain = branch.isMain || branch.key === 'Main Branch';
+  const bgColor = isSelected 
+    ? 'linear-gradient(135deg, #f59e0b, #d97706)' 
+    : (isMain ? 'linear-gradient(135deg, #0b3c4d, #0284c7)' : 'linear-gradient(135deg, #0284c7, #0369a1)');
+  const borderColor = isSelected ? '#ffffff' : (isMain ? '#38bdf8' : '#ffffff');
+  const iconSymbol = isMain ? '🏥' : '🦷';
+  const size = isSelected ? 38 : (isMain ? 34 : 30);
+  const anchor = Math.round(size / 2);
+  const label = escapeHTML(branch.key || branch.name || 'Branch');
+
+  return L.divIcon({
+    className: 'admin-branch-marker',
+    html: `
+      <div style="position:relative; width:${size}px; height:${size}px;" title="${label}">
+        <div style="
+          width:${size}px; 
+          height:${size}px; 
+          background:${bgColor}; 
+          border-radius:50% 50% 50% 0; 
+          transform:rotate(-45deg); 
+          border:2.5px solid ${borderColor}; 
+          box-shadow:0 4px 14px rgba(11,60,77,0.35); 
+          display:flex; 
+          align-items:center; 
+          justify-content:center;
+          transition:transform 0.2s ease;
+        ">
+          <span style="transform:rotate(45deg); font-size:${size > 32 ? '16px' : '13px'}; color:white; line-height:1;">
+            ${iconSymbol}
+          </span>
+        </div>
+        <div style="
+          position:absolute; 
+          top:-22px; 
+          left:50%; 
+          transform:translateX(-50%); 
+          background:rgba(11,19,30,0.88); 
+          backdrop-filter:blur(4px);
+          color:#ffffff; 
+          font-family:'Plus Jakarta Sans',sans-serif;
+          font-size:10px; 
+          font-weight:700; 
+          padding:2px 8px; 
+          border-radius:6px; 
+          white-space:nowrap; 
+          pointer-events:none; 
+          box-shadow:0 2px 6px rgba(0,0,0,0.25);
+          border:1px solid rgba(255,255,255,0.15);
+        ">
+          ${label}
+        </div>
+      </div>
+    `,
+    iconSize: [size, size],
+    iconAnchor: [anchor, size]
+  });
+}
+
+// Marker for placing a new branch
+function createNewPin() {
+  return L.divIcon({
+    className: 'admin-new-branch-marker',
+    html: `
+      <div style="position:relative; width:38px; height:38px;">
+        <div style="
+          position:absolute;
+          top:-6px;
+          left:-6px;
+          width:50px;
+          height:50px;
+          border-radius:50%;
+          background:rgba(239, 68, 68, 0.25);
+          animation:pulsePin 1.5s infinite;
+          pointer-events:none;
+        "></div>
+        <div style="
+          width:38px; 
+          height:38px; 
+          background:linear-gradient(135deg, #ef4444, #dc2626); 
+          border-radius:50% 50% 50% 0; 
+          transform:rotate(-45deg); 
+          border:3px solid #ffffff; 
+          box-shadow:0 6px 18px rgba(239,68,68,0.5); 
+          display:flex; 
+          align-items:center; 
+          justify-content:center;
+        ">
+          <span style="transform:rotate(45deg); font-size:17px; color:white; line-height:1;">
+            📍
+          </span>
+        </div>
+        <div style="
+          position:absolute; 
+          top:-22px; 
+          left:50%; 
+          transform:translateX(-50%); 
+          background:#ef4444; 
+          color:#ffffff; 
+          font-family:'Plus Jakarta Sans',sans-serif;
+          font-size:10px; 
+          font-weight:700; 
+          padding:2px 8px; 
+          border-radius:6px; 
+          white-space:nowrap; 
+          box-shadow:0 2px 8px rgba(0,0,0,0.25);
+        ">
+          New Pin
+        </div>
+      </div>
+    `,
+    iconSize: [38, 38],
+    iconAnchor: [19, 38]
+  });
+}
+
+// Reverse Geocoding helper using OpenStreetMap Nominatim
+async function fetchReverseGeocode(lat, lng) {
+  const addrInput = document.getElementById('branch-input-address');
+  if (!addrInput) return;
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+      headers: { 'Accept-Language': 'en' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.display_name && !addrInput.value.trim()) {
+        addrInput.value = data.display_name;
+      }
+    }
+  } catch (_) {}
+}
 
 window.initAdminBranchMap = function() {
   const mapContainer = document.getElementById('admin-branch-map');
   if (!mapContainer || typeof L === 'undefined') return;
 
   if (!adminMap) {
-    adminMap = L.map('admin-branch-map').setView([10.2098, 123.7580], 12);
+    adminMap = L.map('admin-branch-map').setView([10.2450, 123.7960], 12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(adminMap);
 
-    // Map click handler to pin location & auto-fill lat/lng
+    // Map click handler: place new pin marker & auto-fill inputs
     adminMap.on('click', function(e) {
-      const lat = e.latlng.lat.toFixed(5);
-      const lng = e.latlng.lng.toFixed(5);
+      const lat = parseFloat(e.latlng.lat.toFixed(5));
+      const lng = parseFloat(e.latlng.lng.toFixed(5));
 
       const latInput = document.getElementById('branch-input-lat');
       const lngInput = document.getElementById('branch-input-lng');
@@ -4298,20 +4450,58 @@ window.initAdminBranchMap = function() {
       if (adminNewMarker) {
         adminNewMarker.setLatLng(e.latlng);
       } else {
-        adminNewMarker = L.marker(e.latlng, { draggable: true }).addTo(adminMap);
-        adminNewMarker.bindPopup('<b>New Branch Pin</b><br>Drag or click to adjust location').openPopup();
+        adminNewMarker = L.marker(e.latlng, {
+          icon: createNewPin(),
+          draggable: true,
+          zIndexOffset: 1000
+        }).addTo(adminMap);
 
         adminNewMarker.on('dragend', function(event) {
           const pos = event.target.getLatLng();
-          if (latInput) latInput.value = pos.lat.toFixed(5);
-          if (lngInput) lngInput.value = pos.lng.toFixed(5);
+          const dLat = parseFloat(pos.lat.toFixed(5));
+          const dLng = parseFloat(pos.lng.toFixed(5));
+          if (latInput) latInput.value = dLat;
+          if (lngInput) lngInput.value = dLng;
+          fetchReverseGeocode(dLat, dLng);
         });
       }
 
-      showToast(`Pin set at Lat: ${lat}, Lng: ${lng}`, 'info');
+      adminNewMarker.bindPopup(`
+        <div style="font-family:'Plus Jakarta Sans',sans-serif; text-align:center; min-width:160px; padding:4px;">
+          <strong style="color:#ef4444; font-size:13px; display:block; margin-bottom:2px;">📍 New Branch Pin</strong>
+          <span style="color:#64748b; font-size:11px; display:block; margin-bottom:6px;">(${lat}, ${lng})</span>
+          <span style="font-size:10px; color:#0284c7; background:#e0f2fe; padding:2px 8px; border-radius:10px; font-weight:600;">Drag or click map to move</span>
+        </div>
+      `).openPopup();
+
+      showToast(`Branch pin placed at (${lat}, ${lng})`, 'info');
+      fetchReverseGeocode(lat, lng);
     });
+
+    // Listen to manual latitude/longitude input edits to reposition the pin
+    const latInput = document.getElementById('branch-input-lat');
+    const lngInput = document.getElementById('branch-input-lng');
+    const onManualCoordInput = () => {
+      const lat = parseFloat(latInput?.value);
+      const lng = parseFloat(lngInput?.value);
+      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        const latLng = [lat, lng];
+        if (adminNewMarker) {
+          adminNewMarker.setLatLng(latLng);
+        } else {
+          adminNewMarker = L.marker(latLng, { icon: createNewPin(), draggable: true, zIndexOffset: 1000 }).addTo(adminMap);
+        }
+        adminMap.panTo(latLng);
+      }
+    };
+    if (latInput) latInput.addEventListener('input', onManualCoordInput);
+    if (lngInput) lngInput.addEventListener('input', onManualCoordInput);
+
   } else {
-    setTimeout(() => { adminMap.invalidateSize(); }, 200);
+    setTimeout(() => { 
+      adminMap.invalidateSize(); 
+      updateAdminMapMarkers();
+    }, 200);
   }
 
   updateAdminMapMarkers();
@@ -4320,7 +4510,7 @@ window.initAdminBranchMap = function() {
 function updateAdminMapMarkers() {
   if (!adminMap || typeof L === 'undefined') return;
 
-  // Clear existing markers
+  // Clear existing branch markers
   adminBranchMarkers.forEach(m => adminMap.removeLayer(m));
   adminBranchMarkers = [];
 
@@ -4329,17 +4519,64 @@ function updateAdminMapMarkers() {
   const bounds = [];
   branches.forEach(b => {
     if (b.lat && b.lng) {
-      const marker = L.marker([b.lat, b.lng]).addTo(adminMap);
-      marker.bindPopup(`<b>${escapeHTML(b.name)}</b><br>${escapeHTML(b.location || 'Clinic Branch')}`);
+      const isSelected = (currentAdminBranch === b.key || currentAdminBranch === b.name);
+      const marker = L.marker([b.lat, b.lng], {
+        icon: createClinicPin(b, isSelected),
+        title: b.name,
+        zIndexOffset: isSelected ? 500 : 100
+      }).addTo(adminMap);
+
+      const isMain = b.isMain || b.key === 'Main Branch';
+      const popupContent = `
+        <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:210px; padding:2px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:4px;">
+            <strong style="color:#0b3c4d; font-size:13px;">${escapeHTML(b.name)}</strong>
+            ${isMain ? '<span style="font-size:9px; background:#e0f2fe; color:#0284c7; padding:1px 6px; border-radius:8px; font-weight:700;">HQ</span>' : ''}
+          </div>
+          <p style="color:#475569; font-size:11px; margin:0 0 6px 0; line-height:1.4;">📍 ${escapeHTML(b.location || 'Clinic Branch')}</p>
+          <div style="font-size:10.5px; color:#64748b; margin-bottom:8px;">
+            ${b.contactNumber ? `<div>📞 ${escapeHTML(b.contactNumber)}</div>` : ''}
+            ${b.operatingHours ? `<div>🕒 ${escapeHTML(b.operatingHours)}</div>` : ''}
+          </div>
+          <div style="display:flex; gap:6px; border-top:1px solid #e2e8f0; padding-top:6px;">
+            <button type="button" onclick="selectAdminBranch('${escapeHTML(b.key)}'); showToast('Selected branch: ${escapeHTML(b.name)}', 'info');" style="flex:1; background:#0284c7; color:white; border:none; border-radius:6px; padding:5px 8px; font-size:10.5px; font-weight:600; cursor:pointer;">
+              Select Branch
+            </button>
+            <button type="button" onclick="zoomToBranchPin(${b.lat}, ${b.lng}, '${escapeHTML(b.name)}');" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; border-radius:6px; padding:5px 8px; font-size:10.5px; font-weight:600; cursor:pointer;">
+              Zoom
+            </button>
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupContent);
+      marker.branchData = b;
       adminBranchMarkers.push(marker);
       bounds.push([b.lat, b.lng]);
     }
   });
 
-  if (bounds.length > 0) {
-    adminMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+  if (bounds.length > 0 && !adminNewMarker) {
+    adminMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
   }
 }
+window.updateAdminMapMarkers = updateAdminMapMarkers;
+
+window.zoomToBranchPin = function(lat, lng, name) {
+  if (!adminMap) return;
+  adminMap.flyTo([lat, lng], 15, { duration: 0.8 });
+  const targetMarker = adminBranchMarkers.find(m => {
+    const p = m.getLatLng();
+    return Math.abs(p.lat - lat) < 0.0005 && Math.abs(p.lng - lng) < 0.0005;
+  });
+  if (targetMarker) {
+    setTimeout(() => targetMarker.openPopup(), 400);
+  }
+  const mapEl = document.getElementById('admin-branch-map');
+  if (mapEl) {
+    mapEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+};
 
 window.renderBranchesList = function() {
   const listContainer = document.getElementById('settings-branches-list');
@@ -4357,25 +4594,34 @@ window.renderBranchesList = function() {
       const hours = b.operatingHours || '';
       const lat = b.lat || '';
       const lng = b.lng || '';
+      const isSelected = (currentAdminBranch === b.key || currentAdminBranch === b.name);
       const canDelete = !b.isMain && b.key !== 'Main Branch';
 
       return `
-        <div style="display:flex; justify-content:space-between; align-items:center; background:#f9f9f9; border:1px solid #eee; border-radius:10px; padding:10px 14px; font-size:0.85rem; color:var(--dark-color);">
-          <div>
-            <div style="font-weight:700; color:var(--secondary-color); display:flex; align-items:center; gap:8px;">
-              <span>${escapeHTML(name)}</span>
-              ${b.isMain ? '<span style="font-size:0.7rem; font-weight:700; background:#e0f2fe; color:#0284c7; padding:2px 8px; border-radius:12px;">Headquarters</span>' : ''}
+        <div class="branch-list-card ${isSelected ? 'selected' : ''}" onclick="zoomToBranchPin(${lat}, ${lng}, '${escapeHTML(name)}')">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-weight: 700; color: var(--secondary-color); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 0.95rem;">${escapeHTML(name)}</span>
+              ${b.isMain ? '<span style="font-size: 0.7rem; font-weight: 700; background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 12px;">Headquarters</span>' : ''}
+              <span style="font-size: 0.68rem; font-weight: 700; background: #ecfdf5; color: #059669; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px;">
+                <span style="width: 5px; height: 5px; border-radius: 50%; background: #10b981;"></span> Map Pin Active
+              </span>
             </div>
-            ${addr ? `<div style="font-size:0.78rem; color:#666; margin-top:2px;">📍 ${escapeHTML(addr)}</div>` : ''}
-            <div style="display:flex; gap:12px; margin-top:3px; font-size:0.74rem; color:#888;">
+            ${addr ? `<div style="font-size: 0.8rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 4px;"><i class="ti ti-map-pin" style="color: #0284c7;"></i> ${escapeHTML(addr)}</div>` : ''}
+            <div style="display: flex; gap: 14px; margin-top: 4px; font-size: 0.76rem; color: #64748b; flex-wrap: wrap;">
               ${phone ? `<span>📞 ${escapeHTML(phone)}</span>` : ''}
               ${hours ? `<span>🕒 ${escapeHTML(hours)}</span>` : ''}
-              ${lat && lng ? `<span>🌐 (${lat}, ${lng})</span>` : ''}
+              ${lat && lng ? `<span>🌐 Lat: ${lat}, Lng: ${lng}</span>` : ''}
             </div>
           </div>
-          ${canDelete ? `
-            <button type="button" class="btn-danger-action" style="padding:4px 10px; font-size:0.75rem; border-radius:6px; width:auto; height:auto; cursor:pointer;" onclick="deleteCustomBranch('${escapeHTML(b.id || b.key)}', '${escapeHTML(name)}', event)">Delete</button>
-          ` : '<span style="font-size:0.74rem; color:#94a3b8; font-weight:600;">Default</span>'}
+          <div style="display: flex; align-items: center; gap: 8px; margin-left: 12px;">
+            <button type="button" class="admin-btn-action" style="padding: 6px 12px; font-size: 0.78rem;" onclick="event.stopPropagation(); zoomToBranchPin(${lat}, ${lng}, '${escapeHTML(name)}')">
+              <i class="ti ti-crosshair" style="font-size: 13px;"></i> Pin
+            </button>
+            ${canDelete ? `
+              <button type="button" class="admin-btn-action btn-danger" style="padding: 6px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); deleteCustomBranch('${escapeHTML(b.id || b.key)}', '${escapeHTML(name)}', event)">Delete</button>
+            ` : '<span style="font-size: 0.74rem; color: #94a3b8; font-weight: 600; padding: 4px 8px;">Default</span>'}
+          </div>
         </div>
       `;
     }).join('');
@@ -4383,7 +4629,7 @@ window.renderBranchesList = function() {
 
   populateBranchDropdowns();
 
-  // Initialize/refresh map
+  // Initialize/refresh map markers
   setTimeout(() => {
     initAdminBranchMap();
   }, 100);
@@ -4403,17 +4649,40 @@ if (addBranchForm) {
     e.preventDefault();
     const nameInput = document.getElementById('branch-input-name');
     const addrInput = document.getElementById('branch-input-address');
+    const phoneInput = document.getElementById('branch-input-phone');
+    const hoursInput = document.getElementById('branch-input-hours');
     const latInput = document.getElementById('branch-input-lat');
     const lngInput = document.getElementById('branch-input-lng');
 
     const name = nameInput?.value.trim();
     const location = addrInput?.value.trim() || '';
-    const lat = parseFloat(latInput?.value) || 10.2098;
-    const lng = parseFloat(lngInput?.value) || 123.7580;
+    const contactNumber = phoneInput?.value.trim() || '';
+    const operatingHours = hoursInput?.value.trim() || 'Mon–Sat 8:00 AM – 5:00 PM';
+    
+    // Read from lat/lng inputs or fallback to map pin coordinates
+    let lat = parseFloat(latInput?.value);
+    let lng = parseFloat(lngInput?.value);
+
+    if ((isNaN(lat) || isNaN(lng)) && adminNewMarker) {
+      const pos = adminNewMarker.getLatLng();
+      lat = parseFloat(pos.lat.toFixed(5));
+      lng = parseFloat(pos.lng.toFixed(5));
+    }
+
+    if (isNaN(lat) || isNaN(lng)) {
+      lat = 10.2098;
+      lng = 123.7580;
+    }
 
     if (!name) {
       showToast('Branch name is required', 'error');
       return;
+    }
+
+    const submitBtn = addBranchForm.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Adding...';
     }
 
     try {
@@ -4423,7 +4692,7 @@ if (addBranchForm) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ name, location, lat, lng })
+        body: JSON.stringify({ name, location, contactNumber, operatingHours, lat, lng })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -4431,9 +4700,11 @@ if (addBranchForm) {
         return;
       }
 
-      showToast(`Branch "${data.name}" added successfully!`, 'success');
+      showToast(`Branch "${data.name}" added and pinned to map!`, 'success');
       nameInput.value = '';
       if (addrInput) addrInput.value = '';
+      if (phoneInput) phoneInput.value = '';
+      if (hoursInput) hoursInput.value = 'Mon–Sat 8:00 AM – 5:00 PM';
       if (latInput) latInput.value = '';
       if (lngInput) lngInput.value = '';
 
@@ -4444,8 +4715,23 @@ if (addBranchForm) {
 
       await loadAdminBranches();
       loadStats();
+
+      // Zoom to new branch pin on the map
+      setTimeout(() => {
+        zoomToBranchPin(data.lat, data.lng, data.name);
+      }, 300);
+
+      // Also select the new branch in the sidebar
+      if (typeof selectAdminBranch === 'function') {
+        selectAdminBranch(data.key);
+      }
     } catch (err) {
       showToast('Failed to create branch.', 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="ti ti-plus"></i> Add Branch';
+      }
     }
   });
 }

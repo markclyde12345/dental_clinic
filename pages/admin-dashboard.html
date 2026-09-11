@@ -1396,27 +1396,37 @@
                   </div>
                 </div>
 
-                <form id="add-branch-form" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; background: #fdfdfd; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <form id="add-branch-form" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; background: #fdfdfd; padding: 18px; border-radius: 14px; border: 1px solid var(--border-color);">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div>
-                      <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 4px;">Branch Name</label>
-                      <input type="text" id="branch-input-name" placeholder="e.g. Fano Clinic — Naga North Branch" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.85rem; box-sizing: border-box;">
+                      <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 4px;">Branch Name <span style="color: #ef4444;">*</span></label>
+                      <input type="text" id="branch-input-name" placeholder="e.g. Fano Clinic — Cebu North" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.85rem; box-sizing: border-box;">
                     </div>
                     <div>
-                      <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 4px;">Street Address / Location</label>
-                      <input type="text" id="branch-input-address" placeholder="e.g. North Highway, City of Naga, Cebu" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.85rem; box-sizing: border-box;">
+                      <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 4px;">Street Address / Location <span style="color: #ef4444;">*</span></label>
+                      <input type="text" id="branch-input-address" placeholder="e.g. North Highway, City of Naga, Cebu" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.85rem; box-sizing: border-box;">
                     </div>
                   </div>
-                  <div style="display: grid; grid-template-columns: 1fr 1fr 120px; gap: 10px; align-items: end;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr 110px 110px auto; gap: 10px; align-items: end;">
+                    <div>
+                      <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 4px;">Contact Phone</label>
+                      <input type="text" id="branch-input-phone" placeholder="0917-xxx-xxxx" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.85rem; box-sizing: border-box;">
+                    </div>
+                    <div>
+                      <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 4px;">Shift Hours</label>
+                      <input type="text" id="branch-input-hours" placeholder="Mon–Sat 8:00 AM – 5:00 PM" value="Mon–Sat 8:00 AM – 5:00 PM" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.85rem; box-sizing: border-box;">
+                    </div>
                     <div>
                       <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 4px;">Latitude</label>
-                      <input type="text" id="branch-input-lat" placeholder="10.2098" readonly style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #f4f6f8; font-size: 0.85rem; box-sizing: border-box;">
+                      <input type="number" step="any" id="branch-input-lat" placeholder="10.2098" style="width: 100%; padding: 9px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; box-sizing: border-box;">
                     </div>
                     <div>
                       <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 4px;">Longitude</label>
-                      <input type="text" id="branch-input-lng" placeholder="123.7580" readonly style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #f4f6f8; font-size: 0.85rem; box-sizing: border-box;">
+                      <input type="number" step="any" id="branch-input-lng" placeholder="123.7580" style="width: 100%; padding: 9px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; box-sizing: border-box;">
                     </div>
-                    <button type="submit" class="btn-primary" style="padding: 9px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; border: none; background: var(--secondary-color); color: white; cursor: pointer; height: 37px;">Add Branch</button>
+                    <button type="submit" class="btn-primary" style="padding: 9px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; border: none; background: var(--secondary-color); color: white; cursor: pointer; height: 38px; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;">
+                      <i class="ti ti-plus"></i> Add Branch
+                    </button>
                   </div>
                 </form>
 
@@ -2227,7 +2237,7 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/admin-dashboard.js?v=20260911_50x_ui"></script>
+  <script src="../js/admin-dashboard.js?v=20260911_mappins"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>
 </html>

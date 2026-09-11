@@ -34,5 +34,17 @@
     "lng": 123.834,
     "isMain": false,
     "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "branch-1789092499415",
+    "key": "Fano Dental Clinic - Cebu",
+    "name": "Fano Dental Clinic - Cebu Branch",
+    "location": "8V2V+M76, 35-B J. Urgello St, Cebu City, 6000 Cebu",
+    "contactNumber": "",
+    "operatingHours": "Mon–Sat 8:00 AM – 5:00 PM",
+    "lat": 10.3060,
+    "lng": 123.8890,
+    "isMain": false,
+    "createdAt": "2026-09-11T02:08:19.415Z"
   }
 ]
