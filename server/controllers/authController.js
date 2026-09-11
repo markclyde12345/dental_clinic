@@ -23,6 +23,16 @@ const generateToken = (id) => {
   });
 };
 
+const generateDeviceTrustToken = (user) => {
+  return jwt.sign({
+    type: 'device_trust',
+    userId: user.id,
+    email: (user.email || '').toLowerCase(),
+    role: user.role,
+    issuedAt: Date.now()
+  }, process.env.JWT_SECRET, { expiresIn: '30d' });
+};
+
 const internalError = (res, error) => {
   console.error('[SERVER ERROR]', error);
   return res.status(500).json({ message: 'Something went wrong. Please try again.' });
@@ -403,6 +413,122 @@ const authUser = async (req, res) => {
       });
     }
 
+    // ─── Admin Multi-Factor Authentication (MFA) Check ────────────────────────
+    if (user.role === 'Admin') {
+      const { getStoredMfaConfig } = require('./adminController');
+      const mfaConfig = getStoredMfaConfig();
+
+      if (mfaConfig && mfaConfig.mfaEnabled !== false) {
+        let isDeviceTrusted = false;
+        const incomingTrustToken = req.body.trustDeviceToken || req.headers['x-trust-device-token'];
+
+        if (mfaConfig.allowTrustDevice && incomingTrustToken) {
+          try {
+            const decoded = jwt.verify(incomingTrustToken, process.env.JWT_SECRET);
+            if (
+              decoded &&
+              decoded.type === 'device_trust' &&
+              decoded.email?.toLowerCase() === user.email?.toLowerCase() &&
+              (!mfaConfig.revokedBefore || (decoded.issuedAt && decoded.issuedAt > mfaConfig.revokedBefore))
+            ) {
+              isDeviceTrusted = true;
+            }
+          } catch (e) {
+            // Expired or invalid device trust token -> proceed with MFA challenge
+          }
+        }
+
+        if (!isDeviceTrusted) {
+          const otp = String(Math.floor(100000 + Math.random() * 900000));
+          console.log(`\n🛡️ [DEV ADMIN MFA OTP] Security code for ${user.email} is: ${otp} (valid for 15 minutes)\n`);
+          const otpExpires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+          await supabase.from('users').update({
+            otp_code: otp,
+            otp_expires: otpExpires,
+            otp_attempts: 0
+          }).eq('id', user.id);
+
+          const preferredChannel = mfaConfig.preferredChannel || 'email';
+          const maskedEmail = user.email.replace(/^(.)(.*)(@.*)$/, (_, a, b, c) => a + '*'.repeat(Math.max(b.length - 1, 2)) + c);
+          const maskedPhone = user.contact_number
+            ? user.contact_number.replace(/(\d{3})\d{4}(\d+)/, '$1****$2')
+            : null;
+
+          // Dispatch Email notification
+          if (preferredChannel === 'email' || preferredChannel === 'both') {
+            const emailHtml = `
+              <!DOCTYPE html>
+              <html>
+              <head><meta charset="utf-8"><title>Admin Security Code</title></head>
+              <body style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 14px rgba(11,60,77,0.08);">
+                  <tr>
+                    <td style="background-color: #0b3c4d; padding: 24px 32px; text-align: left;">
+                      <h1 style="color: #ffffff; font-size: 20px; font-weight: bold; margin: 0;">🛡️ Fano Dental Admin Console</h1>
+                      <p style="color: #c59b27; font-size: 12px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">Two-Factor Authentication</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 32px;">
+                      <p style="font-size: 15px; margin: 0 0 16px 0;">Hello <strong>${user.name}</strong>,</p>
+                      <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 24px 0;">
+                        A sign-in attempt was initiated for your Administrator account. Please enter the 6-digit MFA security passcode below to authenticate your session:
+                      </p>
+                      <div style="background-color: #eff6ff; border: 1px dashed #2563eb; border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 24px;">
+                        <span style="font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #1e40af; display: inline-block;">${otp}</span>
+                      </div>
+                      <p style="font-size: 13px; color: #64748b; margin: 0 0 8px 0;">
+                        ⏱️ <strong>This security code expires in 15 minutes.</strong>
+                      </p>
+                      <p style="font-size: 12px; color: #94a3b8; margin: 0;">
+                        If you did not attempt this administrator sign-in, please immediately reset your password and secure your clinic console.
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="background-color: #f8fafc; padding: 16px 32px; border-top: 1px solid #f1f5f9; text-align: center; font-size: 11px; color: #94a3b8;">
+                      Fano Dental Clinic • Balirong Highway, City of Naga, Cebu • Confidential Security Notice
+                    </td>
+                  </tr>
+                </table>
+              </body>
+              </html>
+            `;
+            sendEmail(user.email, `Admin Security Verification Code: ${otp} — Fano Dental Clinic`, emailHtml, `Your Admin MFA security code is: ${otp}`).catch(() => {});
+          }
+
+          // Dispatch SMS notification if phone is available
+          if ((preferredChannel === 'sms' || preferredChannel === 'both') && user.contact_number) {
+            sendSMS(user.contact_number, `Fano Dental Admin Security: Your 6-digit login verification code is ${otp}. Valid for 15 mins.`).catch(() => {});
+          }
+
+          logAuditAction({
+            action: 'ADMIN_MFA_CHALLENGE',
+            entityType: 'user',
+            entityId: user.id,
+            details: `Admin MFA challenge issued for ${user.email} (${preferredChannel})`,
+            metadata: { email: user.email, role: user.role, channel: preferredChannel },
+            req,
+            userName: user.name,
+            userRole: user.role
+          }).catch(() => {});
+
+          return res.json({
+            mfaRequired: true,
+            email: user.email,
+            role: user.role,
+            name: user.name,
+            maskedEmail,
+            maskedPhone,
+            channel: preferredChannel === 'sms' ? 'sms' : 'email',
+            availableChannels: user.contact_number ? ['email', 'sms'] : ['email'],
+            message: 'Admin Multi-Factor Authentication required. A 6-digit security code has been sent.'
+          });
+        }
+      }
+    }
+
     logAuditAction({
       action: 'USER_LOGIN_SUCCESS',
       entityType: 'user',
@@ -578,6 +704,21 @@ const verifyOTP = async (req, res) => {
       is_verified: true
     }).eq('id', user.id);
 
+    if (user.role === 'Admin') {
+      logAuditAction({
+        action: 'ADMIN_MFA_SUCCESS',
+        entityType: 'user',
+        entityId: user.id,
+        details: `Admin MFA identity verification succeeded for ${user.email}`,
+        metadata: { email: user.email, role: user.role, trustDevice: !!trustDevice },
+        req,
+        userName: user.name,
+        userRole: user.role
+      }).catch(() => {});
+    }
+
+    const trustDeviceToken = trustDevice ? generateDeviceTrustToken(user) : null;
+
     return res.json({
       _id: user.id,
       name: user.name,
@@ -586,6 +727,7 @@ const verifyOTP = async (req, res) => {
       token: generateToken(user.id),
       trustedDevice: !!trustDevice,
       trustedUntil: trustDevice ? new Date(Date.now() + OTP_EXPIRY_MS).toISOString() : null,
+      trustDeviceToken
     });
   } catch (error) {
     return internalError(res, error);

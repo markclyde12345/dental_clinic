@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const supabase = require('../config/db');
 const seedUsers = require('../utils/seeder');
+const sendEmail = require('../utils/emailService');
+const sendSMS = require('../utils/smsService');
 
 // Use 
 // /tmp for cross-platform compatibility (works on Vercel Linux + local Windows via env override)
@@ -11,6 +13,7 @@ const INVENTORY_FILE = path.join(DATA_DIR, 'inventory.json');
 const STAFF_FILE = path.join(DATA_DIR, 'staff_schedules.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 const BRANCHES_DATA_PATH = path.join(__dirname, '../data/branches.json');
+const MFA_SETTINGS_PATH = path.join(__dirname, '../data/mfa_settings.json');
 
 const defaultBranches = [
   {
@@ -1044,6 +1047,152 @@ const deleteBranch = async (req, res) => {
   }
 };
 
+// ─── Admin Multi-Factor Authentication (MFA) Handlers ───────────────────────
+const defaultMfaConfig = {
+  mfaEnabled: true,
+  preferredChannel: 'email',
+  allowTrustDevice: true,
+  revokedBefore: 0,
+  updatedAt: new Date().toISOString()
+};
+
+function getStoredMfaConfig() {
+  try {
+    if (fs.existsSync(MFA_SETTINGS_PATH)) {
+      const raw = fs.readFileSync(MFA_SETTINGS_PATH, 'utf8').replace(/^\uFEFF/, '');
+      return { ...defaultMfaConfig, ...JSON.parse(raw) };
+    }
+  } catch (e) {
+    console.error('[MFA Settings Read Error]', e.message);
+  }
+  return { ...defaultMfaConfig };
+}
+
+function saveStoredMfaConfig(config) {
+  try {
+    const dir = path.dirname(MFA_SETTINGS_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(MFA_SETTINGS_PATH, JSON.stringify(config, null, 2), 'utf8');
+  } catch (e) {
+    console.error('[MFA Settings Save Error]', e.message);
+  }
+}
+
+// @desc    Get Admin MFA configuration
+// @route   GET /api/admin/mfa-config
+// @access  Private (Admin)
+const getMfaConfig = async (req, res) => {
+  try {
+    const config = getStoredMfaConfig();
+    res.json({
+      ...config,
+      adminEmail: req.user?.email || 'admin@fanoclinic.com',
+      adminPhone: req.user?.contact_number || '+63 917 123 4567'
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @desc    Update Admin MFA configuration
+// @route   PUT /api/admin/mfa-config
+// @access  Private (Admin)
+const updateMfaConfig = async (req, res) => {
+  try {
+    const { mfaEnabled, preferredChannel, allowTrustDevice } = req.body;
+    const config = getStoredMfaConfig();
+
+    if (typeof mfaEnabled === 'boolean') config.mfaEnabled = mfaEnabled;
+    if (['email', 'sms', 'both'].includes(preferredChannel)) config.preferredChannel = preferredChannel;
+    if (typeof allowTrustDevice === 'boolean') config.allowTrustDevice = allowTrustDevice;
+    config.updatedAt = new Date().toISOString();
+
+    saveStoredMfaConfig(config);
+
+    recordServerLog(
+      'SUCCESS',
+      'SECURITY',
+      `Admin (${req.user?.name || 'Admin'}) updated MFA settings: Status=${config.mfaEnabled ? 'ENABLED' : 'DISABLED'}, Channel=${config.preferredChannel}, TrustDevice=${config.allowTrustDevice}`
+    );
+
+    res.json({
+      message: 'MFA configuration updated successfully.',
+      config
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @desc    Dispatch test MFA verification passcode
+// @route   POST /api/admin/mfa-test
+// @access  Private (Admin)
+const sendTestMfa = async (req, res) => {
+  try {
+    const config = getStoredMfaConfig();
+    const adminEmail = req.user?.email || 'admin@fanoclinic.com';
+    const adminPhone = req.user?.contact_number;
+    const testOtp = String(Math.floor(100000 + Math.random() * 900000));
+
+    console.log(`\n🔐 [DEV ADMIN MFA TEST OTP] Test Code for ${adminEmail} is: ${testOtp}\n`);
+
+    const channel = req.body.channel || config.preferredChannel || 'email';
+
+    if (channel === 'sms' || channel === 'both') {
+      if (adminPhone) {
+        await sendSMS(adminPhone, `Fano Dental Admin Security: Your test MFA code is ${testOtp}.`).catch(() => {});
+      }
+    }
+
+    if (channel === 'email' || channel === 'both') {
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background: #f8fafc;">
+          <div style="max-width: 500px; margin: auto; background: white; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0;">
+            <h2 style="color: #0b3c4d; margin-top: 0;">🛡️ Admin MFA Test Verification</h2>
+            <p style="color: #475569; font-size: 14px;">This is a test notification verifying your Multi-Factor Authentication channel delivery.</p>
+            <div style="background: #eff6ff; padding: 16px; text-align: center; border-radius: 8px; font-size: 28px; font-weight: 700; letter-spacing: 6px; color: #1e40af; margin: 20px 0;">
+              ${testOtp}
+            </div>
+            <p style="color: #64748b; font-size: 12px;">Fano Dental Clinic Management System &bull; Admin Security Suite</p>
+          </div>
+        </div>
+      `;
+      await sendEmail(adminEmail, `Admin Security Test Code: ${testOtp} — Fano Dental Clinic`, emailHtml, `Your Admin MFA test code is: ${testOtp}`).catch(() => {});
+    }
+
+    recordServerLog('INFO', 'SECURITY', `Admin test MFA code dispatched to ${adminEmail} via ${channel}`);
+
+    res.json({
+      success: true,
+      message: `Test MFA verification code dispatched via ${channel} to ${adminEmail}.`
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @desc    Revoke all remembered/trusted devices for Admin MFA
+// @route   POST /api/admin/mfa-revoke-devices
+// @access  Private (Admin)
+const revokeMfaDevices = async (req, res) => {
+  try {
+    const config = getStoredMfaConfig();
+    config.revokedBefore = Date.now();
+    config.updatedAt = new Date().toISOString();
+    saveStoredMfaConfig(config);
+
+    recordServerLog('WARNING', 'SECURITY', `Admin (${req.user?.name || 'Admin'}) revoked all trusted devices. MFA will be required on all logins.`);
+
+    res.json({
+      success: true,
+      message: 'All trusted devices have been invalidated. MFA will be enforced on all browser logins.',
+      revokedBefore: config.revokedBefore
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = { 
   getAdminStats, 
   getAdminAnalytics, 
@@ -1065,5 +1214,10 @@ module.exports = {
   triggerDatabaseBackup,
   getBranches,
   addBranch,
-  deleteBranch
+  deleteBranch,
+  getMfaConfig,
+  updateMfaConfig,
+  sendTestMfa,
+  revokeMfaDevices,
+  getStoredMfaConfig
 };

@@ -1,0 +1,7 @@
+{
+  "mfaEnabled": true,
+  "preferredChannel": "email",
+  "allowTrustDevice": true,
+  "revokedBefore": 1789110859454,
+  "updatedAt": "2026-09-11T07:14:19.454Z"
+}

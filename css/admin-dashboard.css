@@ -4588,3 +4588,109 @@ body.dark-theme .status-pill-written-off {
   box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
 }
 
+/* ─── Admin Multi-Factor Authentication (MFA) Styles ─── */
+.admin-mfa-hero-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7fa 100%);
+  border: 1px solid #cbe4ee;
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.mfa-shield-icon-badge {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0b3c4d, #1e40af);
+  color: #fbbf24;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(11, 60, 77, 0.2);
+  flex-shrink: 0;
+}
+
+.mfa-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  transition: all 0.3s ease;
+}
+
+.mfa-live-pill.active {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.mfa-live-pill.inactive {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.mfa-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulsePin 2s infinite;
+}
+
+.mfa-live-pill.inactive .mfa-status-dot {
+  background: #ef4444;
+  animation: none;
+}
+
+.btn-mfa-action-test {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 9px;
+  border: 1px solid #0b3c4d;
+  background: #0b3c4d;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-mfa-action-test:hover {
+  background: #082935;
+  border-color: #082935;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 60, 77, 0.2);
+}
+
+.btn-mfa-action-revoke {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 9px;
+  border: 1px solid #fca5a5;
+  background: #fff5f5;
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-mfa-action-revoke:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+

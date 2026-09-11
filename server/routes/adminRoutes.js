@@ -18,9 +18,13 @@ const {
   clearSystemLogs,
   getDatabaseStatus,
   triggerDatabaseBackup,
-  getBranches,
-  addBranch,
-  deleteBranch
+  getBranches, 
+  addBranch, 
+  deleteBranch,
+  getMfaConfig,
+  updateMfaConfig,
+  sendTestMfa,
+  revokeMfaDevices
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -28,6 +32,14 @@ router.get('/stats', protect, authorize('Admin'), getAdminStats);
 router.get('/analytics', protect, authorize('Admin'), getAdminAnalytics);
 router.get('/detailed-stats', protect, authorize('Admin'), getDetailedStats);
 router.post('/reset-seeder', protect, authorize('Admin'), resetSeeder);
+
+// Admin Multi-Factor Authentication (MFA) Security Routes
+router.route('/mfa-config')
+  .get(protect, authorize('Admin'), getMfaConfig)
+  .put(protect, authorize('Admin'), updateMfaConfig);
+
+router.post('/mfa-test', protect, authorize('Admin'), sendTestMfa);
+router.post('/mfa-revoke-devices', protect, authorize('Admin'), revokeMfaDevices);
 
 // Database Health & Backup routes
 router.get('/database-status', protect, authorize('Admin'), getDatabaseStatus);

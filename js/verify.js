@@ -28,11 +28,35 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set tab active state
   updateChannelTabs();
 
+  // If Admin MFA flow, customize branding and titles
+  const flow = params.get('flow');
+  if (flow === 'admin-mfa') {
+    document.title = 'Admin Two-Factor Authentication — Fano Dental Clinic';
+    const titleEl = document.getElementById('verify-title');
+    if (titleEl) titleEl.textContent = 'Admin Two-Factor Authentication';
+
+    const shieldEl = document.getElementById('verify-shield');
+    if (shieldEl) {
+      shieldEl.innerHTML = `
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #0b3c4d;">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" fill="rgba(11,60,77,0.12)"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#c59b27" stroke-width="2.5"></path>
+        </svg>
+      `;
+      shieldEl.style.background = 'linear-gradient(135deg, rgba(11,60,77,0.08), rgba(197,155,39,0.15))';
+      shieldEl.style.border = '2px solid rgba(197,155,39,0.45)';
+      shieldEl.style.boxShadow = '0 8px 24px rgba(11,60,77,0.15)';
+    }
+
+    const verifyBtnText = document.getElementById('verify-btn-text');
+    if (verifyBtnText) verifyBtnText.textContent = 'Authenticate & Enter Console';
+  }
+
   // On page load, the backend has already sent the OTP code during registration or login.
   // Set UI state to sent and start the resend timer to avoid spamming / rate limiting.
   const statusText = document.getElementById('status-text');
   const statusDot = document.querySelector('.status-dot');
-  if (statusText) statusText.textContent = `Code sent via ${currentChannel === 'sms' ? 'SMS' : 'Email'} successfully`;
+  if (statusText) statusText.textContent = `Security code sent via ${currentChannel === 'sms' ? 'SMS' : 'Email'} successfully`;
   if (statusDot) statusDot.style.background = '#2ed573'; // success green
   startResendCooldown();
 
@@ -64,15 +88,21 @@ function switchChannel(channel) {
 function updateChannelTabs() {
   const emailTab = document.getElementById('tab-email');
   const smsTab = document.getElementById('tab-sms');
+  const flow = new URLSearchParams(window.location.search).get('flow');
+  const isAdminMfa = flow === 'admin-mfa';
 
   if (currentChannel === 'sms') {
     smsTab.classList.add('active');
     emailTab.classList.remove('active');
-    document.getElementById('verify-subtitle').innerHTML = 'We sent a 6-digit code to your registered mobile number.<br>Enter it below to continue. Code is valid for 30 days.';
+    document.getElementById('verify-subtitle').innerHTML = isAdminMfa
+      ? 'We sent a 6-digit MFA security code to your registered mobile number.<br>Enter it below to authenticate the Admin Console.'
+      : 'We sent a 6-digit code to your registered mobile number.<br>Enter it below to continue. Code is valid for 30 days.';
   } else {
     emailTab.classList.add('active');
     smsTab.classList.remove('active');
-    document.getElementById('verify-subtitle').innerHTML = 'We sent a 6-digit code to your email address <strong>' + currentEmail + '</strong>.<br>Enter it below. Code is valid for 30 days.';
+    document.getElementById('verify-subtitle').innerHTML = isAdminMfa
+      ? 'We sent a 6-digit MFA security code to <strong>' + currentEmail + '</strong>.<br>Enter it below to authenticate the Admin Console.'
+      : 'We sent a 6-digit code to your email address <strong>' + currentEmail + '</strong>.<br>Enter it below. Code is valid for 30 days.';
   }
 }
 
@@ -208,11 +238,15 @@ async function handleVerifySubmit(e) {
     const data = await res.json();
 
     if (res.ok) {
+      const emailLower = currentEmail.toLowerCase();
       if (trustDevice) {
-        localStorage.setItem(`fano_trusted_device_${currentEmail}`, JSON.stringify({
-          email: currentEmail,
+        localStorage.setItem(`fano_trusted_device_${emailLower}`, JSON.stringify({
+          email: emailLower,
           trustedUntil: data.trustedUntil || (Date.now() + 30 * 24 * 60 * 60 * 1000)
         }));
+        if (data.trustDeviceToken) {
+          localStorage.setItem(`fano_trusted_device_token_${emailLower}`, data.trustDeviceToken);
+        }
       }
 
       const flow = new URLSearchParams(window.location.search).get('flow');
@@ -241,7 +275,15 @@ async function handleVerifySubmit(e) {
           sessionStorage.setItem('token', data.token);
           sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
         }
-        window.location.href = 'dashboard.html';
+
+        if (flow === 'admin-mfa' || data.role === 'Admin') {
+          showOtpSuccess('🛡️ Admin MFA verification confirmed! Launching Admin Console…');
+          setTimeout(() => {
+            window.location.href = 'admin-dashboard.html';
+          }, 800);
+        } else {
+          window.location.href = 'dashboard.html';
+        }
       }
     } else {
       showOtpError(data.message || 'Invalid or expired verification code.');

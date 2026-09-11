@@ -4238,6 +4238,9 @@ window.switchSettingsSection = function(sectionId, element) {
   if (sectionId === 'utilities') {
     loadDatabaseHealthStatus();
   }
+  if (sectionId === 'mfa') {
+    loadMfaSettings();
+  }
   if (sectionId === 'profile') {
     setTimeout(() => {
       if (adminMap) {
@@ -4247,6 +4250,162 @@ window.switchSettingsSection = function(sectionId, element) {
         }
       }
     }, 150);
+  }
+};
+
+window.loadMfaSettings = async function() {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const enforceInput = document.getElementById('set-admin-mfa-enforce');
+  const channelSelect = document.getElementById('set-admin-mfa-channel');
+  const trustDeviceInput = document.getElementById('set-admin-mfa-trust-device');
+  const statusPill = document.getElementById('mfa-status-pill');
+  const lastSavedTime = document.getElementById('mfa-last-saved-time');
+
+  try {
+    const res = await fetch('/api/admin/mfa-config', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (enforceInput) enforceInput.checked = data.mfaEnabled !== false;
+      if (channelSelect) channelSelect.value = data.preferredChannel || 'email';
+      if (trustDeviceInput) trustDeviceInput.checked = data.allowTrustDevice !== false;
+
+      if (statusPill) {
+        if (data.mfaEnabled !== false) {
+          statusPill.className = 'mfa-live-pill active';
+          statusPill.innerHTML = '<span class="mfa-status-dot"></span> MFA Active';
+        } else {
+          statusPill.className = 'mfa-live-pill inactive';
+          statusPill.innerHTML = '<span class="mfa-status-dot"></span> MFA Disabled';
+        }
+      }
+
+      if (lastSavedTime && data.updatedAt) {
+        const d = new Date(data.updatedAt);
+        lastSavedTime.textContent = `Synced: ${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      }
+    }
+  } catch (err) {
+    console.warn('[Admin MFA Settings Load Warning]', err);
+  }
+};
+
+window.saveMfaSettings = async function(customMsg) {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const enforceInput = document.getElementById('set-admin-mfa-enforce');
+  const channelSelect = document.getElementById('set-admin-mfa-channel');
+  const trustDeviceInput = document.getElementById('set-admin-mfa-trust-device');
+  const statusPill = document.getElementById('mfa-status-pill');
+  const lastSavedTime = document.getElementById('mfa-last-saved-time');
+
+  const mfaEnabled = enforceInput ? enforceInput.checked : true;
+  const preferredChannel = channelSelect ? channelSelect.value : 'email';
+  const allowTrustDevice = trustDeviceInput ? trustDeviceInput.checked : true;
+
+  try {
+    const res = await fetch('/api/admin/mfa-config', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ mfaEnabled, preferredChannel, allowTrustDevice })
+    });
+    if (res.ok) {
+      if (statusPill) {
+        if (mfaEnabled) {
+          statusPill.className = 'mfa-live-pill active';
+          statusPill.innerHTML = '<span class="mfa-status-dot"></span> MFA Active';
+        } else {
+          statusPill.className = 'mfa-live-pill inactive';
+          statusPill.innerHTML = '<span class="mfa-status-dot"></span> MFA Disabled';
+        }
+      }
+      if (lastSavedTime) {
+        lastSavedTime.textContent = 'Saved just now';
+      }
+      showToast(customMsg || `MFA Policy saved (${mfaEnabled ? 'Active' : 'Disabled'})`, 'success');
+      logConsoleEvent(`[SECURITY] Admin MFA policy updated: Enabled=${mfaEnabled}, Channel=${preferredChannel}, TrustDevice=${allowTrustDevice}`);
+    } else {
+      showToast('Failed to save MFA configuration.', 'error');
+    }
+  } catch (err) {
+    showToast('Network error saving MFA settings.', 'error');
+  }
+};
+
+window.testAdminMfaDelivery = async function() {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const channelSelect = document.getElementById('set-admin-mfa-channel');
+  const channel = channelSelect ? channelSelect.value : 'email';
+  const btn = document.getElementById('btn-test-admin-mfa');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Sending Test Code…';
+  }
+
+  try {
+    const res = await fetch('/api/admin/mfa-test', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ channel })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(data.message || 'Test MFA security code sent successfully!', 'success');
+      logConsoleEvent(`[SECURITY] Test MFA passcode dispatched via ${channel}.`);
+    } else {
+      showToast(data.message || 'Failed to dispatch test code.', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to send test code. Please check server status.', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-send" style="font-size: 16px;"></i> Send Test Security Code';
+    }
+  }
+};
+
+window.revokeAllAdminMfaDevices = async function() {
+  if (!confirm('Are you sure you want to revoke all trusted devices? All administrators will be required to pass full MFA verification on their next sign-in.')) {
+    return;
+  }
+
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const btn = document.getElementById('btn-revoke-all-mfa-devices');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Revoking…';
+  }
+
+  try {
+    const res = await fetch('/api/admin/mfa-revoke-devices', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(data.message || 'All trusted devices invalidated successfully!', 'success');
+      logConsoleEvent('[SECURITY] All remembered trusted devices for Admin MFA revoked.');
+    } else {
+      showToast(data.message || 'Failed to revoke devices.', 'error');
+    }
+  } catch (err) {
+    showToast('Error communicating with server.', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-device-mobile-off" style="font-size: 16px;"></i> Revoke All Trusted Devices';
+    }
   }
 };
 
@@ -4280,6 +4439,7 @@ window.loadSettings = function() {
 
   applyThemePreference(darkMode);
   renderBranchesList();
+  loadMfaSettings();
 };
 
 function applyThemePreference(darkMode) {
@@ -4916,6 +5076,38 @@ if (toggleDarkMode) {
     showToast(`${e.target.checked ? 'Dark Mode activated' : 'Light Mode activated'}`, 'success');
     logConsoleEvent(`[INFO] Dark Mode toggle state changed: ${e.target.checked}.`);
   });
+}
+
+// ─── Admin Multi-Factor Authentication (MFA) Listeners ───────────────────────
+const toggleAdminMfaEnforce = document.getElementById('set-admin-mfa-enforce');
+if (toggleAdminMfaEnforce) {
+  toggleAdminMfaEnforce.addEventListener('change', (e) => {
+    saveMfaSettings(e.target.checked ? 'Admin MFA Enforced' : 'Admin MFA Disabled');
+  });
+}
+
+const selectAdminMfaChannel = document.getElementById('set-admin-mfa-channel');
+if (selectAdminMfaChannel) {
+  selectAdminMfaChannel.addEventListener('change', (e) => {
+    saveMfaSettings(`Verification channel set to ${e.target.value.toUpperCase()}`);
+  });
+}
+
+const toggleAdminMfaTrustDevice = document.getElementById('set-admin-mfa-trust-device');
+if (toggleAdminMfaTrustDevice) {
+  toggleAdminMfaTrustDevice.addEventListener('change', (e) => {
+    saveMfaSettings(e.target.checked ? '30-Day Device Trust Allowed' : 'Device Trust Disabled (MFA on Every Login)');
+  });
+}
+
+const btnTestAdminMfa = document.getElementById('btn-test-admin-mfa');
+if (btnTestAdminMfa) {
+  btnTestAdminMfa.addEventListener('click', testAdminMfaDelivery);
+}
+
+const btnRevokeAllMfaDevices = document.getElementById('btn-revoke-all-mfa-devices');
+if (btnRevokeAllMfaDevices) {
+  btnRevokeAllMfaDevices.addEventListener('click', revokeAllAdminMfaDevices);
 }
 
 // Backup & reset

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin-dashboard.css?v=20260911_avatar_colors">
+  <link rel="stylesheet" href="../css/admin-dashboard.css?v=20260911_admin_mfa">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 </head>
@@ -1295,6 +1295,7 @@
             <button class="settings-inner-tab active" onclick="switchSettingsSection('profile', this)"><i class="ti ti-building-hospital"></i> Clinic Profile</button>
             <button class="settings-inner-tab" onclick="switchSettingsSection('services', this)"><i class="ti ti-tools"></i> Services &amp; Treatments</button>
             <button class="settings-inner-tab" onclick="switchSettingsSection('preferences', this)"><i class="ti ti-adjustments"></i> System Preferences</button>
+            <button class="settings-inner-tab" onclick="switchSettingsSection('mfa', this)" id="settings-tab-btn-mfa"><i class="ti ti-shield-lock"></i> Security &amp; MFA</button>
             <button class="settings-inner-tab" onclick="switchSettingsSection('twilio', this)"><i class="ti ti-message-2"></i> Twilio Gateway</button>
             <button class="settings-inner-tab" onclick="switchSettingsSection('utilities', this)"><i class="ti ti-database"></i> Database &amp; Backup</button>
           </div>
@@ -1667,6 +1668,140 @@
                   </button>
                   <button type="button" id="btn-reset-seeder" style="border: 1px solid #fca5a5; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 12px 18px; border-radius: 10px; cursor: pointer; font-size: 0.9rem;">
                     <i class="ti ti-trash" style="font-size: 16px;"></i> Reset &amp; Seed DB
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SECTION 6: Security & Multi-Factor Authentication (MFA) -->
+          <div id="settings-sec-mfa" class="settings-sec-pane" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 24px; max-width: 860px;">
+              
+              <!-- Security Banner Card -->
+              <div class="admin-card admin-mfa-hero-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+                  <div style="display: flex; align-items: flex-start; gap: 16px;">
+                    <div class="mfa-shield-icon-badge">
+                      <i class="ti ti-shield-lock" style="font-size: 28px;"></i>
+                    </div>
+                    <div>
+                      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                        <h3 class="admin-card-title" style="margin: 0; font-size: 1.2rem;">Admin Multi-Factor Authentication (MFA)</h3>
+                        <span id="mfa-status-pill" class="mfa-live-pill active">
+                          <span class="mfa-status-dot"></span> MFA Active
+                        </span>
+                      </div>
+                      <p class="admin-card-subtitle" style="margin: 0; line-height: 1.5; max-width: 600px;">
+                        Protect administrative privileges, patient confidential records, and financial ledgers with two-step identity verification.
+                      </p>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Security Level</div>
+                    <div style="font-size: 1rem; font-weight: 800; color: #0b3c4d; display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 2px;">
+                      <i class="ti ti-shield-check" style="color: #22c55e;"></i> High Enterprise
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MFA Policy Controls Card -->
+              <div class="admin-card">
+                <div class="admin-card-header" style="margin-bottom: 20px;">
+                  <div>
+                    <h3 class="admin-card-title">MFA Enforcement &amp; Channels</h3>
+                    <p class="admin-card-subtitle">Configure authentication rules and delivery methods for Administrator sign-ins</p>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 22px;">
+                  
+                  <!-- Toggle 1: Enforce MFA -->
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 18px;">
+                    <div style="max-width: 620px;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <h4 style="margin: 0; font-size: 0.95rem; color: var(--dark-color); font-weight: 600;">Enforce Multi-Factor Authentication</h4>
+                        <span style="font-size: 0.7rem; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-weight: 700;">Recommended</span>
+                      </div>
+                      <p style="margin: 4px 0 0 0; font-size: 0.82rem; color: #64748b; line-height: 1.4;">
+                        When enabled, all administrator sign-in attempts require entering a valid 6-digit one-time passcode delivered via your selected channel.
+                      </p>
+                    </div>
+                    <label class="switch-toggle" style="position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0;">
+                      <input type="checkbox" id="set-admin-mfa-enforce" checked style="opacity: 0; width: 0; height: 0;">
+                      <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px;" class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <!-- Setting 2: Primary Channel -->
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 18px;">
+                    <div style="max-width: 540px;">
+                      <h4 style="margin: 0; font-size: 0.95rem; color: var(--dark-color); font-weight: 600;">Primary Verification Channel</h4>
+                      <p style="margin: 4px 0 0 0; font-size: 0.82rem; color: #64748b; line-height: 1.4;">
+                        Select where one-time security passcodes are dispatched by default during login.
+                      </p>
+                    </div>
+                    <div style="min-width: 240px;">
+                      <select id="set-admin-mfa-channel" class="admin-select-pill" style="width: 100%; padding: 8px 14px; font-weight: 600; font-size: 0.85rem;">
+                        <option value="email">📧 Email OTP (Primary Admin Email)</option>
+                        <option value="sms">📱 SMS OTP (Admin Mobile Phone)</option>
+                        <option value="both">⚡ Dual Dispatch (Both Email &amp; SMS)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Toggle 3: 30-Day Trusted Device Bypass -->
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 18px;">
+                    <div style="max-width: 620px;">
+                      <h4 style="margin: 0; font-size: 0.95rem; color: var(--dark-color); font-weight: 600;">Allow 30-Day Trusted Device Bypass</h4>
+                      <p style="margin: 4px 0 0 0; font-size: 0.82rem; color: #64748b; line-height: 1.4;">
+                        Permit administrators to check "Remember / Trust this device for 30 days" during login so they are not prompted for MFA on every sign-in from that browser.
+                      </p>
+                    </div>
+                    <label class="switch-toggle" style="position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0;">
+                      <input type="checkbox" id="set-admin-mfa-trust-device" checked style="opacity: 0; width: 0; height: 0;">
+                      <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px;" class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <!-- Delivery Test & Device Revocation Controls -->
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding-top: 4px;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                      <button type="button" id="btn-test-admin-mfa" class="btn-mfa-action-test">
+                        <i class="ti ti-send" style="font-size: 16px;"></i> Send Test Security Code
+                      </button>
+                      <button type="button" id="btn-revoke-all-mfa-devices" class="btn-mfa-action-revoke">
+                        <i class="ti ti-device-mobile-off" style="font-size: 16px;"></i> Revoke All Trusted Devices
+                      </button>
+                    </div>
+                    <div id="mfa-last-saved-time" style="font-size: 0.78rem; color: #94a3b8;">
+                      Synced with Security Policy
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Security Information & Guidelines -->
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: var(--secondary-color); font-weight: 700; font-size: 0.9rem;">
+                  <i class="ti ti-info-circle" style="font-size: 18px;"></i>
+                  <span>How Admin MFA Protects Your Clinic</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 12px;">
+                  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px;">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #0b3c4d;">⏱️ 15-Minute Expiration</div>
+                    <p style="font-size: 0.78rem; color: #64748b; margin: 4px 0 0 0; line-height: 1.4;">All one-time passcodes expire within 15 minutes to eliminate replay vulnerabilities.</p>
+                  </div>
+                  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px;">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #0b3c4d;">🛡️ Brute-Force Rate Limiting</div>
+                    <p style="font-size: 0.78rem; color: #64748b; margin: 4px 0 0 0; line-height: 1.4;">Attempts are strictly rate-limited with temporary lockouts after 5 consecutive invalid entries.</p>
+                  </div>
+                  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px;">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #0b3c4d;">📜 Immutable Audit Logs</div>
+                    <p style="font-size: 0.78rem; color: #64748b; margin: 4px 0 0 0; line-height: 1.4;">Every challenge, successful authentication, and device revocation is permanently recorded in System Logs.</p>
+                  </div>
                 </div>
               </div>
 
@@ -2237,7 +2372,7 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/admin-dashboard.js?v=20260911_avatar_colors"></script>
+  <script src="../js/admin-dashboard.js?v=20260911_admin_mfa"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>
 </html>

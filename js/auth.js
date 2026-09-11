@@ -143,16 +143,29 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.textContent = 'Logging in…';
       btn.disabled    = true;
 
+      const trustDeviceToken = localStorage.getItem(`fano_trusted_device_token_${email.toLowerCase()}`) || '';
+
       const { ok, status, data, networkError } = await apiFetch(`${API_BASE}/login`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, password }),
+        body:    JSON.stringify({ email, password, trustDeviceToken }),
       });
 
       if (networkError) {
         showError(data.message);
         btn.textContent = 'Log In';
         btn.disabled    = false;
+        return;
+      }
+
+      // Handle Admin Multi-Factor Authentication challenge
+      if (data && data.mfaRequired) {
+        showSuccess('🛡️ Admin Multi-Factor Authentication required. Redirecting to security verification…');
+        btn.textContent = 'Verifying MFA…';
+        setTimeout(() => {
+          const channelParam = data.channel || 'email';
+          window.location.href = `verify.html?email=${encodeURIComponent(data.email)}&flow=admin-mfa&channel=${encodeURIComponent(channelParam)}`;
+        }, 800);
         return;
       }
 
