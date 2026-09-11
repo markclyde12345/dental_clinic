@@ -783,7 +783,10 @@ function updateSidebarBranchBadges() {
 
     if (b.key === 'Main Branch') {
       const badgeMainSidebar = document.getElementById('main-clinic-sidebar-badge');
-      if (badgeMainSidebar) badgeMainSidebar.textContent = count;
+      if (badgeMainSidebar) {
+        badgeMainSidebar.textContent = count;
+        badgeMainSidebar.setAttribute('data-count', String(count));
+      }
     }
 
     const badgeEl = (b.key === 'Main Branch') 
@@ -3991,9 +3994,26 @@ const sbCollapseBtn = document.getElementById('sb-collapse-btn');
 const sidebarEl = document.getElementById('sidebar');
 
 if (sbCollapseBtn && sidebarEl) {
+  const syncCollapseTitle = () => {
+    const isCollapsed = sidebarEl.classList.contains('collapsed');
+    sbCollapseBtn.title = isCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
+    sbCollapseBtn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+  };
+
   sbCollapseBtn.addEventListener('click', () => {
     sidebarEl.classList.toggle('collapsed');
+    syncCollapseTitle();
+    try {
+      localStorage.setItem('admin_sidebar_collapsed', sidebarEl.classList.contains('collapsed') ? '1' : '0');
+    } catch(e) {}
   });
+
+  try {
+    if (localStorage.getItem('admin_sidebar_collapsed') === '1') {
+      sidebarEl.classList.add('collapsed');
+      syncCollapseTitle();
+    }
+  } catch(e) {}
 }
 
 // ─── Custom Delete Confirmation Modal ──────────────────────────────────────────

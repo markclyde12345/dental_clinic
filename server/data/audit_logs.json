@@ -1,5 +1,56 @@
 [
   {
+    "id": "632ca197-d8de-4254-a6f5-94b3b87aaea1",
+    "timestamp": "2026-09-11T01:59:17.907Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "2a3177ee-9ae1-4ec3-b932-c39e53fd6cb1",
+    "timestamp": "2026-09-11T01:55:31.910Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_id": "system",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Successful login for user finance@fanoclinic.com (Accounting)",
+    "metadata": {
+      "email": "finance@fanoclinic.com",
+      "role": "Accounting"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "87f0ff3b-1a43-48dd-adb4-d1779206d023",
+    "timestamp": "2026-09-11T01:48:10.812Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
     "id": "2ed67f91-f4ca-40bd-b5fa-742739820cd9",
     "timestamp": "2026-09-11T01:43:18.630Z",
     "action": "USER_LOGIN_SUCCESS",

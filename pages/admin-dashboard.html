@@ -51,7 +51,7 @@
       </div>
 
       <!-- Clinic Info Card -->
-      <div class="sb-clinic-card">
+      <div class="sb-clinic-card" title="Fano Dental Clinic - Main Branch">
         <div class="sb-clinic-icon">
           <i class="ti ti-building-hospital" style="font-size: 22px;"></i>
         </div>
@@ -65,7 +65,7 @@
       <div class="sb-nav">
 
         <!-- Dashboard -->
-        <a href="#" class="sb-nav-item nav-tab active" data-tab="overview">
+        <a href="#" class="sb-nav-item nav-tab active" data-tab="overview" title="Dashboard Overview">
           <span class="sb-nav-icon">
             <i class="ti ti-dashboard" style="font-size: 18px;"></i>
           </span>
@@ -75,7 +75,7 @@
         <!-- CLINIC Section -->
         <div class="sb-section-label">CLINIC</div>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="appointments" id="sb-nav-appointments" onclick="selectAdminMainClinicAppointments(event)" title="Main Clinic Appointments">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="appointments" id="sb-nav-appointments" onclick="selectAdminMainClinicAppointments(event)" title="Appointments Agenda">
           <span class="sb-nav-icon">
             <i class="ti ti-calendar" style="font-size: 18px;"></i>
           </span>
@@ -118,21 +118,21 @@
           </div>
         </div>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="patients">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="patients" title="Patients Directory">
           <span class="sb-nav-icon">
             <i class="ti ti-users" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Patients</span>
         </a>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="history">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="history" title="Visits &amp; History">
           <span class="sb-nav-icon">
             <i class="ti ti-history" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Visits History</span>
         </a>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="staff">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="staff" title="Clinical Staff &amp; Dentists">
           <span class="sb-nav-icon">
             <i class="ti ti-stethoscope" style="font-size: 18px;"></i>
           </span>
@@ -142,14 +142,14 @@
         <!-- FINANCE Section -->
         <div class="sb-section-label">FINANCE</div>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="billing">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="billing" title="Billing &amp; Payments">
           <span class="sb-nav-icon">
             <i class="ti ti-credit-card" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Billing &amp; Payments</span>
         </a>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="inventory">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="inventory" title="Supplies &amp; Inventory">
           <span class="sb-nav-icon">
             <i class="ti ti-box" style="font-size: 18px;"></i>
           </span>
@@ -159,21 +159,21 @@
         <!-- MANAGEMENT Section -->
         <div class="sb-section-label">MANAGEMENT</div>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="users">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="users" title="Manage Users">
           <span class="sb-nav-icon">
             <i class="ti ti-user-cog" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Manage Users</span>
         </a>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="logs">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="logs" title="System Audit Logs">
           <span class="sb-nav-icon">
             <i class="ti ti-file-text" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">System Logs</span>
         </a>
 
-        <a href="#" class="sb-nav-item nav-tab" data-tab="settings">
+        <a href="#" class="sb-nav-item nav-tab" data-tab="settings" title="Clinic Settings">
           <span class="sb-nav-icon">
             <i class="ti ti-settings" style="font-size: 18px;"></i>
           </span>
@@ -191,7 +191,7 @@
             <div class="sb-user-role" id="user-role">Administrator</div>
           </div>
         </div>
-        <button class="sb-logout-btn" onclick="logout()">
+        <button class="sb-logout-btn" onclick="logout()" title="Sign Out">
           <i class="ti ti-logout" style="font-size: 16px;"></i>
           <span>Log Out</span>
         </button>
