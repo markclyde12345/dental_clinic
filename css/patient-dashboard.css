@@ -4808,6 +4808,17 @@ body.reduce-motion * {
   gap: 4px;
   font-size: 0.72rem;
   color: #64748b;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+}
+
+.history-branch-pill .history-branch-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .history-fee-amount {

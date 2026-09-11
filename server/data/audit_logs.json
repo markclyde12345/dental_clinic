@@ -1,5 +1,39 @@
 [
   {
+    "id": "ce21e977-9b4f-43a6-9672-7909fa8e371a",
+    "timestamp": "2026-09-11T02:42:22.941Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-PH) WindowsPowerShell/5.1.26100.9168"
+  },
+  {
+    "id": "5166715e-9c88-432c-87aa-d1cde9fdc9a0",
+    "timestamp": "2026-09-11T02:23:07.383Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
     "id": "36c8e080-6872-4953-95d3-4391b8bd7315",
     "timestamp": "2026-09-11T02:19:22.858Z",
     "action": "USER_LOGIN_SUCCESS",

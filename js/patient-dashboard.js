@@ -1019,6 +1019,45 @@ function filterPatientHistory() {
   renderPatientHistoryRecords(filtered);
 }
 
+function formatShortBranchName(raw) {
+  if (!raw || typeof raw !== 'string') return 'Main Branch (Naga)';
+  const str = raw.trim();
+
+  const lower = str.toLowerCase();
+  if (lower.includes('naga') || lower.includes('balirong')) {
+    return 'Main Branch (Naga)';
+  }
+  if (lower.includes('minglanilla') || lower.includes('ward ii') || lower.includes('ward 2')) {
+    return 'Minglanilla Branch';
+  }
+  if (lower.includes('talisay') || lower.includes('tabunok')) {
+    return 'Talisay Branch';
+  }
+  if (lower.includes('cebu city') || lower.includes('cebu branch') || lower.includes('urgello') || lower.includes('sambag') || lower.includes('cebu')) {
+    return 'Cebu Branch';
+  }
+
+  // Generic cleaner for any custom branch location
+  let cleaned = str
+    .replace(/\s*\([^)]*\)/g, '') // strip parenthesized address e.g. (Balirong Highway...)
+    .replace(/^Fano\s*(?:Dental\s*)?Clinic\s*[-–—:]\s*/i, '') // strip clinic prefix
+    .trim();
+
+  // If there are still separators, take the branch title
+  if (cleaned.includes('–')) cleaned = cleaned.split('–')[0].trim();
+  if (cleaned.includes('—')) cleaned = cleaned.split('—')[0].trim();
+  if (cleaned.includes(' - ')) cleaned = cleaned.split(' - ')[0].trim();
+  if (cleaned.includes(',')) cleaned = cleaned.split(',')[0].trim();
+
+  if (!cleaned) return 'Main Branch (Naga)';
+
+  // Clip if still overly verbose
+  if (cleaned.length > 24) {
+    cleaned = cleaned.slice(0, 23).trim() + '…';
+  }
+  return cleaned;
+}
+
 function renderPatientHistoryRecords(list = null) {
   const tbody = document.getElementById('records-table-body');
   const countInfo = document.getElementById('history-count-info');
@@ -1054,11 +1093,12 @@ function renderPatientHistoryRecords(list = null) {
 
     const rawNotes = appt.notes || '';
     let dentistName = 'Staff Specialist';
-    let branchName = 'Main Branch';
+    let rawBranch = 'Main Branch (Naga)';
     let concern = 'General Dental Care';
 
     const branchMatch = rawNotes.match(/\[Branch:\s*([^\]]+)\]/i);
-    if (branchMatch) branchName = branchMatch[1].split('—')[0].trim();
+    if (branchMatch) rawBranch = branchMatch[1].trim();
+    const branchName = formatShortBranchName(rawBranch);
 
     const dentistMatch = rawNotes.match(/\[Dentist:\s*([^\]]+)\]/i);
     if (dentistMatch && dentistMatch[1] !== 'No Preference') dentistName = dentistMatch[1];
@@ -1103,7 +1143,7 @@ function renderPatientHistoryRecords(list = null) {
         <td>
           <div class="history-dentist-row">
             <span class="history-dentist-name"><i class="ti ti-stethoscope" style="color: #0284c7; font-size: 0.75rem;"></i> ${escapeHTML(dentistName)}</span>
-            <span class="history-branch-pill"><i class="ti ti-map-pin"></i> ${escapeHTML(branchName)}</span>
+            <span class="history-branch-pill" title="${escapeHTML(rawBranch)}"><i class="ti ti-map-pin" style="flex-shrink: 0;"></i><span class="history-branch-text">${escapeHTML(branchName)}</span></span>
           </div>
         </td>
         <td>
@@ -2808,7 +2848,7 @@ function openAppointmentDetailsModal(apptId) {
 
   // Set modal texts
   safeSet('modal-appt-service', treatmentName);
-  safeSet('modal-appt-dentist-branch', `Dentist: ${dentistName} • ${branchName.split('—')[0] || 'Fano Clinic'}`);
+  safeSet('modal-appt-dentist-branch', `Dentist: ${dentistName} • ${formatShortBranchName(branchName)}`);
   safeSet('modal-appt-datetime', `${formattedDate} at ${formattedTime}`);
   safeSet('modal-appt-branch', branchName);
   safeSet('modal-appt-price', price);
