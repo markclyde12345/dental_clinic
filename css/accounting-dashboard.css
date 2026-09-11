@@ -248,14 +248,14 @@ body {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color), var(--gold-color));
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 0.95rem;
-  box-shadow: 0 2px 8px rgba(11, 60, 77, 0.15);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
 }
 
 .user-details h4 {

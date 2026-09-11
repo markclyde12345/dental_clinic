@@ -421,7 +421,7 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0b3c4d, #c59b27);
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -429,7 +429,7 @@ body {
   font-weight: 700;
   font-size: 0.9rem;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(11, 60, 77, 0.15);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
 }
 
 .sidebar-user-name {
@@ -738,13 +738,14 @@ body {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0b3c4d, #c59b27);
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 .header-user-name {
   font-weight: 700;
@@ -1996,7 +1997,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0b3c4d, #14556b);
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -2004,7 +2005,7 @@ textarea.form-input { resize: vertical; min-height: 90px; }
   font-weight: 800;
   font-size: 2.3rem;
   border: 4px solid #ffffff;
-  box-shadow: 0 8px 24px rgba(11, 60, 77, 0.18);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);
   user-select: none;
 }
 .profile-online-beacon {

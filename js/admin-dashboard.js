@@ -3128,6 +3128,26 @@ function filterAndRenderStaff() {
   renderStaffTable(filtered);
 }
 
+function getRoleBadgeClass(role) {
+  const r = (role || '').toLowerCase();
+  if (r.includes('admin')) return 'badge-role-admin';
+  if (r.includes('dentist') || r.includes('doctor')) return 'badge-role-dentist';
+  if (r.includes('reception')) return 'badge-role-receptionist';
+  if (r.includes('account') || r.includes('finance')) return 'badge-role-accounting';
+  if (r.includes('assist')) return 'badge-role-assistant';
+  return 'badge-role-patient';
+}
+
+function getRoleAvatarClass(role) {
+  const r = (role || '').toLowerCase();
+  if (r.includes('admin')) return 'avatar-role-admin';
+  if (r.includes('dentist') || r.includes('doctor')) return 'avatar-role-dentist';
+  if (r.includes('reception')) return 'avatar-role-receptionist';
+  if (r.includes('account') || r.includes('finance')) return 'avatar-role-accounting';
+  if (r.includes('assist')) return 'avatar-role-assistant';
+  return 'avatar-role-patient';
+}
+
 function renderStaffTable(data) {
   const tbody = document.getElementById('staff-table-body');
   if (!tbody) return;
@@ -3142,10 +3162,19 @@ function renderStaffTable(data) {
     if (s.availability === 'On Duty') statusColor = '#2ecc71';
     else if (s.availability === 'On Leave') statusColor = '#e6a23c';
 
+    const roleBadgeCls = getRoleBadgeClass(s.role);
+    const roleAvatarCls = getRoleAvatarClass(s.role);
+    const initial = (s.name || 'S').trim().charAt(0).toUpperCase();
+
     return `
       <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color);">
-        <td style="padding: 14px 16px; font-weight: 500;">${escapeHTML(s.name)}</td>
-        <td style="padding: 14px 16px;"><span class="badge-staff" style="background:#f4f0ec; color:var(--dark-color);">${s.role}</span></td>
+        <td style="padding: 14px 16px; font-weight: 600;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="user-row-avatar ${roleAvatarCls}">${initial}</div>
+            <span>${escapeHTML(s.name)}</span>
+          </div>
+        </td>
+        <td style="padding: 14px 16px;"><span class="${roleBadgeCls}">${s.role}</span></td>
         <td style="padding: 14px 16px;">${s.shift}</td>
         <td style="padding: 14px 16px;">${s.days}</td>
         <td style="padding: 14px 16px; font-weight:600; color:${statusColor}">${s.availability}</td>
@@ -3398,11 +3427,20 @@ function filterAndRenderUsers() {
     const isSelf = u.id === user.id;
     const disableAttr = isSelf ? 'disabled title="You cannot deactivate yourself"' : '';
 
+    const roleBadgeCls = getRoleBadgeClass(u.role);
+    const roleAvatarCls = getRoleAvatarClass(u.role);
+    const initial = displayName.trim().charAt(0).toUpperCase();
+
     return `
       <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color);">
-        <td style="padding: 14px 16px; font-weight: 500;">${escapeHTML(displayName)}</td>
+        <td style="padding: 14px 16px; font-weight: 600;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="user-row-avatar ${roleAvatarCls}">${initial}</div>
+            <span>${escapeHTML(displayName)}</span>
+          </div>
+        </td>
         <td style="padding: 14px 16px;">${escapeHTML(u.email)}</td>
-        <td style="padding: 14px 16px;"><span class="badge-staff" style="background:#f4f0ec; color:var(--dark-color);">${u.role}</span></td>
+        <td style="padding: 14px 16px;"><span class="${roleBadgeCls}">${u.role}</span></td>
         <td style="padding: 14px 16px;">${escapeHTML(u.contact_number || 'N/A')}</td>
         <td style="padding: 14px 16px; font-weight: 600; color: ${statusColor};">${statusText}</td>
         <td style="padding: 14px 16px; text-align: right;">
