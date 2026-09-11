@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260911_avatar_colors">
+  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260911_services_catalog">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="../css/ai-chat.css">
 </head>
@@ -47,6 +47,11 @@
           <li>
             <a href="#" class="nav-item active" data-section="overview" id="nav-overview"><i class="ti ti-dashboard nav-icon" style="font-size: 18px;"></i>
               Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item" data-section="services" id="nav-services"><i class="ti ti-tooth nav-icon" style="font-size: 18px;"></i>
+              Clinic Services
             </a>
           </li>
           <li>
@@ -171,7 +176,11 @@
             <h1 class="section-title">Patient Overview</h1>
             <p class="section-subtitle" id="greeting-text">Good morning! Here's your health summary.</p>
           </div>
-          <div class="header-action-grid">
+          <div class="header-action-grid" style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn btn-secondary" onclick="switchSection('services')" title="Explore Clinic Services" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 0.88rem;">
+              <i class="ti ti-tooth" style="font-size: 16px;"></i>
+              <span>Our Services</span>
+            </button>
             <button class="btn btn-primary" id="quick-book-btn" onclick="switchSection('appointments')" title="Book New Appointment">
               <i class="ti ti-calendar-plus"></i>
               <span>Book Appointment</span>
@@ -259,6 +268,85 @@
                 <p>No billing history</p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ CLINIC SERVICES & TREATMENTS SECTION ══════════ -->
+      <section id="services-section" class="content-section">
+        <div class="section-header" style="flex-wrap: wrap; gap: 14px;">
+          <div>
+            <h1 class="section-title">Clinic Services &amp; Treatments</h1>
+            <p class="section-subtitle">Explore our comprehensive dental treatments, transparent pricing, and book your visit directly.</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="button" class="btn btn-secondary" onclick="loadTreatments(true)" title="Refresh Services Catalog from clinic system" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 0.85rem;">
+              <i class="ti ti-refresh" style="font-size: 15px;"></i>
+              <span>Refresh Catalog</span>
+            </button>
+            <button type="button" class="btn btn-primary" onclick="switchSection('appointments')" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 0.85rem;">
+              <i class="ti ti-calendar-plus" style="font-size: 16px;"></i>
+              <span>Book Appointment</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Catalog Hero / Stats Strip -->
+        <div class="services-hero-strip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #e0f2fe; color: #0284c7;">
+              <i class="ti ti-tooth" style="font-size: 22px;"></i>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Available Procedures</p>
+              <p class="stat-value" id="services-stat-count">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">
+              <i class="ti ti-clock-hour-4" style="font-size: 22px;"></i>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Procedure Duration</p>
+              <p class="stat-value" id="services-stat-duration">30–60 mins</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #fef3c7; color: #d97706;">
+              <i class="ti ti-shield-check" style="font-size: 22px;"></i>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Quality &amp; Standard</p>
+              <p class="stat-value" style="font-size: 1.05rem;">Certified Specialists</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar Card -->
+        <div class="card" style="margin-bottom: 24px; padding: 18px 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div class="search-input-wrap" style="position: relative; flex: 1; min-width: 260px; max-width: 520px;">
+              <input type="text" id="services-search-input" onkeyup="filterServicesCatalog()" placeholder="Search treatments by name, description, or keyword..." style="width: 100%; height: 42px; padding: 0 14px 0 38px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.86rem; box-sizing: border-box; background: var(--bg-card); color: var(--text-primary); outline: none;">
+              <i class="ti ti-search" style="font-size: 16px; position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <label for="services-sort-select" style="font-size: 0.82rem; font-weight: 700; color: #64748b;">Sort By:</label>
+              <select id="services-sort-select" onchange="filterServicesCatalog()" style="height: 42px; padding: 0 14px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 0.84rem; background: var(--bg-card); font-weight: 600; color: var(--text-primary); cursor: pointer; outline: none;">
+                <option value="default">Default Order</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name-asc">Alphabetical (A–Z)</option>
+                <option value="duration-asc">Duration: Shortest</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Services Grid Container -->
+        <div id="patient-services-catalog-grid" class="services-catalog-grid">
+          <div style="padding: 40px; text-align: center; color: #64748b;">
+            <i class="ti ti-loader-2 ti-spin" style="font-size: 32px; color: var(--accent); margin-bottom: 10px; display: inline-block;"></i>
+            <p>Loading clinic services &amp; treatments...</p>
           </div>
         </div>
       </section>
@@ -1791,6 +1879,12 @@
       </div>
       <span class="taskbar-label">Overview</span>
     </button>
+    <button type="button" class="taskbar-item" data-section="services" onclick="switchSection('services')">
+      <div class="taskbar-icon">
+        <i class="ti ti-tooth" style="font-size: 22px;"></i>
+      </div>
+      <span class="taskbar-label">Services</span>
+    </button>
     <button type="button" class="taskbar-item" data-section="appointments" onclick="switchSection('appointments')">
       <div class="taskbar-icon">
         <i class="ti ti-calendar" style="font-size: 22px;"></i>
@@ -1824,7 +1918,7 @@
   </nav>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/patient-dashboard.js?v=20260911_slot_design"></script>
+  <script src="../js/patient-dashboard.js?v=20260911_services_catalog"></script>
   <script src="../js/ai-chat.js"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>

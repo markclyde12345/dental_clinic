@@ -1719,19 +1719,32 @@ function checkPaymentReturnStatus() {
   }
 }
 
-// ─── Load Treatments (for booking wizard) ──────────────────
-function loadTreatments() {
-  apiFetch('/treatments', {
+// ─── Load Treatments (for booking wizard & full services catalog) ──
+function loadTreatments(forceRefresh = false) {
+  if (forceRefresh) {
+    showToast('Refreshing clinic treatments...', 'info');
+  }
+  return apiFetch('/treatments', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(treatments => {
       allTreatments = Array.isArray(treatments) ? treatments : [];
       renderTreatmentsPicker();
+      renderServicesCatalog();
+      if (forceRefresh) {
+        showToast('Services catalog synchronized with clinic system!', 'success');
+      }
     })
     .catch(err => {
       console.error('Treatments error:', err);
-      allTreatments = [];
+      if (!allTreatments || allTreatments.length === 0) {
+        allTreatments = [];
+      }
       renderTreatmentsPicker();
+      renderServicesCatalog();
+      if (forceRefresh) {
+        showToast('Could not fetch latest treatments from server', 'error');
+      }
     });
 }
 
@@ -1746,7 +1759,7 @@ function renderTreatmentsPicker() {
         <div class="service-card ${isSelected ? 'selected' : ''}" data-id="${t.id}" data-name="${escapeHTML(t.name)}" data-price="${parseFloat(t.price || 0).toFixed(2)}">
           <div class="service-title">${escapeHTML(t.name)}</div>
           <div class="service-price">₱${parseFloat(t.price || 0).toFixed(2)}</div>
-          <div style="font-size: 0.72rem; color: #888; margin-top: 4px;">Duration: ${t.duration_minutes || 30} mins</div>
+          <div style="font-size: 0.72rem; color: #888; margin-top: 4px;">Duration: ${t.duration_minutes || t.durationMinutes || 30} mins</div>
         </div>
       `;
     }).join('');
@@ -1770,6 +1783,174 @@ function renderTreatmentsPicker() {
   } else {
     grid.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">No services available</div>';
   }
+}
+
+function getTreatmentIcon(name = '') {
+  const n = name.toLowerCase();
+  if (n.includes('clean') || n.includes('prophylaxis') || n.includes('scaling')) return 'ti-sparkles';
+  if (n.includes('whiten') || n.includes('bleach')) return 'ti-sun';
+  if (n.includes('root canal') || n.includes('endodontic')) return 'ti-activity-heartbeat';
+  if (n.includes('extract') || n.includes('surgery') || n.includes('wisdom')) return 'ti-scissor';
+  if (n.includes('brace') || n.includes('aligner') || n.includes('ortho')) return 'ti-geometry';
+  if (n.includes('implant') || n.includes('prostho') || n.includes('crown') || n.includes('bridge')) return 'ti-shield-check';
+  if (n.includes('fill') || n.includes('restor') || n.includes('composite')) return 'ti-tool';
+  if (n.includes('x-ray') || n.includes('radiograph') || n.includes('panoramic')) return 'ti-photo';
+  if (n.includes('consult') || n.includes('check') || n.includes('exam')) return 'ti-stethoscope';
+  return 'ti-tooth';
+}
+
+function getTreatmentCategory(name = '') {
+  const n = name.toLowerCase();
+  if (n.includes('clean') || n.includes('prophylaxis') || n.includes('scaling') || n.includes('consult') || n.includes('exam')) {
+    return 'Preventive & Hygiene';
+  }
+  if (n.includes('whiten') || n.includes('veneer') || n.includes('cosmetic')) {
+    return 'Cosmetic Dentistry';
+  }
+  if (n.includes('extract') || n.includes('surgery') || n.includes('wisdom') || n.includes('root canal')) {
+    return 'Surgical & Endodontics';
+  }
+  if (n.includes('brace') || n.includes('aligner') || n.includes('ortho')) {
+    return 'Orthodontics';
+  }
+  if (n.includes('implant') || n.includes('crown') || n.includes('bridge') || n.includes('denture')) {
+    return 'Prosthodontics & Implants';
+  }
+  return 'Restorative Dental Care';
+}
+
+function renderServicesCatalog(list = null) {
+  const grid = document.getElementById('patient-services-catalog-grid');
+  const countEl = document.getElementById('services-stat-count');
+  const durationEl = document.getElementById('services-stat-duration');
+  if (!grid) return;
+
+  const dataset = list !== null ? list : allTreatments;
+
+  if (countEl) {
+    countEl.textContent = `${allTreatments.length} Procedures`;
+  }
+
+  if (!dataset || dataset.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state-card" style="grid-column: 1 / -1; padding: 48px 24px; text-align: center; background: var(--bg-card); border: 1.5px dashed var(--border); border-radius: 16px;">
+        <i class="ti ti-tooth-off" style="font-size: 48px; color: #94a3b8; margin-bottom: 12px; display: inline-block;"></i>
+        <h3 style="margin: 0 0 6px; font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">No dental services found</h3>
+        <p style="margin: 0 0 16px; color: var(--text-secondary); font-size: 0.88rem;">Try adjusting your search query or click refresh to sync the latest treatments added by the clinic.</p>
+        <button type="button" class="btn btn-secondary" onclick="loadTreatments(true)" style="padding: 8px 16px; font-size: 0.85rem;">
+          <i class="ti ti-refresh"></i> Refresh Catalog
+        </button>
+      </div>`;
+    return;
+  }
+
+  // Calculate average duration
+  if (durationEl && allTreatments.length > 0) {
+    const totalMins = allTreatments.reduce((acc, t) => acc + (parseInt(t.duration_minutes || t.durationMinutes, 10) || 45), 0);
+    const avg = Math.round(totalMins / allTreatments.length);
+    durationEl.textContent = `~${avg} mins avg`;
+  }
+
+  grid.innerHTML = dataset.map(t => {
+    const iconClass = getTreatmentIcon(t.name);
+    const category = getTreatmentCategory(t.name);
+    const priceVal = parseFloat(t.price || 0);
+    const priceStr = `₱${priceVal.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const durationMins = t.duration_minutes || t.durationMinutes || 45;
+    const desc = t.description && t.description.trim() 
+      ? escapeHTML(t.description) 
+      : 'Comprehensive dental procedure performed by clinical specialists with strict sterilization protocols and dedicated patient comfort.';
+
+    return `
+      <div class="service-catalog-card" data-id="${t.id}">
+        <div class="scc-header">
+          <div class="scc-icon-wrap">
+            <i class="ti ${iconClass}"></i>
+          </div>
+          <div class="scc-badge-wrap">
+            <span class="scc-category-badge">${category}</span>
+            <span class="scc-avail-dot" title="Available for Booking"></span>
+          </div>
+        </div>
+
+        <h3 class="scc-title">${escapeHTML(t.name)}</h3>
+        <p class="scc-desc">${desc}</p>
+
+        <div class="scc-meta-row">
+          <div class="scc-meta-item">
+            <span class="scc-meta-label">Duration</span>
+            <span class="scc-meta-val"><i class="ti ti-clock"></i> ${durationMins} mins</span>
+          </div>
+          <div class="scc-meta-item scc-meta-right">
+            <span class="scc-meta-label">Standard Fee</span>
+            <span class="scc-price">${priceStr}</span>
+          </div>
+        </div>
+
+        <div class="scc-footer">
+          <button type="button" class="scc-book-btn" onclick="bookServiceDirectly('${t.id}')">
+            <span>Book This Service</span>
+            <i class="ti ti-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterServicesCatalog() {
+  const query = (document.getElementById('services-search-input')?.value || '').toLowerCase().trim();
+  const sortMode = document.getElementById('services-sort-select')?.value || 'default';
+
+  let filtered = allTreatments.filter(t => {
+    if (!query) return true;
+    const name = (t.name || '').toLowerCase();
+    const desc = (t.description || '').toLowerCase();
+    const cat = getTreatmentCategory(t.name).toLowerCase();
+    return name.includes(query) || desc.includes(query) || cat.includes(query);
+  });
+
+  if (sortMode === 'price-asc') {
+    filtered.sort((a, b) => parseFloat(a.price || 0) - parseFloat(b.price || 0));
+  } else if (sortMode === 'price-desc') {
+    filtered.sort((a, b) => parseFloat(b.price || 0) - parseFloat(a.price || 0));
+  } else if (sortMode === 'name-asc') {
+    filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  } else if (sortMode === 'duration-asc') {
+    filtered.sort((a, b) => (parseInt(a.duration_minutes || a.durationMinutes, 10) || 45) - (parseInt(b.duration_minutes || b.durationMinutes, 10) || 45));
+  }
+
+  renderServicesCatalog(filtered);
+}
+
+function bookServiceDirectly(treatmentId) {
+  const treat = (allTreatments || []).find(t => String(t.id) === String(treatmentId));
+  if (!treat) {
+    switchSection('appointments');
+    return;
+  }
+
+  // Set the treatment ID in the booking wizard
+  const treatInput = document.getElementById('wizard-treatment-id');
+  if (treatInput) treatInput.value = treat.id;
+
+  const summaryService = document.getElementById('summary-service');
+  if (summaryService) {
+    summaryService.textContent = `${treat.name} (₱${parseFloat(treat.price || 0).toFixed(2)})`;
+  }
+
+  // Switch to appointments section
+  switchSection('appointments');
+
+  // Select the card in step 1 picker
+  const pickerGrid = document.getElementById('services-picker-grid');
+  if (pickerGrid) {
+    pickerGrid.querySelectorAll('.service-card').forEach(c => {
+      c.classList.toggle('selected', String(c.getAttribute('data-id')) === String(treatmentId));
+    });
+  }
+
+  showToast(`Selected "${treat.name}". Pick your clinic branch and preferred date!`, 'success');
 }
 
 // ─── Booking Wizard Logic ────────────────────────────────────
@@ -3282,6 +3463,7 @@ function switchSection(sectionId) {
   // Breadcrumb
   const labels = {
     overview: 'Overview',
+    services: 'Clinic Services',
     appointments: 'Book Appointment',
     records: 'My Records',
     billing: 'Billing & Invoices',
@@ -3290,6 +3472,13 @@ function switchSection(sectionId) {
     settings: 'Settings'
   };
   safeSet('breadcrumb-current', labels[sectionId] || 'Dashboard');
+
+  if (sectionId === 'services') {
+    renderServicesCatalog();
+    if (!allTreatments || allTreatments.length === 0) {
+      loadTreatments();
+    }
+  }
 
   if (sectionId === 'finances') {
     renderFinancialWidgets();

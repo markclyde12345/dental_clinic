@@ -1481,6 +1481,185 @@ body {
   margin-top: 4px;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   CLINIC SERVICES & TREATMENTS CATALOG SECTION
+   ══════════════════════════════════════════════════════════════ */
+.services-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 22px;
+}
+
+.service-catalog-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: relative;
+}
+
+.service-catalog-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 12px 28px rgba(11, 60, 77, 0.12);
+}
+
+.scc-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.scc-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
+  flex-shrink: 0;
+}
+
+.scc-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scc-category-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--bg-base);
+  color: #475569;
+  border: 1px solid var(--border-light);
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.scc-avail-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+  display: inline-block;
+}
+
+.scc-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.scc-desc {
+  font-size: 0.86rem;
+  color: #64748b;
+  line-height: 1.55;
+  margin: 0 0 18px;
+  flex: 1;
+}
+
+.scc-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-base);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  margin-bottom: 16px;
+}
+
+.scc-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scc-meta-right {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.scc-meta-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.scc-meta-val {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.scc-price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+
+.scc-book-btn {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent) 0%, #0369a1 100%);
+  color: #ffffff;
+  border: none;
+  font-weight: 700;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+.scc-book-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.38);
+}
+
+[data-theme="dark"] .service-catalog-card {
+  background: #141f2d;
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .scc-meta-row {
+  background: #0e1724;
+  border-color: var(--border-light);
+}
+
+[data-theme="dark"] .scc-category-badge {
+  background: #1e2d3d;
+  color: #94a3b8;
+  border-color: #27374a;
+}
+
 /* Time Slots */
 #slots-picker-grid {
   display: grid;
