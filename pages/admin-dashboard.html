@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin-dashboard.css?v=20260909_branch">
+  <link rel="stylesheet" href="../css/admin-dashboard.css?v=20260911_50x_ui">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 </head>
@@ -262,6 +262,15 @@
               <h2 id="admin-page-title" style="margin: 0 0 4px 0; font-family: var(--font-display); font-size: 1.85rem; font-weight: 700; color: var(--dark-color);">Executive Control Center</h2>
               <p class="header-subtitle" id="admin-page-subtitle" style="margin: 0; color: #64748b; font-size: 0.9rem;">Comprehensive analytics, executive clinic operations, and management</p>
             </div>
+            <div class="header-action-grid">
+              <div style="font-size: 0.78rem; font-weight: 700; color: #10b981; background: #ecfdf5; padding: 6px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #d1fae5;">
+                <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981; animation: pulseLive 1.8s infinite;"></span>
+                <span>Live Real-Time Sync</span>
+              </div>
+              <button type="button" class="btn btn-secondary" onclick="loadStats()" title="Fetch latest clinic numbers">
+                <i class="ti ti-refresh"></i> Refresh
+              </button>
+            </div>
           </div>
 
           <!-- Multi-Branch Analytics Control Bar -->
@@ -333,22 +342,94 @@
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 24px;">
+          <!-- Executive Top KPI Metrics Grid -->
+          <div class="admin-kpi-grid">
+            <!-- 1. Patients Seen Today -->
+            <div class="admin-kpi-card kpi-emerald">
+              <div class="admin-kpi-top">
+                <span class="admin-kpi-label">Patients Seen Today</span>
+                <div class="admin-kpi-icon-wrap">
+                  <i class="ti ti-user-check"></i>
+                </div>
+              </div>
+              <div class="admin-kpi-body">
+                <h3 class="admin-kpi-value" id="today-seen">0</h3>
+              </div>
+              <div class="admin-kpi-bottom">
+                <span class="admin-kpi-badge"><i class="ti ti-circle-check"></i> Completed</span>
+                <span>Live today</span>
+              </div>
+            </div>
+
+            <!-- 2. No-Shows / Cancelled -->
+            <div class="admin-kpi-card kpi-rose">
+              <div class="admin-kpi-top">
+                <span class="admin-kpi-label">No-Shows / Cancelled</span>
+                <div class="admin-kpi-icon-wrap">
+                  <i class="ti ti-user-x"></i>
+                </div>
+              </div>
+              <div class="admin-kpi-body">
+                <h3 class="admin-kpi-value" id="today-noshows">0</h3>
+              </div>
+              <div class="admin-kpi-bottom">
+                <span class="admin-kpi-badge"><i class="ti ti-alert-triangle"></i> Attention Flag</span>
+                <span>Today's dropouts</span>
+              </div>
+            </div>
+
+            <!-- 3. Revenue Collected Today -->
+            <div class="admin-kpi-card kpi-blue">
+              <div class="admin-kpi-top">
+                <span class="admin-kpi-label">Revenue Collected Today</span>
+                <div class="admin-kpi-icon-wrap">
+                  <i class="ti ti-cash"></i>
+                </div>
+              </div>
+              <div class="admin-kpi-body">
+                <h3 class="admin-kpi-value" id="today-revenue">₱0.00</h3>
+              </div>
+              <div class="admin-kpi-bottom">
+                <span class="admin-kpi-badge"><i class="ti ti-trending-up"></i> Same-Day Inflow</span>
+                <span>Net collected</span>
+              </div>
+            </div>
+
+            <!-- 4. Monthly Inflow (MTD) -->
+            <div class="admin-kpi-card kpi-amber">
+              <div class="admin-kpi-top">
+                <span class="admin-kpi-label">Monthly Gross (MTD)</span>
+                <div class="admin-kpi-icon-wrap">
+                  <i class="ti ti-chart-arrows-vertical"></i>
+                </div>
+              </div>
+              <div class="admin-kpi-body">
+                <h3 class="admin-kpi-value" id="month-revenue">₱0.00</h3>
+              </div>
+              <div class="admin-kpi-bottom">
+                <span class="admin-kpi-badge"><i class="ti ti-calendar-stats"></i> Month-to-Date</span>
+                <span>All treatments</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Analytics Dashboard Layout (Two Columns) -->
+          <div class="overview-two-col" style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 24px;">
             
             <!-- Left Side Dashboard Elements -->
             <div style="display: flex; flex-direction: column; gap: 24px;">
               
               <!-- Revenue Area Chart -->
-              <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-                  <div>
-                    <span id="revenue-card-title" style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Revenue (Last 12 Months)</span>
-                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
-                      <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--dark-color); margin: 0;" id="revenue-total-cash">₱0.00</h2>
-                      <span style="background: #e6f7ee; color: #2ecc71; font-size: 0.8rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;" id="revenue-percentage-badge">▲ 0.0%</span>
+              <div class="admin-card">
+                <div class="admin-card-header">
+                  <div class="admin-card-title-group">
+                    <span id="revenue-card-title" class="admin-card-title"><i class="ti ti-chart-area-line"></i> Revenue (Last 12 Months)</span>
+                    <div class="admin-card-hero-val">
+                      <h2 id="revenue-total-cash">₱0.00</h2>
+                      <span id="revenue-percentage-badge" class="admin-badge-trend" style="background: #e6f7ee; color: #2ecc71;">▲ 0.0%</span>
                     </div>
                   </div>
-                  <select id="revenue-period-select" style="padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 600; outline: none; background: white; color: var(--dark-color); cursor: pointer;">
+                  <select id="revenue-period-select" class="admin-select-pill">
                     <option value="7days">Last 7 Days</option>
                     <option value="30days">Last 30 Days</option>
                     <option value="4weeks">Last 4 Weeks</option>
@@ -359,33 +440,37 @@
                 </div>
                 
                 <!-- SVG Area Line Chart -->
-                <div style="position: relative; width: 100%;">
+                <div class="admin-chart-stage">
                   <svg viewBox="0 0 500 180" style="width: 100%; height: auto; overflow: visible; cursor: crosshair;" id="revenue-svg">
                     <defs>
                       <linearGradient id="areaGradOverview" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#0d6efd" stop-opacity="0.2"></stop>
-                        <stop offset="100%" stop-color="#0d6efd" stop-opacity="0.0"></stop>
+                        <stop offset="0%" stop-color="#0284c7" stop-opacity="0.25"></stop>
+                        <stop offset="60%" stop-color="#0284c7" stop-opacity="0.08"></stop>
+                        <stop offset="100%" stop-color="#0284c7" stop-opacity="0.0"></stop>
                       </linearGradient>
+                      <filter id="revenueLineGlow" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#0284c7" flood-opacity="0.2" />
+                      </filter>
                     </defs>
                     <!-- Grid Lines -->
-                    <line x1="0" y1="30" x2="500" y2="30" stroke="#f1f3f7" stroke-dasharray="4 4" stroke-width="1"></line>
-                    <line x1="0" y1="70" x2="500" y2="70" stroke="#f1f3f7" stroke-dasharray="4 4" stroke-width="1"></line>
-                    <line x1="0" y1="110" x2="500" y2="110" stroke="#f1f3f7" stroke-dasharray="4 4" stroke-width="1"></line>
-                    <line x1="0" y1="150" x2="500" y2="150" stroke="#f1f3f7" stroke-dasharray="4 4" stroke-width="1"></line>
+                    <line x1="0" y1="30" x2="500" y2="30" stroke="#f1f5f9" stroke-dasharray="4 4" stroke-width="1"></line>
+                    <line x1="0" y1="70" x2="500" y2="70" stroke="#f1f5f9" stroke-dasharray="4 4" stroke-width="1"></line>
+                    <line x1="0" y1="110" x2="500" y2="110" stroke="#f1f5f9" stroke-dasharray="4 4" stroke-width="1"></line>
+                    <line x1="0" y1="150" x2="500" y2="150" stroke="#e2e8f0" stroke-width="1"></line>
                     
                     <!-- Area Path (Dynamic) -->
                     <path id="revenue-area-path" d="M 0,150 L 500,150 Z" fill="url(#areaGradOverview)"></path>
                     <!-- Line Path (Dynamic) -->
-                    <path id="revenue-line-path" d="M 0,150 L 500,150" fill="none" stroke="#0d6efd" stroke-width="3" stroke-linecap="round"></path>
+                    <path id="revenue-line-path" d="M 0,150 L 500,150" fill="none" stroke="#0284c7" stroke-width="3.2" stroke-linecap="round" filter="url(#revenueLineGlow)"></path>
                     
                     <!-- Tooltip Indicator Line -->
-                    <line id="tooltip-line" x1="0" y1="0" x2="0" y2="150" stroke="#0d6efd" stroke-dasharray="3 3" stroke-width="1.5" style="display: none;"></line>
+                    <line id="tooltip-line" x1="0" y1="0" x2="0" y2="150" stroke="#0284c7" stroke-dasharray="3 3" stroke-width="1.5" style="display: none;"></line>
                     <!-- Tooltip Indicator Dot -->
-                    <circle id="tooltip-dot" cx="0" cy="0" r="5.5" fill="#0d6efd" stroke="#fff" stroke-width="2" style="display: none;"></circle>
+                    <circle id="tooltip-dot" cx="0" cy="0" r="5.5" fill="#0284c7" stroke="#fff" stroke-width="2.5" style="display: none;"></circle>
                     <!-- Hover Tooltip Box -->
                     <g id="tooltip-box" transform="translate(0, 0)" style="display: none;">
-                      <rect width="80" height="24" rx="6" fill="#2a2520" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.15))" x="-40" y="-32"></rect>
-                      <text id="tooltip-text" x="0" y="-17" fill="#fff" font-size="8" font-weight="700" text-anchor="middle">Sep: ₱0</text>
+                      <rect width="84" height="24" rx="7" fill="#0f172a" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.2))" x="-42" y="-32"></rect>
+                      <text id="tooltip-text" x="0" y="-16" fill="#fff" font-size="8.5" font-weight="700" text-anchor="middle">Sep: ₱0</text>
                     </g>
                     <!-- X Axis Labels Group -->
                     <g id="revenue-x-labels"></g>
@@ -393,14 +478,14 @@
                 </div>
               </div>
 
-              <!-- Grid elements (Financial overview, Patient data, Popular treatments) -->
-              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px;">
+              <!-- Subgrid (Financial overview & Demographics / Popular treatments) -->
+              <div class="overview-subgrid" style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px;">
                 
                 <!-- Financial Overview Bar Chart -->
-                <div id="fin-overview-card" style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color); position: relative;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Financial Overview</span>
-                    <select id="financial-period-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.75rem; outline: none; background: white; font-weight: 600; cursor: pointer;">
+                <div id="fin-overview-card" class="admin-card">
+                  <div class="admin-card-header">
+                    <span class="admin-card-title"><i class="ti ti-chart-bar"></i> Financial Overview</span>
+                    <select id="financial-period-select" class="admin-select-pill">
                       <option value="7days">Last 7 Days</option>
                       <option value="30days">Last 30 Days</option>
                       <option value="4weeks">Last 4 Weeks</option>
@@ -409,14 +494,15 @@
                       <option value="year2026">Year 2026</option>
                     </select>
                   </div>
-                  <div style="display: flex; gap: 16px; margin-bottom: 16px; font-size: 0.8rem; font-weight: 600;">
-                    <div id="fin-legend-income" style="display: flex; align-items: center; gap: 6px; cursor: pointer;" title="Hover to highlight Income bars">
-                      <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #0d6efd;"></span>
-                      <span>Income: <span id="fin-income-total" style="color:#0d6efd;">₱0.00</span> <span id="fin-income-pct" style="color:#2ecc71; font-size:0.75rem;">▲ 0.0%</span></span>
+                  
+                  <div class="fin-legend-pill-wrap">
+                    <div id="fin-legend-income" class="fin-legend-pill" title="Hover to inspect Income">
+                      <span class="fin-legend-dot dot-income"></span>
+                      <span>Income: <strong id="fin-income-total" style="color:#0284c7;">₱0.00</strong> <span id="fin-income-pct" style="color:#10b981; font-size:0.75rem;">▲ 0.0%</span></span>
                     </div>
-                    <div id="fin-legend-costs" style="display: flex; align-items: center; gap: 6px; cursor: pointer;" title="Hover to highlight Costs bars">
-                      <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #2ecc71;"></span>
-                      <span>Costs: <span id="fin-costs-total" style="color:#2ecc71;">₱0.00</span> <span id="fin-costs-pct" style="color:#2ecc71; font-size:0.75rem;">▼ 0.0%</span></span>
+                    <div id="fin-legend-costs" class="fin-legend-pill" title="Hover to inspect Costs">
+                      <span class="fin-legend-dot dot-costs"></span>
+                      <span>Costs: <strong id="fin-costs-total" style="color:#10b981;">₱0.00</strong> <span id="fin-costs-pct" style="color:#10b981; font-size:0.75rem;">▼ 0.0%</span></span>
                     </div>
                   </div>
                   
@@ -427,14 +513,14 @@
                       <div id="fin-tooltip-header" class="fin-tooltip-header">Sep 2026</div>
                       <div class="fin-tooltip-row">
                         <span class="fin-tooltip-label" style="color: #93c5fd;">
-                          <span class="fin-tooltip-dot" style="background: #0d6efd;"></span>
+                          <span class="fin-tooltip-dot" style="background: #0284c7;"></span>
                           Income:
                         </span>
                         <span id="fin-tooltip-income" class="fin-tooltip-val" style="color: #60a5fa;">₱0.00</span>
                       </div>
                       <div class="fin-tooltip-row">
                         <span class="fin-tooltip-label" style="color: #86efac;">
-                          <span class="fin-tooltip-dot" style="background: #2ecc71;"></span>
+                          <span class="fin-tooltip-dot" style="background: #10b981;"></span>
                           Costs:
                         </span>
                         <span id="fin-tooltip-costs" class="fin-tooltip-val" style="color: #4ade80;">₱0.00</span>
@@ -454,39 +540,39 @@
 
                       <!-- Column Hover Highlights (Backdrop) -->
                       <g id="fin-col-highlights">
-                        <rect id="fin-col-bg-0" x="14" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
-                        <rect id="fin-col-bg-1" x="59" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
-                        <rect id="fin-col-bg-2" x="104" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
-                        <rect id="fin-col-bg-3" x="149" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
-                        <rect id="fin-col-bg-4" x="194" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
-                        <rect id="fin-col-bg-5" x="239" y="8" width="31" height="102" rx="6" fill="#0d6efd" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-0" x="14" y="8" width="31" height="102" rx="8" fill="#0284c7" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-1" x="59" y="8" width="31" height="102" rx="8" fill="#0284c7" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-2" x="104" y="8" width="31" height="102" rx="8" fill="#0284c7" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-3" x="149" y="8" width="31" height="102" rx="8" fill="#0284c7" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-4" x="194" y="8" width="31" height="102" rx="8" fill="#0284c7" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
+                        <rect id="fin-col-bg-5" x="239" y="8" width="31" height="102" rx="8" fill="#0284c7" opacity="0" style="transition: opacity 0.2s ease; pointer-events: none;"></rect>
                       </g>
 
                       <!-- Bar Elements -->
                       <g id="fin-bars">
-                        <rect id="fin-bar-inc-0" class="fin-chart-bar" x="20" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                        <rect id="fin-bar-cost-0" class="fin-chart-bar" x="30" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        <rect id="fin-bar-inc-0" class="fin-chart-bar" x="20" y="110" width="8" height="0" rx="3" fill="#0284c7"></rect>
+                        <rect id="fin-bar-cost-0" class="fin-chart-bar" x="30" y="110" width="8" height="0" rx="3" fill="#10b981"></rect>
                         
-                        <rect id="fin-bar-inc-1" class="fin-chart-bar" x="65" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                        <rect id="fin-bar-cost-1" class="fin-chart-bar" x="75" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        <rect id="fin-bar-inc-1" class="fin-chart-bar" x="65" y="110" width="8" height="0" rx="3" fill="#0284c7"></rect>
+                        <rect id="fin-bar-cost-1" class="fin-chart-bar" x="75" y="110" width="8" height="0" rx="3" fill="#10b981"></rect>
                         
-                        <rect id="fin-bar-inc-2" class="fin-chart-bar" x="110" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                        <rect id="fin-bar-cost-2" class="fin-chart-bar" x="120" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        <rect id="fin-bar-inc-2" class="fin-chart-bar" x="110" y="110" width="8" height="0" rx="3" fill="#0284c7"></rect>
+                        <rect id="fin-bar-cost-2" class="fin-chart-bar" x="120" y="110" width="8" height="0" rx="3" fill="#10b981"></rect>
                         
-                        <rect id="fin-bar-inc-3" class="fin-chart-bar" x="155" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                        <rect id="fin-bar-cost-3" class="fin-chart-bar" x="165" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        <rect id="fin-bar-inc-3" class="fin-chart-bar" x="155" y="110" width="8" height="0" rx="3" fill="#0284c7"></rect>
+                        <rect id="fin-bar-cost-3" class="fin-chart-bar" x="165" y="110" width="8" height="0" rx="3" fill="#10b981"></rect>
                         
-                        <rect id="fin-bar-inc-4" class="fin-chart-bar" x="200" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                        <rect id="fin-bar-cost-4" class="fin-chart-bar" x="210" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        <rect id="fin-bar-inc-4" class="fin-chart-bar" x="200" y="110" width="8" height="0" rx="3" fill="#0284c7"></rect>
+                        <rect id="fin-bar-cost-4" class="fin-chart-bar" x="210" y="110" width="8" height="0" rx="3" fill="#10b981"></rect>
                         
-                        <rect id="fin-bar-inc-5" class="fin-chart-bar" x="245" y="110" width="8" height="0" rx="2" fill="#0d6efd"></rect>
-                        <rect id="fin-bar-cost-5" class="fin-chart-bar" x="255" y="110" width="8" height="0" rx="2" fill="#2ecc71"></rect>
+                        <rect id="fin-bar-inc-5" class="fin-chart-bar" x="245" y="110" width="8" height="0" rx="3" fill="#0284c7"></rect>
+                        <rect id="fin-bar-cost-5" class="fin-chart-bar" x="255" y="110" width="8" height="0" rx="3" fill="#10b981"></rect>
                       </g>
 
                       <!-- Floating Bar Value Labels in SVG -->
                       <g id="fin-hover-values" style="display: none; pointer-events: none;">
-                        <text id="fin-hover-val-inc" x="0" y="0" fill="#0d6efd" font-size="7" font-weight="700" text-anchor="middle"></text>
-                        <text id="fin-hover-val-cost" x="0" y="0" fill="#2ecc71" font-size="7" font-weight="700" text-anchor="middle"></text>
+                        <text id="fin-hover-val-inc" x="0" y="0" fill="#0284c7" font-size="7" font-weight="700" text-anchor="middle"></text>
+                        <text id="fin-hover-val-cost" x="0" y="0" fill="#10b981" font-size="7" font-weight="700" text-anchor="middle"></text>
                       </g>
 
                       <!-- Axis Labels -->
@@ -512,14 +598,14 @@
                   </div>
                 </div>
 
-                <!-- Combined demographics and popular treatments side elements -->
+                <!-- Combined Demographics and Popular Treatments Side Elements -->
                 <div style="display: flex; flex-direction: column; gap: 24px;">
                   
                   <!-- Patient Data visits -->
-                  <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                      <span style="font-size: 0.8rem; color: #888; text-transform: uppercase; font-weight: 700;">Patient Data</span>
-                      <select id="patient-period-select" style="padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 0.7rem; outline: none; background: white; font-weight: 600; cursor: pointer;">
+                  <div class="admin-card" style="padding: 20px;">
+                    <div class="admin-card-header" style="margin-bottom: 12px;">
+                      <span class="admin-card-title"><i class="ti ti-users"></i> Patient Data</span>
+                      <select id="patient-period-select" class="admin-select-pill" style="padding: 4px 26px 4px 10px; font-size: 0.72rem;">
                         <option value="7days">Last 7 Days</option>
                         <option value="30days">Last 30 Days</option>
                         <option value="4weeks">Last 4 Weeks</option>
@@ -528,36 +614,34 @@
                         <option value="year2026">Year 2026</option>
                       </select>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 700; font-size: 1.1rem; color: var(--dark-color);">
-                      <span id="patient-data-new">0</span>
-                      <span id="patient-data-ret">0</span>
+
+                    <div class="patient-split-boxes">
+                      <div class="patient-box-item">
+                        <span class="patient-box-label"><i class="ti ti-user-plus" style="color: #0284c7;"></i> New</span>
+                        <div class="patient-box-count" id="patient-data-new">0</div>
+                        <span class="patient-box-pct" id="patient-text-new" style="color: #0284c7;">0% New</span>
+                      </div>
+                      <div class="patient-box-item">
+                        <span class="patient-box-label"><i class="ti ti-user-check" style="color: #f59e0b;"></i> Returning</span>
+                        <div class="patient-box-count" id="patient-data-ret">0</div>
+                        <span class="patient-box-pct" id="patient-text-ret" style="color: #d97706;">0% Returning</span>
+                      </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color:#888; font-weight: 500; margin-bottom: 10px;">
-                      <span id="patient-text-new">0% New</span>
-                      <span id="patient-text-ret">0% Returning</span>
-                    </div>
-                    <div style="display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #f1f3f7;">
-                      <div id="patient-bar-new" style="background: #0d6efd; width: 0%;"></div>
-                      <div id="patient-bar-ret" style="background: #d4b895; width: 0%;"></div>
+
+                    <div class="patient-track">
+                      <div id="patient-bar-new" style="background: #0284c7; width: 0%; transition: width 0.4s ease;"></div>
+                      <div id="patient-bar-ret" style="background: #f59e0b; width: 0%; transition: width 0.4s ease;"></div>
                     </div>
                   </div>
 
-                  <!-- Popular treatments -->
-                  <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-                    <span style="font-size: 0.8rem; color: #888; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 14px;">Popular Treatment</span>
-                    <div id="overview-popular-treatments" style="display: flex; flex-direction: column; gap: 10px;">
-                      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600;">
-                        <span>Teeth Cleaning</span>
-                        <span style="color: #f1c40f;">★ 4.9</span>
-                      </div>
-                      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600;">
-                        <span>Consultation</span>
-                        <span style="color: #f1c40f;">★ 4.8</span>
-                      </div>
-                      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600;">
-                        <span>Root Canal</span>
-                        <span style="color: #f1c40f;">★ 4.7</span>
-                      </div>
+                  <!-- Popular Treatments -->
+                  <div class="admin-card" style="padding: 20px;">
+                    <div class="admin-card-header" style="margin-bottom: 14px;">
+                      <span class="admin-card-title"><i class="ti ti-crown"></i> Popular Treatments</span>
+                      <span style="font-size: 0.72rem; font-weight: 700; color: #64748b;">Top Ranked</span>
+                    </div>
+                    <div id="overview-popular-treatments" class="treatment-leaderboard">
+                      <!-- Dynamically filled by renderOverviewPopularTreatments() -->
                     </div>
                   </div>
 
@@ -571,10 +655,10 @@
             <div style="display: flex; flex-direction: column; gap: 24px;">
               
               <!-- Expenses Doughnut Chart -->
-              <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center;">
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
-                  <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Expenses breakdown</span>
-                  <select id="expenses-period-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.75rem; outline: none; background: white; font-weight: 600; cursor: pointer;">
+              <div class="admin-card" style="display: flex; flex-direction: column; align-items: center;">
+                <div class="admin-card-header" style="width: 100%;">
+                  <span class="admin-card-title"><i class="ti ti-chart-pie"></i> Expenses Breakdown</span>
+                  <select id="expenses-period-select" class="admin-select-pill">
                     <option value="7days">Last 7 Days</option>
                     <option value="30days">Last 30 Days</option>
                     <option value="4weeks">Last 4 Weeks</option>
@@ -585,71 +669,85 @@
                 </div>
                 
                 <!-- SVG Doughnut Chart -->
-                <div style="position: relative; width: 160px; height: 160px; margin-bottom: 20px;">
+                <div style="position: relative; width: 170px; height: 170px; margin: 10px 0 16px;">
                   <svg viewBox="0 0 42 42" style="width: 100%; height: 100%; transform: rotate(-90deg);">
                     <circle cx="21" cy="21" r="15.915" fill="#fff"></circle>
-                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f1f3f7" stroke-width="4"></circle>
+                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f1f5f9" stroke-width="4.2"></circle>
                     <!-- Slices dynamically filled -->
-                    <circle id="exp-circle-salaries" cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff7675" stroke-width="4.2" stroke-dasharray="0 100" stroke-dashoffset="100"></circle>
-                    <circle id="exp-circle-supplies" cx="21" cy="21" r="15.915" fill="transparent" stroke="#00dec8" stroke-width="4.2" stroke-dasharray="0 100" stroke-dashoffset="100"></circle>
-                    <circle id="exp-circle-rent" cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff9f43" stroke-width="4.2" stroke-dasharray="0 100" stroke-dashoffset="100"></circle>
-                    <circle id="exp-circle-equip" cx="21" cy="21" r="15.915" fill="transparent" stroke="#54a0ff" stroke-width="4.2" stroke-dasharray="0 100" stroke-dashoffset="100"></circle>
-                    <circle id="exp-circle-utils" cx="21" cy="21" r="15.915" fill="transparent" stroke="#1dd1a1" stroke-width="4.2" stroke-dasharray="0 100" stroke-dashoffset="100"></circle>
+                    <circle id="exp-circle-salaries" cx="21" cy="21" r="15.915" fill="transparent" stroke="#f43f5e" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="100" style="transition: stroke-dasharray 0.5s ease;"></circle>
+                    <circle id="exp-circle-supplies" cx="21" cy="21" r="15.915" fill="transparent" stroke="#06b6d4" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="100" style="transition: stroke-dasharray 0.5s ease;"></circle>
+                    <circle id="exp-circle-rent" cx="21" cy="21" r="15.915" fill="transparent" stroke="#f59e0b" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="100" style="transition: stroke-dasharray 0.5s ease;"></circle>
+                    <circle id="exp-circle-equip" cx="21" cy="21" r="15.915" fill="transparent" stroke="#0284c7" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="100" style="transition: stroke-dasharray 0.5s ease;"></circle>
+                    <circle id="exp-circle-utils" cx="21" cy="21" r="15.915" fill="transparent" stroke="#10b981" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="100" style="transition: stroke-dasharray 0.5s ease;"></circle>
                   </svg>
-                  <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-display);">
-                    <span style="font-size: 0.75rem; color:#888; font-weight:600;">Total Expense</span>
-                    <span id="expenses-total-value" style="font-size: 1.15rem; font-weight: 700; color: var(--dark-color); margin-top: 2px;">₱0.00</span>
+                  <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
+                    <span style="font-size: 0.72rem; color:#64748b; font-weight:700; text-transform: uppercase; letter-spacing: 0.04em;">Total Expense</span>
+                    <span id="expenses-total-value" style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: #0f172a; margin-top: 2px;">₱0.00</span>
                   </div>
                 </div>
 
                 <!-- Legend List -->
-                <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.75rem; font-weight: 600; border-top: 1px solid var(--border-color); padding-top: 16px;">
-                  <div style="display: flex; align-items: center; gap: 6px;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ff7675;"></span><span id="exp-legend-salaries">Salaries: 0%</span></div>
-                  <div style="display: flex; align-items: center; gap: 6px;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#00dec8;"></span><span id="exp-legend-supplies">Supplies: 0%</span></div>
-                  <div style="display: flex; align-items: center; gap: 6px;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ff9f43;"></span><span id="exp-legend-rent">Rent: 0%</span></div>
-                  <div style="display: flex; align-items: center; gap: 6px;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#54a0ff;"></span><span id="exp-legend-equip">Equipment: 0%</span></div>
-                  <div style="display: flex; align-items: center; gap: 6px;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#1dd1a1;"></span><span id="exp-legend-utils">Utilities: 0%</span></div>
+                <div class="expenses-legend-grid">
+                  <div class="expenses-legend-item"><span class="expenses-legend-dot" style="background:#f43f5e;"></span><span id="exp-legend-salaries">Salaries: 0%</span></div>
+                  <div class="expenses-legend-item"><span class="expenses-legend-dot" style="background:#06b6d4;"></span><span id="exp-legend-supplies">Supplies: 0%</span></div>
+                  <div class="expenses-legend-item"><span class="expenses-legend-dot" style="background:#f59e0b;"></span><span id="exp-legend-rent">Rent: 0%</span></div>
+                  <div class="expenses-legend-item"><span class="expenses-legend-dot" style="background:#0284c7;"></span><span id="exp-legend-equip">Equipment: 0%</span></div>
+                  <div class="expenses-legend-item"><span class="expenses-legend-dot" style="background:#10b981;"></span><span id="exp-legend-utils">Utilities: 0%</span></div>
                 </div>
               </div>
 
               <!-- Inventory Status Alert -->
-              <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-                <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 20px; letter-spacing: 0.5px;">Inventory Status</span>
+              <div class="admin-card">
+                <div class="admin-card-header">
+                  <span class="admin-card-title"><i class="ti ti-box"></i> Inventory Status</span>
+                  <span style="font-size: 0.72rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 3px 8px; border-radius: 6px;">Live Stock</span>
+                </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-                  <div>
-                    <span style="font-size:0.75rem; color:#888; font-weight:500;">Total Value</span>
-                    <div id="overview-inv-total-val" style="font-size: 1.3rem; font-weight: 700; color: var(--dark-color); margin-top: 4px;">₱0</div>
+                <div class="inv-stat-metrics">
+                  <div class="inv-stat-box">
+                    <span class="inv-stat-box-label">Total Value</span>
+                    <div id="overview-inv-total-val" class="inv-stat-box-val">₱0</div>
                   </div>
-                  <div>
-                    <span style="font-size:0.75rem; color:#888; font-weight:500;">Total Items</span>
-                    <div id="overview-inv-total-items" style="font-size: 1.3rem; font-weight: 700; color: var(--dark-color); margin-top: 4px;">0 units</div>
+                  <div class="inv-stat-box">
+                    <span class="inv-stat-box-label">Total Units</span>
+                    <div id="overview-inv-total-items" class="inv-stat-box-val">0 units</div>
                   </div>
                 </div>
 
                 <!-- Tri-color stock status bar -->
-                <div style="display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 12px; background: #f0f1f5;">
-                  <div id="overview-inv-bar-avail" style="background: #00dec8; width: 0%;" title="Available"></div>
-                  <div id="overview-inv-bar-low" style="background: #ff9f43; width: 0%;" title="Low Stock"></div>
-                  <div id="overview-inv-bar-out" style="background: #ff7675; width: 0%;" title="Out of Stock"></div>
+                <div class="inv-stock-track">
+                  <div id="overview-inv-bar-avail" style="background: #10b981; width: 0%; transition: width 0.4s ease;" title="Available"></div>
+                  <div id="overview-inv-bar-low" style="background: #f59e0b; width: 0%; transition: width 0.4s ease;" title="Low Stock"></div>
+                  <div id="overview-inv-bar-out" style="background: #f43f5e; width: 0%; transition: width 0.4s ease;" title="Out of Stock"></div>
                 </div>
 
                 <!-- Legend status labels -->
-                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; color:#888; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
-                  <div style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#00dec8;"></span><span id="overview-inv-legend-avail">Available (0)</span></div>
-                  <div style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#ff9f43;"></span><span id="overview-inv-legend-low">Low Stock (0)</span></div>
-                  <div style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#ff7675;"></span><span id="overview-inv-legend-out">Out of Stock (0)</span></div>
+                <div class="inv-legend-row">
+                  <div class="inv-legend-chip"><span class="inv-legend-chip-dot" style="background:#10b981;"></span><span id="overview-inv-legend-avail">Available (0)</span></div>
+                  <div class="inv-legend-chip"><span class="inv-legend-chip-dot" style="background:#f59e0b;"></span><span id="overview-inv-legend-low">Low Stock (0)</span></div>
+                  <div class="inv-legend-chip"><span class="inv-legend-chip-dot" style="background:#f43f5e;"></span><span id="overview-inv-legend-out">Out of Stock (0)</span></div>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--dark-color);">Low Stock Warning</span>
-                  <span style="font-size: 0.75rem; font-weight: 600; color: var(--secondary-color); cursor:pointer;" onclick="activateTab('inventory')">View all</span>
+                <div class="inv-warning-header">
+                  <span class="inv-warning-title"><i class="ti ti-alert-circle" style="color: #f59e0b;"></i> Low Stock Warning</span>
+                  <span style="font-size: 0.74rem; font-weight: 700; color: #0284c7; cursor:pointer;" onclick="activateTab('inventory')">View all &rarr;</span>
                 </div>
 
-                <div id="overview-inv-warning-list" style="text-align: center; padding: 18px 0; color: #bbb; font-size: 0.82rem; font-weight: 500;">
-                  No low stock items.
+                <div id="overview-inv-warning-list" style="text-align: center; padding: 14px 0;">
+                  <!-- Populated dynamically by renderOverviewInventory() -->
                 </div>
 
+              </div>
+
+              <!-- Today's Schedule Live Activity Card -->
+              <div class="admin-card">
+                <div class="admin-card-header">
+                  <span class="admin-card-title"><i class="ti ti-calendar-time"></i> Today's Schedule</span>
+                  <span style="font-size: 0.72rem; font-weight: 700; color: #10b981; background: #ecfdf5; padding: 3px 8px; border-radius: 6px;">Active Queue</span>
+                </div>
+                <div id="today-appointments-timeline">
+                  <!-- Populated dynamically by renderDashboardAnalytics() -->
+                </div>
               </div>
 
             </div>
@@ -2038,7 +2136,7 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/admin-dashboard.js?v=20260911_realtime"></script>
+  <script src="../js/admin-dashboard.js?v=20260911_50x_ui"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>
 </html>

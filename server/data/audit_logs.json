@@ -1,5 +1,193 @@
 [
   {
+    "id": "dd585a06-ed4f-4166-83d1-9da44c54b48b",
+    "timestamp": "2026-09-11T00:19:23.200Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "95a5719f-263a-4074-884f-d0eccf44599f",
+    "timestamp": "2026-09-10T12:39:26.830Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Node/Server"
+  },
+  {
+    "id": "e9fa63a8-3be4-4957-ad5c-197d8c69a4d6",
+    "timestamp": "2026-09-10T12:08:42.671Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Node/Server"
+  },
+  {
+    "id": "e6fc2134-549a-446e-8dfc-23045b7140f1",
+    "timestamp": "2026-09-10T12:08:03.169Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Node/Server"
+  },
+  {
+    "id": "542d18e6-41ad-47fc-8c4f-35a25952a384",
+    "timestamp": "2026-09-10T12:06:45.297Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Node/Server"
+  },
+  {
+    "id": "1d3833e6-d0d6-425e-817a-a72156d449c5",
+    "timestamp": "2026-09-10T11:55:52.849Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Node/Server"
+  },
+  {
+    "id": "85a66f95-5262-4947-bbdb-310c89f57f61",
+    "timestamp": "2026-09-10T11:54:13.858Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Node/Server"
+  },
+  {
+    "id": "e500595f-e5b8-410d-8cd4-7d6109c40c74",
+    "timestamp": "2026-09-10T11:52:29.214Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Node/Server"
+  },
+  {
+    "id": "5bbb93b4-6ad9-4de9-ab11-29e982d395af",
+    "timestamp": "2026-09-10T11:05:10.295Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Node/Server"
+  },
+  {
+    "id": "3ad27fa4-0b3f-4e6e-9626-e6a078044ae4",
+    "timestamp": "2026-09-10T08:34:23.477Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "73ea6b2b-4c66-48ad-a5d5-cd911e67eec0",
+    "timestamp": "2026-09-10T08:27:05.309Z",
+    "action": "FAILED_LOGIN_ATTEMPT",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Failed login attempt (1/5) for email: admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "attemptCount": 1,
+      "maxAttempts": 5
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
     "id": "5b832c2d-f627-4c66-95b8-a41750fd6521",
     "timestamp": "2026-09-10T06:17:53.211Z",
     "action": "USER_LOGIN_SUCCESS",

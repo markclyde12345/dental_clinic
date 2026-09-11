@@ -2217,18 +2217,21 @@ function renderOverviewInventory(inventoryList = localInventory) {
     if (lowStockItems.length > 0) {
       warningList.style.textAlign = 'left';
       warningList.style.padding = '0';
-      warningList.innerHTML = lowStockItems.map((it, idx) => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding: 7px 0; ${idx < lowStockItems.length - 1 ? 'border-bottom: 1px solid #f1f3f7;' : ''} font-size: 0.82rem;">
-          <span style="font-weight:600; color: #2d3436;">${escapeHTML(it.name)}</span>
-          <span style="color: ${it.isOut ? '#ff7675' : '#e67e22'}; font-weight:700; background: ${it.isOut ? '#fff0f0' : '#fdf6ec'}; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem;">
+      warningList.innerHTML = lowStockItems.map((it) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 12px; margin-bottom: 6px; background: #fff8f8; border: 1px solid #fee2e2; border-radius: 10px; font-size: 0.82rem; transition: all 0.2s ease;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="ti ti-alert-triangle" style="color: ${it.isOut ? '#ef4444' : '#f59e0b'}; font-size: 16px;"></i>
+            <span style="font-weight:700; color: #1e293b;">${escapeHTML(it.name)}</span>
+          </div>
+          <span style="color: ${it.isOut ? '#dc2626' : '#d97706'}; font-weight:700; background: ${it.isOut ? '#fee2e2' : '#fef3c7'}; padding: 3px 8px; border-radius: 6px; font-size: 0.74rem;">
             ${it.isOut ? 'Out of stock' : `${it.stock} / ${it.threshold} left`}
           </span>
         </div>
       `).join('');
     } else {
       warningList.style.textAlign = 'center';
-      warningList.style.padding = '18px 0';
-      warningList.innerHTML = '<span style="color: #2ecc71; font-weight: 600;">✅ All stock levels normal.</span>';
+      warningList.style.padding = '14px 0';
+      warningList.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; gap:8px; padding: 12px; background:#ecfdf5; border:1px solid #d1fae5; border-radius:10px; color: #059669; font-weight: 700; font-size: 0.84rem;"><i class="ti ti-circle-check" style="font-size:18px;"></i> All inventory stock levels normal</div>';
     }
   }
 }
@@ -2284,17 +2287,22 @@ function renderOverviewPopularTreatments(appointments = allAppointments) {
     ];
   }
 
-  container.innerHTML = sortedTreatments.slice(0, 4).map(([name, count]) => {
+  container.innerHTML = sortedTreatments.slice(0, 4).map(([name, count], index) => {
     const rating = ratingsMap[name] || '4.8';
     const price = treatmentPrices[name] || 150;
     return `
-      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600;">
-        <span style="display: flex; align-items: center; gap: 8px;">
-          <span>${escapeHTML(name)}</span>
-          <span style="font-size: 0.72rem; color: #0d6efd; font-weight: 700; background: #eef2ff; padding: 2px 6px; border-radius: 4px;">${getCurrencySymbol()}${price.toFixed(2)}</span>
-          <span style="font-size: 0.72rem; color: #888; font-weight: 500; background: #f1f3f7; padding: 2px 6px; border-radius: 4px;">${count} booked</span>
-        </span>
-        <span style="color: #f1c40f; font-weight: 700;">★ ${rating}</span>
+      <div class="treatment-rank-row">
+        <div class="treatment-rank-left">
+          <div class="treatment-rank-medal">${index + 1}</div>
+          <div class="treatment-info-group">
+            <div class="treatment-name-text">${escapeHTML(name)}</div>
+            <div class="treatment-meta-pills">
+              <span class="treatment-price-tag">${getCurrencySymbol()}${price.toFixed(2)}</span>
+              <span class="treatment-count-tag">${count} booked</span>
+            </div>
+          </div>
+        </div>
+        <div class="treatment-star-tag">★ ${rating}</div>
       </div>
     `;
   }).join('');
