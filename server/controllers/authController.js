@@ -523,7 +523,8 @@ const authUser = async (req, res) => {
             maskedPhone,
             channel: preferredChannel === 'sms' ? 'sms' : 'email',
             availableChannels: user.contact_number ? ['email', 'sms'] : ['email'],
-            message: 'Admin Multi-Factor Authentication required. A 6-digit security code has been sent.'
+            message: 'Admin Multi-Factor Authentication required. A 6-digit security code has been sent.',
+            ...(process.env.NODE_ENV !== 'production' ? { devCode: otp } : {})
           });
         }
       }
@@ -648,7 +649,10 @@ const sendOTP = async (req, res) => {
       }
     }
 
-    return res.json({ message: 'If this email is registered, a code will be sent.' });
+    return res.json({ 
+      message: 'If this email is registered, a code will be sent.',
+      ...(process.env.NODE_ENV !== 'production' ? { devCode: otp } : {})
+    });
   } catch (error) {
     return internalError(res, error);
   }

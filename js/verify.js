@@ -52,6 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (verifyBtnText) verifyBtnText.textContent = 'Authenticate & Enter Console';
   }
 
+  // Display Dev / Demo code helper if available
+  const devCode = params.get('devCode');
+  if (devCode) {
+    showDevCodeHelper(devCode);
+  }
+
   // On page load, the backend has already sent the OTP code during registration or login.
   // Set UI state to sent and start the resend timer to avoid spamming / rate limiting.
   const statusText = document.getElementById('status-text');
@@ -126,6 +132,9 @@ async function sendOTPCode() {
       if (statusText) statusText.textContent = `Code sent via ${currentChannel === 'sms' ? 'SMS' : 'Email'} successfully`;
       if (statusDot) statusDot.style.background = '#2ed573'; // success green
       startResendCooldown();
+      if (data.devCode) {
+        showDevCodeHelper(data.devCode);
+      }
     } else {
       if (statusText) statusText.textContent = data.message || 'Failed to send code.';
       if (statusDot) statusDot.style.background = '#ff4757'; // error red
@@ -134,6 +143,35 @@ async function sendOTPCode() {
     if (statusText) statusText.textContent = 'Server connection error.';
     if (statusDot) statusDot.style.background = '#ff4757';
   }
+}
+
+// ─── Dev / Demo OTP Helper Functions ──────────────────────────────────────────
+window.autoFillDevCode = function(code) {
+  const container = document.getElementById('otp-boxes');
+  if (!container || !code) return;
+  const inputs = container.querySelectorAll('.otp-box');
+  for (let i = 0; i < 6 && i < code.length; i++) {
+    if (inputs[i]) inputs[i].value = code[i];
+  }
+  const btn = document.getElementById('verify-btn');
+  if (btn) btn.focus();
+};
+
+function showDevCodeHelper(code) {
+  const existing = document.getElementById('dev-otp-helper');
+  if (existing) existing.remove();
+
+  const form = document.getElementById('otp-form');
+  if (!form) return;
+
+  const helper = document.createElement('div');
+  helper.id = 'dev-otp-helper';
+  helper.style.cssText = 'margin: 0 0 16px 0; background: #eff6ff; border: 1px dashed #3b82f6; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; color: #1e40af;';
+  helper.innerHTML = `
+    <span>🔑 <strong>Dev / Demo Code:</strong> <code style="font-size: 1.05rem; font-weight: 800; letter-spacing: 2px;">${code}</code></span>
+    <button type="button" onclick="autoFillDevCode('${code}')" style="background: #2563eb; color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">Auto-Fill</button>
+  `;
+  form.insertBefore(helper, form.firstChild);
 }
 
 // Setup 6 digit inputs behavior

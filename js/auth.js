@@ -164,7 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = 'Verifying MFA…';
         setTimeout(() => {
           const channelParam = data.channel || 'email';
-          window.location.href = `verify.html?email=${encodeURIComponent(data.email)}&flow=admin-mfa&channel=${encodeURIComponent(channelParam)}`;
+          const devParam = data.devCode ? `&devCode=${encodeURIComponent(data.devCode)}` : '';
+          window.location.href = `verify.html?email=${encodeURIComponent(data.email)}&flow=admin-mfa&channel=${encodeURIComponent(channelParam)}${devParam}`;
         }, 800);
         return;
       }
