@@ -1883,8 +1883,14 @@ function setupBookingWizard() {
   document.querySelectorAll('.slot-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.classList.contains('occupied') || btn.disabled) return;
-      document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll('.slot-btn').forEach(b => {
+        b.classList.remove('selected');
+        const badge = b.querySelector('.slot-badge-available');
+        if (badge) badge.textContent = 'Available';
+      });
       btn.classList.add('selected');
+      const activeBadge = btn.querySelector('.slot-badge-available');
+      if (activeBadge) activeBadge.textContent = 'Selected';
       selectedTime = btn.getAttribute('data-time');
       const timeInput = document.getElementById('wizard-time');
       if (timeInput) timeInput.value = selectedTime;
