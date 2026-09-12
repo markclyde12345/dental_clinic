@@ -1115,6 +1115,129 @@ body {
   color: #475569;
 }
 
+/* Dentist Duty Interactive Controls */
+.dentist-duty-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.dentist-duty-bar.on-duty {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.dentist-duty-bar.off-duty {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.duty-status-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.duty-status-label.on-duty {
+  color: #059669;
+}
+
+.duty-status-label.off-duty {
+  color: #dc2626;
+}
+
+/* Duty Switch Slider */
+.duty-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+}
+
+.duty-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.duty-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 24px;
+}
+
+.duty-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.duty-switch input:checked + .duty-slider {
+  background-color: #10b981;
+}
+
+.duty-switch input:checked + .duty-slider:before {
+  transform: translateX(20px);
+}
+
+/* Dentist Branch Assignment Dropdown */
+.dentist-branch-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dentist-branch-row label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dentist-branch-select {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--dark-color);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.dentist-branch-select:focus {
+  border-color: var(--primary-color);
+}
+
 /* ═════════════════════ MODALS ═════════════════════ */
 .modal-overlay {
   position: fixed;
@@ -3556,5 +3679,33 @@ body {
   color: #0f172a;
   font-weight: 600;
 }
+
+/* Overview Schedule Filter Tabs */
+.btn-filter-tab {
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-filter-tab:hover {
+  color: #0b3c4d;
+}
+
+.btn-filter-tab.active {
+  background: #ffffff;
+  color: #0b3c4d;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 700;
+}
+
 
 

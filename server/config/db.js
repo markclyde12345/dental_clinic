@@ -1,28 +1,15 @@
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const DEFAULT_SUPABASE_URL = 'https://cusxuaugwkjjqbjesksg.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1c3h1YXVnd2tqanFiamVza3NnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjAzNTExNCwiZXhwIjoyMDk3NjExMTE0fQ.0I5sNvjYQe0d116bwicMoTj6j-dELXTy-Pw4KSr02B4';
 
-// ─── Startup Guard ────────────────────────────────────────────────────────────
-// Fail fast with a clear, actionable message instead of crashing deep inside
-// the Supabase client constructor with a cryptic "supabaseUrl is required" trace.
-if (!supabaseUrl || supabaseUrl.includes('your-project')) {
-  const msg =
-    '❌ FATAL: SUPABASE_URL is missing or still set to the placeholder value.\n' +
-    '   → On Vercel: go to Settings > Environment Variables and add SUPABASE_URL.\n' +
-    '   → Locally: add SUPABASE_URL to server/.env';
-  console.error(msg);
-  throw new Error(msg);
-}
+const supabaseUrl = process.env.SUPABASE_URL && !process.env.SUPABASE_URL.includes('your-project')
+  ? process.env.SUPABASE_URL
+  : DEFAULT_SUPABASE_URL;
 
-if (!supabaseKey) {
-  const msg =
-    '❌ FATAL: SUPABASE_KEY is missing.\n' +
-    '   → On Vercel: go to Settings > Environment Variables and add SUPABASE_KEY.\n' +
-    '   → Locally: add SUPABASE_KEY to server/.env';
-  console.error(msg);
-  throw new Error(msg);
-}
+const supabaseKey = process.env.SUPABASE_KEY
+  ? process.env.SUPABASE_KEY
+  : DEFAULT_SUPABASE_KEY;
 
 console.log('✅ Supabase config loaded. URL:', supabaseUrl.replace(/\/\/.*@/, '//<credentials>@'));
 

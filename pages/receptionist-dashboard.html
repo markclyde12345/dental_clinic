@@ -291,11 +291,16 @@
         <div class="card-box" style="margin-top: 24px;">
           <div class="card-box-header">
             <div>
-              <h3 class="card-box-title"><i class="ti ti-calendar-event"></i> Today's Appointment Schedule</h3>
-              <p class="card-box-sub">Real-time schedule for <span id="schedule-today-label">Today</span></p>
+              <h3 class="card-box-title" id="overview-schedule-title"><i class="ti ti-calendar-event"></i> Appointments Schedule</h3>
+              <p class="card-box-sub">Showing <span id="schedule-today-label">Today's schedule</span></p>
             </div>
-            <div class="header-inline-actions">
-              <button class="btn btn-sm btn-outline" onclick="switchTab('appointments')">View All Appointments</button>
+            <div class="header-inline-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <div class="btn-group" id="overview-appts-filter-tabs" style="display: flex; background: #f1f5f9; padding: 3px; border-radius: 8px;">
+                <button type="button" class="btn-filter-tab active" id="btn-tab-today" onclick="switchOverviewApptsFilter('today')">Today</button>
+                <button type="button" class="btn-filter-tab" id="btn-tab-upcoming" onclick="switchOverviewApptsFilter('upcoming')">Upcoming</button>
+                <button type="button" class="btn-filter-tab" id="btn-tab-all" onclick="switchOverviewApptsFilter('all')">All (11)</button>
+              </div>
+              <button class="btn btn-sm btn-outline" onclick="switchTab('appointments')">Full Appointments Page &rarr;</button>
             </div>
           </div>
           <div class="table-responsive">
@@ -501,8 +506,36 @@
         <div class="card-box">
           <div class="card-box-header">
             <div>
-              <h3 class="card-box-title"><i class="ti ti-stethoscope"></i> Medical &amp; Clinical Staff</h3>
-              <p class="card-box-sub">Dentists, Dental Surgeons, and Assistants on schedule</p>
+              <h3 class="card-box-title"><i class="ti ti-stethoscope"></i> Medical &amp; Clinical Staff Duty Roster</h3>
+              <p class="card-box-sub">Toggle doctor duty status (On Duty vs Out), shift hours, and clinic branch locations</p>
+            </div>
+            <div id="receptionist-duty-counter" style="display: flex; align-items: center; gap: 8px; font-size: 0.86rem; font-weight: 700; color: #0b3c4d; background: #eef6f8; padding: 7px 16px; border-radius: 20px; border: 1px solid rgba(11,60,77,0.12);">
+              <i class="ti ti-user-check" style="color: #10b981; font-size: 1.1rem;"></i> <span id="duty-count-text">Loading roster...</span>
+            </div>
+          </div>
+
+          <!-- Toolbar & Branch Filter -->
+          <div class="table-toolbar" style="margin-bottom: 20px;">
+            <div class="toolbar-filters" style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; width: 100%;">
+              <div class="filter-group">
+                <label><i class="ti ti-map-pin"></i> Clinic Branch:</label>
+                <select id="receptionist-dentists-branch-filter" onchange="filterReceptionistDentists()">
+                  <option value="ALL">All Branches</option>
+                  <option value="Main Branch (Naga)">Main Branch (Naga)</option>
+                  <option value="Minglanilla Branch">Minglanilla Branch</option>
+                  <option value="Talisay Branch">Talisay Branch</option>
+                  <option value="Fano Dental Clinic - Cebu Branch">Cebu Branch</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label><i class="ti ti-toggle-right"></i> Duty Status:</label>
+                <select id="receptionist-dentists-duty-filter" onchange="filterReceptionistDentists()">
+                  <option value="ALL">All Statuses</option>
+                  <option value="ON_DUTY">On Duty (Available) Only</option>
+                  <option value="OFF_DUTY">Off Duty / Out Only</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -574,8 +607,8 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-header">
         <div>
-          <h3 class="modal-title"><i class="ti ti-calendar-plus text-primary"></i> Book Appointment</h3>
-          <p class="modal-sub">Schedule patient appointment, dentist assignment, and procedure fee breakdown</p>
+          <h3 class="modal-title" id="book-modal-title"><i class="ti ti-calendar-plus text-primary"></i> Book Appointment</h3>
+          <p class="modal-sub" id="book-modal-sub">Schedule patient appointment, dentist assignment, and procedure fee breakdown</p>
         </div>
         <button type="button" class="modal-close" onclick="closeModal('modal-book-appointment')">&times;</button>
       </div>
@@ -638,9 +671,11 @@
           <div class="form-row">
             <div class="form-group">
               <label for="book-branch-select">Clinic Branch <span class="required">*</span></label>
-              <select id="book-branch-select">
-                <option value="Main Branch, Fano Dental Clinic" selected>Main Branch — Balirong, City of Naga</option>
-                <option value="Satellite Branch — Cebu South">Satellite Branch — Cebu South</option>
+              <select id="book-branch-select" onchange="handleReceptionistBranchChange()">
+                <option value="Main Branch (Naga)" selected>Main Branch — Balirong, City of Naga</option>
+                <option value="Minglanilla Branch">Minglanilla Branch — Poblacion Ward II</option>
+                <option value="Talisay Branch">Talisay Branch — Tabunok / Bulacao</option>
+                <option value="Fano Dental Clinic - Cebu Branch">Cebu Branch — Urgello St</option>
               </select>
             </div>
             <div class="form-group">
@@ -1412,7 +1447,7 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Script Logic -->
-  <script src="../js/receptionist-dashboard.js?v=20260911_avatar_colors"></script>
+  <script src="../js/receptionist-dashboard.js?v=20260911_rebook_patient_fix_v2"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>
 </html>

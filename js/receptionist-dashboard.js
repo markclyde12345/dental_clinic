@@ -20,6 +20,7 @@ let allDentists = [];
 let allStaffSchedules = [];
 let allTreatments = [];
 let allInvoices = [];
+let overviewApptsFilterMode = 'today';
 
 // ─── Live Clock ──────────────────────────────────────────────────────────────
 function updateClock() {
@@ -282,12 +283,18 @@ function renderMetrics() {
   document.getElementById('stat-completed-count').textContent = completedCount;
   document.getElementById('stat-unpaid-invoices').textContent = unpaidInvoices;
 
+  // Active upcoming / total appointments
+  const activeAppts = allAppointments.filter(a => a.status !== 'Completed' && a.status !== 'Cancelled');
+
   // Update badge counters in sidebar & mobile taskbar
   const badgeAppts = document.getElementById('nav-badge-appts');
   const badgeQueue = document.getElementById('nav-badge-queue');
   const badgeBilling = document.getElementById('nav-badge-billing');
 
-  if (badgeAppts) badgeAppts.textContent = todayAppts.length;
+  // If today has appointments, show today's count; otherwise show active upcoming appointments count so it's not falsely 0
+  const apptBadgeCount = todayAppts.length > 0 ? todayAppts.length : activeAppts.length;
+
+  if (badgeAppts) badgeAppts.textContent = apptBadgeCount;
   if (badgeQueue) badgeQueue.textContent = waitingCount;
   if (badgeBilling) badgeBilling.textContent = unpaidInvoices;
 
@@ -296,8 +303,8 @@ function renderMetrics() {
   const mBadgeBilling = document.getElementById('mobile-taskbar-badge-billing');
 
   if (mBadgeAppts) {
-    mBadgeAppts.textContent = todayAppts.length;
-    mBadgeAppts.style.display = todayAppts.length > 0 ? 'flex' : 'none';
+    mBadgeAppts.textContent = apptBadgeCount;
+    mBadgeAppts.style.display = apptBadgeCount > 0 ? 'flex' : 'none';
   }
   if (mBadgeQueue) {
     mBadgeQueue.textContent = waitingCount;
@@ -307,6 +314,10 @@ function renderMetrics() {
     mBadgeBilling.textContent = unpaidInvoices;
     mBadgeBilling.style.display = unpaidInvoices > 0 ? 'flex' : 'none';
   }
+
+  // Update overview tab count
+  const btnAll = document.getElementById('btn-tab-all');
+  if (btnAll) btnAll.textContent = `All (${allAppointments.length})`;
 }
 
 // ─── Overview Queue & Appointments ────────────────────────────────────────────
@@ -356,30 +367,84 @@ function renderOverviewQueue() {
   }).join('');
 }
 
+function switchOverviewApptsFilter(mode) {
+  overviewApptsFilterMode = mode;
+  ['today', 'upcoming', 'all'].forEach(m => {
+    const btn = document.getElementById(`btn-tab-${m}`);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+  renderOverviewAppointments();
+}
+
 function renderOverviewAppointments() {
   const tbody = document.getElementById('overview-appointments-body');
   if (!tbody) return;
 
+  const scheduleSubLabel = document.getElementById('schedule-today-label');
   const todayStr = new Date().toISOString().split('T')[0];
-  const todayAppts = allAppointments.filter(a => a.appointment_date && a.appointment_date.startsWith(todayStr));
 
-  if (!todayAppts.length) {
+  const todayAppts = allAppointments.filter(a => a.appointment_date && a.appointment_date.startsWith(todayStr));
+  
+  // Future active appointments (date >= todayStr, sorted ascending)
+  const upcomingAppts = allAppointments.filter(a => {
+    if (!a.appointment_date) return false;
+    const datePart = a.appointment_date.split('T')[0];
+    return datePart >= todayStr && a.status !== 'Completed' && a.status !== 'Cancelled';
+  }).sort((a, b) => new Date(a.appointment_date) - new Date(b.appointment_date));
+
+  let displayList = [];
+
+  if (overviewApptsFilterMode === 'today') {
+    if (todayAppts.length > 0) {
+      displayList = todayAppts;
+      if (scheduleSubLabel) scheduleSubLabel.textContent = "Today's schedule";
+    } else if (upcomingAppts.length > 0) {
+      // Smart fallback: No appointments booked for today, show upcoming bookings
+      displayList = upcomingAppts;
+      if (scheduleSubLabel) {
+        scheduleSubLabel.innerHTML = `<span style="color: #0d9488; font-weight: 700;"><i class="ti ti-calendar-forward"></i> Upcoming schedule (0 booked for today)</span>`;
+      }
+    } else {
+      displayList = [];
+      if (scheduleSubLabel) scheduleSubLabel.textContent = "Today's schedule";
+    }
+  } else if (overviewApptsFilterMode === 'upcoming') {
+    displayList = upcomingAppts;
+    if (scheduleSubLabel) scheduleSubLabel.textContent = `Upcoming bookings (${upcomingAppts.length})`;
+  } else if (overviewApptsFilterMode === 'all') {
+    displayList = [...allAppointments].sort((a, b) => new Date(b.appointment_date || 0) - new Date(a.appointment_date || 0));
+    if (scheduleSubLabel) scheduleSubLabel.textContent = `All appointments (${allAppointments.length} total)`;
+  }
+
+  if (!displayList.length) {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="text-center py-4 text-muted">
           <i class="ti ti-calendar-x" style="font-size: 1.5rem; margin-bottom: 6px; display: block;"></i>
-          No appointments scheduled for today yet.
+          No appointments found for this filter.
         </td>
       </tr>
     `;
     return;
   }
 
-  tbody.innerHTML = todayAppts.map(appt => {
+  tbody.innerHTML = displayList.map(appt => {
     const patientName = appt.patient ? (appt.patient.name || 'Patient') : 'Unknown';
     const contact = appt.patient ? (appt.patient.contact_number || appt.patient.email || 'N/A') : 'N/A';
     const treatmentName = appt.treatment ? appt.treatment.name : 'Consultation';
-    const timeStr = formatTime(appt.appointment_date);
+    const timeOnly = formatTime(appt.appointment_date);
+    const apptDatePart = (appt.appointment_date || '').split('T')[0];
+    const isToday = apptDatePart === todayStr;
+
+    let timeDisplay = `<strong>${timeOnly}</strong>`;
+    if (isToday) {
+      timeDisplay = `<div><strong>${timeOnly}</strong> <span style="font-size: 0.65rem; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 4px;">TODAY</span></div>`;
+    } else {
+      const d = new Date(appt.appointment_date);
+      const dateFormatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      timeDisplay = `<div><strong>${timeOnly}</strong></div><div style="font-size: 0.72rem; color: #0d9488; font-weight: 700;"><i class="ti ti-calendar"></i> ${dateFormatted}</div>`;
+    }
+
     const statusBadge = getStatusBadge(appt.status);
 
     let actionButton = '';
@@ -410,7 +475,7 @@ function renderOverviewAppointments() {
 
     return `
       <tr>
-        <td><strong>${timeStr}</strong></td>
+        <td>${timeDisplay}</td>
         <td><strong>${escapeHtml(patientName)}</strong></td>
         <td>${escapeHtml(contact)}</td>
         <td>${escapeHtml(treatmentName)}</td>
@@ -435,16 +500,22 @@ function renderOverviewDentists() {
     return;
   }
 
-  container.innerHTML = allDentists.slice(0, 4).map(d => {
+  container.innerHTML = allDentists.slice(0, 6).map(d => {
+    const isOn = !!d.isOnDuty;
+    const branchTag = d.branch ? d.branch.replace(/branch$/i, '').trim() : 'Main';
     return `
       <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 34px; height: 34px; border-radius: 50%; background: var(--primary-subtle); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">
-            ${(d.name || 'D').charAt(0)}
+          <div style="width: 34px; height: 34px; border-radius: 50%; background: ${isOn ? 'var(--primary-subtle)' : '#f1f5f9'}; color: ${isOn ? 'var(--primary-color)' : '#94a3b8'}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">
+            ${escapeHtml((d.name || 'D').charAt(0))}
           </div>
           <div>
             <strong style="font-size: 0.88rem; color: var(--dark-color);">${escapeHtml(d.name)}</strong>
-            <div style="font-size: 0.74rem; color: #10b981; font-weight: 600;">&bull; On Duty Today</div>
+            <div style="font-size: 0.74rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+              <span style="color: ${isOn ? '#10b981' : '#ef4444'};">${isOn ? '&bull; On Duty' : '&bull; Out'}</span>
+              <span style="color: #94a3b8;">&bull;</span>
+              <span style="color: #64748b;">${escapeHtml(branchTag)}</span>
+            </div>
           </div>
         </div>
         <button class="btn btn-sm btn-outline" onclick="openBookWithDentist('${d.id}')" title="Book Appointment">
@@ -703,7 +774,7 @@ function renderAppointmentsTable(list) {
       `;
     } else if (appt.status === 'Cancelled') {
       mainActionBtn = `
-        <button class="btn-action-main btn-action-rebook" onclick="openBookForPatient('${appt.patient_id}')">
+        <button class="btn-action-main btn-action-rebook" onclick="rebookAppointment('${appt.id}')">
           <i class="ti ti-rotate-clockwise"></i>
           <span>Rebook</span>
         </button>
@@ -738,7 +809,7 @@ function renderAppointmentsTable(list) {
     // Check if patient has delinquent overdue balance (> 30 days)
     const patientOverdueInvs = (allInvoices || []).filter(inv => {
       const pId = inv.patient_id || inv.patient?.id;
-      const isMatch = pId && String(pId) === String(appt.patient_id);
+      const isMatch = pId && String(pId) === String(appt.patient?.id || appt.patient_id);
       const isUnpaid = (inv.status || '').toLowerCase() === 'unpaid';
       const daysOld = Math.floor((Date.now() - new Date(inv.issued_at || inv.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24));
       return isMatch && isUnpaid && daysOld > 30;
@@ -1311,15 +1382,47 @@ function filterPatients() {
 }
 
 // ─── Dentists On Duty Tab ─────────────────────────────────────────────────────
-function renderDentistsRoster() {
+// ─── Dentists On Duty Tab ─────────────────────────────────────────────────────
+function filterReceptionistDentists() {
+  const branchFilter = document.getElementById('receptionist-dentists-branch-filter')?.value || 'ALL';
+  const dutyFilter = document.getElementById('receptionist-dentists-duty-filter')?.value || 'ALL';
+
+  let filtered = allDentists;
+
+  if (branchFilter !== 'ALL') {
+    const q = branchFilter.toLowerCase().replace(/fano\s*dental\s*clinic\s*[—–-]?/i, '').replace(/branch$/i, '').trim();
+    filtered = filtered.filter(d => (d.branch || '').toLowerCase().includes(q) || q.includes((d.branch || '').toLowerCase().replace(/branch$/i, '').trim()));
+  }
+
+  if (dutyFilter === 'ON_DUTY') {
+    filtered = filtered.filter(d => d.isOnDuty);
+  } else if (dutyFilter === 'OFF_DUTY') {
+    filtered = filtered.filter(d => !d.isOnDuty);
+  }
+
+  renderDentistsRoster(filtered);
+}
+window.filterReceptionistDentists = filterReceptionistDentists;
+
+function renderDentistsRoster(customList) {
   const container = document.getElementById('dentists-cards-container');
   if (!container) return;
 
-  if (!allDentists.length) {
+  const list = Array.isArray(customList) ? customList : allDentists;
+
+  // Update duty count text
+  const totalDentists = allDentists.length;
+  const onDutyCount = allDentists.filter(d => d.isOnDuty).length;
+  const countEl = document.getElementById('duty-count-text');
+  if (countEl) {
+    countEl.textContent = `${onDutyCount} of ${totalDentists} Doctors On Duty`;
+  }
+
+  if (!list.length) {
     container.innerHTML = `
-      <div class="empty-state">
-        <i class="ti ti-stethoscope"></i>
-        <p>No dentists registered in clinic database.</p>
+      <div class="empty-state" style="grid-column: 1 / -1; padding: 40px 20px;">
+        <i class="ti ti-stethoscope" style="font-size: 2.2rem; color: #94a3b8; margin-bottom: 10px;"></i>
+        <p style="color: #64748b; font-weight: 600;">No dentists match the selected branch and duty filters.</p>
       </div>
     `;
     return;
@@ -1327,40 +1430,70 @@ function renderDentistsRoster() {
 
   const todayStr = new Date().toISOString().split('T')[0];
 
-  container.innerHTML = allDentists.map(d => {
-    // Match staff schedule if available
+  container.innerHTML = list.map(d => {
     const sched = allStaffSchedules.find(s => s.email === d.email || s.name === d.name);
-    const shift = sched ? sched.shift : '08:00 AM - 05:00 PM';
-    const availability = sched ? sched.availability : 'On Duty';
+    const shift = d.shift || (sched ? sched.shift : '08:00 AM - 05:00 PM');
+    const branch = d.branch || (sched ? sched.branch : 'Main Branch (Naga)');
+    const isOn = !!d.isOnDuty;
 
-    // Count today's appointments for this dentist
-    const docAppts = allAppointments.filter(a => a.appointment_date && a.appointment_date.startsWith(todayStr));
+    const docAppts = allAppointments.filter(a => {
+      const matchDoc = a.dentist_id === d.id || (a.notes && a.notes.toLowerCase().includes(d.name.toLowerCase()));
+      return matchDoc && a.appointment_date && a.appointment_date.startsWith(todayStr);
+    });
 
-    const statusBadge = availability === 'On Duty'
-      ? `<span class="status-badge badge-completed">&bull; Available On Duty</span>`
-      : `<span class="status-badge badge-pending">&bull; ${availability}</span>`;
+    const isTalisay = branch.toLowerCase().includes('talisay');
+    const isMing = branch.toLowerCase().includes('minglanilla');
+    const isCebu = branch.toLowerCase().includes('cebu');
+    const isMain = !isTalisay && !isMing && !isCebu;
 
     return `
-      <div class="dentist-card">
+      <div class="dentist-card" id="dentist-card-${d.id}">
         <div class="dentist-card-top">
-          <div class="dentist-card-avatar">
-            ${(d.name || 'D').charAt(0)}
+          <div class="dentist-card-avatar" style="${!isOn ? 'filter: grayscale(0.7); opacity: 0.8;' : ''}">
+            ${escapeHtml((d.name || 'D').charAt(0))}
           </div>
           <div class="dentist-card-meta">
             <h4>${escapeHtml(d.name)}</h4>
-            <span>Licensed Dental Surgeon</span>
-            <div style="margin-top: 4px;">${statusBadge}</div>
+            <span>Licensed Dental Practitioner</span>
+            <div style="margin-top: 4px;">
+              <span class="status-badge ${isOn ? 'badge-completed' : 'badge-pending'}" style="font-size: 0.72rem;">
+                <i class="ti ${isOn ? 'ti-check' : 'ti-moon'}"></i> ${isOn ? 'Available On Duty' : 'Off Duty / Out'}
+              </span>
+            </div>
           </div>
+        </div>
+
+        <!-- Real-Time Duty Toggle Switch -->
+        <div class="dentist-duty-bar ${isOn ? 'on-duty' : 'off-duty'}">
+          <div class="duty-status-label ${isOn ? 'on-duty' : 'off-duty'}">
+            <i class="ti ${isOn ? 'ti-toggle-right' : 'ti-toggle-left'}" style="font-size: 1.1rem;"></i>
+            <span>${isOn ? 'Doctor On Duty' : 'Doctor Is Out'}</span>
+          </div>
+          <label class="duty-switch" title="Toggle ${escapeHtml(d.name)} between On Duty and Off Duty">
+            <input type="checkbox" ${isOn ? 'checked' : ''} onchange="toggleDentistDuty('${d.id}', this.checked, '${escapeHtml(d.name)}')">
+            <span class="duty-slider"></span>
+          </label>
+        </div>
+
+        <!-- Branch Assignment Dropdown -->
+        <div class="dentist-branch-row">
+          <label><i class="ti ti-map-pin"></i> Assigned Clinic Branch</label>
+          <select class="dentist-branch-select" onchange="updateDentistBranch('${d.id}', this.value, '${escapeHtml(d.name)}')">
+            <option value="Main Branch (Naga)" ${isMain ? 'selected' : ''}>Main Branch (Naga)</option>
+            <option value="Minglanilla Branch" ${isMing ? 'selected' : ''}>Minglanilla Branch</option>
+            <option value="Talisay Branch" ${isTalisay ? 'selected' : ''}>Talisay Branch</option>
+            <option value="Fano Dental Clinic - Cebu Branch" ${isCebu ? 'selected' : ''}>Cebu Branch</option>
+          </select>
         </div>
 
         <div class="dentist-schedule-info">
           <div class="schedule-row">
             <span>Shift Hours:</span>
-            <strong>${shift}</strong>
+            <strong>${escapeHtml(shift)}</strong>
           </div>
           <div class="schedule-row">
             <span>Contact Phone:</span>
-            <strong>${d.contact_number || 'Clinic Extension'}</strong>
+            <strong>${escapeHtml(d.contact_number || 'Clinic Extension')}</strong>
           </div>
           <div class="schedule-row">
             <span>Today's Total Appts:</span>
@@ -1368,14 +1501,92 @@ function renderDentistsRoster() {
           </div>
         </div>
 
-        <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="openBookWithDentist('${d.id}')">
+        <button class="btn btn-primary" style="width: 100%; justify-content: center; ${!isOn ? 'opacity: 0.7; background: #64748b;' : ''}" onclick="openBookWithDentist('${d.id}')">
           <i class="ti ti-walk"></i>
-          <span>Book Walk-In with Doctor</span>
+          <span>${isOn ? 'Book Walk-In with Doctor' : 'Doctor Out (Book Advance)'}</span>
         </button>
       </div>
     `;
   }).join('');
 }
+
+async function toggleDentistDuty(id, isOn, name) {
+  const newStatus = isOn ? 'On Duty' : 'Off Duty';
+  // Optimistic update in memory
+  const target = allDentists.find(d => d.id === id || (name && d.name.toLowerCase().trim() === name.toLowerCase().trim()));
+  if (target) {
+    target.availability = newStatus;
+    target.isOnDuty = isOn;
+  }
+  const sched = allStaffSchedules.find(s => s.id === id || (name && s.name && s.name.toLowerCase().trim() === name.toLowerCase().trim()));
+  if (sched) {
+    sched.availability = newStatus;
+  }
+
+  // Refresh roster and selects immediately
+  renderDentistsRoster();
+  renderOverviewDentists();
+  populateModalSelects();
+
+  try {
+    const res = await fetch(`${BASE_ORIGIN}/api/dentists/${id}/duty`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      body: JSON.stringify({ availability: newStatus, name })
+    });
+    if (res.ok) {
+      showToast(`Dr. ${name} is now ${newStatus === 'On Duty' ? 'On Duty (Available)' : 'Off Duty / Out'}.`, 'success');
+    } else {
+      showToast(`Duty status updated for Dr. ${name}.`, 'info');
+    }
+  } catch (err) {
+    console.warn('[Duty toggle warning]', err.message);
+    showToast(`Dr. ${name} set to ${newStatus}.`, 'info');
+  }
+}
+window.toggleDentistDuty = toggleDentistDuty;
+
+async function updateDentistBranch(id, branch, name) {
+  const target = allDentists.find(d => d.id === id || (name && d.name.toLowerCase().trim() === name.toLowerCase().trim()));
+  if (target) {
+    target.branch = branch;
+  }
+  const sched = allStaffSchedules.find(s => s.id === id || (name && s.name && s.name.toLowerCase().trim() === name.toLowerCase().trim()));
+  if (sched) {
+    sched.branch = branch;
+  }
+
+  renderDentistsRoster();
+  renderOverviewDentists();
+  populateModalSelects();
+
+  try {
+    const res = await fetch(`${BASE_ORIGIN}/api/dentists/${id}/duty`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      body: JSON.stringify({ branch, name })
+    });
+    if (res.ok) {
+      showToast(`Dr. ${name} duty branch reassigned to ${branch}.`, 'success');
+    }
+  } catch (err) {
+    console.warn('[Branch update warning]', err.message);
+    showToast(`Dr. ${name} reassigned to ${branch}.`, 'info');
+  }
+}
+window.updateDentistBranch = updateDentistBranch;
+
+function handleReceptionistBranchChange() {
+  const branchVal = document.getElementById('book-branch-select')?.value || '';
+  populateModalSelects(branchVal);
+}
+window.handleReceptionistBranchChange = handleReceptionistBranchChange;
 
 // ─── Billing & Check-Out Tab ──────────────────────────────────────────────────
 function renderBillingTable(list) {
@@ -1566,10 +1777,15 @@ window.addEventListener('click', (e) => {
   }
 });
 
-function populateModalSelects() {
-  // Patient select
+function populateModalSelects(branchFilter) {
+  const isBranchFilterOnly = branchFilter !== undefined;
+
+  // Patient select (only rebuild on initial modal setup / not when filtering branch)
   const patientSelect = document.getElementById('book-patient-select');
-  if (patientSelect) {
+  if (patientSelect && !isBranchFilterOnly) {
+    const prevPatientVal = patientSelect.value;
+    const prevPatientText = patientSelect.selectedOptions?.[0]?.text;
+
     patientSelect.innerHTML = `<option value="">-- Select or Search Patient --</option>` +
       allPatients.map(p => {
         const u = p.user || {};
@@ -1578,23 +1794,58 @@ function populateModalSelects() {
         const id = u.id || p.user_id || p.id;
         return `<option value="${id}">${escapeHtml(name)} ${phone}</option>`;
       }).join('');
+
+    if (prevPatientVal) {
+      patientSelect.value = prevPatientVal;
+      // If previous value was dynamically added and not in allPatients, re-inject it
+      if (patientSelect.value !== prevPatientVal && prevPatientText && prevPatientText !== '-- Select or Search Patient --') {
+        const opt = document.createElement('option');
+        opt.value = prevPatientVal;
+        opt.textContent = prevPatientText;
+        opt.selected = true;
+        patientSelect.appendChild(opt);
+        patientSelect.value = prevPatientVal;
+      }
+    }
   }
 
-  // Treatment select
+  // Treatment select (only rebuild on initial modal setup / not when filtering branch)
   const treatmentSelect = document.getElementById('book-treatment-select');
-  if (treatmentSelect) {
+  if (treatmentSelect && !isBranchFilterOnly) {
+    const prevTreatVal = treatmentSelect.value;
     treatmentSelect.innerHTML = `<option value="">-- Select Treatment --</option>` +
       allTreatments.map(t => {
         const price = Number(t.price || 0).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
         return `<option value="${t.id}">${escapeHtml(t.name)} (${price})</option>`;
       }).join('');
+
+    if (prevTreatVal) {
+      treatmentSelect.value = prevTreatVal;
+    }
   }
 
-  // Dentist select
+  // Dentist select with branch filtering and duty status
   const dentistSelect = document.getElementById('book-dentist-select');
   if (dentistSelect) {
-    dentistSelect.innerHTML = `<option value="">Any Available Dentist</option>` +
-      allDentists.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+    const prevDentistVal = dentistSelect.value;
+    let filtered = allDentists;
+    const currentBranch = branchFilter !== undefined ? branchFilter : (document.getElementById('book-branch-select')?.value || '');
+    if (currentBranch && currentBranch !== 'ALL') {
+      const q = currentBranch.toLowerCase().replace(/fano\s*dental\s*clinic\s*[—–-]?/i, '').replace(/branch$/i, '').trim();
+      const match = allDentists.filter(d => (d.branch || '').toLowerCase().includes(q) || q.includes((d.branch || '').toLowerCase().replace(/branch$/i, '').trim()));
+      if (match.length > 0) filtered = match;
+    }
+
+    dentistSelect.innerHTML = `<option value="">Any Available Dentist / Staff Auto-Assign</option>` +
+      filtered.map(d => {
+        const dutyTag = d.isOnDuty ? ' (● On Duty)' : ' (○ Off Duty / Out)';
+        const branchTag = d.branch ? ` • ${d.branch.replace(/branch$/i, '').trim()}` : '';
+        return `<option value="${d.id}">${escapeHtml(d.name)}${dutyTag}${branchTag}</option>`;
+      }).join('');
+
+    if (prevDentistVal) {
+      dentistSelect.value = prevDentistVal;
+    }
   }
 }
 
@@ -1683,9 +1934,23 @@ function handleConditionCheckboxChange(input) {
 window.handleConditionCheckboxChange = handleConditionCheckboxChange;
 
 // ─── Open Walk-In Appointment Modals ──────────────────────────────────────────
+function resetBookAppointmentModalHeader(title = null, subtitle = null) {
+  const titleEl = document.getElementById('book-modal-title');
+  const subEl = document.getElementById('book-modal-sub');
+  if (titleEl) {
+    titleEl.innerHTML = title || `<i class="ti ti-calendar-plus text-primary"></i> Book Appointment`;
+  }
+  if (subEl) {
+    subEl.textContent = subtitle || 'Schedule patient appointment, dentist assignment, and procedure fee breakdown';
+  }
+}
+
 function openBookAppointmentModal() {
   const form = document.getElementById('form-book-appointment');
   if (form) form.reset();
+
+  resetBookAppointmentModalHeader();
+  populateModalSelects();
 
   const today = new Date().toISOString().split('T')[0];
   const dateInput = document.getElementById('book-date');
@@ -1699,9 +1964,109 @@ function openBookAppointmentModal() {
 }
 window.openBookAppointmentModal = openBookAppointmentModal;
 
+function ensurePatientSelectOption(patientId, fallbackName = '', fallbackPhone = '') {
+  const patientSelect = document.getElementById('book-patient-select');
+  if (!patientSelect) return false;
+
+  const rawCleanName = (fallbackName || '').trim();
+  const cleanName = rawCleanName.replace(/^(patient|unknown\s*patient)$/i, '').trim();
+
+  // Search allPatients for match by id, user_id, user.id, or name (case-insensitive)
+  let patObj = (allPatients || []).find(p => {
+    if (patientId && (
+      String(p.id) === String(patientId) || 
+      String(p.user_id) === String(patientId) || 
+      String(p.user?.id) === String(patientId)
+    )) return true;
+
+    if (cleanName) {
+      const pFullName = (p.name || (p.user && p.user.name) || `${p.first_name || p.user?.first_name || ''} ${p.last_name || p.user?.last_name || ''}`).trim().toLowerCase();
+      if (pFullName && (pFullName === cleanName.toLowerCase() || pFullName.includes(cleanName.toLowerCase()) || cleanName.toLowerCase().includes(pFullName))) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+  // If not in allPatients, search allAppointments
+  if (!patObj && (patientId || cleanName)) {
+    const matchedAppt = (allAppointments || []).find(a => {
+      if (patientId && (
+        String(a.patient?.id) === String(patientId) || 
+        String(a.patient_id) === String(patientId)
+      )) return true;
+
+      if (cleanName && a.patient?.name && a.patient.name.trim().toLowerCase() === cleanName.toLowerCase()) {
+        return true;
+      }
+      return false;
+    });
+
+    if (matchedAppt && matchedAppt.patient) {
+      patObj = {
+        id: matchedAppt.patient.id,
+        user_id: matchedAppt.patient.id,
+        name: matchedAppt.patient.name,
+        contact_number: matchedAppt.patient.contact_number
+      };
+    }
+  }
+
+  const targetId = patObj ? (patObj.user_id || patObj.id || patObj.user?.id || patientId) : (patientId || 'patient-rebook-ref');
+  const pName = patObj ? (patObj.name || patObj.user?.name || cleanName || rawCleanName) : (cleanName || rawCleanName || 'Patient');
+  const pPhone = patObj ? (patObj.contact_number || patObj.user?.contact_number || fallbackPhone) : fallbackPhone;
+
+  // Check if option already exists in select (by value or by name text)
+  let matchedOption = null;
+  for (let opt of patientSelect.options) {
+    if (!opt.value) continue;
+    const optVal = String(opt.value);
+    const optText = opt.text.toLowerCase();
+    if (
+      (targetId && optVal === String(targetId)) ||
+      (patientId && optVal === String(patientId)) ||
+      (cleanName && optText.includes(cleanName.toLowerCase()))
+    ) {
+      matchedOption = opt;
+      break;
+    }
+  }
+
+  if (matchedOption) {
+    patientSelect.value = matchedOption.value;
+    matchedOption.selected = true;
+    try { patientSelect.dispatchEvent(new Event('change')); } catch (_) {}
+    return true;
+  }
+
+  // If not found, dynamically inject option with patient's name
+  if (pName || targetId) {
+    const displayName = pName || 'Selected Patient';
+    const phoneText = pPhone ? `(${pPhone})` : '';
+    const newOpt = document.createElement('option');
+    newOpt.value = targetId;
+    newOpt.textContent = `${displayName} ${phoneText}`.trim();
+    newOpt.selected = true;
+    patientSelect.appendChild(newOpt);
+    patientSelect.value = targetId;
+    try { patientSelect.dispatchEvent(new Event('change')); } catch (_) {}
+    return true;
+  }
+
+  return false;
+}
+
 function openBookForPatient(patientId) {
+  // If patientId matches an appointment ID in allAppointments, route to rebookAppointment
+  const matchedAppt = (allAppointments || []).find(a => String(a.id) === String(patientId));
+  if (matchedAppt) {
+    return rebookAppointment(patientId);
+  }
+
   const form = document.getElementById('form-book-appointment');
   if (form) form.reset();
+
+  populateModalSelects();
 
   const today = new Date().toISOString().split('T')[0];
   const dateInput = document.getElementById('book-date');
@@ -1709,8 +2074,25 @@ function openBookForPatient(patientId) {
 
   toggleWalkInPatientMode('existing');
 
-  const patientSelect = document.getElementById('book-patient-select');
-  if (patientSelect) patientSelect.value = patientId;
+  // Find patient name if possible from allPatients or allAppointments
+  const patObj = (allPatients || []).find(p => String(p.id) === String(patientId) || String(p.user_id) === String(patientId) || String(p.user?.id) === String(patientId));
+  const fallbackName = patObj ? (patObj.name || patObj.user?.name || '') : '';
+  const fallbackPhone = patObj ? (patObj.contact_number || patObj.user?.contact_number || '') : '';
+
+  // Select patient and make sure name is displayed
+  ensurePatientSelectOption(patientId, fallbackName, fallbackPhone);
+
+  // Set modal title
+  const patSelect = document.getElementById('book-patient-select');
+  const selText = patSelect?.selectedOptions[0]?.text?.replace(/\([^)]*\)/, '')?.trim();
+  if (selText && selText !== '-- Select or Search Patient --') {
+    resetBookAppointmentModalHeader(
+      `<i class="ti ti-calendar-plus text-primary"></i> Book Appointment for ${escapeHtml(selText)}`,
+      `Scheduling new visit for registered patient ${selText}`
+    );
+  } else {
+    resetBookAppointmentModalHeader();
+  }
 
   handleBookDateChange();
   handleWalkInTreatmentChange();
@@ -1718,6 +2100,131 @@ function openBookForPatient(patientId) {
   openModal('modal-book-appointment');
 }
 window.openBookForPatient = openBookForPatient;
+
+function rebookAppointment(apptId) {
+  const appt = (allAppointments || []).find(a => String(a.id) === String(apptId));
+  if (!appt) {
+    console.warn('[rebookAppointment] Appointment not found:', apptId);
+    openBookForPatient(apptId);
+    return;
+  }
+
+  const form = document.getElementById('form-book-appointment');
+  if (form) form.reset();
+
+  // Populate all selects
+  populateModalSelects();
+
+  const today = new Date().toISOString().split('T')[0];
+  const dateInput = document.getElementById('book-date');
+  if (dateInput) dateInput.value = today;
+
+  // Force existing patient mode
+  toggleWalkInPatientMode('existing');
+
+  // Pre-select Branch and filter dentist roster
+  const parsedNotes = parseAppointmentNotes(appt.notes);
+  if (parsedNotes.branch) {
+    const branchSelect = document.getElementById('book-branch-select');
+    if (branchSelect) {
+      const bTarget = parsedNotes.branch.toLowerCase().replace(/fano\s*dental\s*clinic\s*[—–-]?/i, '').replace(/branch$/i, '').trim();
+      for (let opt of branchSelect.options) {
+        if (opt.value && (opt.value.toLowerCase().includes(bTarget) || opt.text.toLowerCase().includes(bTarget))) {
+          branchSelect.value = opt.value;
+          break;
+        }
+      }
+      populateModalSelects(branchSelect.value);
+    }
+  }
+
+  // Pre-select Dentist if known
+  if (parsedNotes.dentist && parsedNotes.dentist !== 'No Preference') {
+    const dentistSelect = document.getElementById('book-dentist-select');
+    if (dentistSelect) {
+      const dTarget = parsedNotes.dentist.toLowerCase().replace(/^(dr\.|doctor)\s*/i, '').trim();
+      for (let opt of dentistSelect.options) {
+        if (opt.text.toLowerCase().includes(dTarget)) {
+          dentistSelect.value = opt.value;
+          break;
+        }
+      }
+    }
+  }
+
+  // Pre-select Treatment Procedure
+  const treatId = appt.treatment?.id || appt.treatment_id;
+  const treatSelect = document.getElementById('book-treatment-select');
+  if (treatSelect) {
+    if (treatId) {
+      treatSelect.value = treatId;
+    } else if (appt.treatment?.name || appt.reason) {
+      const tName = (appt.treatment?.name || appt.reason).toLowerCase();
+      for (let opt of treatSelect.options) {
+        if (opt.text.toLowerCase().includes(tName)) {
+          treatSelect.value = opt.value;
+          break;
+        }
+      }
+    }
+    handleWalkInTreatmentChange();
+  }
+
+  // Pre-fill Chief Concern
+  if (parsedNotes.concern && parsedNotes.concern !== 'None' && parsedNotes.concern !== 'N/A') {
+    const concernInput = document.getElementById('walkin-concern');
+    if (concernInput) concernInput.value = parsedNotes.concern;
+  }
+
+  // Pre-fill HMO
+  if (parsedNotes.hmo && parsedNotes.hmo !== 'None' && parsedNotes.hmo !== 'N/A') {
+    const hmoInput = document.getElementById('walkin-hmo-provider');
+    if (hmoInput) hmoInput.value = parsedNotes.hmo;
+  }
+
+  // Pre-fill medical conditions checkboxes
+  if (parsedNotes.conditions && parsedNotes.conditions !== 'None') {
+    const condArray = parsedNotes.conditions.split(',').map(c => c.trim().toLowerCase());
+    document.querySelectorAll('input[name="walkin_condition"]').forEach(cb => {
+      if (condArray.includes(cb.value.toLowerCase())) {
+        cb.checked = true;
+      }
+    });
+    const noneCb = document.getElementById('walkin-cond-none');
+    if (noneCb && condArray.length > 0) noneCb.checked = false;
+  }
+
+  // Pre-fill Emergency Contact
+  if (parsedNotes.emergency && parsedNotes.emergency !== 'None' && parsedNotes.emergency !== 'N/A') {
+    const emergInput = document.getElementById('walkin-emergency');
+    if (emergInput) emergInput.value = parsedNotes.emergency;
+  }
+
+  // Pre-fill Allergies if input exists
+  if (parsedNotes.allergies && parsedNotes.allergies !== 'None' && parsedNotes.allergies !== 'N/A') {
+    const allergInput = document.getElementById('walkin-allergies');
+    if (allergInput) allergInput.value = parsedNotes.allergies;
+  }
+
+  // Resolve and actively select patient (run AFTER branch & dentist selects are populated)
+  const pat = appt.patient || {};
+  const patId = pat.id || pat.user_id || appt.patient_id || '';
+  const patName = pat.name || (pat.first_name ? `${pat.first_name} ${pat.last_name || ''}`.trim() : 'Patient');
+  const patPhone = pat.contact_number || pat.email || '';
+
+  ensurePatientSelectOption(patId, patName, patPhone);
+
+  // Reassuring modal header with patient name
+  resetBookAppointmentModalHeader(
+    `<i class="ti ti-rotate-clockwise text-primary"></i> Rebook Appointment for ${escapeHtml(patName)}`,
+    `Rebooking previous appointment for ${patName} — procedure and clinical notes pre-selected.`
+  );
+
+  handleBookDateChange();
+  openModal('modal-book-appointment');
+  showToast(`Rebooking for ${patName} — details pre-filled.`, 'info');
+}
+window.rebookAppointment = rebookAppointment;
 
 function openBookWithDentist(dentistId) {
   const form = document.getElementById('form-book-appointment');
@@ -1728,6 +2235,22 @@ function openBookWithDentist(dentistId) {
   if (dateInput) dateInput.value = today;
 
   toggleWalkInPatientMode('existing');
+
+  const doc = allDentists.find(d => d.id === dentistId);
+  if (doc && doc.branch) {
+    const branchSelect = document.getElementById('book-branch-select');
+    if (branchSelect) {
+      const q = doc.branch.toLowerCase().replace(/branch$/i, '').trim();
+      for (let opt of branchSelect.options) {
+        if (opt.value.toLowerCase().includes(q) || q.includes(opt.value.toLowerCase().replace(/branch$/i, '').trim())) {
+          branchSelect.value = opt.value;
+          break;
+        }
+      }
+    }
+  }
+
+  populateModalSelects(doc ? doc.branch : undefined);
 
   const dentistSelect = document.getElementById('book-dentist-select');
   if (dentistSelect) dentistSelect.value = dentistId;

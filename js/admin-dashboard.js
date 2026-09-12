@@ -216,7 +216,7 @@ function initDashboard() {
 
   // Always default to 'overview' (Dashboard Overview) when opening or logging in,
   // unless an explicit hash anchor is in the URL (e.g. #appointments)
-  const validTabs = ['overview', 'appointments', 'patients', 'billing', 'staff', 'inventory', 'users', 'history', 'logs', 'settings'];
+  const validTabs = ['overview', 'appointments', 'patients', 'billing', 'staff', 'services', 'inventory', 'users', 'history', 'logs', 'settings'];
   const hashTab = (window.location.hash || '').replace('#', '').trim();
   
   // Clean up any stale admin_active_tab in localStorage so it never forces logs or other tabs on fresh launch
@@ -289,6 +289,7 @@ function activateTab(targetTab, skipDataLoad = false) {
     patients: 'Patients Directory',
     billing: 'Billing & Invoices',
     staff: 'Staff Management',
+    services: 'Clinic Services & Treatments',
     inventory: 'Inventory & Supplies',
     users: 'Manage System Users',
     history: 'Medical History Records',
@@ -344,6 +345,8 @@ function activateTab(targetTab, skipDataLoad = false) {
       loadBilling();
     } else if (targetTab === 'staff') {
       loadStaffSchedules();
+    } else if (targetTab === 'services') {
+      loadAdminTreatments();
     } else if (targetTab === 'inventory') {
       loadInventory();
     } else if (targetTab === 'users') {
@@ -2229,12 +2232,12 @@ function renderOverviewInventory(inventoryList = localInventory) {
       warningList.style.textAlign = 'left';
       warningList.style.padding = '0';
       warningList.innerHTML = lowStockItems.map((it) => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 12px; margin-bottom: 6px; background: #fff8f8; border: 1px solid #fee2e2; border-radius: 10px; font-size: 0.82rem; transition: all 0.2s ease;">
+        <div class="inv-warning-item-row" style="display:flex; justify-content:space-between; align-items:center; padding: 10px 12px; margin-bottom: 6px; border-radius: 10px; font-size: 0.82rem; transition: all 0.2s ease;">
           <div style="display:flex; align-items:center; gap:8px;">
             <i class="ti ti-alert-triangle" style="color: ${it.isOut ? '#ef4444' : '#f59e0b'}; font-size: 16px;"></i>
-            <span style="font-weight:700; color: #1e293b;">${escapeHTML(it.name)}</span>
+            <span class="inv-warning-item-name" style="font-weight:700;">${escapeHTML(it.name)}</span>
           </div>
-          <span style="color: ${it.isOut ? '#dc2626' : '#d97706'}; font-weight:700; background: ${it.isOut ? '#fee2e2' : '#fef3c7'}; padding: 3px 8px; border-radius: 6px; font-size: 0.74rem;">
+          <span class="inv-warning-item-badge ${it.isOut ? 'out' : 'low'}" style="font-weight:700; padding: 3px 8px; border-radius: 6px; font-size: 0.74rem;">
             ${it.isOut ? 'Out of stock' : `${it.stock} / ${it.threshold} left`}
           </span>
         </div>
@@ -3218,6 +3221,921 @@ window.deleteStaffSchedule = function(id, name) {
     });
   });
 };
+
+// ─── 5b. CLINIC SERVICES & TREATMENTS CONTROLLER ─────────────────────────────
+let allAdminTreatments = [];
+
+const ADMIN_SERVICES_METADATA = {
+  cleaning: {
+    image: '../Resources/services/cleaning.jpg',
+    category: 'Preventive & Hygiene',
+    tagline: 'Ultrasonic calculus scaling, plaque removal & high-gloss enamel polish',
+    summary: 'Comprehensive oral prophylaxis removing calcified tartar, harmful bacteria, and stubborn surface stains beneath the gum line to maintain oral health and fresh breath.',
+    highlights: [
+      'Ultrasonic Scaling & Tartar Removal',
+      'Interdental Flossing & Plaque Elimination',
+      'Prophy Paste Deep Stain Polishing',
+      'Protective Fluoride Varnish Coat'
+    ],
+    indications: [
+      'Bleeding, swollen, or tender gums (early gingivitis)',
+      'Visible yellow or brown tartar buildup along tooth margins',
+      'Persistent halitosis (bad breath) or rough tooth surfaces',
+      'Recommended every 6 months for adults & children'
+    ],
+    steps: [
+      { step: 1, title: 'Oral & Periodontal Exam', desc: 'Dentist inspects gums, enamel strength, and locates tartar buildup pockets.' },
+      { step: 2, title: 'Ultrasonic Scaling', desc: 'High-frequency acoustic vibrations gently break up hardened tartar deposits.' },
+      { step: 3, title: 'Fine Hand Scaling', desc: 'Precision curettes cleanse tight contact points between teeth.' },
+      { step: 4, title: 'Polishing & Fluoride', desc: 'Specialized paste polishes enamel to a smooth finish, followed by protective fluoride.' }
+    ],
+    preparation: 'Brush and floss lightly before your appointment. Inform your hygienist of any gum tenderness.',
+    aftercare: 'Refrain from dark drinks (coffee, tea, soda) or smoking for at least 1–2 hours following fluoride application.'
+  },
+  filling: {
+    image: '../Resources/services/filling.jpg',
+    category: 'Restorative Care',
+    tagline: 'Tooth-colored durable composite restoration for cavities and chipped teeth',
+    summary: 'Restores decayed or damaged teeth using biocompatible, shade-matched composite resin that chemically bonds to natural tooth structure for seamless aesthetics and strength.',
+    highlights: [
+      'Invisible Enamel Shade-Matching',
+      'Micro-Mechanical Tooth Bonding',
+      'Minimally Invasive Decay Removal',
+      'High-Intensity LED Curing'
+    ],
+    indications: [
+      'Cavities / dental caries or visible dark pits',
+      'Tooth sensitivity when eating cold, hot, or sweet food',
+      'Food constantly catching between back molars',
+      'Chipped, worn, or cracked biting surfaces'
+    ],
+    steps: [
+      { step: 1, title: 'Local Anesthesia & Prep', desc: 'Mild local numbing ensures a 100% painless, comfortable session.' },
+      { step: 2, title: 'Decay Removal', desc: 'Specialized micro-instruments remove infected dentin while preserving healthy enamel.' },
+      { step: 3, title: 'Adhesive Bonding', desc: 'Etching gel and bonding agent are applied to create a microscopic bond.' },
+      { step: 4, title: 'Layering & Light Curing', desc: 'Composite resin is sculpted layer-by-layer and hardened instantly with blue LED light.' },
+      { step: 5, title: 'Bite Check & Polish', desc: 'Articulating paper checks your bite alignment, followed by diamond high-shine polish.' }
+    ],
+    preparation: 'Eat a light meal prior to treatment so you are comfortable while local numbing is active.',
+    aftercare: 'Avoid chewing hard or sticky foods until local anesthesia fully subsides to prevent accidentally biting your cheek or tongue.'
+  },
+  extraction: {
+    image: '../Resources/services/extraction.jpg',
+    category: 'Oral Surgery',
+    tagline: 'Gentle, pain-free removal of problematic or impacted wisdom teeth',
+    summary: 'Safe surgical or simple extraction of impacted, malpositioned, or severely broken third molars under profound local anesthesia for immediate pain relief.',
+    highlights: [
+      'Profound Pain-Free Local Anesthesia',
+      'Gentle Atraumatic Tooth Elevation',
+      'Sterile Hemostatic Dressing',
+      'Comprehensive Recovery Care Kit'
+    ],
+    indications: [
+      'Impacted or angled wisdom teeth pushing adjacent teeth',
+      'Recurrent swelling, infection, or pain around back molars (pericoronitis)',
+      'Severe tooth decay extending beyond restorable pulp levels',
+      'Orthodontic requirement to relieve severe dental crowding'
+    ],
+    steps: [
+      { step: 1, title: 'Digital X-Ray Evaluation', desc: 'Panoramic radiograph assesses root curvature and proximity to mandibular nerves.' },
+      { step: 2, title: 'Local Anesthesia Delivery', desc: 'Profound dental block numbs the surgical site completely.' },
+      { step: 3, title: 'Gentle Elevation & Extraction', desc: 'Careful sectioning and gentle elevation remove the tooth without trauma.' },
+      { step: 4, title: 'Socket Disinfection & Sutures', desc: 'The site is irrigated with sterile saline, sutured with dissolvable thread, and packed with sterile gauze.' }
+    ],
+    preparation: 'Wear loose comfortable clothing. Take any doctor-prescribed medications as scheduled.',
+    aftercare: 'Bite firmly on gauze pad for 45 mins. Avoid spitting, drinking through straws, or smoking for 48 hours to preserve the protective blood clot.'
+  },
+  rootcanal: {
+    image: '../Resources/services/root-canal.jpg',
+    category: 'Endodontics',
+    tagline: 'Permanent nerve pain relief and natural tooth preservation',
+    summary: 'Specialized endodontic procedure that cleanses infected root canals, halts throbbing pain, and saves teeth that would otherwise require extraction.',
+    highlights: [
+      'Immediate Severe Toothache Relief',
+      'Rotary Nickel-Titanium Canal Shaping',
+      'Antibacterial Medicament Irrigation',
+      'Biocompatible Gutta-Percha Hermetic Seal'
+    ],
+    indications: [
+      'Severe, throbbing tooth pain that disrupts sleep',
+      'Prolonged sensitivity to temperature that lingers for minutes',
+      'Pain when biting down or touching the affected tooth',
+      'Gum abscess, swelling, or localized dental infection'
+    ],
+    steps: [
+      { step: 1, title: 'Diagnostic Radiography', desc: 'Detailed X-rays determine root canal count and infection boundary.' },
+      { step: 2, title: 'Painless Access & Isolation', desc: 'Profound anesthesia is administered and a sterile rubber dam is placed.' },
+      { step: 3, title: 'Canal Cleaning & Shaping', desc: 'Rotary endodontic files remove inflamed pulp tissue and disinfect the micro-canals.' },
+      { step: 4, title: 'Hermetic Sealing & Restoration', desc: 'Canals are obturated with thermoplastic gutta-percha and capped with a protective core.' }
+    ],
+    preparation: 'Take doctor-prescribed pain relievers or antibiotics if provided ahead of the visit.',
+    aftercare: 'Chew on the opposite side until the permanent dental crown or definitive restoration is placed.'
+  },
+  whitening: {
+    image: '../Resources/services/whitening.jpg',
+    category: 'Cosmetic Dentistry',
+    tagline: 'In-chair accelerated laser activation for up to 8 shades whiter smile',
+    summary: 'Advanced clinic-grade hydrogen peroxide gel activated by cool blue laser light to eliminate stubborn deep stains from coffee, smoking, and aging safely and quickly.',
+    highlights: [
+      'Up to 6–8 Shades Brighter Smile',
+      'Safe Enamel-Friendly Gentle Chemistry',
+      'Gingival Barrier Gum Protection',
+      'Instant Results in Just 60 Minutes'
+    ],
+    indications: [
+      'Enamel discoloration or yellowing from aging',
+      'Coffee, tea, red wine, or tobacco surface and deep stains',
+      'Preparation for weddings, special events, or graduation',
+      'Desire for a brighter, more confident smile'
+    ],
+    steps: [
+      { step: 1, title: 'Shade Assessment', desc: 'Initial baseline tooth shade recorded with clinical VITA guide.' },
+      { step: 2, title: 'Gum Barrier Placement', desc: 'Liquid dam resin isolates and shields gums from bleaching agents.' },
+      { step: 3, title: 'Laser Bleaching Cycles', desc: 'Medical-grade gel applied and activated by blue LED laser in 15-minute cycles.' },
+      { step: 4, title: 'Desensitizing Finish', desc: 'Enamel remineralizing paste applied to minimize sensitivity.' }
+    ],
+    preparation: 'Brush thoroughly before your session. Professional cleaning is recommended within 2 weeks prior.',
+    aftercare: 'Follow the "white diet" for 48 hours (avoid dark sauces, coffee, tea, berries, or smoking).'
+  },
+  implants: {
+    image: '../Resources/services/implants.jpg',
+    category: 'Prosthodontics & Implants',
+    tagline: 'Permanent titanium tooth replacement with natural look and feel',
+    summary: 'State-of-the-art titanium dental implants engineered to fuse directly with jawbone, replacing missing teeth permanently with unrivaled stability, aesthetics, and bite force.',
+    highlights: [
+      'Medical-Grade Biocompatible Titanium',
+      'Prevents Jawbone Atrophy & Facial Sagging',
+      'Matches Natural Teeth in Appearance & Function',
+      'Lifetime Durability with Proper Hygiene'
+    ],
+    indications: [
+      'Single or multiple missing teeth',
+      'Discomfort or looseness with removable dentures',
+      'Desire to preserve adjacent natural teeth without grinding for bridges'
+    ],
+    steps: [
+      { step: 1, title: '3D CBCT Imaging', desc: 'High-resolution scan maps bone density and nerve canals.' },
+      { step: 2, title: 'Implant Fixture Placement', desc: 'Titanium post is gently placed into jawbone under local anesthesia.' },
+      { step: 3, title: 'Osseointegration Period', desc: 'Implant naturally fuses with bone over 8–12 weeks.' },
+      { step: 4, title: 'Abutment & Custom Crown', desc: 'Custom precision-shaded ceramic crown is secured on top.' }
+    ],
+    preparation: 'Follow pre-op medication protocols. Plan for a soft-food diet for 3–5 days post-surgery.',
+    aftercare: 'Maintain gentle saline rinses and avoid strenuous physical exercise for the first 48 hours.'
+  },
+  braces: {
+    image: '../Resources/services/braces.jpg',
+    category: 'Orthodontics',
+    tagline: 'Precision orthodontic alignment for straight teeth and healthy bite',
+    summary: 'Comprehensive orthodontic therapy correcting crowded teeth, gaps, and malocclusion using high-grade aesthetic ceramic or low-profile metal brackets.',
+    highlights: [
+      'Precision Digital Bracket Placement',
+      'Corrects Overbite, Underbite & Crossbite',
+      'Ceramic Clear or Traditional Stainless Steel',
+      'Periodic Orthodontic Adjustments & Monitoring'
+    ],
+    indications: [
+      'Crowded, overlapping, or crooked teeth',
+      'Noticeable gaps or spacing between front teeth',
+      'Difficulty chewing or uneven jaw bite alignment'
+    ],
+    steps: [
+      { step: 1, title: 'Cephalometric & Digital Analysis', desc: 'Diagnostic photos, impressions, and X-rays establish treatment path.' },
+      { step: 2, title: 'Enamel Conditioning & Bonding', desc: 'Teeth are etched and brackets adhered with orthodontic resin.' },
+      { step: 3, title: 'Archwire Insertion', desc: 'Memory nickel-titanium archwire is engaged with elastic ligature ties.' },
+      { step: 4, title: 'Monthly Activations', desc: 'Scheduled adjustments guide teeth into optimal aesthetic alignment.' }
+    ],
+    preparation: 'Have a professional dental cleaning done before bracket placement day.',
+    aftercare: 'Avoid hard, sticky, or crunchy foods. Use orthodontic floss threaders and interdental brushes daily.'
+  },
+  crowns: {
+    image: '../Resources/services/crowns.jpg',
+    category: 'Restorative Care',
+    tagline: 'Custom porcelain and zirconia crowns restoring strength and beauty',
+    summary: 'Full-coverage tooth caps crafted from high-translucency zirconia or ceramic to rebuild cracked, weakened, or heavily filled teeth with lifelike appearance.',
+    highlights: [
+      'Full 360-Degree Structural Protection',
+      'High-Translucency Multilayered Zirconia',
+      'Custom Shade-Matched Natural Translucency',
+      'High Compressive Strength'
+    ],
+    indications: [
+      'Weakened tooth after extensive root canal treatment',
+      'Severe crack, fracture, or large broken restoration',
+      'Severely worn down teeth or discolored tooth cap replacement'
+    ],
+    steps: [
+      { step: 1, title: 'Tooth Preparation', desc: 'Tooth structure is reshaped under local anesthesia to receive crown.' },
+      { step: 2, title: 'Digital Impression', desc: 'Precise scan captured and sent to dental laboratory.' },
+      { step: 3, title: 'Temporary Crown', desc: 'Protective provisional cap protects the tooth while crown is fabricated.' },
+      { step: 4, title: 'Permanent Cementation', desc: 'Finished ceramic crown is bonded permanently with resin cement.' }
+    ],
+    preparation: 'Ensure any preliminary pulp therapy or decay removal is completed beforehand.',
+    aftercare: 'Avoid sticky candies on temporary crowns. Floss carefully by pulling thread sideways rather than upward.'
+  },
+  emergency: {
+    image: '../Resources/services/emergency.jpg',
+    category: 'General Dentistry',
+    tagline: 'Immediate dental pain relief and trauma care when you need it most',
+    summary: 'Urgent diagnostic and palliative intervention to arrest acute dental agony, control bleeding, treat abscesses, or stabilize fractured teeth.',
+    highlights: [
+      'Priority Same-Day Urgent Care Slot',
+      'Rapid Pain & Swelling Management',
+      'Diagnostic Radiographs & Infection Control',
+      'Prescription for Antibiotics & Analgesics'
+    ],
+    indications: [
+      'Excruciating throbbing toothache or facial swelling',
+      'Knocked-out, dislodged, or shattered tooth',
+      'Bleeding that does not stop after accidental oral trauma',
+      'Broken filling or sharp tooth cutting the cheek or tongue'
+    ],
+    steps: [
+      { step: 1, title: 'Triage & Immediate Pain Relief', desc: 'Rapid assessment and administration of targeted local pain control.' },
+      { step: 2, title: 'Diagnostic Radiograph', desc: 'Pinpoints source of acute infection, abscess, or bone fracture.' },
+      { step: 3, title: 'Stabilization & Treatment', desc: 'Palliative dressing, drainage, or temporary restoration placed.' },
+      { step: 4, title: 'Prescription & Follow-up', desc: 'Pain management medications provided with definitive care scheduled.' }
+    ],
+    preparation: 'Bring any broken tooth fragments kept in clean cold milk or saline if available.',
+    aftercare: 'Follow prescribed medication doses strictly and report back if swelling worsens.'
+  }
+};
+
+function getAdminTreatmentCategory(name = '') {
+  const n = (name || '').toLowerCase();
+  if (n.includes('clean') || n.includes('prophylaxis') || n.includes('scaling')) return 'Preventive & Hygiene';
+  if (n.includes('whiten') || n.includes('bleach') || n.includes('cosmetic')) return 'Cosmetic Dentistry';
+  if (n.includes('root canal') || n.includes('endodontic')) return 'Endodontics';
+  if (n.includes('extract') || n.includes('surgery') || n.includes('wisdom')) return 'Oral Surgery';
+  if (n.includes('brace') || n.includes('aligner') || n.includes('ortho')) return 'Orthodontics';
+  if (n.includes('implant') || n.includes('prostho')) return 'Prosthodontics & Implants';
+  if (n.includes('crown') || n.includes('bridge') || n.includes('fill') || n.includes('cavity') || n.includes('restor')) return 'Restorative Care';
+  if (n.includes('x-ray') || n.includes('radiograph') || n.includes('scan')) return 'Diagnostics & Imaging';
+  return 'General Dentistry';
+}
+
+function getAdminTreatmentDetailsMeta(treatment) {
+  const n = (treatment?.name || '').toLowerCase();
+  if (n.includes('clean') || n.includes('prophylaxis') || n.includes('scaling')) return ADMIN_SERVICES_METADATA.cleaning;
+  if (n.includes('fill') || n.includes('cavity') || n.includes('restor')) return ADMIN_SERVICES_METADATA.filling;
+  if (n.includes('extract') || n.includes('wisdom') || n.includes('surgery')) return ADMIN_SERVICES_METADATA.extraction;
+  if (n.includes('root canal') || n.includes('endodontic')) return ADMIN_SERVICES_METADATA.rootcanal;
+  if (n.includes('whiten') || n.includes('bleach')) return ADMIN_SERVICES_METADATA.whitening;
+  if (n.includes('implant')) return ADMIN_SERVICES_METADATA.implants;
+  if (n.includes('brace') || n.includes('aligner') || n.includes('ortho')) return ADMIN_SERVICES_METADATA.braces;
+  if (n.includes('crown') || n.includes('bridge') || n.includes('veneer')) return ADMIN_SERVICES_METADATA.crowns;
+  if (n.includes('emerg') || n.includes('urgent') || n.includes('pain')) return ADMIN_SERVICES_METADATA.emergency;
+
+  // Fallback metadata built from available data
+  return {
+    image: treatment?.image_url || '../Resources/services/cleaning.jpg',
+    category: getAdminTreatmentCategory(treatment?.name),
+    tagline: 'Standard specialized clinic dental care and professional therapy',
+    summary: treatment?.description || 'Professional dental procedure administered by board-certified dental surgeons adhering to international hygiene standards.',
+    highlights: [
+      'Comprehensive In-Chair Clinical Treatment',
+      'High-Grade Sterilized Instrumentation',
+      'Profound Local Pain Management',
+      'Personalized Recovery Care Instructions'
+    ],
+    indications: [
+      'Recommended following professional dental exam',
+      'Preventive oral hygiene or restoration necessity',
+      'Relief of dental discomfort or aesthetic enhancement'
+    ],
+    steps: [
+      { step: 1, title: 'Preliminary Dental Examination', desc: 'The clinician assesses oral condition and discusses treatment objectives.' },
+      { step: 2, title: 'Preparation & Local Anesthesia', desc: 'The operational quadrant is prepped and gently numbed if needed.' },
+      { step: 3, title: 'Clinical Procedure Execution', desc: 'Precision treatment carried out using modern dental equipment.' },
+      { step: 4, title: 'Evaluation & Post-Op Guidance', desc: 'Treatment inspected for quality and aftercare recommendations provided.' }
+    ],
+    preparation: 'Maintain normal oral hygiene and inform your dentist of any ongoing medications.',
+    aftercare: 'Follow specific post-treatment instructions given by your dentist. Contact clinic hotline if discomfort persists.'
+  };
+}
+
+function loadAdminTreatments(forceRefresh = false) {
+  if (forceRefresh) {
+    showToast('Refreshing services catalog...', 'info');
+  }
+
+  fetch(`${TREATMENT_API}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.message) {
+        showToast(data.message, 'error');
+        return;
+      }
+      allAdminTreatments = Array.isArray(data) ? data : [];
+
+      // Update KPI Counter Ribbon
+      updateAdminServicesKPIs(allAdminTreatments);
+
+      // Render Cards
+      filterAndRenderAdminServices();
+
+      if (forceRefresh) {
+        showToast('Services catalog synchronized successfully!', 'success');
+      }
+    })
+    .catch(err => {
+      console.error('Error fetching admin treatments:', err);
+      showToast('Could not fetch services catalog from server', 'error');
+    });
+}
+window.loadAdminTreatments = loadAdminTreatments;
+
+function updateAdminServicesKPIs(treatments) {
+  const total = treatments.length;
+  const activeCount = treatments.filter(t => t.is_active !== false).length;
+  
+  let totalPrice = 0;
+  let totalDuration = 0;
+
+  treatments.forEach(t => {
+    totalPrice += parseFloat(t.price || 0);
+    totalDuration += parseInt(t.duration_minutes || 45, 10);
+  });
+
+  const avgPrice = total > 0 ? (totalPrice / total).toFixed(2) : '0.00';
+  const avgDur = total > 0 ? Math.round(totalDuration / total) : 0;
+  const curr = getCurrencySymbol();
+
+  const elTotal = document.getElementById('kpi-total-services');
+  const elActive = document.getElementById('kpi-active-services');
+  const elPrice = document.getElementById('kpi-avg-price');
+  const elDuration = document.getElementById('kpi-avg-duration');
+
+  if (elTotal) elTotal.textContent = total;
+  if (elActive) elActive.textContent = activeCount;
+  if (elPrice) elPrice.textContent = `${curr}${avgPrice}`;
+  if (elDuration) elDuration.textContent = `${avgDur} min`;
+}
+
+function handleAdminServicesFilterChange() {
+  filterAndRenderAdminServices();
+}
+window.handleAdminServicesFilterChange = handleAdminServicesFilterChange;
+
+function filterAndRenderAdminServices() {
+  const searchInput = document.getElementById('admin-service-search');
+  const catFilter = document.getElementById('admin-service-category-filter');
+  const statusFilter = document.getElementById('admin-service-status-filter');
+
+  const q = (searchInput?.value || '').toLowerCase().trim();
+  const selectedCat = catFilter?.value || 'all';
+  const selectedStatus = statusFilter?.value || 'all';
+
+  const filtered = allAdminTreatments.filter(t => {
+    // Search filter
+    const nameMatch = (t.name || '').toLowerCase().includes(q);
+    const descMatch = (t.description || '').toLowerCase().includes(q);
+    if (q && !nameMatch && !descMatch) return false;
+
+    // Category filter
+    const cat = getAdminTreatmentCategory(t.name);
+    if (selectedCat !== 'all' && cat !== selectedCat) return false;
+
+    // Status filter
+    const isActive = t.is_active !== false;
+    if (selectedStatus === 'active' && !isActive) return false;
+    if (selectedStatus === 'inactive' && isActive) return false;
+
+    return true;
+  });
+
+  renderAdminTreatments(filtered);
+}
+
+function renderAdminTreatments(treatments) {
+  const grid = document.getElementById('admin-services-grid');
+  if (!grid) return;
+
+  if (!treatments || treatments.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 48px 20px; text-align: center; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 14px;">
+        <div style="width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 26px;">
+          <i class="ti ti-dental"></i>
+        </div>
+        <h4 style="margin: 0 0 6px 0; color: #334155; font-size: 1.1rem; font-weight: 700;">No services found</h4>
+        <p style="margin: 0 0 18px 0; color: #64748b; font-size: 0.85rem;">Try refining your search query or add a new clinical service</p>
+        <button class="btn-primary" onclick="openAdminAddServiceModal()" style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px;">
+          <i class="ti ti-plus"></i> Add New Service
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  const curr = getCurrencySymbol();
+
+  const cardsHtml = treatments.map(t => {
+    const meta = getAdminTreatmentDetailsMeta(t);
+    const imgSrc = t.image_url || meta.image || '../Resources/services/cleaning.jpg';
+    const category = t.category || getAdminTreatmentCategory(t.name);
+    const isActive = t.is_active !== false;
+    const priceFormatted = `${curr}${parseFloat(t.price || 0).toFixed(2)}`;
+    const duration = t.duration_minutes || 45;
+
+    // Build 2 highlights pills
+    const highlights = ((t.highlights && t.highlights.length) ? t.highlights : (meta.highlights || [])).slice(0, 2);
+    const highlightsHtml = highlights.map(h => `<span class="asc-highlight-tag"><i class="ti ti-check" style="font-size: 11px; color: #10b981;"></i> ${escapeHTML(h)}</span>`).join('');
+
+    return `
+      <div class="admin-service-card" id="service-card-${t.id}">
+        <!-- Image & Overlay Badges -->
+        <div class="admin-service-card-media" onclick="openAdminServiceDetailsModal('${t.id}')" style="cursor: pointer;" title="Click to view complete details">
+          <img src="${escapeHTML(imgSrc)}" alt="${escapeHTML(t.name)}" class="admin-service-card-img" onerror="this.src='../Resources/services/cleaning.jpg'">
+          <div class="admin-service-card-overlay">
+            <div class="asc-pill-top">
+              <span class="service-cat-pill">${escapeHTML(category)}</span>
+              <span class="status-pill ${isActive ? 'status-confirmed' : 'status-cancelled'}">
+                ${isActive ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+            <div></div>
+          </div>
+        </div>
+
+        <!-- Content Body -->
+        <div class="admin-service-card-body">
+          <div class="asc-title-row">
+            <h4 class="asc-title" onclick="openAdminServiceDetailsModal('${t.id}')" style="cursor: pointer;" title="Click to view complete details">${escapeHTML(t.name)}</h4>
+          </div>
+
+          <div class="asc-pricing-row">
+            <div class="asc-price">${priceFormatted}</div>
+            <div class="asc-duration"><i class="ti ti-clock" style="font-size: 13px;"></i> ${duration} min</div>
+          </div>
+
+          <p class="asc-description">${escapeHTML(t.description || meta.summary || '')}</p>
+
+          <div class="asc-highlights-pills">
+            ${highlightsHtml}
+          </div>
+
+          <!-- Actions Row -->
+          <div class="asc-actions-row">
+            <button type="button" class="btn-card-details" onclick="openAdminServiceDetailsModal('${t.id}')" title="View Full Clinical Details">
+              <i class="ti ti-eye"></i> View Details
+            </button>
+            <button type="button" class="btn-card-edit" onclick="openAdminEditServiceModal('${t.id}')" title="Edit Service &amp; Picture">
+              <i class="ti ti-edit"></i>
+            </button>
+            <button type="button" class="btn-card-delete" onclick="deleteAdminService('${t.id}')" title="Delete Service">
+              <i class="ti ti-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.innerHTML = cardsHtml;
+}
+
+// ─── Modal: Add / Edit Service ─────────────────────────────────────────────
+function openAdminAddServiceModal() {
+  const modal = document.getElementById('modal-admin-service');
+  if (!modal) return;
+
+  const form = document.getElementById('admin-service-form');
+  if (form) form.reset();
+
+  document.getElementById('admin-service-modal-title').textContent = 'Add New Clinic Service';
+  document.getElementById('admin-service-modal-subtitle').textContent = 'Configure dental procedure pricing, duration, description and procedure photo';
+  document.getElementById('admin-service-id').value = '';
+
+  const defaultImg = '../Resources/services/cleaning.jpg';
+  document.getElementById('admin-service-image-url').value = defaultImg;
+  const previewImg = document.getElementById('admin-service-preview-img');
+  if (previewImg) previewImg.src = defaultImg;
+  const imgInput = document.getElementById('admin-service-image-input');
+  if (imgInput) imgInput.value = '';
+
+  // Preset buttons state
+  document.querySelectorAll('.preset-img-btn').forEach((btn, idx) => {
+    if (idx === 0) btn.classList.add('active');
+    else btn.classList.remove('active');
+  });
+
+  document.getElementById('admin-service-name').value = '';
+  document.getElementById('admin-service-category').value = 'Preventive & Hygiene';
+  document.getElementById('admin-service-price').value = '';
+  document.getElementById('admin-service-duration').value = '45';
+  document.getElementById('admin-service-status').value = 'true';
+  document.getElementById('admin-service-description').value = '';
+  document.getElementById('admin-service-highlights').value = '';
+  document.getElementById('admin-service-indications').value = '';
+  document.getElementById('admin-service-steps').value = '';
+  document.getElementById('admin-service-aftercare').value = '';
+
+  modal.style.display = 'flex';
+  modal.classList.add('active');
+}
+window.openAdminAddServiceModal = openAdminAddServiceModal;
+
+function openAdminEditServiceModal(treatmentId) {
+  const treatment = (allAdminTreatments || []).find(t => String(t.id) === String(treatmentId));
+  if (!treatment) {
+    showToast('Service record not found', 'error');
+    return;
+  }
+
+  const modal = document.getElementById('modal-admin-service');
+  if (!modal) return;
+
+  const form = document.getElementById('admin-service-form');
+  if (form) form.reset();
+
+  document.getElementById('admin-service-modal-title').textContent = `Edit Service: ${treatment.name}`;
+  document.getElementById('admin-service-modal-subtitle').textContent = 'Update procedure pricing, clinical details, or upload/change picture';
+  document.getElementById('admin-service-id').value = treatment.id;
+
+  const meta = getAdminTreatmentDetailsMeta(treatment);
+  const currentImg = treatment.image_url || meta.image || '../Resources/services/cleaning.jpg';
+  document.getElementById('admin-service-image-url').value = currentImg;
+
+  const previewImg = document.getElementById('admin-service-preview-img');
+  if (previewImg) previewImg.src = currentImg;
+
+  const imgInput = document.getElementById('admin-service-image-input');
+  if (imgInput) imgInput.value = currentImg.startsWith('http') ? currentImg : '';
+
+  // Highlight matching preset if applicable
+  document.querySelectorAll('.preset-img-btn').forEach(btn => {
+    const fn = btn.getAttribute('onclick') || '';
+    if (fn.includes(currentImg)) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  document.getElementById('admin-service-name').value = treatment.name || '';
+  document.getElementById('admin-service-category').value = treatment.category || getAdminTreatmentCategory(treatment.name);
+  document.getElementById('admin-service-price').value = treatment.price || 0;
+  document.getElementById('admin-service-duration').value = treatment.duration_minutes || 45;
+  document.getElementById('admin-service-status').value = treatment.is_active !== false ? 'true' : 'false';
+  document.getElementById('admin-service-description').value = treatment.description || meta.summary || '';
+
+  // Highlights, Indications, Steps, Aftercare
+  const highlightsList = (treatment.highlights && treatment.highlights.length) ? treatment.highlights : (meta.highlights || []);
+  document.getElementById('admin-service-highlights').value = highlightsList.join('\n');
+
+  const indicationsList = (treatment.indications && treatment.indications.length) ? treatment.indications : (meta.indications || []);
+  document.getElementById('admin-service-indications').value = indicationsList.join('\n');
+
+  const stepsList = (treatment.steps && treatment.steps.length) ? treatment.steps : (meta.steps || []);
+  document.getElementById('admin-service-steps').value = stepsList.map(s => s.desc ? `${s.title}: ${s.desc}` : (s.title || '')).join('\n');
+
+  document.getElementById('admin-service-aftercare').value = treatment.aftercare || meta.aftercare || '';
+
+  modal.style.display = 'flex';
+  modal.classList.add('active');
+}
+window.openAdminEditServiceModal = openAdminEditServiceModal;
+
+function closeAdminServiceModal() {
+  const modal = document.getElementById('modal-admin-service');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+}
+window.closeAdminServiceModal = closeAdminServiceModal;
+
+function selectAdminServicePresetImage(url, btnEl) {
+  document.getElementById('admin-service-image-url').value = url;
+  const preview = document.getElementById('admin-service-preview-img');
+  if (preview) preview.src = url;
+
+  const inputEl = document.getElementById('admin-service-image-input');
+  if (inputEl) inputEl.value = '';
+
+  document.querySelectorAll('.preset-img-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+}
+window.selectAdminServicePresetImage = selectAdminServicePresetImage;
+
+function updateAdminServicePreviewFromUrl(url) {
+  const trimmed = (url || '').trim();
+  if (!trimmed) return;
+  document.getElementById('admin-service-image-url').value = trimmed;
+  const preview = document.getElementById('admin-service-preview-img');
+  if (preview) preview.src = trimmed;
+  document.querySelectorAll('.preset-img-btn').forEach(b => b.classList.remove('active'));
+}
+window.updateAdminServicePreviewFromUrl = updateAdminServicePreviewFromUrl;
+
+function handleAdminServiceFileSelect(fileInput) {
+  if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+  const file = fileInput.files[0];
+
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select a valid image file (JPG, PNG, WebP)', 'error');
+    return;
+  }
+
+  const statusEl = document.getElementById('admin-service-file-status');
+  if (statusEl) statusEl.textContent = 'Uploading photo...';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64Data = e.target.result;
+
+    fetch(`${TREATMENT_API}/upload-image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ image: base64Data })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.image_url) {
+          document.getElementById('admin-service-image-url').value = data.image_url;
+          const preview = document.getElementById('admin-service-preview-img');
+          if (preview) preview.src = data.image_url;
+          if (statusEl) statusEl.innerHTML = '<span style="color: #10b981;"><i class="ti ti-check"></i> Uploaded</span>';
+          document.querySelectorAll('.preset-img-btn').forEach(b => b.classList.remove('active'));
+          showToast('Picture uploaded and applied to service!', 'success');
+        } else {
+          showToast(data.message || 'Image upload failed', 'error');
+          if (statusEl) statusEl.textContent = '(Upload failed)';
+        }
+      })
+      .catch(err => {
+        console.error('Image upload error:', err);
+        showToast('Image upload failed', 'error');
+        if (statusEl) statusEl.textContent = '(Upload failed)';
+      });
+  };
+  reader.readAsDataURL(file);
+}
+window.handleAdminServiceFileSelect = handleAdminServiceFileSelect;
+
+function saveAdminService(event) {
+  if (event) event.preventDefault();
+
+  const id = document.getElementById('admin-service-id')?.value.trim();
+  const name = document.getElementById('admin-service-name')?.value.trim();
+  const priceVal = parseFloat(document.getElementById('admin-service-price')?.value);
+  const durationVal = parseInt(document.getElementById('admin-service-duration')?.value, 10);
+  const statusVal = document.getElementById('admin-service-status')?.value === 'true';
+  const description = document.getElementById('admin-service-description')?.value.trim();
+  const imageUrl = document.getElementById('admin-service-image-url')?.value.trim() || '../Resources/services/cleaning.jpg';
+
+  if (!name) {
+    showToast('Procedure name is required', 'error');
+    return;
+  }
+  if (isNaN(priceVal) || priceVal < 0) {
+    showToast('Please enter a valid standard fee', 'error');
+    return;
+  }
+  if (isNaN(durationVal) || durationVal < 5) {
+    showToast('Please enter a valid estimated duration (at least 5 minutes)', 'error');
+    return;
+  }
+
+  const submitBtn = document.getElementById('btn-save-admin-service');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Saving...';
+  }
+
+  const category = document.getElementById('admin-service-category')?.value || 'General Dentistry';
+  const highlightsRaw = document.getElementById('admin-service-highlights')?.value || '';
+  const highlights = highlightsRaw.split('\n').map(s => s.trim()).filter(Boolean);
+
+  const indicationsRaw = document.getElementById('admin-service-indications')?.value || '';
+  const indications = indicationsRaw.split('\n').map(s => s.trim()).filter(Boolean);
+
+  const stepsRaw = document.getElementById('admin-service-steps')?.value || '';
+  const steps = stepsRaw.split('\n').map(s => s.trim()).filter(Boolean).map((line, idx) => {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx > 0) {
+      return {
+        step: idx + 1,
+        title: line.substring(0, colonIdx).trim(),
+        desc: line.substring(colonIdx + 1).trim()
+      };
+    }
+    return {
+      step: idx + 1,
+      title: `Phase ${idx + 1}`,
+      desc: line
+    };
+  });
+
+  const aftercare = document.getElementById('admin-service-aftercare')?.value.trim() || '';
+
+  const payload = {
+    name,
+    category,
+    price: priceVal,
+    duration_minutes: durationVal,
+    is_active: statusVal,
+    description,
+    image_url: imageUrl,
+    highlights,
+    indications,
+    steps,
+    aftercare
+  };
+
+  const isEdit = !!id;
+  const endpoint = isEdit ? `${TREATMENT_API}/${id}` : `${TREATMENT_API}`;
+  const method = isEdit ? 'PUT' : 'POST';
+
+  fetch(endpoint, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="ti ti-check"></i> Save Service';
+      }
+
+      if (data && data.message && !data.id) {
+        showToast(data.message, 'error');
+        return;
+      }
+
+      showToast(isEdit ? `Service "${name}" updated successfully!` : `New service "${name}" added to clinic catalog!`, 'success');
+      closeAdminServiceModal();
+      loadAdminTreatments();
+    })
+    .catch(err => {
+      console.error('Error saving treatment:', err);
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="ti ti-check"></i> Save Service';
+      }
+      showToast('Failed to save service. Please try again.', 'error');
+    });
+}
+window.saveAdminService = saveAdminService;
+
+// ─── Modal: View Complete Details ──────────────────────────────────────────
+function openAdminServiceDetailsModal(treatmentId) {
+  const treatment = (allAdminTreatments || []).find(t => String(t.id) === String(treatmentId));
+  if (!treatment) {
+    showToast('Service record not found', 'error');
+    return;
+  }
+
+  const modal = document.getElementById('modal-admin-service-details');
+  if (!modal) return;
+
+  const meta = getAdminTreatmentDetailsMeta(treatment);
+  const imgSrc = treatment.image_url || meta.image || '../Resources/services/cleaning.jpg';
+  const category = treatment.category || getAdminTreatmentCategory(treatment.name);
+  const isActive = treatment.is_active !== false;
+  const curr = getCurrencySymbol();
+
+  // Banner image & badges
+  const imgEl = document.getElementById('admin-detail-image');
+  if (imgEl) {
+    imgEl.src = imgSrc;
+    imgEl.onerror = () => { imgEl.src = '../Resources/services/cleaning.jpg'; };
+  }
+
+  const catBadge = document.getElementById('admin-detail-category-badge');
+  if (catBadge) catBadge.textContent = category;
+
+  const statusBadge = document.getElementById('admin-detail-status-badge');
+  if (statusBadge) {
+    statusBadge.textContent = isActive ? 'Active' : 'Inactive';
+    statusBadge.className = `status-pill ${isActive ? 'status-confirmed' : 'status-cancelled'}`;
+  }
+
+  // Titles
+  const titleEl = document.getElementById('admin-detail-title');
+  if (titleEl) titleEl.textContent = treatment.name;
+
+  const taglineEl = document.getElementById('admin-detail-tagline');
+  if (taglineEl) taglineEl.textContent = treatment.tagline || meta.tagline || 'Standard Specialized Dental Procedure';
+
+  // Metrics
+  const priceEl = document.getElementById('admin-detail-price');
+  if (priceEl) priceEl.textContent = `${curr}${parseFloat(treatment.price || 0).toFixed(2)}`;
+
+  const durationEl = document.getElementById('admin-detail-duration');
+  if (durationEl) durationEl.textContent = `${treatment.duration_minutes || 45} minutes`;
+
+  // Overview
+  const descEl = document.getElementById('admin-detail-description');
+  if (descEl) descEl.textContent = treatment.description || meta.summary || 'No clinical description provided.';
+
+  // Highlights
+  const highlightsEl = document.getElementById('admin-detail-highlights');
+  if (highlightsEl) {
+    const highlights = (treatment.highlights && treatment.highlights.length) ? treatment.highlights : (meta.highlights || []);
+    highlightsEl.innerHTML = highlights
+      .map(h => `<li style="margin-bottom: 6px;">${escapeHTML(h)}</li>`)
+      .join('');
+  }
+
+  // Indications
+  const indicationsEl = document.getElementById('admin-detail-indications');
+  if (indicationsEl) {
+    const indications = (treatment.indications && treatment.indications.length) ? treatment.indications : (meta.indications || []);
+    indicationsEl.innerHTML = indications
+      .map(ind => `<li style="margin-bottom: 6px;">${escapeHTML(ind)}</li>`)
+      .join('');
+  }
+
+  // Steps
+  const stepsContainer = document.getElementById('admin-detail-steps-timeline');
+  if (stepsContainer) {
+    const steps = (treatment.steps && treatment.steps.length) ? treatment.steps : (meta.steps || []);
+    stepsContainer.innerHTML = steps.map((s, idx) => `
+      <div class="timeline-step-row">
+        <div class="timeline-step-num">${s.step || (idx + 1)}</div>
+        <div class="timeline-step-content">
+          <div class="timeline-step-title">${escapeHTML(s.title || `Phase ${idx + 1}`)}</div>
+          <p class="timeline-step-desc">${escapeHTML(s.desc || '')}</p>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Preparation & Aftercare
+  const prepEl = document.getElementById('admin-detail-preparation');
+  if (prepEl) prepEl.textContent = treatment.preparation || meta.preparation || 'Brush lightly before your appointment.';
+
+  const aftercareEl = document.getElementById('admin-detail-aftercare');
+  if (aftercareEl) aftercareEl.textContent = treatment.aftercare || meta.aftercare || 'Follow standard oral hygiene instructions.';
+
+  // Wire action buttons
+  const editBtn = document.getElementById('btn-admin-detail-edit');
+  if (editBtn) {
+    editBtn.onclick = () => {
+      closeAdminServiceDetailsModal();
+      openAdminEditServiceModal(treatment.id);
+    };
+  }
+
+  const deleteBtn = document.getElementById('btn-admin-detail-delete');
+  if (deleteBtn) {
+    deleteBtn.onclick = () => {
+      closeAdminServiceDetailsModal();
+      deleteAdminService(treatment.id);
+    };
+  }
+
+  modal.style.display = 'flex';
+  modal.classList.add('active');
+}
+window.openAdminServiceDetailsModal = openAdminServiceDetailsModal;
+
+function closeAdminServiceDetailsModal() {
+  const modal = document.getElementById('modal-admin-service-details');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+}
+window.closeAdminServiceDetailsModal = closeAdminServiceDetailsModal;
+
+// ─── Delete Service ────────────────────────────────────────────────────────
+function deleteAdminService(treatmentId) {
+  const treatment = (allAdminTreatments || []).find(t => String(t.id) === String(treatmentId));
+  const name = treatment ? treatment.name : 'this service';
+
+  showDeleteConfirmation(`Are you sure you want to permanently delete the clinic service "${name}"? This will remove it from the clinic catalog.`, () => {
+    fetch(`${TREATMENT_API}/${treatmentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.message && !data.success && !data.id) {
+          showToast(data.message, 'error');
+          return;
+        }
+        allAdminTreatments = (allAdminTreatments || []).filter(t => String(t.id) !== String(treatmentId));
+        showToast(`Service "${name}" deleted from catalog.`, 'success');
+        updateAdminServicesKPIs(allAdminTreatments);
+        filterAndRenderAdminServices();
+      })
+      .catch(err => {
+        console.error('Error deleting treatment:', err);
+        showToast('Failed to delete service. Please try again.', 'error');
+      });
+  });
+}
+window.deleteAdminService = deleteAdminService;
 
 
 // ─── 6. Inventory stock ledger ────────────────────────────────────────────────
@@ -4218,6 +5136,11 @@ function filterAndRenderHistory() {
 
 // ─── 11. Clinic Settings Functions ─────────────────────────────────────────────
 window.switchSettingsSection = function(sectionId, element) {
+  if (sectionId === 'services') {
+    activateTab('services');
+    return;
+  }
+
   document.querySelectorAll('.settings-inner-tab').forEach(t => {
     t.classList.remove('active');
   });
@@ -4230,11 +5153,11 @@ window.switchSettingsSection = function(sectionId, element) {
     p.style.display = 'none';
   });
 
-  document.getElementById(`settings-sec-${sectionId}`).style.display = 'block';
-
-  if (sectionId === 'services') {
-    loadSettingsTreatments();
+  const targetPane = document.getElementById(`settings-sec-${sectionId}`);
+  if (targetPane) {
+    targetPane.style.display = 'block';
   }
+
   if (sectionId === 'utilities') {
     loadDatabaseHealthStatus();
   }

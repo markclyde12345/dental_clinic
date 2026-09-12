@@ -7,7 +7,8 @@
     "contact": "1234567890",
     "shift": "08:00 AM - 05:00 PM",
     "days": "Mon - Sat",
-    "availability": "On Duty"
+    "availability": "On Duty",
+    "branch": "Main Branch (Naga)"
   },
   {
     "id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
@@ -17,7 +18,52 @@
     "contact": "0987654321",
     "shift": "09:00 AM - 04:00 PM",
     "days": "Mon, Wed, Fri",
-    "availability": "On Leave"
+    "availability": "On Duty",
+    "branch": "Talisay Branch"
+  },
+  {
+    "id": "e81aa012-42cd-4981-bdf1-332910fa7121",
+    "name": "Dr. Angela Tan",
+    "email": "angela.tan@fanoclinic.com",
+    "role": "Dentist",
+    "contact": "09191234567",
+    "shift": "08:30 AM - 04:30 PM",
+    "days": "Tue, Thu, Sat",
+    "availability": "On Duty",
+    "branch": "Talisay Branch"
+  },
+  {
+    "id": "f92bb123-53de-4a92-ce02-443021eb8232",
+    "name": "Dr. Michael Cruz",
+    "email": "michael.cruz@fanoclinic.com",
+    "role": "Dentist",
+    "contact": "09182345678",
+    "shift": "09:00 AM - 05:00 PM",
+    "days": "Mon - Sat",
+    "availability": "On Duty",
+    "branch": "Minglanilla Branch"
+  },
+  {
+    "id": "a03cc234-64ef-4ba3-df13-554132fc9343",
+    "name": "Dr. Marie Santos",
+    "email": "marie.santos@fanoclinic.com",
+    "role": "Dentist",
+    "contact": "09173456789",
+    "shift": "08:00 AM - 05:00 PM",
+    "days": "Mon - Sat",
+    "availability": "On Duty",
+    "branch": "Main Branch (Naga)"
+  },
+  {
+    "id": "b14dd345-75f0-4cb4-e024-665243ad0454",
+    "name": "Dr. Robert Lim",
+    "email": "robert.lim@fanoclinic.com",
+    "role": "Dentist",
+    "contact": "09164567890",
+    "shift": "09:30 AM - 05:30 PM",
+    "days": "Mon - Fri",
+    "availability": "On Duty",
+    "branch": "Fano Dental Clinic - Cebu Branch"
   },
   {
     "id": "c73fc802-35a7-4889-a4ad-b322dccee480",
@@ -27,7 +73,8 @@
     "contact": "5551234567",
     "shift": "08:00 AM - 05:00 PM",
     "days": "Tue, Thu, Sat",
-    "availability": "On Duty"
+    "availability": "On Duty",
+    "branch": "Main Branch (Naga)"
   },
   {
     "id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
@@ -37,6 +84,7 @@
     "contact": "5557654321",
     "shift": "08:00 AM - 05:00 PM",
     "days": "Mon - Sat",
-    "availability": "On Duty"
+    "availability": "On Duty",
+    "branch": "Main Branch (Naga)"
   }
 ]

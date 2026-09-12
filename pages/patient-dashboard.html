@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260911_services_catalog">
+  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260912_minimal_v2">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="../css/ai-chat.css">
 </head>
@@ -50,7 +50,7 @@
             </a>
           </li>
           <li>
-            <a href="#" class="nav-item" data-section="services" id="nav-services"><i class="ti ti-tooth nav-icon" style="font-size: 18px;"></i>
+            <a href="#" class="nav-item" data-section="services" id="nav-services"><i class="ti ti-dental nav-icon" style="font-size: 18px;"></i>
               Clinic Services
             </a>
           </li>
@@ -178,7 +178,7 @@
           </div>
           <div class="header-action-grid" style="display: flex; gap: 10px; align-items: center;">
             <button class="btn btn-secondary" onclick="switchSection('services')" title="Explore Clinic Services" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 0.88rem;">
-              <i class="ti ti-tooth" style="font-size: 16px;"></i>
+              <i class="ti ti-dental" style="font-size: 16px;"></i>
               <span>Our Services</span>
             </button>
             <button class="btn btn-primary" id="quick-book-btn" onclick="switchSection('appointments')" title="Book New Appointment">
@@ -276,7 +276,7 @@
       <section id="services-section" class="content-section">
         <div class="section-header" style="flex-wrap: wrap; gap: 14px;">
           <div>
-            <h1 class="section-title">Clinic Services &amp; Treatments</h1>
+            <h1 class="section-title"><i class="ti ti-dental" style="color: var(--accent); margin-right: 8px;"></i>Clinic Services &amp; Treatments</h1>
             <p class="section-subtitle">Explore our comprehensive dental treatments, transparent pricing, and book your visit directly.</p>
           </div>
           <div style="display: flex; gap: 10px; align-items: center;">
@@ -295,7 +295,7 @@
         <div class="services-hero-strip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
           <div class="stat-card">
             <div class="stat-icon" style="background: #e0f2fe; color: #0284c7;">
-              <i class="ti ti-tooth" style="font-size: 22px;"></i>
+              <i class="ti ti-dental" style="font-size: 22px;"></i>
             </div>
             <div class="stat-content">
               <p class="stat-label">Available Procedures</p>
@@ -579,7 +579,7 @@
                       <input type="text" id="wizard-insurance-id" class="form-input" placeholder="e.g. MAXI-10293847">
                     </div>
                     <div>
-                      <label class="form-label">Preferred Reminder Method</label>
+                      <label class="form-label">Preferred Appointment Method</label>
                       <select id="wizard-reminder-pref" class="form-input">
                         <option value="SMS Text Message">SMS Text Message</option>
                         <option value="Email">Email</option>
@@ -643,14 +643,28 @@
 
               <!-- STEP 2: SELECT DENTIST -->
               <div class="wizard-step" id="wizard-step-2" style="display: none;">
-                <h4 style="margin: 0 0 16px 0; color: var(--accent); font-weight: 700;">Choose Your Dentist</h4>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                  <h4 style="margin: 0; color: var(--accent); font-weight: 700;">Choose Your Dentist</h4>
+                  <span id="dentist-branch-match-count" style="font-size: 0.76rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 10px; border-radius: 12px;">Doctors Available</span>
+                </div>
+
+                <!-- Active Branch Indicator -->
+                <div id="dentist-branch-filter-notice" style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-base); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; margin-bottom: 14px;">
+                  <div style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--text-secondary);">
+                    <i class="ti ti-map-pin" style="color: var(--accent); font-size: 1.05rem;"></i>
+                    <span>Assigned Clinic Branch: <strong id="dentist-active-branch-name" style="color: var(--text-primary);">Main Branch</strong></span>
+                  </div>
+                  <span style="font-size: 0.74rem; color: var(--text-muted);">Filtered by your branch selection</span>
+                </div>
+
                 <div class="dentists-grid" id="dentists-picker-grid">
                   <!-- Dynamically populated dentist items -->
                 </div>
+                <div id="dentist-offduty-warning-box" style="display: none;"></div>
                 <input type="hidden" id="wizard-dentist-name" value="No Preference">
 
                 <!-- Service selection moved here under dentist -->
-                <h4 style="margin: 24px 0 16px 0; color: var(--accent); font-weight: 700;">Select Dental Service</h4>
+                <h4 style="margin: 24px 0 16px 0; color: var(--accent); font-weight: 700; display: flex; align-items: center; gap: 8px;"><i class="ti ti-dental"></i> Select Dental Service</h4>
                 <div class="services-grid" id="services-picker-grid">
                   <!-- Dynamically populated card items -->
                 </div>
@@ -750,7 +764,7 @@
                       <span id="summary-dentist" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">—</span>
                     </div>
                     <div>
-                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Dental Service &amp; Total Fee</strong>
+                      <strong style="color: var(--accent); display: flex; align-items: center; gap: 6px; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"><i class="ti ti-dental"></i> Dental Service &amp; Total Fee</strong>
                       <span id="summary-service" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">—</span>
                     </div>
                     <div>
@@ -816,6 +830,20 @@
           </div>
         </div>
 
+        <!-- Notice banner: treatment plans sent to email -->
+        <div style="background: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 12px; padding: 14px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 38px; height: 38px; border-radius: 50%; background: #0d9488; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <i class="ti ti-mail-check" style="font-size: 20px;"></i>
+            </div>
+            <div>
+              <p style="margin: 0; font-weight: 700; font-size: 0.88rem; color: #115e59;">Treatment Plans Sent Directly to Your Email</p>
+              <p style="margin: 2px 0 0; font-size: 0.8rem; color: #0f766e;">Comprehensive clinical treatment plans and cost estimates prepared by your dentist are sent straight to your registered email address for your privacy and records.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="subtab-view-visits" class="subtab-view" style="display: block;">
         <!-- History Summary Metrics -->
         <div class="stats-row" style="margin-bottom: 24px;">
           <div class="stat-card">
@@ -900,6 +928,7 @@
             <span>Click "View Details" on any record to view full intake notes &amp; clinical alerts.</span>
           </div>
         </div>
+        </div> <!-- End subtab-view-visits -->
       </section>
 
       <!-- ══════════ BILLING SECTION ══════════ -->
@@ -1871,6 +1900,84 @@
     </div>
   </div>
 
+  <!-- ══════════ CLINIC SERVICE DETAILS MODAL ══════════ -->
+  <div class="modal-overlay" id="modal-service-details" onclick="if(event.target === this) closeServiceDetailsModal()">
+    <div class="modal-card service-details-modal-card" style="max-width: 680px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; border-radius: 20px; box-shadow: 0 24px 60px rgba(0,0,0,0.25);">
+      
+      <!-- Modal Hero Banner with Service Image -->
+      <div class="sdm-hero" id="sdm-hero-wrap">
+        <img id="sdm-hero-img" src="../Resources/services/cleaning.jpg" alt="Service Photo" class="sdm-hero-img">
+        <div class="sdm-hero-overlay"></div>
+        <button type="button" class="modal-close-btn sdm-close-btn" onclick="closeServiceDetailsModal()" aria-label="Close modal">✕</button>
+        <div class="sdm-hero-content">
+          <div class="sdm-category-strip" id="sdm-category-strip">
+            <span class="scc-category-badge" id="sdm-category-badge"><i class="ti ti-dental"></i> General Dentistry</span>
+            <span class="scc-duration-badge" id="sdm-duration-badge"><i class="ti ti-clock"></i> 45 mins</span>
+          </div>
+          <h2 id="sdm-title" class="sdm-title">Service Title</h2>
+          <p id="sdm-tagline" class="sdm-tagline">Service tagline goes here</p>
+        </div>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="modal-body sdm-body" style="padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Clinical Overview -->
+        <div class="sdm-section">
+          <h4 class="sdm-sec-title"><i class="ti ti-file-description"></i> Clinical Overview &amp; Description</h4>
+          <p id="sdm-desc" class="sdm-text">Comprehensive information about the treatment procedure...</p>
+        </div>
+
+        <!-- Inclusions & Highlights -->
+        <div class="sdm-section">
+          <h4 class="sdm-sec-title"><i class="ti ti-list-check"></i> What's Included in This Procedure</h4>
+          <div id="sdm-highlights" class="sdm-highlights-grid"></div>
+        </div>
+
+        <!-- Clinical Indications -->
+        <div class="sdm-section">
+          <h4 class="sdm-sec-title"><i class="ti ti-target"></i> When Do You Need This Service? (Indications)</h4>
+          <div id="sdm-indications" class="sdm-indications-list"></div>
+        </div>
+
+        <!-- Step-by-Step Procedure Flow -->
+        <div class="sdm-section">
+          <h4 class="sdm-sec-title"><i class="ti ti-timeline"></i> Step-by-Step Procedure (What to Expect)</h4>
+          <div id="sdm-steps" class="sdm-steps-timeline"></div>
+        </div>
+
+        <!-- Care Guidelines: Preparation & Aftercare -->
+        <div class="sdm-care-grid">
+          <div class="sdm-care-card prep">
+            <h5><i class="ti ti-shield-check"></i> Before Your Visit (Preparation)</h5>
+            <p id="sdm-prep">Preparation instructions...</p>
+          </div>
+          <div class="sdm-care-card post">
+            <h5><i class="ti ti-heart-handshake"></i> After Your Visit (Aftercare)</h5>
+            <p id="sdm-aftercare">Aftercare instructions...</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-actions-footer sdm-footer" style="padding: 16px 24px; background: var(--bg-base); border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+        <div>
+          <span style="display: block; font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #94a3b8;">Standard Procedure Fee</span>
+          <strong id="sdm-price" style="font-size: 1.4rem; color: var(--accent); font-weight: 800;">₱0.00</strong>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button type="button" class="btn btn-secondary" onclick="closeServiceDetailsModal()">Close</button>
+          <button type="button" class="btn btn-primary" id="sdm-book-btn" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; padding: 10px 20px; border-radius: 10px;">
+            <i class="ti ti-calendar-plus"></i>
+            <span>Book This Service</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ═════════════════ MOBILE BOTTOM TASKBAR (<= 768px) ═════════════════ -->
   <nav class="mobile-bottom-taskbar" id="patient-bottom-taskbar" aria-label="Mobile navigation bar">
     <button type="button" class="taskbar-item active" data-section="overview" onclick="switchSection('overview')">
@@ -1881,7 +1988,7 @@
     </button>
     <button type="button" class="taskbar-item" data-section="services" onclick="switchSection('services')">
       <div class="taskbar-icon">
-        <i class="ti ti-tooth" style="font-size: 22px;"></i>
+        <i class="ti ti-dental" style="font-size: 22px;"></i>
       </div>
       <span class="taskbar-label">Services</span>
     </button>
@@ -1918,7 +2025,7 @@
   </nav>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/patient-dashboard.js?v=20260911_services_catalog"></script>
+  <script src="../js/patient-dashboard.js?v=20260912_minimal_v2"></script>
   <script src="../js/ai-chat.js"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>

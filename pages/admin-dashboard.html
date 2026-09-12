@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin-dashboard.css?v=20260911_admin_mfa">
+  <link rel="stylesheet" href="../css/admin-dashboard.css?v=20260912_service_details_fix">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 </head>
@@ -137,6 +137,13 @@
             <i class="ti ti-stethoscope" style="font-size: 18px;"></i>
           </span>
           <span class="sb-nav-label">Staff / Dentists</span>
+        </a>
+
+        <a href="#" class="sb-nav-item nav-tab" data-tab="services" id="sb-nav-services" title="Clinic Services &amp; Treatments">
+          <span class="sb-nav-icon">
+            <i class="ti ti-dental" style="font-size: 18px;"></i>
+          </span>
+          <span class="sb-nav-label">Services &amp; Treatments</span>
         </a>
 
         <!-- FINANCE Section -->
@@ -671,8 +678,8 @@
                 <!-- SVG Doughnut Chart -->
                 <div style="position: relative; width: 170px; height: 170px; margin: 10px 0 16px;">
                   <svg viewBox="0 0 42 42" style="width: 100%; height: 100%; transform: rotate(-90deg);">
-                    <circle cx="21" cy="21" r="15.915" fill="#fff"></circle>
-                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f1f5f9" stroke-width="4.2"></circle>
+                    <circle id="exp-donut-hole-bg" class="exp-donut-hole-bg" cx="21" cy="21" r="15.915" fill="#fff"></circle>
+                    <circle id="exp-donut-track-bg" class="exp-donut-track-bg" cx="21" cy="21" r="15.915" fill="transparent" stroke="#f1f5f9" stroke-width="4.2"></circle>
                     <!-- Slices dynamically filled -->
                     <circle id="exp-circle-salaries" cx="21" cy="21" r="15.915" fill="transparent" stroke="#f43f5e" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="100" style="transition: stroke-dasharray 0.5s ease;"></circle>
                     <circle id="exp-circle-supplies" cx="21" cy="21" r="15.915" fill="transparent" stroke="#06b6d4" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="100" style="transition: stroke-dasharray 0.5s ease;"></circle>
@@ -681,7 +688,7 @@
                     <circle id="exp-circle-utils" cx="21" cy="21" r="15.915" fill="transparent" stroke="#10b981" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="100" style="transition: stroke-dasharray 0.5s ease;"></circle>
                   </svg>
                   <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
-                    <span style="font-size: 0.72rem; color:#64748b; font-weight:700; text-transform: uppercase; letter-spacing: 0.04em;">Total Expense</span>
+                    <span id="expenses-total-label" style="font-size: 0.72rem; color:#64748b; font-weight:700; text-transform: uppercase; letter-spacing: 0.04em;">Total Expense</span>
                     <span id="expenses-total-value" style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: #0f172a; margin-top: 2px;">₱0.00</span>
                   </div>
                 </div>
@@ -1019,6 +1026,92 @@
           </div>
         </div>
 
+        <!-- 5b. CLINIC SERVICES & TREATMENTS TAB -->
+        <div id="tab-services" class="tab-pane">
+          <div class="admin-table-card">
+            <!-- Header Row -->
+            <div class="admin-table-card-header" style="flex-wrap: wrap; gap: 14px;">
+              <div>
+                <h3 class="admin-table-title"><i class="ti ti-dental"></i> Clinic Services &amp; Treatments</h3>
+                <p class="admin-table-subtitle">Comprehensive dental procedures catalog, clinical descriptions, duration, pricing &amp; high-resolution imagery</p>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button class="btn-secondary" onclick="loadAdminTreatments(true)" title="Reload latest from database" style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; border-radius: 8px;">
+                  <i class="ti ti-refresh"></i> Refresh
+                </button>
+                <button class="btn-primary" onclick="openAdminAddServiceModal()" style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px;">
+                  <i class="ti ti-plus"></i> + Add New Service
+                </button>
+              </div>
+            </div>
+
+            <!-- Analytics Counter Ribbon -->
+            <div class="services-kpi-ribbon">
+              <div class="kpi-mini-card">
+                <div class="kpi-mini-icon" style="background: #e0f2fe; color: #0284c7;"><i class="ti ti-dental"></i></div>
+                <div>
+                  <div class="kpi-mini-val" id="kpi-total-services">0</div>
+                  <div class="kpi-mini-lbl">Total Services</div>
+                </div>
+              </div>
+              <div class="kpi-mini-card">
+                <div class="kpi-mini-icon" style="background: #dcfce7; color: #16a34a;"><i class="ti ti-circle-check"></i></div>
+                <div>
+                  <div class="kpi-mini-val" id="kpi-active-services">0</div>
+                  <div class="kpi-mini-lbl">Active in Catalog</div>
+                </div>
+              </div>
+              <div class="kpi-mini-card">
+                <div class="kpi-mini-icon" style="background: #fef3c7; color: #d97706;"><i class="ti ti-coin"></i></div>
+                <div>
+                  <div class="kpi-mini-val" id="kpi-avg-price">₱0</div>
+                  <div class="kpi-mini-lbl">Avg Standard Fee</div>
+                </div>
+              </div>
+              <div class="kpi-mini-card">
+                <div class="kpi-mini-icon" style="background: #f3e8ff; color: #7c3aed;"><i class="ti ti-clock"></i></div>
+                <div>
+                  <div class="kpi-mini-val" id="kpi-avg-duration">0 min</div>
+                  <div class="kpi-mini-lbl">Avg Procedure Time</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search & Filter Controls -->
+            <div class="admin-filter-bar" style="margin-bottom: 22px; padding: 12px 16px; gap: 12px; flex-wrap: wrap;">
+              <div class="search-input-wrapper" style="flex: 1; min-width: 240px;">
+                <i class="ti ti-search" style="font-size: 16px; color: #94a3b8;"></i>
+                <input type="text" id="admin-service-search" placeholder="Search by procedure name, keyword or clinical description..." oninput="handleAdminServicesFilterChange()" style="border: none; outline: none; width: 100%; font-size: 0.88rem; background: transparent;">
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <select id="admin-service-category-filter" onchange="handleAdminServicesFilterChange()" class="filter-select" style="padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: white; color: #334155; font-weight: 500;">
+                  <option value="all">All Specialties &amp; Categories</option>
+                  <option value="Preventive & Hygiene">Preventive &amp; Hygiene</option>
+                  <option value="Restorative Care">Restorative Care</option>
+                  <option value="Cosmetic Dentistry">Cosmetic Dentistry</option>
+                  <option value="Oral Surgery">Oral Surgery</option>
+                  <option value="Endodontics">Endodontics</option>
+                  <option value="Orthodontics">Orthodontics</option>
+                  <option value="Prosthodontics & Implants">Prosthodontics &amp; Implants</option>
+                  <option value="Diagnostics & Imaging">Diagnostics &amp; Imaging</option>
+                  <option value="General Dentistry">General Dentistry</option>
+                </select>
+
+                <select id="admin-service-status-filter" onchange="handleAdminServicesFilterChange()" class="filter-select" style="padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: white; color: #334155; font-weight: 500;">
+                  <option value="all">All Statuses</option>
+                  <option value="active">Active Only</option>
+                  <option value="inactive">Inactive / Archived</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Grid of Service Cards -->
+            <div id="admin-services-grid" class="admin-services-grid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
         <!-- 6. INVENTORY TAB -->
         <div id="tab-inventory" class="tab-pane">
           <div class="admin-table-card">
@@ -1293,7 +1386,6 @@
           <!-- Inner Navigation for Settings -->
           <div class="settings-pill-nav">
             <button class="settings-inner-tab active" onclick="switchSettingsSection('profile', this)"><i class="ti ti-building-hospital"></i> Clinic Profile</button>
-            <button class="settings-inner-tab" onclick="switchSettingsSection('services', this)"><i class="ti ti-tools"></i> Services &amp; Treatments</button>
             <button class="settings-inner-tab" onclick="switchSettingsSection('preferences', this)"><i class="ti ti-adjustments"></i> System Preferences</button>
             <button class="settings-inner-tab" onclick="switchSettingsSection('mfa', this)" id="settings-tab-btn-mfa"><i class="ti ti-shield-lock"></i> Security &amp; MFA</button>
             <button class="settings-inner-tab" onclick="switchSettingsSection('twilio', this)"><i class="ti ti-message-2"></i> Twilio Gateway</button>
@@ -1439,73 +1531,7 @@
             </div>
           </div>
 
-          <!-- SECTION 2: Services & Treatments -->
-          <div id="settings-sec-services" class="settings-sec-pane" style="display: none;">
-            <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px;">
-              <!-- Treatments Table -->
-              <div class="admin-table-card">
-                <div class="admin-card-header" style="margin-bottom: 16px;">
-                  <div>
-                    <h3 class="admin-card-title">Services &amp; Treatments Catalog</h3>
-                    <p class="admin-card-subtitle">Active clinical procedure fees and durations</p>
-                  </div>
-                </div>
-                <div class="admin-table-wrapper">
-                  <table class="admin-table">
-                    <thead>
-                      <tr>
-                        <th>Service Name</th>
-                        <th style="width: 20%;">Price</th>
-                        <th style="width: 25%;">Duration</th>
-                        <th style="text-align: right; width: 20%;">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody id="settings-treatments-tbody">
-                      <!-- Dynamic treatments listed here -->
-                      <tr>
-                        <td colspan="4" style="padding: 24px; text-align: center; color: #888;">Loading services list...</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <!-- Add Treatment Form -->
-              <div class="admin-card">
-                <div class="admin-card-header" style="margin-bottom: 16px;">
-                  <div>
-                    <h3 class="admin-card-title">Add New Service</h3>
-                    <p class="admin-card-subtitle">Define service details and default rate</p>
-                  </div>
-                </div>
-                <form id="settings-add-treatment-form" style="display: flex; flex-direction: column; gap: 16px;">
-                  <div>
-                    <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Service Name</label>
-                    <input type="text" id="set-treat-name" placeholder="e.g. Braces Consultation" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
-                  </div>
-                  <div>
-                    <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Description</label>
-                    <textarea id="set-treat-desc" rows="2" placeholder="Brief details about the service..." style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box; resize: vertical;"></textarea>
-                  </div>
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div>
-                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Price (₱ / PHP)</label>
-                      <input type="number" id="set-treat-price" placeholder="150" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
-                    </div>
-                    <div>
-                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Duration (mins)</label>
-                      <input type="number" id="set-treat-duration" placeholder="60" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
-                    </div>
-                  </div>
-                  <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--secondary-color); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <i class="ti ti-plus"></i> Save Service
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          <!-- SECTION 3: System Preferences -->
+          <!-- SECTION 2: System Preferences -->
           <div id="settings-sec-preferences" class="settings-sec-pane" style="display: none;">
             <div class="admin-card" style="max-width: 640px;">
               <div class="admin-card-header" style="margin-bottom: 20px;">
@@ -2368,11 +2394,290 @@
     </div>
   </div>
 
+  <!-- ─── Admin Service Add/Edit Modal ───────────────────────────── -->
+  <div id="modal-admin-service" class="modal-overlay" onclick="if(event.target === this) closeAdminServiceModal()" style="display: none;">
+    <div class="modal-card" style="width: 680px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 24px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 40px; height: 40px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+            <i class="ti ti-dental"></i>
+          </div>
+          <div>
+            <h4 id="admin-service-modal-title" style="margin: 0; color: var(--secondary-color); font-weight: 700; font-size: 1.2rem;">Add New Clinic Service</h4>
+            <p id="admin-service-modal-subtitle" style="margin: 2px 0 0 0; font-size: 0.82rem; color: #64748b;">Configure dental procedure pricing, duration, description and procedure photo</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeAdminServiceModal()" style="background: none; border: none; font-size: 22px; color: #94a3b8; cursor: pointer; padding: 4px;">&times;</button>
+      </div>
+
+      <form id="admin-service-form" onsubmit="saveAdminService(event)" style="display: flex; flex-direction: column; gap: 16px;">
+        <input type="hidden" id="admin-service-id" value="">
+        <input type="hidden" id="admin-service-image-url" value="../Resources/services/cleaning.jpg">
+
+        <!-- 1. PICTURE / CLINICAL IMAGERY SELECTOR -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 0.85rem; font-weight: 700; color: #1e293b;"><i class="ti ti-photo"></i> Service Picture / Visual Asset</span>
+            <span style="font-size: 0.75rem; color: #64748b;">Live Preview &amp; Media Selector</span>
+          </div>
+
+          <!-- Preview & Switcher Row -->
+          <div style="display: grid; grid-template-columns: 220px 1fr; gap: 14px; align-items: start;">
+            <!-- Live Preview Card -->
+            <div style="position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #cbd5e1; height: 140px; background: #0f172a;">
+              <img id="admin-service-preview-img" src="../Resources/services/cleaning.jpg" alt="Service Preview" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.src='../Resources/services/cleaning.jpg'">
+              <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); padding: 6px 8px; color: white; font-size: 0.72rem; font-weight: 600;">
+                <i class="ti ti-check"></i> Selected Picture
+              </div>
+            </div>
+
+            <!-- Upload & Presets options -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <label style="font-size: 0.78rem; font-weight: 600; color: #475569;">Quick Choose from Clinic Photo Gallery:</label>
+              <div class="preset-pill-grid" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <button type="button" class="preset-img-btn active" onclick="selectAdminServicePresetImage('../Resources/services/cleaning.jpg', this)">Cleaning</button>
+                <button type="button" class="preset-img-btn" onclick="selectAdminServicePresetImage('../Resources/services/filling.jpg', this)">Filling</button>
+                <button type="button" class="preset-img-btn" onclick="selectAdminServicePresetImage('../Resources/services/extraction.jpg', this)">Extraction</button>
+                <button type="button" class="preset-img-btn" onclick="selectAdminServicePresetImage('../Resources/services/root-canal.jpg', this)">Root Canal</button>
+                <button type="button" class="preset-img-btn" onclick="selectAdminServicePresetImage('../Resources/services/whitening.jpg', this)">Whitening</button>
+                <button type="button" class="preset-img-btn" onclick="selectAdminServicePresetImage('../Resources/services/implants.jpg', this)">Implants</button>
+                <button type="button" class="preset-img-btn" onclick="selectAdminServicePresetImage('../Resources/services/braces.jpg', this)">Braces</button>
+                <button type="button" class="preset-img-btn" onclick="selectAdminServicePresetImage('../Resources/services/crowns.jpg', this)">Crowns</button>
+                <button type="button" class="preset-img-btn" onclick="selectAdminServicePresetImage('../Resources/services/emergency.jpg', this)">Emergency</button>
+              </div>
+
+              <!-- Upload Custom File -->
+              <div style="margin-top: 4px; display: flex; gap: 8px; align-items: center;">
+                <label for="admin-service-file-input" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="ti ti-upload"></i> Upload Image File
+                </label>
+                <input type="file" id="admin-service-file-input" accept="image/*" style="display: none;" onchange="handleAdminServiceFileSelect(this)">
+                <span id="admin-service-file-status" style="font-size: 0.75rem; color: #64748b;">(JPG, PNG, WebP)</span>
+              </div>
+
+              <!-- Custom URL Input -->
+              <div style="margin-top: 2px;">
+                <input type="text" id="admin-service-image-input" placeholder="Or custom picture URL..." oninput="updateAdminServicePreviewFromUrl(this.value)" style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.78rem; box-sizing: border-box; background: white;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. BASIC PROCEDURE FIELDS -->
+        <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Procedure / Service Name <span style="color: #ef4444;">*</span></label>
+            <input type="text" id="admin-service-name" placeholder="e.g. Ultrasonic Deep Cleaning &amp; Scaling" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Clinical Specialty Category</label>
+            <select id="admin-service-category" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box; background: white;">
+              <option value="Preventive & Hygiene">Preventive &amp; Hygiene</option>
+              <option value="Restorative Care">Restorative Care</option>
+              <option value="Cosmetic Dentistry">Cosmetic Dentistry</option>
+              <option value="Oral Surgery">Oral Surgery</option>
+              <option value="Endodontics">Endodontics</option>
+              <option value="Orthodontics">Orthodontics</option>
+              <option value="Prosthodontics & Implants">Prosthodontics &amp; Implants</option>
+              <option value="Diagnostics & Imaging">Diagnostics &amp; Imaging</option>
+              <option value="General Dentistry">General Dentistry</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 3. FINANCIAL & SCHEDULING SPECIFICATIONS -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Standard Fee (₱) <span style="color: #ef4444;">*</span></label>
+            <input type="number" id="admin-service-price" step="0.01" min="0" placeholder="150.00" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Estimated Duration (Minutes) <span style="color: #ef4444;">*</span></label>
+            <input type="number" id="admin-service-duration" min="5" step="5" placeholder="45" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Status in Catalog</label>
+            <select id="admin-service-status" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box; background: white;">
+              <option value="true">Active (Visible to Patients)</option>
+              <option value="false">Inactive (Hidden from Booking)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4. CLINICAL DESCRIPTION -->
+        <div>
+          <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Clinical Overview &amp; Summary</label>
+          <textarea id="admin-service-description" rows="3" placeholder="Provide a clinical description of the procedure, purpose, and dental health benefits..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.88rem; box-sizing: border-box; resize: vertical;"></textarea>
+        </div>
+
+        <!-- 5. HIGHLIGHTS & INDICATIONS -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">What's Included / Key Highlights <span style="font-size: 0.75rem; color: #64748b;">(one per line)</span></label>
+            <textarea id="admin-service-highlights" rows="3" placeholder="Ultrasonic Scaling &amp; Tartar Removal&#10;Interdental Flossing&#10;High-Gloss Enamel Polishing" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.85rem; box-sizing: border-box; resize: vertical;"></textarea>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Clinical Indications / When Needed <span style="font-size: 0.75rem; color: #64748b;">(one per line)</span></label>
+            <textarea id="admin-service-indications" rows="3" placeholder="Bleeding or swollen gums&#10;Visible tartar or coffee stains&#10;Routine bi-annual maintenance" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.85rem; box-sizing: border-box; resize: vertical;"></textarea>
+          </div>
+        </div>
+
+        <!-- 6. PROCEDURE WORKFLOW & AFTERCARE -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Procedure Workflow Steps <span style="font-size: 0.75rem; color: #64748b;">(one step per line)</span></label>
+            <textarea id="admin-service-steps" rows="3" placeholder="Oral &amp; periodontal examination&#10;Acoustic ultrasonic scaling&#10;Enamel paste polishing &amp; fluoride coat" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.85rem; box-sizing: border-box; resize: vertical;"></textarea>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--dark-color);">Patient Aftercare Guidance</label>
+            <textarea id="admin-service-aftercare" rows="3" placeholder="Refrain from dark liquids (coffee, tea, soda) or smoking for 1–2 hours after appointment." style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.85rem; box-sizing: border-box; resize: vertical;"></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; padding-top: 14px; border-top: 1px solid #f1f5f9;">
+          <button type="button" onclick="closeAdminServiceModal()" style="padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border-color); background: white; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: #475569;">Cancel</button>
+          <button type="submit" id="btn-save-admin-service" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; border-radius: 8px; border: none; background: #0b3c4d; color: white; cursor: pointer; font-size: 0.88rem; font-weight: 600;">
+            <i class="ti ti-check"></i> Save Service
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ─── Admin Service Complete Details Modal ────────────────────── -->
+  <div id="modal-admin-service-details" class="modal-overlay" onclick="if(event.target === this) closeAdminServiceDetailsModal()" style="display: none;">
+    <div class="modal-card" style="width: 720px; max-width: 95vw; max-height: 90vh; overflow-y: auto; overflow-x: hidden; padding: 0; border-radius: 16px; box-sizing: border-box;">
+      <!-- Hero Banner with High-Res Image -->
+      <div style="position: relative; height: 220px; background: #0b131e; overflow: hidden;">
+        <img id="admin-detail-image" src="../Resources/services/cleaning.jpg" alt="Service Banner" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.88;" onerror="this.src='../Resources/services/cleaning.jpg'">
+        <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,60,77,0.2) 0%, rgba(11,19,30,0.85) 100%);"></div>
+        
+        <button type="button" onclick="closeAdminServiceDetailsModal()" style="position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: all 0.2s ease;">&times;</button>
+
+        <div style="position: absolute; bottom: 18px; left: 22px; right: 22px;">
+          <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+            <span id="admin-detail-category-badge" class="service-cat-pill">Preventive &amp; Hygiene</span>
+            <span id="admin-detail-status-badge" class="status-pill status-confirmed">Active</span>
+          </div>
+          <h2 id="admin-detail-title" style="margin: 0; color: #ffffff; font-size: 1.45rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Teeth Cleaning &amp; Scaling</h2>
+          <p id="admin-detail-tagline" style="margin: 4px 0 0 0; color: #cbd5e1; font-size: 0.85rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Ultrasonic calculus scaling, plaque removal &amp; high-gloss enamel polish</p>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Bar -->
+      <div style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 14px 22px; display: flex; gap: 24px; flex-wrap: wrap; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+            <i class="ti ti-coin"></i>
+          </div>
+          <div>
+            <div style="font-size: 0.72rem; color: #64748b; font-weight: 600;">STANDARD FEE</div>
+            <div id="admin-detail-price" style="font-size: 1.1rem; font-weight: 800; color: #0b3c4d;">₱80.00</div>
+          </div>
+        </div>
+
+        <div style="width: 1px; height: 28px; background: #e2e8f0;"></div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: #f3e8ff; color: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+            <i class="ti ti-clock"></i>
+          </div>
+          <div>
+            <div style="font-size: 0.72rem; color: #64748b; font-weight: 600;">APPOINTMENT DURATION</div>
+            <div id="admin-detail-duration" style="font-size: 1.1rem; font-weight: 800; color: #0b3c4d;">45 minutes</div>
+          </div>
+        </div>
+
+        <div style="margin-left: auto; display: flex; gap: 10px;">
+          <button type="button" id="btn-admin-detail-edit" class="btn-secondary" style="padding: 8px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="ti ti-edit"></i> Edit Service
+          </button>
+          <button type="button" id="btn-admin-detail-delete" class="btn-table-action btn-action-cancel" style="padding: 8px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="ti ti-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body Content -->
+      <div style="padding: 22px; display: flex; flex-direction: column; gap: 20px;">
+        <!-- Clinical Overview -->
+        <div>
+          <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+            <i class="ti ti-file-text" style="color: #0284c7;"></i> Clinical Overview &amp; Description
+          </h4>
+          <p id="admin-detail-description" style="margin: 0; font-size: 0.88rem; color: #475569; line-height: 1.6; background: #ffffff; border: 1px solid #f1f5f9; padding: 12px 14px; border-radius: 8px;">
+            Comprehensive oral prophylaxis removing calcified tartar, harmful bacteria, and stubborn surface stains beneath the gum line to maintain oral health and fresh breath.
+          </p>
+        </div>
+
+        <!-- Two column: What's Included & Indications -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <!-- What's Included -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+            <h5 style="margin: 0 0 10px 0; font-size: 0.88rem; font-weight: 700; color: #0f766e; display: flex; align-items: center; gap: 6px;">
+              <i class="ti ti-circle-check"></i> What's Included
+            </h5>
+            <ul id="admin-detail-highlights" style="margin: 0; padding-left: 18px; font-size: 0.82rem; color: #334155; line-height: 1.7;">
+              <!-- Dynamic highlights -->
+            </ul>
+          </div>
+
+          <!-- Indications -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+            <h5 style="margin: 0 0 10px 0; font-size: 0.88rem; font-weight: 700; color: #b45309; display: flex; align-items: center; gap: 6px;">
+              <i class="ti ti-alert-circle"></i> Clinical Indications
+            </h5>
+            <ul id="admin-detail-indications" style="margin: 0; padding-left: 18px; font-size: 0.82rem; color: #334155; line-height: 1.7;">
+              <!-- Dynamic indications -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Procedure Workflow Steps -->
+        <div>
+          <h4 style="margin: 0 0 12px 0; font-size: 0.95rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+            <i class="ti ti-list-check" style="color: #7c3aed;"></i> Step-by-Step Procedure Workflow
+          </h4>
+          <div id="admin-detail-steps-timeline" class="procedure-steps-timeline">
+            <!-- Dynamic steps -->
+          </div>
+        </div>
+
+        <!-- Pre-Procedure Prep & Aftercare -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px 14px;">
+            <div style="font-size: 0.82rem; font-weight: 700; color: #166534; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+              <i class="ti ti-info-circle"></i> Preparation Instructions
+            </div>
+            <p id="admin-detail-preparation" style="margin: 0; font-size: 0.8rem; color: #15803d; line-height: 1.5;">
+              Brush and floss lightly before your appointment. Inform your hygienist of any gum tenderness.
+            </p>
+          </div>
+
+          <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px;">
+            <div style="font-size: 0.82rem; font-weight: 700; color: #92400e; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+              <i class="ti ti-shield-check"></i> Post-Treatment Aftercare
+            </div>
+            <p id="admin-detail-aftercare" style="margin: 0; font-size: 0.8rem; color: #b45309; line-height: 1.5;">
+              Refrain from dark drinks (coffee, tea, soda) or smoking for at least 1–2 hours following fluoride application.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 22px; display: flex; justify-content: flex-end;">
+        <button type="button" onclick="closeAdminServiceDetailsModal()" class="btn-primary" style="padding: 9px 24px;">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast-container" class="toast-container"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/admin-dashboard.js?v=20260911_admin_mfa"></script>
+  <script src="../js/admin-dashboard.js?v=20260912_service_details_fix"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>
 </html>

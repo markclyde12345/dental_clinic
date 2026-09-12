@@ -22,6 +22,8 @@ const getMyAppointments = async (req, res) => {
 
     const mapped = (appointments || []).map(appt => ({
       ...appt,
+      patient_id: appt.patient?.id || null,
+      treatment_id: appt.treatment?.id || null,
       dateTime: appt.appointment_date,
       reason: appt.treatment ? appt.treatment.name : 'General Consultation'
     }));
@@ -79,6 +81,8 @@ const getAppointmentById = async (req, res) => {
 
     res.json({
       ...appointment,
+      patient_id: appointment.patient?.id || null,
+      treatment_id: appointment.treatment?.id || null,
       dateTime: appointment.appointment_date,
       reason: appointment.treatment ? appointment.treatment.name : 'General Consultation'
     });
@@ -112,6 +116,8 @@ const getAppointments = async (req, res) => {
     // Maintain backward compatibility for UI mapping if needed
     const mapped = appointments.map(appt => ({
       ...appt,
+      patient_id: appt.patient?.id || null,
+      treatment_id: appt.treatment?.id || null,
       dateTime: appt.appointment_date,
       reason: appt.treatment ? appt.treatment.name : 'General Consultation'
     }));

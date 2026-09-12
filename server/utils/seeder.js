@@ -45,8 +45,14 @@ const seedUsers = async () => {
   // First seed user roles
   await seedUser('Fano', 'Admin', 'admin@fanoclinic.com', 'adminpassword123', 'Admin', '1234567890');
   await seedUser('Dr. John', 'Doe', 'dentist@fanoclinic.com', 'dentistpassword123', 'Dentist', '0987654321');
+  await seedUser('Dr. Angela', 'Tan', 'angela.tan@fanoclinic.com', 'dentistpassword123', 'Dentist', '09191234567');
+  await seedUser('Dr. Michael', 'Cruz', 'michael.cruz@fanoclinic.com', 'dentistpassword123', 'Dentist', '09182345678');
+  await seedUser('Dr. Marie', 'Santos', 'marie.santos@fanoclinic.com', 'dentistpassword123', 'Dentist', '09173456789');
+  await seedUser('Dr. Robert', 'Lim', 'robert.lim@fanoclinic.com', 'dentistpassword123', 'Dentist', '09164567890');
   await seedUser('Jane', 'Finance', 'finance@fanoclinic.com', 'financepassword123', 'Accounting', '5551234567');
+  await seedUser('Jane', 'Accounting', 'accounting@fanoclinic.com', 'accountingpassword123', 'Accounting', '5551234568');
   await seedUser('Sarah', 'Clerk', 'receptionist@fanoclinic.com', 'receptionistpassword123', 'Receptionist', '5557654321');
+  await seedUser('Demo', 'Patient', 'patient@fanoclinic.com', 'patientpassword123', 'Patient', '5551234569');
 
   try {
     // 1. Seed Treatments if empty

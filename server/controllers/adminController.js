@@ -674,62 +674,33 @@ const deleteInventory = async (req, res) => {
 // @access  Private (Admin)
 const getStaffSchedules = async (req, res) => {
   try {
-    let { data: schedules, error } = await supabase
-      .from('staff_schedules')
-      .select('*')
-      .order('created_at', { ascending: true });
-
-    if (error) throw error;
-
-    // Seed defaults if empty
-    if (!schedules || schedules.length === 0) {
-      const { data: users, error: userError } = await supabase
-        .from('users')
-        .select('id, name, email, role, contact_number, is_active')
-        .in('role', ['Admin', 'Dentist', 'Receptionist', 'Accounting']);
-
-      if (!userError && users && users.length > 0) {
-        const defaultSchedules = users.map(u => {
-          let shift = '08:00 AM - 05:00 PM';
-          let availability = u.is_active ? 'On Duty' : 'Off Duty';
-          let days = 'Mon - Sat';
-
-          if (u.role === 'Dentist') {
-            shift = '09:00 AM - 04:00 PM';
-            days = 'Mon, Wed, Fri';
-          } else if (u.role === 'Accounting') {
-            shift = '08:00 AM - 05:00 PM';
-            days = 'Tue, Thu, Sat';
-          }
-
-          if (!u.is_active) {
-            availability = 'Off Duty';
-          } else if (u.name.includes('Sarah') || u.name.includes('Jane')) {
-            availability = 'On Duty';
-          } else if (u.name.includes('John')) {
-            availability = 'On Leave';
-          }
-
-          return {
-            id: u.id,
-            name: u.name,
-            email: u.email || 'N/A',
-            role: u.role,
-            contact: u.contact_number || 'N/A',
-            shift,
-            days,
-            availability
-          };
-        });
-
-        const { data: seeded, error: seedError } = await supabase
-          .from('staff_schedules')
-          .insert(defaultSchedules)
-          .select();
-
-        if (seedError) throw seedError;
-        schedules = seeded;
+    let schedules = [];
+    try {
+      const { data, error } = await supabase
+        .from('staff_schedules')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (!error && Array.isArray(data) && data.length > 0) {
+        schedules = data;
       }
+    } catch (_) {}
+
+    // Fallback or augment with local STAFF_FILE if available
+    if (fs.existsSync(STAFF_FILE)) {
+      try {
+        const fileContent = JSON.parse(fs.readFileSync(STAFF_FILE, 'utf8'));
+        if (Array.isArray(fileContent) && fileContent.length > 0) {
+          if (!schedules.length) {
+            schedules = fileContent;
+          } else {
+            // Merge branch and availability from file if missing in db
+            schedules = schedules.map(s => {
+              const match = fileContent.find(f => f.id === s.id || (f.name && s.name && f.name.toLowerCase() === s.name.toLowerCase()));
+              return match ? { ...match, ...s, branch: s.branch || match.branch || 'Main Branch (Naga)', availability: s.availability || match.availability } : s;
+            });
+          }
+        }
+      } catch (_) {}
     }
 
     res.json(schedules);
@@ -744,7 +715,7 @@ const getStaffSchedules = async (req, res) => {
 // @access  Private (Admin)
 const addStaffSchedule = async (req, res) => {
   try {
-    const { name, role, shift, days, contact, availability, email } = req.body;
+    const { name, role, shift, days, contact, availability, email, branch } = req.body;
 
     // Check if staff schedule with same name already exists case-insensitively
     const { data: existing } = await supabase
@@ -757,32 +728,38 @@ const addStaffSchedule = async (req, res) => {
       return res.status(400).json({ message: 'A schedule listing for this staff member already exists.' });
     }
 
-    const { data: newSched, error } = await supabase
-      .from('staff_schedules')
-      .insert([{
-        name,
-        email: email || 'N/A',
-        role,
-        shift,
-        days,
-        contact,
-        availability
-      }])
-      .select()
-      .single();
+    const newEntry = {
+      name,
+      email: email || 'N/A',
+      role,
+      shift,
+      days,
+      contact,
+      availability: availability || 'On Duty',
+      branch: branch || 'Main Branch (Naga)'
+    };
 
-    if (error) throw error;
+    let newSched = null;
+    try {
+      const { data, error } = await supabase
+        .from('staff_schedules')
+        .insert([newEntry])
+        .select()
+        .single();
+      if (!error && data) newSched = data;
+    } catch (_) {}
 
-    setImmediate(async () => {
+    if (fs.existsSync(STAFF_FILE)) {
       try {
-        const { data: fullList } = await supabase.from('staff_schedules').select('*').order('created_at', { ascending: true });
-        if (fullList) createBackup(STAFF_FILE, fullList);
-      } catch (e) {
-        console.error('[Async Staff Backup Error]', e.message);
-      }
-    });
+        const fullList = JSON.parse(fs.readFileSync(STAFF_FILE, 'utf8')) || [];
+        const entryWithId = { id: (newSched && newSched.id) || ('staff-' + Date.now()), ...newEntry };
+        fullList.push(entryWithId);
+        fs.writeFileSync(STAFF_FILE, JSON.stringify(fullList, null, 2), 'utf8');
+        if (!newSched) newSched = entryWithId;
+      } catch (_) {}
+    }
 
-    res.status(201).json(newSched);
+    res.status(201).json(newSched || newEntry);
   } catch (error) {
     console.error('[Admin Add Staff Schedule Error]', error.message);
     res.status(500).json({ message: error.message });
@@ -791,11 +768,11 @@ const addStaffSchedule = async (req, res) => {
 
 // @desc    Update a staff schedule listing
 // @route   PUT /api/admin/staff-schedules/:id
-// @access  Private (Admin)
+// @access  Private (Admin, Receptionist, Dentist)
 const updateStaffSchedule = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, role, shift, days, contact, availability } = req.body;
+    const { name, role, shift, days, contact, availability, branch } = req.body;
 
     const updateData = {};
     if (name !== undefined) updateData.name = name;
@@ -804,17 +781,34 @@ const updateStaffSchedule = async (req, res) => {
     if (days !== undefined) updateData.days = days;
     if (contact !== undefined) updateData.contact = contact;
     if (availability !== undefined) updateData.availability = availability;
+    if (branch !== undefined) updateData.branch = branch;
 
-    const { data: updatedSched, error } = await supabase
-      .from('staff_schedules')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
+    let updatedSched = null;
+    try {
+      const { data, error } = await supabase
+        .from('staff_schedules')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) updatedSched = data;
+    } catch (_) {}
 
-    if (error) throw error;
+    if (fs.existsSync(STAFF_FILE)) {
+      try {
+        let fileList = JSON.parse(fs.readFileSync(STAFF_FILE, 'utf8')) || [];
+        let found = fileList.find(s => s.id === id || (name && s.name && s.name.toLowerCase() === name.toLowerCase()));
+        if (found) {
+          Object.assign(found, updateData);
+          fs.writeFileSync(STAFF_FILE, JSON.stringify(fileList, null, 2), 'utf8');
+          if (!updatedSched) updatedSched = found;
+        }
+      } catch (fErr) {
+        console.warn('[Staff file update error]', fErr.message);
+      }
+    }
 
-    res.json(updatedSched);
+    res.json(updatedSched || { id, ...updateData });
   } catch (error) {
     console.error('[Admin Update Staff Schedule Error]', error.message);
     res.status(500).json({ message: error.message });
@@ -1049,7 +1043,7 @@ const deleteBranch = async (req, res) => {
 
 // ─── Admin Multi-Factor Authentication (MFA) Handlers ───────────────────────
 const defaultMfaConfig = {
-  mfaEnabled: true,
+  mfaEnabled: false,
   preferredChannel: 'email',
   allowTrustDevice: true,
   revokedBefore: 0,

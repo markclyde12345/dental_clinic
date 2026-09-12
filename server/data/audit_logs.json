@@ -1,5 +1,756 @@
 [
   {
+    "id": "9067264f-adc3-4902-af6f-c7c7d20b8b66",
+    "timestamp": "2026-09-12T13:22:49.417Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "7e0cddd0-a036-4708-83fd-cea79ebe8246",
+    "user_id": "system",
+    "user_name": "Demo Patient",
+    "user_role": "Patient",
+    "details": "Successful login for user patient@fanoclinic.com (Patient)",
+    "metadata": {
+      "email": "patient@fanoclinic.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "daf49584-70b0-46af-b02b-1bf182cd7c59",
+    "timestamp": "2026-09-12T13:22:49.106Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "c5d4381e-c0aa-4615-a265-e9ef10ad5925",
+    "user_id": "system",
+    "user_name": "Jane Accounting",
+    "user_role": "Accounting",
+    "details": "Successful login for user accounting@fanoclinic.com (Accounting)",
+    "metadata": {
+      "email": "accounting@fanoclinic.com",
+      "role": "Accounting"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "91b7da75-57cf-49e0-90d5-00d9c78ea0ff",
+    "timestamp": "2026-09-12T13:22:48.207Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "44836a3c-8660-406b-a59c-9a7007f27306",
+    "timestamp": "2026-09-12T13:22:47.706Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_id": "system",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Successful login for user dentist@fanoclinic.com (Dentist)",
+    "metadata": {
+      "email": "dentist@fanoclinic.com",
+      "role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "fc6ca589-466b-4101-b5c5-8465192270c0",
+    "timestamp": "2026-09-12T13:22:47.198Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "74854f38-1fc4-4ec4-af68-f438aa4db2d7",
+    "timestamp": "2026-09-11T23:58:18.679Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_id": "system",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Successful login for user dentist@fanoclinic.com (Dentist)",
+    "metadata": {
+      "email": "dentist@fanoclinic.com",
+      "role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "c623f2ba-26cc-45be-8a8f-3705f8bb61a8",
+    "timestamp": "2026-09-11T22:07:30.217Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "f23cd162-1a50-4501-9a0a-6c13d21f838b",
+    "timestamp": "2026-09-11T17:39:24.741Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "c73fc802-35a7-4889-a4ad-b322dccee480",
+    "user_id": "system",
+    "user_name": "Jane Finance",
+    "user_role": "Accounting",
+    "details": "Successful login for user finance@fanoclinic.com (Accounting)",
+    "metadata": {
+      "email": "finance@fanoclinic.com",
+      "role": "Accounting"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "da5741c9-e926-406b-a9c3-e823872e956a",
+    "timestamp": "2026-09-11T15:59:50.543Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "405a0dd2-63ab-4871-8234-eea97abd47b7",
+    "timestamp": "2026-09-11T15:56:54.640Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-PH) WindowsPowerShell/5.1.26100.9444"
+  },
+  {
+    "id": "f8cbfa63-1584-4d25-ab71-e113da189449",
+    "timestamp": "2026-09-11T15:44:10.364Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-PH) WindowsPowerShell/5.1.26100.9444"
+  },
+  {
+    "id": "7a47fc40-16ee-4369-b6a3-ca1c4ca27c81",
+    "timestamp": "2026-09-11T15:43:55.470Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-PH) WindowsPowerShell/5.1.26100.9444"
+  },
+  {
+    "id": "586e2b49-bae7-45c2-90c7-746f82f2a440",
+    "timestamp": "2026-09-11T15:39:35.501Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-PH) WindowsPowerShell/5.1.26100.9444"
+  },
+  {
+    "id": "637862d7-be55-44a8-b80a-18be47ad8452",
+    "timestamp": "2026-09-11T15:20:58.671Z",
+    "action": "APPOINTMENT_STATUS_CHANGED",
+    "entity_type": "appointment",
+    "entity_id": "6c77d8db-0617-49e1-8b48-1303292e9f9b",
+    "user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Sarah Clerk (Receptionist) updated appointment #6C77D8DB for mark clyde Castillote from 'Checked In' to 'In Progress'",
+    "metadata": {
+      "appointment_id": "6c77d8db-0617-49e1-8b48-1303292e9f9b",
+      "previous_status": "Checked In",
+      "new_status": "In Progress",
+      "changed_by_user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+      "changed_by_name": "Sarah Clerk",
+      "changed_by_role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "e1a956d3-cdf8-45da-b3aa-c93b84a4b17b",
+    "timestamp": "2026-09-11T15:20:52.719Z",
+    "action": "APPOINTMENT_STATUS_CHANGED",
+    "entity_type": "appointment",
+    "entity_id": "6c77d8db-0617-49e1-8b48-1303292e9f9b",
+    "user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Sarah Clerk (Receptionist) updated appointment #6C77D8DB for mark clyde Castillote from 'Approved' to 'Checked In'",
+    "metadata": {
+      "appointment_id": "6c77d8db-0617-49e1-8b48-1303292e9f9b",
+      "previous_status": "Approved",
+      "new_status": "Checked In",
+      "changed_by_user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+      "changed_by_name": "Sarah Clerk",
+      "changed_by_role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "5bd2b196-321c-47b4-acd2-f934506addcb",
+    "timestamp": "2026-09-11T15:20:33.091Z",
+    "action": "APPOINTMENT_STATUS_CHANGED",
+    "entity_type": "appointment",
+    "entity_id": "6c77d8db-0617-49e1-8b48-1303292e9f9b",
+    "user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Sarah Clerk (Receptionist) updated appointment #6C77D8DB for mark clyde Castillote from 'Pending' to 'Approved'",
+    "metadata": {
+      "appointment_id": "6c77d8db-0617-49e1-8b48-1303292e9f9b",
+      "previous_status": "Pending",
+      "new_status": "Approved",
+      "changed_by_user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+      "changed_by_name": "Sarah Clerk",
+      "changed_by_role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "15ea5b82-df77-4cbb-9e52-eee0c816540a",
+    "timestamp": "2026-09-11T15:19:26.711Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "bd61aad0-c508-44a7-9603-b232dabcf6b4",
+    "timestamp": "2026-09-11T14:49:06.782Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "5e35f99c-dc64-4570-ab3b-51ed2adda72c",
+    "timestamp": "2026-09-11T12:20:58.570Z",
+    "action": "APPOINTMENT_CANCELLED",
+    "entity_type": "appointment",
+    "entity_id": "b622cdc2-90e6-499a-9c22-de79e3a20488",
+    "user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Sarah Clerk (Receptionist) cancelled appointment #B622CDC2 for mark clyde Castillote",
+    "metadata": {
+      "appointment_id": "b622cdc2-90e6-499a-9c22-de79e3a20488",
+      "previous_status": "Pending",
+      "new_status": "Cancelled",
+      "appointment_date": "2026-09-09T14:00:00+00:00",
+      "changed_by_user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+      "changed_by_name": "Sarah Clerk",
+      "changed_by_role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "cdcd593d-6355-47bc-ac6d-169a1d7189d0",
+    "timestamp": "2026-09-11T11:45:39.010Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "adf9bdbd-5c24-4975-8c64-5fe0bf6ab4fc",
+    "timestamp": "2026-09-11T11:39:22.361Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "1e7732cb-6fa8-4316-90fe-f28a40f75c94",
+    "timestamp": "2026-09-11T11:27:24.946Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "a68fa367-ead6-47a2-9a73-c94566762c2b",
+    "timestamp": "2026-09-11T11:27:09.057Z",
+    "action": "FAILED_LOGIN_ATTEMPT",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Failed login attempt (1/5) for email: admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "attemptCount": 1,
+      "maxAttempts": 5
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "024c46c0-7947-4fe4-9e12-33b2eaa5745f",
+    "timestamp": "2026-09-11T10:30:08.938Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_id": "system",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Successful login for user dentist@fanoclinic.com (Dentist)",
+    "metadata": {
+      "email": "dentist@fanoclinic.com",
+      "role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "de89ade6-009a-420e-b678-3134a52506aa",
+    "timestamp": "2026-09-11T10:20:53.371Z",
+    "action": "APPOINTMENT_CANCELLED",
+    "entity_type": "appointment",
+    "entity_id": "5fa2058f-0eed-4a4a-acd8-6bedadc12a59",
+    "user_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Fano Admin (Admin) cancelled appointment #5FA2058F for mark clyde Castillote",
+    "metadata": {
+      "appointment_id": "5fa2058f-0eed-4a4a-acd8-6bedadc12a59",
+      "previous_status": "Pending",
+      "new_status": "Cancelled",
+      "appointment_date": "2026-09-12T11:00:00+00:00",
+      "changed_by_user_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+      "changed_by_name": "Fano Admin",
+      "changed_by_role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "6d73fb6e-f1ba-4fcd-ba8b-9659be9204fa",
+    "timestamp": "2026-09-11T10:20:48.725Z",
+    "action": "APPOINTMENT_CANCELLED",
+    "entity_type": "appointment",
+    "entity_id": "a14863a1-de3e-4509-9420-5a56fbc55c2b",
+    "user_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Fano Admin (Admin) cancelled appointment #A14863A1 for mark clyde Castillote",
+    "metadata": {
+      "appointment_id": "a14863a1-de3e-4509-9420-5a56fbc55c2b",
+      "previous_status": "Pending",
+      "new_status": "Cancelled",
+      "appointment_date": "2026-09-12T09:00:00+00:00",
+      "changed_by_user_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+      "changed_by_name": "Fano Admin",
+      "changed_by_role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "b630306a-b211-4ad7-b702-07e48743f742",
+    "timestamp": "2026-09-11T10:20:42.497Z",
+    "action": "APPOINTMENT_CANCELLED",
+    "entity_type": "appointment",
+    "entity_id": "78c2e5e0-41c2-46c5-865a-9e497be5287f",
+    "user_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Fano Admin (Admin) cancelled appointment #78C2E5E0 for mark clyde Castillote",
+    "metadata": {
+      "appointment_id": "78c2e5e0-41c2-46c5-865a-9e497be5287f",
+      "previous_status": "Pending",
+      "new_status": "Cancelled",
+      "appointment_date": "2026-09-10T11:00:00+00:00",
+      "changed_by_user_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+      "changed_by_name": "Fano Admin",
+      "changed_by_role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "c6085a97-918e-4688-81ce-5c3664785a85",
+    "timestamp": "2026-09-11T10:20:08.526Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "76196876-ac0d-4474-83f9-04189721b0f7",
+    "timestamp": "2026-09-11T10:08:56.315Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "3de83296-4224-40a9-8c9f-6eecff137327",
+    "timestamp": "2026-09-11T10:07:53.633Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "327dd215-e0b0-44f5-90e0-cd99eba4d652",
+    "timestamp": "2026-09-11T09:55:16.619Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "0b6993fc-1da9-42b5-a7fa-5709339d3293",
+    "timestamp": "2026-09-11T08:03:03.255Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Node/Server"
+  },
+  {
+    "id": "f92f8be5-6d32-46b6-85a2-436129bc5aee",
+    "timestamp": "2026-09-11T07:59:38.435Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Node/Server"
+  },
+  {
+    "id": "e1ebaf76-b7e0-4ef7-ab37-415131e77586",
+    "timestamp": "2026-09-11T07:55:32.500Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "662dc3de-05b0-4a66-a45b-eb038c2cdf87",
+    "timestamp": "2026-09-11T07:54:16.215Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "e03d8ebc-d3a8-4b92-84ce-1b8a77261f15",
+    "timestamp": "2026-09-11T07:39:14.814Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "61101f6e-e95d-4b3e-b4fe-b3b8d8a18e14",
+    "timestamp": "2026-09-11T07:39:00.152Z",
+    "action": "FAILED_LOGIN_ATTEMPT",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Failed login attempt (1/5) for email: receptionist@fanoclinic.com",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "attemptCount": 1,
+      "maxAttempts": 5
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "aab083a2-03d4-4869-898e-aaf4ac926fea",
+    "timestamp": "2026-09-11T07:33:45.616Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "eb49b49d-b089-4898-9df6-318256936e56",
+    "timestamp": "2026-09-11T07:29:30.380Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "0706b9b2-c821-4e0a-b437-c7bd5d742794",
+    "user_id": "system",
+    "user_name": "Mark Clyde Castillote",
+    "user_role": "Admin",
+    "details": "Successful login for user markycastillote@gmail.com (Admin)",
+    "metadata": {
+      "email": "markycastillote@gmail.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "ef6ffcf7-b667-4e97-896f-f0e318b4df79",
+    "timestamp": "2026-09-11T07:23:32.922Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA challenge issued for admin@fanoclinic.com (email)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "email"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "7a084230-8ff6-49ff-bf90-7b724354d600",
+    "timestamp": "2026-09-11T07:23:19.637Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA challenge issued for admin@fanoclinic.com (email)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "email"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "ef0b4c68-ca2e-4d6b-b98a-b8f50353b2b0",
+    "timestamp": "2026-09-11T07:21:29.812Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA challenge issued for admin@fanoclinic.com (email)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "email"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
     "id": "ce21e977-9b4f-43a6-9672-7909fa8e371a",
     "timestamp": "2026-09-11T02:42:22.941Z",
     "action": "USER_LOGIN_SUCCESS",

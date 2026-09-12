@@ -66,7 +66,7 @@ router.route('/staff-schedules')
   .post(protect, authorize('Admin'), addStaffSchedule);
 
 router.route('/staff-schedules/:id')
-  .put(protect, authorize('Admin'), updateStaffSchedule)
+  .put(protect, authorize('Admin', 'Receptionist', 'Dentist'), updateStaffSchedule)
   .delete(protect, authorize('Admin'), deleteStaffSchedule);
 
 // Branch management routes

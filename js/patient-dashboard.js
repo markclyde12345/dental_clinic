@@ -65,6 +65,7 @@ function initDashboard() {
   loadAppointments();
   loadInvoices();
   loadTreatments();
+  // Clinical treatment plans are sent directly to patient email
   setupBookingWizard();
   setupSettings();
   setupPatientNotifications();
@@ -1221,6 +1222,540 @@ function renderAppointmentsFullList() {
   }).join('');
 }
 
+// ─── 6-Pillar Patient Treatment Plans Module ──────────────────
+let allPatientTreatmentPlans = [];
+
+function switchRecordsSubtab(tab) {
+  const viewVisits = document.getElementById('subtab-view-visits');
+  if (viewVisits) viewVisits.style.display = 'block';
+}
+window.switchRecordsSubtab = switchRecordsSubtab;
+
+function parsePatientPlanMeta(rawDesc) {
+  const def = {
+    summary: '',
+    diagnosis: '',
+    affected_teeth: '',
+    priority: 'Urgent',
+    visits_count: 1,
+    timeline: '',
+    total_fee: 0,
+    insurance_coverage: 0,
+    out_of_pocket: 0,
+    alternatives: '',
+    clinical_notes: ''
+  };
+  if (!rawDesc) return def;
+  const str = String(rawDesc).trim();
+  if (str.startsWith('{')) {
+    try {
+      const obj = JSON.parse(str);
+      return { ...def, ...obj };
+    } catch (e) {}
+  }
+  const diagMatch = str.match(/\[Diagnosis:\s*([^\]]+)\]/i);
+  const teethMatch = str.match(/\[Teeth:\s*([^\]]+)\]/i);
+  const altMatch = str.match(/\[Alternatives:\s*([^\]]+)\]/i);
+  const timeMatch = str.match(/\[Timeline:\s*([^\]]+)\]/i);
+  const visitsMatch = str.match(/\[Visits:\s*([^\]]+)\]/i);
+  const insMatch = str.match(/\[InsuranceCoverage:\s*([^\]]+)\]/i);
+
+  def.diagnosis = diagMatch ? diagMatch[1] : str.replace(/\[[^\]]+\]/g, '').trim();
+  if (teethMatch) def.affected_teeth = teethMatch[1];
+  if (altMatch) def.alternatives = altMatch[1];
+  if (timeMatch) def.timeline = timeMatch[1];
+  if (visitsMatch) def.visits_count = parseInt(visitsMatch[1], 10) || 1;
+  if (insMatch) def.insurance_coverage = parseFloat(insMatch[1].replace(/[^0-9.]/g, '')) || 0;
+  return def;
+}
+
+function parsePatientItemMeta(rawNotes, defaultFee = 0) {
+  const def = {
+    tooth: '',
+    priority: 'Normal',
+    fee: Number(defaultFee) || 0,
+    insurance_covered: 0,
+    out_of_pocket: Number(defaultFee) || 0,
+    visit: 'Visit 1',
+    notes: ''
+  };
+  if (!rawNotes) return def;
+  const str = String(rawNotes).trim();
+  if (str.startsWith('{')) {
+    try {
+      const obj = JSON.parse(str);
+      return { ...def, ...obj };
+    } catch (e) {}
+  }
+  const tMatch = str.match(/\[Tooth:\s*([^\]]+)\]/i);
+  const pMatch = str.match(/\[Priority:\s*([^\]]+)\]/i);
+  const insMatch = str.match(/\[Insurance:\s*([^\]]+)\]/i);
+  const oopMatch = str.match(/\[Out-of-Pocket:\s*([^\]]+)\]/i);
+  const vMatch = str.match(/\[Visit:\s*([^\]]+)\]/i);
+
+  if (tMatch) def.tooth = tMatch[1];
+  if (pMatch) def.priority = pMatch[1];
+  if (insMatch) def.insurance_covered = parseFloat(insMatch[1].replace(/[^0-9.]/g, '')) || 0;
+  if (oopMatch) def.out_of_pocket = parseFloat(oopMatch[1].replace(/[^0-9.]/g, '')) || 0;
+  if (vMatch) def.visit = vMatch[1];
+  def.notes = str.replace(/\[[^\]]+\]/g, '').trim();
+  return def;
+}
+
+function getPatientPriorityClass(p) {
+  const s = String(p || '').toLowerCase();
+  if (s.includes('urgent') || s.includes('emergency') || s.includes('pain')) return 'urgent';
+  if (s.includes('high') || s.includes('decay') || s.includes('caries')) return 'high';
+  if (s.includes('preventive') || s.includes('medium') || s.includes('restore') || s.includes('normal')) return 'medium';
+  return 'elective';
+}
+
+function loadPatientTreatmentPlans() {
+  // Clinical treatment plans are sent directly to the patient's registered email
+  allPatientTreatmentPlans = [];
+  return Promise.resolve([]);
+}
+window.loadPatientTreatmentPlans = loadPatientTreatmentPlans;
+
+// ─── Patient-Friendly Care Journey Helpers ───────────────────────────
+const PATIENT_TOOTH_ANATOMY = {
+  '18': 'Upper Right Wisdom Tooth (#18)',
+  '17': 'Upper Right 2nd Molar (#17)',
+  '16': 'Upper Right 1st Molar (#16)',
+  '15': 'Upper Right 2nd Premolar (#15)',
+  '14': 'Upper Right 1st Premolar (#14)',
+  '13': 'Upper Right Canine / Eye Tooth (#13)',
+  '12': 'Upper Right Lateral Incisor (#12)',
+  '11': 'Upper Right Front Center Tooth (#11)',
+  '21': 'Upper Left Front Center Tooth (#21)',
+  '22': 'Upper Left Lateral Incisor (#22)',
+  '23': 'Upper Left Canine / Eye Tooth (#23)',
+  '24': 'Upper Left 1st Premolar (#24)',
+  '25': 'Upper Left 2nd Premolar (#25)',
+  '26': 'Upper Left 1st Molar (#26)',
+  '27': 'Upper Left 2nd Molar (#27)',
+  '28': 'Upper Left Wisdom Tooth (#28)',
+  '38': 'Lower Left Wisdom Tooth (#38)',
+  '37': 'Lower Left 2nd Molar (#37)',
+  '36': 'Lower Left 1st Molar (#36)',
+  '35': 'Lower Left 2nd Premolar (#35)',
+  '34': 'Lower Left 1st Premolar (#34)',
+  '33': 'Lower Left Canine (#33)',
+  '32': 'Lower Left Lateral Incisor (#32)',
+  '31': 'Lower Left Front Center Tooth (#31)',
+  '41': 'Lower Right Front Center Tooth (#41)',
+  '42': 'Lower Right Lateral Incisor (#42)',
+  '43': 'Lower Right Canine (#43)',
+  '44': 'Lower Right 1st Premolar (#44)',
+  '45': 'Lower Right 2nd Premolar (#45)',
+  '46': 'Lower Right 1st Molar (#46)',
+  '47': 'Lower Right 2nd Molar (#47)',
+  '48': 'Lower Right Wisdom Tooth (#48)'
+};
+
+function formatFriendlyTooth(str) {
+  if (!str) return '';
+  const clean = str.trim();
+  const digits = clean.match(/\d+/);
+  if (digits && PATIENT_TOOTH_ANATOMY[digits[0]]) {
+    return PATIENT_TOOTH_ANATOMY[digits[0]];
+  }
+  if (/upper right/i.test(clean)) return `${clean} (Upper Right Arch)`;
+  if (/upper left/i.test(clean)) return `${clean} (Upper Left Arch)`;
+  if (/lower right/i.test(clean)) return `${clean} (Lower Right Arch)`;
+  if (/lower left/i.test(clean)) return `${clean} (Lower Left Arch)`;
+  return clean.startsWith('#') ? `Tooth ${clean}` : `Tooth #${clean}`;
+}
+
+function translateDiagnosisFindings(text) {
+  if (!text) return [];
+  const parts = text.split(/[;\n]+/).map(s => s.trim()).filter(Boolean);
+  const items = [];
+
+  for (const part of parts) {
+    const lower = part.toLowerCase();
+    let icon = 'ti ti-clipboard-heart';
+    let title = '';
+    let explanation = '';
+
+    const teethFound = (part.match(/#\d+|\b[1-4][1-8]\b/g) || []).map(t => formatFriendlyTooth(t));
+
+    if (lower.includes('pulpitis') || lower.includes('cavities') || lower.includes('caries') || lower.includes('decay')) {
+      icon = 'ti ti-dental';
+      if (lower.includes('reversible pulpitis')) {
+        title = 'Tooth Decay with Nerve Sensitivity (Reversible)';
+        explanation = 'There are deep cavities on the chewing surface reaching near the nerve, causing mild sensitivity. Good news: because it is reversible, treating the decay now allows the tooth nerve to completely heal without needing root canal surgery.';
+      } else if (lower.includes('irreversible pulpitis')) {
+        title = 'Deep Tooth Decay Reaching Nerve';
+        explanation = 'The decay has reached the tooth nerve, causing throbbing or persistent ache. Nerve treatment (root canal therapy) is recommended to relieve the pain and save your natural tooth.';
+      } else {
+        title = 'Dental Cavity / Tooth Decay';
+        explanation = 'Bacterial tooth decay detected on tooth surfaces. Cleaning the decayed area and placing a tooth-colored aesthetic filling will restore strength and prevent tooth loss.';
+      }
+    } else if (lower.includes('gingivitis') || lower.includes('calculus') || lower.includes('gum') || lower.includes('periodont')) {
+      icon = 'ti ti-heart-rate-monitor';
+      title = 'Gum Inflammation & Tartar Buildup';
+      explanation = 'Your gums show mild to moderate swelling and redness due to hardened tartar (calculus) beneath the gumline. A thorough dental cleaning (scaling and polishing) will remove bacteria and restore healthy, firm pink gums.';
+    } else if (lower.includes('missing') || lower.includes('drift') || lower.includes('gap') || lower.includes('extracted')) {
+      icon = 'ti ti-arrows-exchange';
+      title = 'Missing Tooth Space & Shifting';
+      explanation = 'A missing tooth space is allowing adjacent teeth to slowly tilt or drift. Restoring the missing tooth with a replacement (such as a dental implant or bridge) will stabilize your bite and restore chewing balance.';
+    } else if (lower.includes('fracture') || lower.includes('chip') || lower.includes('crack') || lower.includes('broken')) {
+      icon = 'ti ti-shield-half';
+      title = 'Tooth Fracture / Chipped Tooth';
+      explanation = 'Structural crack or chipped tooth surface detected. Restorative bonding or a protective crown will reinforce the tooth and prevent cracking further.';
+    } else if (lower.includes('malocclusion') || lower.includes('crowd') || lower.includes('crooked') || lower.includes('bite')) {
+      icon = 'ti ti-grid-dots';
+      title = 'Bite Alignment & Tooth Spacing';
+      explanation = 'Mild crowding or alignment irregularity detected. Corrective alignment can balance your chewing forces and make daily brushing easier.';
+    } else {
+      title = 'Clinical Finding';
+      explanation = part;
+    }
+
+    items.push({
+      icon,
+      title,
+      explanation,
+      originalText: part,
+      teeth: teethFound
+    });
+  }
+
+  return items;
+}
+
+function translateProcedureExpectation(procName, notes) {
+  const nameLower = (procName || '').toLowerCase();
+  const notesLower = (notes || '').toLowerCase();
+  const combined = `${nameLower} ${notesLower}`;
+
+  if (combined.includes('root canal') || combined.includes('pulpectomy') || combined.includes('endodontic')) {
+    return {
+      friendlyTitle: 'Root Canal Treatment (Relieves Pain & Saves Tooth)',
+      whatHappens: 'Your dentist gently numbs the tooth, removes the irritated nerve tissue to immediately stop toothache, and cleans and seals the inside of the tooth so you keep your natural smile.',
+      patientExperience: 'Painless procedure performed under gentle local anesthesia. A protective rubber dam shield is used to keep everything clean and comfortable.',
+      badgeLabel: 'Pain Relief & Tooth Preservation'
+    };
+  }
+
+  if (combined.includes('filling') || combined.includes('composite') || combined.includes('restoration')) {
+    return {
+      friendlyTitle: 'Tooth-Colored Aesthetic Filling',
+      whatHappens: 'The decayed portion of the tooth is carefully cleared away and rebuilt with a durable, tooth-colored resin filling that blends seamlessly with your natural teeth.',
+      patientExperience: 'Quick, painless appointment. The filling is hardened instantly under a specialized curing light so you can eat and chew comfortably.',
+      badgeLabel: 'Decay Removal & Restoration'
+    };
+  }
+
+  if (combined.includes('clean') || combined.includes('scaling') || combined.includes('prophylaxis')) {
+    return {
+      friendlyTitle: 'Professional Deep Dental Cleaning',
+      whatHappens: 'Gentle ultrasonic scaling to remove hardened tartar and bacterial plaque from tooth surfaces and beneath the gumline, followed by smooth polishing.',
+      patientExperience: 'Leaves your mouth feeling clean and refreshed, eliminates gum bleeding, and promotes fresh breath.',
+      badgeLabel: 'Preventive Care & Gum Health'
+    };
+  }
+
+  if (combined.includes('extract') || combined.includes('removal')) {
+    return {
+      friendlyTitle: 'Gentle Tooth Extraction',
+      whatHappens: 'Careful removal of a compromised tooth to protect neighboring teeth and jawbone from infection.',
+      patientExperience: 'Fully numbed with local anesthesia so you feel only gentle pressure, no pain. You will receive clear aftercare instructions for quick healing.',
+      badgeLabel: 'Infection Prevention'
+    };
+  }
+
+  if (combined.includes('crown') || combined.includes('jacket') || combined.includes('cap')) {
+    return {
+      friendlyTitle: 'Protective Dental Crown',
+      whatHappens: 'A custom-made, durable ceramic cap placed over a weakened tooth to restore full chewing strength, shape, and natural appearance.',
+      patientExperience: 'Custom-shaded to match neighboring teeth perfectly for a long-lasting, natural smile.',
+      badgeLabel: 'Tooth Reinforcement'
+    };
+  }
+
+  if (combined.includes('implant')) {
+    return {
+      friendlyTitle: 'Permanent Dental Implant',
+      whatHappens: 'A permanent replacement tooth anchored into the jawbone that looks, feels, and functions just like your real natural tooth.',
+      patientExperience: 'Preserves jawbone density and does not require grinding down neighboring healthy teeth.',
+      badgeLabel: 'Permanent Tooth Replacement'
+    };
+  }
+
+  if (combined.includes('whitening') || combined.includes('bleaching')) {
+    return {
+      friendlyTitle: 'Professional Teeth Whitening',
+      whatHappens: 'Safe, clinical-grade enamel brightening that lifts years of tea, coffee, and food stains.',
+      patientExperience: 'Noticeably brighter, whiter smile in a single session with enamel-safe formulations.',
+      badgeLabel: 'Cosmetic Brightening'
+    };
+  }
+
+  return {
+    friendlyTitle: procName || 'Dental Care Procedure',
+    whatHappens: notes ? `Specialized procedure: ${notes}` : 'Specialized clinical treatment recommended by your dentist to restore your oral health.',
+    patientExperience: 'Performed with gentle care and modern dental equipment for your comfort.',
+    badgeLabel: 'Clinical Treatment'
+  };
+}
+
+function getFriendlyPriorityLabel(p) {
+  const s = String(p || '').toLowerCase();
+  if (s.includes('urgent') || s.includes('emergency') || s.includes('pain')) return '🚨 Pain Relief & Protection';
+  if (s.includes('high') || s.includes('decay') || s.includes('caries')) return '⚠️ Active Decay Treatment';
+  if (s.includes('preventive') || s.includes('medium') || s.includes('restore') || s.includes('normal')) return '🛡️ Preventive & Restorative';
+  return '✨ Aesthetic & Cosmetic';
+}
+
+function bookTreatmentStep(treatmentName, treatmentId) {
+  showToast(`Preparing appointment booking for ${treatmentName}...`, 'info');
+  switchSection('appointments');
+  setTimeout(() => {
+    const inputTreatment = document.getElementById('wizard-treatment-id');
+    if (inputTreatment && treatmentId) {
+      inputTreatment.value = treatmentId;
+    }
+    const sCard = document.querySelector(`.service-picker-card[data-id="${treatmentId}"]`);
+    if (sCard) sCard.click();
+
+    const notesInput = document.getElementById('wizard-notes');
+    if (notesInput && !notesInput.value) {
+      notesInput.value = `Treatment Plan Follow-up: ${treatmentName}`;
+    }
+  }, 350);
+}
+window.bookTreatmentStep = bookTreatmentStep;
+
+function openCarePlanChat(topic) {
+  const orb = document.getElementById('ai-unified-trigger');
+  if (orb) {
+    orb.click();
+    setTimeout(() => {
+      const input = document.getElementById('chat-input-text');
+      if (input) {
+        input.value = `Can you explain my dental treatment plan in simple terms? (Specifically regarding: ${topic || 'procedures and costs'})`;
+        input.focus();
+      }
+    }, 400);
+  } else {
+    alert('You can contact Fano Dental Clinic at (032) 123-4567 or visit during office hours.');
+  }
+}
+window.openCarePlanChat = openCarePlanChat;
+
+function renderPatientTreatmentPlans() {
+  const container = document.getElementById('patient-treatment-plans-list');
+  if (!container) return;
+
+  if (!allPatientTreatmentPlans || allPatientTreatmentPlans.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 48px 24px; text-align: center; background: #ffffff; border-radius: 16px; border: 2px dashed var(--border);">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(11, 60, 77, 0.08); color: var(--primary-color); display: inline-flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 14px;">
+          <i class="ti ti-clipboard-heart"></i>
+        </div>
+        <h4 style="margin: 0 0 6px; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">No Treatment Plans Assigned Yet</h4>
+        <p style="margin: 0 auto 20px; max-width: 480px; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+          Once your attending dentist finishes your diagnostic exam, your personalized step-by-step care plan with procedure breakdown, fees, and timeline will be published here.
+        </p>
+        <button class="btn btn-primary" onclick="switchSection('appointments')" style="display: inline-flex; align-items: center; gap: 8px;">
+          <i class="ti ti-calendar-plus"></i> Book Consultation
+        </button>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = allPatientTreatmentPlans.map(plan => {
+    const meta = parsePatientPlanMeta(plan.description);
+    const rawItems = plan.items || [];
+    const items = [...rawItems].sort((a, b) => (Number(a.sequence) || 0) - (Number(b.sequence) || 0));
+    
+    const totalSteps = items.length;
+    const completedSteps = items.filter(i => String(i.status).toLowerCase() === 'completed').length;
+    const progressPct = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+    
+    // Find first uncompleted step as Next Step
+    const nextStepItem = items.find(i => String(i.status).toLowerCase() !== 'completed');
+
+    const dentistName = plan.dentist?.name || 'Dr. John Doe (Attending Dentist)';
+    const totalFee = Number(plan.total_estimated_cost) || Number(meta.total_fee) || 0;
+    const insuranceCovered = Number(meta.insurance_coverage) || 0;
+    const outOfPocket = Math.max(0, totalFee - insuranceCovered);
+    const dateStr = plan.created_at ? new Date(plan.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+    // Plain English Findings
+    const diagnosisFindings = translateDiagnosisFindings(meta.diagnosis);
+
+    // Affected teeth badges with anatomical location
+    const teethPills = (meta.affected_teeth || '').split(/[,;]+/)
+      .map(t => t.trim())
+      .filter(Boolean)
+      .map(t => `<span class="patient-tooth-pill"><i class="ti ti-tooth"></i> ${escapeHTML(formatFriendlyTooth(t))}</span>`)
+      .join('');
+
+    // Procedures list HTML
+    const proceduresHtml = items.map((item, idx) => {
+      const isDone = String(item.status).toLowerCase() === 'completed';
+      const isNextStep = !isDone && nextStepItem && nextStepItem.id === item.id;
+      const stepNum = item.sequence || idx + 1;
+      const itemMeta = parsePatientItemMeta(item.notes);
+      const stepFee = Number(itemMeta.fee) || 0;
+      const stepIns = Number(itemMeta.insurance_covered) || 0;
+      const stepOop = Math.max(0, stepFee - stepIns);
+
+      const exp = translateProcedureExpectation(item.treatment_name, itemMeta.notes);
+      const friendlyTooth = formatFriendlyTooth(itemMeta.tooth);
+
+      return `
+        <div class="min-proc-item ${isDone ? 'done' : isNextStep ? 'next' : ''}">
+          <div class="min-proc-left">
+            <div class="min-proc-indicator">
+              ${isDone 
+                ? '<i class="ti ti-check" style="font-size: 13px;"></i>' 
+                : `<span>${stepNum}</span>`
+              }
+            </div>
+            <div class="min-proc-details">
+              <div class="min-proc-heading">
+                <span class="min-proc-name">${escapeHTML(exp.friendlyTitle)}</span>
+                ${friendlyTooth ? `<span class="min-proc-tooth">${escapeHTML(friendlyTooth)}</span>` : ''}
+                ${isDone 
+                  ? '<span class="min-tag done">Done</span>' 
+                  : isNextStep 
+                    ? '<span class="min-tag next">Next Up</span>' 
+                    : '<span class="min-tag">Step ' + stepNum + '</span>'
+                }
+              </div>
+              <p class="min-proc-desc">${escapeHTML(exp.whatHappens)}</p>
+            </div>
+          </div>
+
+          <div class="min-proc-right">
+            <div class="min-proc-pricing">
+              <span class="min-proc-oop">₱${stepOop.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+              ${stepIns > 0 ? `<span class="min-proc-covered">Covered -₱${stepIns.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>` : ''}
+            </div>
+            ${!isDone && isNextStep ? `
+              <button type="button" class="btn-min-book" onclick="bookTreatmentStep('${escapeHTML(item.treatment_name)}', '${escapeHTML(item.treatment_id || '')}')">
+                Book Visit
+              </button>` : ''
+            }
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="patient-plan-card minimal">
+        <!-- Minimal Header -->
+        <div class="min-plan-head">
+          <div>
+            <div class="min-plan-meta">
+              <span class="min-status-dot"></span>
+              <span class="min-status-text">${escapeHTML(plan.status || 'Active Plan')}</span>
+              ${dateStr ? `<span class="min-sep">•</span><span>Issued ${dateStr}</span>` : ''}
+              ${dentistName ? `<span class="min-sep">•</span><span>${escapeHTML(dentistName)}</span>` : ''}
+            </div>
+            <h3 class="min-plan-title">${escapeHTML(plan.name || 'Personalized Dental Care Plan')}</h3>
+          </div>
+          <div class="min-plan-actions">
+            <button type="button" class="btn-min-print" onclick="printPatientTreatmentPlan('${plan.id}')" title="Print plan">
+              <i class="ti ti-printer"></i> <span>Print</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Slim Minimal Progress Line -->
+        <div class="min-progress-wrap">
+          <div class="min-progress-track">
+            <div class="min-progress-bar" style="width: ${progressPct}%;"></div>
+          </div>
+          <div class="min-progress-label">
+            <span>${completedSteps} of ${totalSteps} procedures completed</span>
+            <span>${progressPct}%</span>
+          </div>
+        </div>
+
+        <!-- Section: Oral Health Findings -->
+        <div class="min-section">
+          <div class="min-section-title">Oral Health Findings</div>
+          <div class="min-findings-grid">
+            ${diagnosisFindings.length > 0 ? diagnosisFindings.map(f => `
+              <div class="min-finding-row">
+                <span class="min-bullet"></span>
+                <div class="min-finding-body">
+                  <strong>${escapeHTML(f.title)}</strong> — 
+                  <span>${escapeHTML(f.explanation)}</span>
+                  ${f.teeth && f.teeth.length ? `<span class="min-inline-tooth">${escapeHTML(f.teeth.join(', '))}</span>` : ''}
+                </div>
+              </div>
+            `).join('') : `
+              <div class="min-finding-row">
+                <span class="min-bullet"></span>
+                <div class="min-finding-body">
+                  <span>${escapeHTML(meta.diagnosis || 'Clinical evaluation on file.')}</span>
+                </div>
+              </div>
+            `}
+          </div>
+          ${teethPills ? `
+            <div class="min-teeth-row">
+              <span class="min-sublabel">Treated Sites:</span>
+              <div class="min-teeth-tags">${teethPills}</div>
+            </div>` : ''
+          }
+        </div>
+
+        <!-- Section: Procedures (Clean Minimal List) -->
+        <div class="min-section">
+          <div class="min-section-title">Recommended Procedures (${totalSteps})</div>
+          <div class="min-proc-list">
+            ${proceduresHtml || '<p class="muted" style="font-size:0.8rem; padding:10px 0;">No individual procedures recorded.</p>'}
+          </div>
+        </div>
+
+        <!-- Section: Financial Breakdown (Minimalist Inline Row) -->
+        <div class="min-finance-bar">
+          <div class="min-fin-col">
+            <span class="min-fin-label">Estimated Total</span>
+            <span class="min-fin-value">₱${totalFee.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+          </div>
+          <div class="min-fin-divider"></div>
+          <div class="min-fin-col">
+            <span class="min-fin-label">Insurance Covered</span>
+            <span class="min-fin-value discount">${insuranceCovered > 0 ? '-₱' + insuranceCovered.toLocaleString('en-PH', { minimumFractionDigits: 2 }) : '₱0.00'}</span>
+          </div>
+          <div class="min-fin-divider"></div>
+          <div class="min-fin-col">
+            <span class="min-fin-label">Your Share (Pay per visit)</span>
+            <span class="min-fin-value oop">₱${outOfPocket.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+          </div>
+        </div>
+        <div class="min-fin-sub">Payable per visit as procedures are performed. No upfront balance required.</div>
+
+        <!-- Notes: Timeline / Alternatives if any -->
+        ${(meta.timeline || meta.alternatives) ? `
+          <div class="plan-min-notes-row">
+            ${meta.timeline ? `<div><strong>Timeline:</strong> ${escapeHTML(meta.timeline)}</div>` : ''}
+            ${meta.alternatives ? `<div><strong>Alternatives considered:</strong> ${escapeHTML(meta.alternatives)}</div>` : ''}
+          </div>
+        ` : ''}
+
+        <!-- Collapsible Technical Doctor Notes -->
+        <details class="min-details">
+          <summary>Doctor's clinical notes</summary>
+          <p>${escapeHTML(meta.diagnosis || 'Clinical evaluation on file.')}</p>
+        </details>
+      </div>`;
+  }).join('');
+}
+window.renderPatientTreatmentPlans = renderPatientTreatmentPlans;
+
+function printPatientTreatmentPlan(planId) {
+  window.print();
+}
+window.printPatientTreatmentPlan = printPatientTreatmentPlan;
+
 // ─── Load Invoices ───────────────────────────────────────────
 let delinquentOverdueInvoice = null;
 
@@ -1748,6 +2283,359 @@ function loadTreatments(forceRefresh = false) {
     });
 }
 
+function getTreatmentTheme(name = '') {
+  const n = (name || '').toLowerCase();
+  if (n.includes('clean') || n.includes('prophylaxis') || n.includes('scaling')) {
+    return {
+      icon: 'ti-sparkles',
+      category: 'Preventive & Hygiene',
+      bg: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)',
+      color: '#0284c7'
+    };
+  }
+  if (n.includes('whiten') || n.includes('bleach') || n.includes('veneer') || n.includes('cosmetic')) {
+    return {
+      icon: 'ti-sun',
+      category: 'Cosmetic Dentistry',
+      bg: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+      color: '#d97706'
+    };
+  }
+  if (n.includes('root canal') || n.includes('endodontic')) {
+    return {
+      icon: 'ti-pulse',
+      category: 'Endodontics',
+      bg: 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)',
+      color: '#e11d48'
+    };
+  }
+  if (n.includes('extract') || n.includes('surgery') || n.includes('wisdom')) {
+    return {
+      icon: 'ti-scissors',
+      category: 'Oral Surgery',
+      bg: 'linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%)',
+      color: '#dc2626'
+    };
+  }
+  if (n.includes('brace') || n.includes('aligner') || n.includes('ortho')) {
+    return {
+      icon: 'ti-grid-dots',
+      category: 'Orthodontics',
+      bg: 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)',
+      color: '#7c3aed'
+    };
+  }
+  if (n.includes('implant') || n.includes('prostho') || n.includes('crown') || n.includes('bridge') || n.includes('denture')) {
+    return {
+      icon: 'ti-shield-check',
+      category: 'Prosthodontics & Implants',
+      bg: 'linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%)',
+      color: '#0f766e'
+    };
+  }
+  if (n.includes('fill') || n.includes('restor') || n.includes('composite') || n.includes('cavity')) {
+    return {
+      icon: 'ti-first-aid-kit',
+      category: 'Restorative Care',
+      bg: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)',
+      color: '#16a34a'
+    };
+  }
+  if (n.includes('x-ray') || n.includes('radiograph') || n.includes('panoramic')) {
+    return {
+      icon: 'ti-photo',
+      category: 'Diagnostics & Imaging',
+      bg: 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)',
+      color: '#475569'
+    };
+  }
+  if (n.includes('consult') || n.includes('check') || n.includes('exam')) {
+    return {
+      icon: 'ti-stethoscope',
+      category: 'Consultation & Checkup',
+      bg: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
+      color: '#4f46e5'
+    };
+  }
+  return {
+    icon: 'ti-dental',
+    category: 'General Dentistry',
+    bg: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)',
+    color: '#0284c7'
+  };
+}
+
+function getTreatmentIcon(name = '') {
+  return getTreatmentTheme(name).icon;
+}
+
+function getTreatmentCategory(name = '') {
+  return getTreatmentTheme(name).category;
+}
+
+// ─── Clinic Services Catalog & Visual Data ────────────────────────────────────
+const CLINIC_SERVICES_METADATA = {
+  cleaning: {
+    image: '../Resources/services/cleaning.jpg',
+    fallbackUrl: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=700&auto=format&fit=crop&q=80',
+    tagline: 'Ultrasonic calculus scaling, plaque removal & high-gloss enamel polish',
+    summary: 'Comprehensive oral prophylaxis removing calcified tartar, harmful bacteria, and stubborn surface stains beneath the gum line to maintain oral health and fresh breath.',
+    highlights: [
+      'Ultrasonic Scaling & Tartar Removal',
+      'Interdental Flossing & Plaque Elimination',
+      'Prophy Paste Deep Stain Polishing',
+      'Protective Fluoride Varnish Coat'
+    ],
+    indications: [
+      'Bleeding, swollen, or tender gums (early gingivitis)',
+      'Visible yellow or brown tartar buildup along tooth margins',
+      'Persistent halitosis (bad breath) or rough tooth surfaces',
+      'Recommended every 6 months for adults & children'
+    ],
+    steps: [
+      { step: 1, title: 'Oral & Periodontal Exam', desc: 'Dentist inspects gums, enamel strength, and locates tartar buildup pockets.' },
+      { step: 2, title: 'Ultrasonic Scaling', desc: 'High-frequency acoustic vibrations gently break up hardened tartar deposits.' },
+      { step: 3, title: 'Fine Hand Scaling', desc: 'Precision curettes cleanse tight contact points between teeth.' },
+      { step: 4, title: 'Polishing & Fluoride', desc: 'Specialized paste polishes enamel to a smooth finish, followed by protective fluoride.' }
+    ],
+    preparation: 'Brush and floss lightly before your appointment. Inform your hygienist of any gum tenderness.',
+    aftercare: 'Refrain from dark drinks (coffee, tea, soda) or smoking for at least 1–2 hours following fluoride application.'
+  },
+  filling: {
+    image: '../Resources/services/filling.jpg',
+    fallbackUrl: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=700&auto=format&fit=crop&q=80',
+    tagline: 'Tooth-colored durable composite restoration for cavities and chipped teeth',
+    summary: 'Restores decayed or damaged teeth using biocompatible, shade-matched composite resin that chemically bonds to natural tooth structure for seamless aesthetics and strength.',
+    highlights: [
+      'Invisible Enamel Shade-Matching',
+      'Micro-Mechanical Tooth Bonding',
+      'Minimally Invasive Decay Removal',
+      'High-Intensity LED Curing'
+    ],
+    indications: [
+      'Cavities / dental caries or visible dark pits',
+      'Tooth sensitivity when eating cold, hot, or sweet food',
+      'Food constantly catching between back molars',
+      'Chipped, worn, or cracked biting surfaces'
+    ],
+    steps: [
+      { step: 1, title: 'Local Anesthesia & Prep', desc: 'Mild local numbing ensures a 100% painless, comfortable session.' },
+      { step: 2, title: 'Decay Removal', desc: 'Specialized micro-instruments remove infected dentin while preserving healthy enamel.' },
+      { step: 3, title: 'Adhesive Bonding', desc: 'Etching gel and bonding agent are applied to create a microscopic bond.' },
+      { step: 4, title: 'Layering & Light Curing', desc: 'Composite resin is sculpted layer-by-layer and hardened instantly with blue LED light.' },
+      { step: 5, title: 'Bite Check & Polish', desc: 'Articulating paper checks your bite alignment, followed by diamond high-shine polish.' }
+    ],
+    preparation: 'Eat a light meal prior to treatment so you are comfortable while local numbing is active.',
+    aftercare: 'Avoid chewing hard or sticky foods until local anesthesia fully subsides to prevent accidentally biting your cheek or tongue.'
+  },
+  extraction: {
+    image: '../Resources/services/extraction.jpg',
+    fallbackUrl: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=700&auto=format&fit=crop&q=80',
+    tagline: 'Gentle, pain-free removal of problematic or impacted wisdom teeth',
+    summary: 'Safe surgical or simple extraction of impacted, malpositioned, or severely broken third molars under profound local anesthesia for immediate pain relief.',
+    highlights: [
+      'Profound Pain-Free Local Anesthesia',
+      'Gentle Atraumatic Tooth Elevation',
+      'Sterile Hemostatic Dressing',
+      'Comprehensive Recovery Care Kit'
+    ],
+    indications: [
+      'Impacted or angled wisdom teeth pushing adjacent teeth',
+      'Recurrent swelling, infection, or pain around back molars (pericoronitis)',
+      'Severe tooth decay extending beyond restorable pulp levels',
+      'Orthodontic requirement to relieve severe dental crowding'
+    ],
+    steps: [
+      { step: 1, title: 'Digital X-Ray Evaluation', desc: 'Panoramic radiograph assesses root curvature and proximity to mandibular nerves.' },
+      { step: 2, title: 'Local Anesthesia Delivery', desc: 'Profound dental block numbs the surgical site completely.' },
+      { step: 3, title: 'Gentle Elevation & Extraction', desc: 'Careful sectioning and gentle elevation remove the tooth without trauma.' },
+      { step: 4, title: 'Socket Disinfection & Sutures', desc: 'The site is irrigated with sterile saline, sutured with dissolvable thread, and packed with sterile gauze.' }
+    ],
+    preparation: 'Wear loose comfortable clothing. Take any doctor-prescribed medications as scheduled.',
+    aftercare: 'Bite firmly on gauze pad for 45 mins. Avoid spitting, drinking through straws, or smoking for 48 hours to preserve the protective blood clot.'
+  },
+  rootCanal: {
+    image: '../Resources/services/root-canal.jpg',
+    fallbackUrl: 'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?w=700&auto=format&fit=crop&q=80',
+    tagline: 'Permanent nerve pain relief and natural tooth preservation',
+    summary: 'Specialized endodontic procedure that cleanses infected root canals, halts throbbing pain, and saves teeth that would otherwise require extraction.',
+    highlights: [
+      'Immediate Severe Toothache Relief',
+      'Rotary Nickel-Titanium Canal Shaping',
+      'Antibacterial Medicament Irrigation',
+      'Biocompatible Gutta-Percha Hermetic Seal'
+    ],
+    indications: [
+      'Severe, throbbing tooth pain that disrupts sleep',
+      'Prolonged sensitivity to temperature that lingers for minutes',
+      'Pain when biting down or touching the affected tooth',
+      'Gum abscess, swelling, or localized dental infection'
+    ],
+    steps: [
+      { step: 1, title: 'Diagnostic Radiography', desc: 'Detailed X-rays determine root canal count and infection boundary.' },
+      { step: 2, title: 'Painless Access & Isolation', desc: 'Profound anesthesia is administered and a sterile rubber dam is placed.' },
+      { step: 3, title: 'Canal Cleaning & Shaping', desc: 'Rotary endodontic files remove inflamed pulp tissue and disinfect the micro-canals.' },
+      { step: 4, title: 'Hermetic Sealing & Restoration', desc: 'Canals are obturated with thermoplastic gutta-percha and capped with a protective core.' }
+    ],
+    preparation: 'You may take an over-the-counter anti-inflammatory (e.g. ibuprofen) 1 hour before appointment if approved by your doctor.',
+    aftercare: 'Avoid heavy biting on the treated tooth until the final protective dental crown is placed. Mild soreness for 1-2 days is normal.'
+  },
+  whitening: {
+    image: '../Resources/services/whitening.jpg',
+    fallbackUrl: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=700&auto=format&fit=crop&q=80',
+    tagline: 'Clinical laser & LED accelerated bleaching for a radiant smile',
+    summary: 'In-office cosmetic bleaching using professional-strength hydrogen peroxide activated by specialized LED/laser light to brighten enamel 6–8 shades.',
+    highlights: [
+      'Lightens Enamel 6 to 8 Shades in 1 Hour',
+      'Protective Gingival Barrier Isolation',
+      'LED / Laser Accelerated Peroxide Gel',
+      'Post-Whitening Enamel Desensitizer'
+    ],
+    indications: [
+      'Deep discoloration from coffee, tea, red wine, or tobacco',
+      'Enamel dullness or natural age-related tooth yellowing',
+      'Special occasions: weddings, graduations, or job interviews',
+      'Boost in confidence with an ultra-clean, glowing smile'
+    ],
+    steps: [
+      { step: 1, title: 'VITA Shade Baseline', desc: 'Dentist records starting enamel shade using an official shade chart.' },
+      { step: 2, title: 'Gum Protection Barrier', desc: 'Light-cured gingival barrier protects gums and lips from irritation.' },
+      { step: 3, title: 'Bleaching Gel Application', desc: 'Professional hydrogen peroxide whitening gel is carefully painted on teeth.' },
+      { step: 4, title: 'LED Light Activation', desc: 'Gel is activated in 3–4 consecutive 15-minute intervals under the bleaching lamp.' },
+      { step: 5, title: 'Final Shade Reveal', desc: 'Protective barrier is peeled away, desensitizing paste is applied, and new shade is measured.' }
+    ],
+    preparation: 'Having a dental cleaning 1-2 weeks before whitening ensures the cleanest possible enamel surface.',
+    aftercare: 'Stick to the "White Diet" (no coffee, tea, red wine, soy sauce, or smoking) for 48 hours.'
+  },
+  implants: {
+    image: '../Resources/services/implants.jpg',
+    fallbackUrl: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=700&auto=format&fit=crop&q=80',
+    tagline: 'Permanent titanium tooth replacement matching natural teeth',
+    summary: 'Gold-standard replacement for missing teeth using medical-grade titanium posts osseointegrated into jawbone and topped with lifelike porcelain crowns.',
+    highlights: [
+      '100% Natural Chewing & Biting Strength',
+      'Prevents Jawbone Deterioration',
+      'Lifelike Custom Zirconia / Porcelain Crown',
+      'Lifelong Durable Tooth Replacement'
+    ],
+    indications: [
+      'One or multiple missing permanent teeth',
+      'Difficulty chewing or eating with missing teeth',
+      'Desire for a permanent alternative to removable dentures',
+      'Preventing adjacent teeth from shifting out of alignment'
+    ],
+    steps: [
+      { step: 1, title: '3D CBCT Bone Scan', desc: 'Evaluation of bone density and precision 3D implant placement plan.' },
+      { step: 2, title: 'Implant Post Placement', desc: 'Titanium implant fixture is gently placed into jawbone under local numbing.' },
+      { step: 3, title: 'Osseointegration Period', desc: 'Implant naturally fuses with jawbone over 8–12 weeks to form a solid anchor.' },
+      { step: 4, title: 'Custom Crown Seating', desc: 'Custom aesthetic porcelain crown is permanently attached to the abutment.' }
+    ],
+    preparation: 'Maintain excellent oral hygiene. Provide complete health and medication history.',
+    aftercare: 'Avoid biting hard foods on implant site for 2 weeks; brush gently around healing abutment.'
+  },
+  braces: {
+    image: '../Resources/services/braces.jpg',
+    fallbackUrl: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=700&auto=format&fit=crop&q=80',
+    tagline: 'Orthodontic alignment for perfectly straight teeth and balanced bite',
+    summary: 'Comprehensive orthodontic solutions including metal, ceramic, and invisible aligners designed to correct crooked teeth, spacing, and bite irregularities.',
+    highlights: [
+      'Custom Aesthetic Alignment Plan',
+      'Corrects Overbites, Underbites & Gaps',
+      'Aesthetic Ceramic & Clear Options',
+      'Long-Term Functional & Aesthetic Harmony'
+    ],
+    indications: [
+      'Crowded, overlapping, or crooked teeth',
+      'Excessive spacing or gaps between teeth',
+      'Overbite, underbite, crossbite, or open bite alignment',
+      'Difficulty flossing due to rotated teeth'
+    ],
+    steps: [
+      { step: 1, title: 'Cephalometric & Digital Study', desc: 'Digital scans, photos, and facial measurements create orthodontic roadmap.' },
+      { step: 2, title: 'Precision Bracket Placement', desc: 'Brackets are bonded to teeth and connected with flexible memory-alloy archwires.' },
+      { step: 3, title: 'Periodic Gentle Adjustments', desc: 'Monthly appointments adjust wire tension to guide teeth into optimal position.' },
+      { step: 4, title: 'Retainer Finishing', desc: 'After ideal alignment is reached, custom retainers preserve your dream smile.' }
+    ],
+    preparation: 'Ensure all cavities and tartar are addressed prior to bracket installation.',
+    aftercare: 'Use orthodontic wax for wire friction. Avoid hard, crunchy, or sticky candies.'
+  },
+  crowns: {
+    image: '../Resources/services/crowns.jpg',
+    fallbackUrl: 'https://images.unsplash.com/photo-1588776814546-daab30f310ce?w=700&auto=format&fit=crop&q=80',
+    tagline: 'Custom porcelain and zirconia caps to restore broken or weakened teeth',
+    summary: 'Full-coverage tooth caps crafted from high-translucency zirconia or porcelain to reinforce fractured teeth and restore chewing function with lifelike beauty.',
+    highlights: [
+      'High-Strength Zirconia & Ceramic',
+      'Reenforces Weakened & Cracked Teeth',
+      'Matches Adjacent Natural Teeth Color',
+      'Restores Natural Chewing Efficiency'
+    ],
+    indications: [
+      'Heavily broken, cracked, or fractured teeth',
+      'Teeth after root canal therapy needing structural reinforcement',
+      'Severe cosmetic tooth malformations or discoloration',
+      'Replacing old discolored metal-ceramic crowns'
+    ],
+    steps: [
+      { step: 1, title: 'Tooth Preparation', desc: 'Tooth is gently shaped to accommodate crown thickness under local anesthesia.' },
+      { step: 2, title: 'Digital Intraoral Scan', desc: '3D optical scan creates a microscopic digital replica sent to dental lab.' },
+      { step: 3, title: 'Protective Temporary Crown', desc: 'Temporary crown protects tooth while permanent crown is custom milled.' },
+      { step: 4, title: 'Permanent Cementation', desc: 'Finished ceramic crown is checked for bite harmony and bonded permanently.' }
+    ],
+    preparation: 'Eat normally before appointment. Let dentist know if you have teeth grinding habits.',
+    aftercare: 'Floss gently by sliding sideways rather than pulling up for the first 24 hours.'
+  },
+  emergency: {
+    image: '../Resources/services/emergency.jpg',
+    fallbackUrl: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=700&auto=format&fit=crop&q=80',
+    tagline: 'Immediate same-day clinical relief for acute dental emergencies and pain',
+    summary: 'Priority urgent care for acute toothaches, chipped or knocked-out teeth, facial swelling, or broken restorations with rapid clinical intervention.',
+    highlights: [
+      'Priority Same-Day Urgent Booking',
+      'Rapid Pain & Infection Control',
+      'Digital Diagnostic Radiographs',
+      'Dedicated Emergency Clinical Specialists'
+    ],
+    indications: [
+      'Severe, unmanageable dental pain or toothache',
+      'Knocked-out, loose, or displaced tooth due to sports/accident',
+      'Visible swelling in face, cheek, or gums with fever',
+      'Lost filling or broken crown causing sharp tongue irritation'
+    ],
+    steps: [
+      { step: 1, title: 'Immediate Pain Assessment', desc: 'Dentist performs emergency triage and administers rapid local pain relief.' },
+      { step: 2, title: 'Targeted Diagnostic X-Ray', desc: 'Immediate digital image isolates root fracture, abscess, or trauma extent.' },
+      { step: 3, title: 'Urgent Intervention', desc: 'Decay removal, temporary filling, drainage, or splinting stabilizes the tooth.' },
+      { step: 4, title: 'Prescription & Care Plan', desc: 'Antibiotics or analgesics prescribed with scheduled follow-up restoration.' }
+    ],
+    preparation: 'For knocked-out teeth: hold tooth by crown (not root) and place in cold milk or saliva. Arrive immediately!',
+    aftercare: 'Follow pain medication dosage strictly and attend scheduled follow-up.'
+  }
+};
+
+function getServiceMetadata(name = '', treatment = {}) {
+  const n = (name || '').toLowerCase();
+  let key = 'cleaning';
+  if (n.includes('clean') || n.includes('prophylaxis') || n.includes('scaling')) key = 'cleaning';
+  else if (n.includes('fill') || n.includes('cavity') || n.includes('composite') || n.includes('restor')) key = 'filling';
+  else if (n.includes('extract') || n.includes('wisdom') || n.includes('surgery') || n.includes('odontec')) key = 'extraction';
+  else if (n.includes('root canal') || n.includes('endodontic')) key = 'rootCanal';
+  else if (n.includes('whiten') || n.includes('bleach') || n.includes('cosmetic')) key = 'whitening';
+  else if (n.includes('implant')) key = 'implants';
+  else if (n.includes('brace') || n.includes('aligner') || n.includes('ortho')) key = 'braces';
+  else if (n.includes('crown') || n.includes('bridge') || n.includes('veneer') || n.includes('denture')) key = 'crowns';
+  else if (n.includes('emerg') || n.includes('urgent') || n.includes('pain') || n.includes('trauma')) key = 'emergency';
+
+  const base = CLINIC_SERVICES_METADATA[key] || CLINIC_SERVICES_METADATA.cleaning;
+  const summary = (treatment.description && treatment.description.trim()) ? treatment.description.trim() : base.summary;
+
+  return {
+    ...base,
+    key,
+    summary
+  };
+}
+
 function renderTreatmentsPicker() {
   const grid = document.getElementById('services-picker-grid');
   if (!grid) return;
@@ -1755,11 +2643,22 @@ function renderTreatmentsPicker() {
     const currentId = document.getElementById('wizard-treatment-id')?.value;
     grid.innerHTML = allTreatments.map(t => {
       const isSelected = currentId && (String(t.id) === String(currentId));
+      const theme = getTreatmentTheme(t.name);
+      const meta = getServiceMetadata(t.name, t);
+      const durationMins = t.duration_minutes || t.durationMinutes || 30;
+      const priceFormatted = parseFloat(t.price || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
       return `
         <div class="service-card ${isSelected ? 'selected' : ''}" data-id="${t.id}" data-name="${escapeHTML(t.name)}" data-price="${parseFloat(t.price || 0).toFixed(2)}">
+          <div class="service-card-thumb-wrap">
+            <img src="${meta.image}" alt="${escapeHTML(t.name)}" class="service-card-thumb" onerror="this.onerror=null; this.src='${meta.fallbackUrl}';">
+            <span class="service-card-category">${theme.category}</span>
+          </div>
           <div class="service-title">${escapeHTML(t.name)}</div>
-          <div class="service-price">₱${parseFloat(t.price || 0).toFixed(2)}</div>
-          <div style="font-size: 0.72rem; color: #888; margin-top: 4px;">Duration: ${t.duration_minutes || t.durationMinutes || 30} mins</div>
+          <div class="service-card-meta">
+            <div class="service-price">₱${priceFormatted}</div>
+            <div class="service-duration"><i class="ti ti-clock" style="font-size: 0.78rem;"></i> ${durationMins} mins</div>
+          </div>
         </div>
       `;
     }).join('');
@@ -1785,40 +2684,6 @@ function renderTreatmentsPicker() {
   }
 }
 
-function getTreatmentIcon(name = '') {
-  const n = name.toLowerCase();
-  if (n.includes('clean') || n.includes('prophylaxis') || n.includes('scaling')) return 'ti-sparkles';
-  if (n.includes('whiten') || n.includes('bleach')) return 'ti-sun';
-  if (n.includes('root canal') || n.includes('endodontic')) return 'ti-activity-heartbeat';
-  if (n.includes('extract') || n.includes('surgery') || n.includes('wisdom')) return 'ti-scissor';
-  if (n.includes('brace') || n.includes('aligner') || n.includes('ortho')) return 'ti-geometry';
-  if (n.includes('implant') || n.includes('prostho') || n.includes('crown') || n.includes('bridge')) return 'ti-shield-check';
-  if (n.includes('fill') || n.includes('restor') || n.includes('composite')) return 'ti-tool';
-  if (n.includes('x-ray') || n.includes('radiograph') || n.includes('panoramic')) return 'ti-photo';
-  if (n.includes('consult') || n.includes('check') || n.includes('exam')) return 'ti-stethoscope';
-  return 'ti-tooth';
-}
-
-function getTreatmentCategory(name = '') {
-  const n = name.toLowerCase();
-  if (n.includes('clean') || n.includes('prophylaxis') || n.includes('scaling') || n.includes('consult') || n.includes('exam')) {
-    return 'Preventive & Hygiene';
-  }
-  if (n.includes('whiten') || n.includes('veneer') || n.includes('cosmetic')) {
-    return 'Cosmetic Dentistry';
-  }
-  if (n.includes('extract') || n.includes('surgery') || n.includes('wisdom') || n.includes('root canal')) {
-    return 'Surgical & Endodontics';
-  }
-  if (n.includes('brace') || n.includes('aligner') || n.includes('ortho')) {
-    return 'Orthodontics';
-  }
-  if (n.includes('implant') || n.includes('crown') || n.includes('bridge') || n.includes('denture')) {
-    return 'Prosthodontics & Implants';
-  }
-  return 'Restorative Dental Care';
-}
-
 function renderServicesCatalog(list = null) {
   const grid = document.getElementById('patient-services-catalog-grid');
   const countEl = document.getElementById('services-stat-count');
@@ -1834,7 +2699,7 @@ function renderServicesCatalog(list = null) {
   if (!dataset || dataset.length === 0) {
     grid.innerHTML = `
       <div class="empty-state-card" style="grid-column: 1 / -1; padding: 48px 24px; text-align: center; background: var(--bg-card); border: 1.5px dashed var(--border); border-radius: 16px;">
-        <i class="ti ti-tooth-off" style="font-size: 48px; color: #94a3b8; margin-bottom: 12px; display: inline-block;"></i>
+        <i class="ti ti-dental-off" style="font-size: 48px; color: #94a3b8; margin-bottom: 12px; display: inline-block;"></i>
         <h3 style="margin: 0 0 6px; font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">No dental services found</h3>
         <p style="margin: 0 0 16px; color: var(--text-secondary); font-size: 0.88rem;">Try adjusting your search query or click refresh to sync the latest treatments added by the clinic.</p>
         <button type="button" class="btn btn-secondary" onclick="loadTreatments(true)" style="padding: 8px 16px; font-size: 0.85rem;">
@@ -1852,51 +2717,181 @@ function renderServicesCatalog(list = null) {
   }
 
   grid.innerHTML = dataset.map(t => {
-    const iconClass = getTreatmentIcon(t.name);
-    const category = getTreatmentCategory(t.name);
+    const theme = getTreatmentTheme(t.name);
+    const meta = getServiceMetadata(t.name, t);
     const priceVal = parseFloat(t.price || 0);
     const priceStr = `₱${priceVal.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     const durationMins = t.duration_minutes || t.durationMinutes || 45;
-    const desc = t.description && t.description.trim() 
-      ? escapeHTML(t.description) 
-      : 'Comprehensive dental procedure performed by clinical specialists with strict sterilization protocols and dedicated patient comfort.';
 
     return `
       <div class="service-catalog-card" data-id="${t.id}">
-        <div class="scc-header">
-          <div class="scc-icon-wrap">
-            <i class="ti ${iconClass}"></i>
+        <!-- High-res Picture Banner with Category & Duration Badges -->
+        <div class="scc-img-wrap" onclick="openServiceDetailsModal('${t.id}')" title="Click to view complete clinical information & procedure guide">
+          <img src="${meta.image}" alt="${escapeHTML(t.name)}" class="scc-img" loading="lazy" onerror="this.onerror=null; this.src='${meta.fallbackUrl}';">
+          <div class="scc-img-overlay"></div>
+          <div class="scc-img-top-badges">
+            <span class="scc-category-badge" style="background: ${theme.bg}; color: ${theme.color};">
+              <i class="ti ${theme.icon}"></i> ${theme.category}
+            </span>
+            <span class="scc-duration-badge">
+              <i class="ti ti-clock"></i> ${durationMins} mins
+            </span>
           </div>
-          <div class="scc-badge-wrap">
-            <span class="scc-category-badge">${category}</span>
-            <span class="scc-avail-dot" title="Available for Booking"></span>
-          </div>
-        </div>
-
-        <h3 class="scc-title">${escapeHTML(t.name)}</h3>
-        <p class="scc-desc">${desc}</p>
-
-        <div class="scc-meta-row">
-          <div class="scc-meta-item">
-            <span class="scc-meta-label">Duration</span>
-            <span class="scc-meta-val"><i class="ti ti-clock"></i> ${durationMins} mins</span>
-          </div>
-          <div class="scc-meta-item scc-meta-right">
-            <span class="scc-meta-label">Standard Fee</span>
-            <span class="scc-price">${priceStr}</span>
+          <div class="scc-img-bottom-badges">
+            <span class="scc-avail-chip"><span class="scc-avail-dot"></span> Available</span>
+            <span class="scc-quickview-hint"><i class="ti ti-eye"></i> View Details</span>
           </div>
         </div>
 
+        <!-- Service Information Body -->
+        <div class="scc-body">
+          <h3 class="scc-title" onclick="openServiceDetailsModal('${t.id}')" title="Click to view details">${escapeHTML(t.name)}</h3>
+          <p class="scc-tagline">${escapeHTML(meta.tagline)}</p>
+          <p class="scc-desc">${escapeHTML(meta.summary)}</p>
+
+          <!-- Highlights / Inclusions -->
+          <div class="scc-highlights-list">
+            ${(meta.highlights || []).slice(0, 3).map(h => `
+              <span class="scc-highlight-chip">
+                <i class="ti ti-circle-check"></i>
+                <span>${escapeHTML(h)}</span>
+              </span>
+            `).join('')}
+          </div>
+
+          <!-- Pricing & Coverage -->
+          <div class="scc-meta-row">
+            <div class="scc-meta-item">
+              <span class="scc-meta-label">Standard Clinic Fee</span>
+              <span class="scc-price">${priceStr}</span>
+            </div>
+            <div class="scc-meta-item scc-meta-right">
+              <span class="scc-meta-label">Payment Options</span>
+              <span class="scc-covered-val"><i class="ti ti-shield-check"></i> Cash, HMO, GCash</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
         <div class="scc-footer">
-          <button type="button" class="scc-book-btn" onclick="bookServiceDirectly('${t.id}')">
-            <span>Book This Service</span>
-            <i class="ti ti-arrow-right"></i>
+          <button type="button" class="scc-btn-details" onclick="openServiceDetailsModal('${t.id}')" title="Read comprehensive clinical information, steps, and preparation">
+            <i class="ti ti-info-circle"></i>
+            <span>Details</span>
+          </button>
+          <button type="button" class="scc-btn-book" onclick="bookServiceDirectly('${t.id}')" title="Book appointment for ${escapeHTML(t.name)}">
+            <i class="ti ti-calendar-plus"></i>
+            <span>Book Service</span>
           </button>
         </div>
       </div>
     `;
   }).join('');
 }
+
+function openServiceDetailsModal(treatmentId) {
+  const treat = (allTreatments || []).find(t => String(t.id) === String(treatmentId));
+  if (!treat) return;
+
+  const meta = getServiceMetadata(treat.name, treat);
+  const theme = getTreatmentTheme(treat.name);
+  const priceVal = parseFloat(treat.price || 0);
+  const priceStr = `₱${priceVal.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const durationMins = treat.duration_minutes || treat.durationMinutes || 45;
+
+  // Populate hero image and badges
+  const heroImg = document.getElementById('sdm-hero-img');
+  if (heroImg) {
+    heroImg.src = meta.image;
+    heroImg.onerror = () => { heroImg.src = meta.fallbackUrl; };
+  }
+
+  const catBadge = document.getElementById('sdm-category-badge');
+  if (catBadge) {
+    catBadge.style.background = theme.bg;
+    catBadge.style.color = theme.color;
+    catBadge.innerHTML = `<i class="ti ${theme.icon}"></i> ${theme.category}`;
+  }
+
+  const durBadge = document.getElementById('sdm-duration-badge');
+  if (durBadge) {
+    durBadge.innerHTML = `<i class="ti ti-clock"></i> ${durationMins} mins`;
+  }
+
+  const titleEl = document.getElementById('sdm-title');
+  if (titleEl) titleEl.textContent = treat.name;
+
+  const taglineEl = document.getElementById('sdm-tagline');
+  if (taglineEl) taglineEl.textContent = meta.tagline;
+
+  // Clinical Description
+  const descEl = document.getElementById('sdm-desc');
+  if (descEl) descEl.textContent = meta.summary;
+
+  // Highlights
+  const highlightsEl = document.getElementById('sdm-highlights');
+  if (highlightsEl) {
+    highlightsEl.innerHTML = (meta.highlights || []).map(h => `
+      <div class="sdm-highlight-item">
+        <i class="ti ti-circle-check"></i>
+        <span>${escapeHTML(h)}</span>
+      </div>
+    `).join('');
+  }
+
+  // Indications
+  const indicationsEl = document.getElementById('sdm-indications');
+  if (indicationsEl) {
+    indicationsEl.innerHTML = (meta.indications || []).map(ind => `
+      <div class="sdm-indication-item">
+        <i class="ti ti-chevron-right"></i>
+        <span>${escapeHTML(ind)}</span>
+      </div>
+    `).join('');
+  }
+
+  // Steps Timeline
+  const stepsEl = document.getElementById('sdm-steps');
+  if (stepsEl) {
+    stepsEl.innerHTML = (meta.steps || []).map(s => `
+      <div class="sdm-step-item">
+        <div class="sdm-step-badge">${s.step}</div>
+        <div class="sdm-step-info">
+          <strong>${escapeHTML(s.title)}</strong>
+          <p>${escapeHTML(s.desc)}</p>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Preparation & Aftercare
+  const prepEl = document.getElementById('sdm-prep');
+  if (prepEl) prepEl.textContent = meta.preparation || 'Maintain standard oral hygiene. Arrive 10 minutes prior to appointment.';
+
+  const aftercareEl = document.getElementById('sdm-aftercare');
+  if (aftercareEl) aftercareEl.textContent = meta.aftercare || 'Follow any specific advice given by your attending dental specialist.';
+
+  // Price & Book button
+  const priceEl = document.getElementById('sdm-price');
+  if (priceEl) priceEl.textContent = priceStr;
+
+  const bookBtn = document.getElementById('sdm-book-btn');
+  if (bookBtn) {
+    bookBtn.onclick = () => {
+      closeServiceDetailsModal();
+      bookServiceDirectly(treat.id);
+    };
+  }
+
+  const modal = document.getElementById('modal-service-details');
+  if (modal) modal.classList.add('active');
+}
+window.openServiceDetailsModal = openServiceDetailsModal;
+
+function closeServiceDetailsModal() {
+  const modal = document.getElementById('modal-service-details');
+  if (modal) modal.classList.remove('active');
+}
+window.closeServiceDetailsModal = closeServiceDetailsModal;
 
 function filterServicesCatalog() {
   const query = (document.getElementById('services-search-input')?.value || '').toLowerCase().trim();
@@ -1907,7 +2902,9 @@ function filterServicesCatalog() {
     const name = (t.name || '').toLowerCase();
     const desc = (t.description || '').toLowerCase();
     const cat = getTreatmentCategory(t.name).toLowerCase();
-    return name.includes(query) || desc.includes(query) || cat.includes(query);
+    const meta = getServiceMetadata(t.name, t);
+    const tagline = (meta.tagline || '').toLowerCase();
+    return name.includes(query) || desc.includes(query) || cat.includes(query) || tagline.includes(query);
   });
 
   if (sortMode === 'price-asc') {
@@ -2324,6 +3321,7 @@ function updateNearestBranchAndMap(patientLat, patientLng, addressLabel) {
           container.querySelectorAll('.branch-card').forEach(c => c.classList.remove('selected'));
           card.classList.add('selected');
           renderMapVisuals(patientLat, patientLng, addressLabel, chosen);
+          renderDentistsPicker();
         }
       });
     });
@@ -2563,56 +3561,141 @@ function validateStep(step) {
   return true;
 }
 
+let cachedClinicDentists = [];
+
 function loadDentists() {
   fetch(`${API}/dentists`, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(res => res.json())
     .then(dentists => {
-      const grid = document.getElementById('dentists-picker-grid');
-      if (!grid) return;
-
-      const currentSelected = document.getElementById('wizard-dentist-name')?.value || 'No Preference';
-
-      // Add No Preference card
-      let html = `
-      <div class="dentist-card ${currentSelected === 'No Preference' ? 'selected' : ''}" data-name="No Preference">
-        <div class="dentist-name">No Preference</div>
-        <div class="dentist-specialty">Auto-assigned to available staff</div>
-      </div>
-    `;
-
-      if (Array.isArray(dentists) && dentists.length > 0) {
-        html += dentists.map(d => `
-        <div class="dentist-card ${currentSelected === d.name ? 'selected' : ''}" data-name="${escapeHTML(d.name)}">
-          <div class="dentist-name">${escapeHTML(d.name)}</div>
-          <div class="dentist-specialty">Dental Specialist</div>
-          <div style="font-size: 0.72rem; color: #888; margin-top: 4px;">Contact: ${escapeHTML(d.contact_number || 'N/A')}</div>
-        </div>
-      `).join('');
-      }
-
-      grid.innerHTML = html;
-
-      // Attach listeners
-      grid.querySelectorAll('.dentist-card').forEach(card => {
-        card.addEventListener('click', () => {
-          grid.querySelectorAll('.dentist-card').forEach(c => c.classList.remove('selected'));
-          card.classList.add('selected');
-          const chosenName = card.getAttribute('data-name') || 'No Preference';
-          const hiddenInput = document.getElementById('wizard-dentist-name');
-          if (hiddenInput) hiddenInput.value = chosenName;
-          updateDentistSummary(chosenName);
-        });
-      });
-
-      // Initialize summary on load
-      updateDentistSummary(currentSelected);
+      cachedClinicDentists = Array.isArray(dentists) ? dentists : [];
+      renderDentistsPicker();
     })
     .catch(err => {
       console.error('Dentists list error:', err);
-      updateDentistSummary('No Preference');
+      renderDentistsPicker();
     });
+}
+
+function renderDentistsPicker() {
+  const grid = document.getElementById('dentists-picker-grid');
+  if (!grid) return;
+
+  const warningBox = document.getElementById('dentist-offduty-warning-box');
+  if (warningBox) warningBox.style.display = 'none';
+
+  // Determine current active branch
+  let branchName = 'Main Branch (Naga)';
+  if (typeof selectedBranchObj !== 'undefined' && selectedBranchObj && (selectedBranchObj.shortName || selectedBranchObj.name)) {
+    branchName = selectedBranchObj.shortName || selectedBranchObj.name;
+  } else {
+    const raw = document.getElementById('wizard-selected-branch')?.value || '';
+    if (raw) {
+      branchName = raw.split('(')[0].trim().replace(/^Fano Dental Clinic\s*[—–-]?\s*/i, '');
+    }
+  }
+
+  const activeBranchEl = document.getElementById('dentist-active-branch-name');
+  if (activeBranchEl) activeBranchEl.textContent = branchName;
+
+  // Filter dentists matching this branch (e.g. Talisay -> Talisay Branch)
+  const cleanQ = branchName.toLowerCase().replace(/fano\s*dental\s*clinic\s*[—–-]?/i, '').replace(/branch$/i, '').trim();
+  let branchDentists = cachedClinicDentists.filter(d => {
+    const b = (d.branch || '').toLowerCase();
+    return b.includes(cleanQ) || cleanQ.includes(b.replace(/branch$/i, '').trim());
+  });
+
+  const isBranchFiltered = branchDentists.length > 0;
+  const listToRender = isBranchFiltered ? branchDentists : cachedClinicDentists;
+
+  const matchCountEl = document.getElementById('dentist-branch-match-count');
+  if (matchCountEl) {
+    const onDutyCount = listToRender.filter(d => d.isOnDuty).length;
+    matchCountEl.textContent = `${onDutyCount} Doctor${onDutyCount === 1 ? '' : 's'} On Duty at ${branchName}`;
+  }
+
+  let currentSelected = document.getElementById('wizard-dentist-name')?.value || 'No Preference';
+  // If previously selected doctor is not in this branch's list, reset to No Preference
+  if (currentSelected !== 'No Preference' && !listToRender.some(d => d.name === currentSelected)) {
+    currentSelected = 'No Preference';
+    const hiddenInput = document.getElementById('wizard-dentist-name');
+    if (hiddenInput) hiddenInput.value = 'No Preference';
+  }
+
+  // 1. "No Preference" Card
+  let html = `
+    <div class="dentist-card ${currentSelected === 'No Preference' ? 'selected' : ''}" data-name="No Preference" data-is-on="true">
+      <div>
+        <div class="dentist-name">No Preference</div>
+        <div class="dentist-specialty">Auto-assigned to an available on-duty specialist at ${escapeHTML(branchName)}</div>
+      </div>
+      <div>
+        <div class="dentist-duty-pill on" style="margin-top: 10px;">
+          <i class="ti ti-sparkles"></i> Best Availability
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 2. Doctor Cards for this branch
+  if (listToRender.length > 0) {
+    html += listToRender.map(d => {
+      const isSelected = currentSelected === d.name;
+      const isOn = !!d.isOnDuty;
+      const branchLabel = d.branch ? d.branch.replace(/branch$/i, '').trim() : branchName;
+
+      return `
+        <div class="dentist-card ${isSelected ? 'selected' : ''} ${!isOn ? 'off-duty' : ''}" data-name="${escapeHTML(d.name)}" data-is-on="${isOn}">
+          <div>
+            <div class="dentist-name">${escapeHTML(d.name)}</div>
+            <div class="dentist-specialty">Licensed Dental Specialist</div>
+            <div class="dentist-branch-pill">
+              <i class="ti ti-map-pin"></i> ${escapeHTML(branchLabel)}
+            </div>
+          </div>
+          <div>
+            <div class="dentist-duty-pill ${isOn ? 'on' : 'off'}">
+              <i class="ti ${isOn ? 'ti-check' : 'ti-moon'}"></i>
+              ${isOn ? 'Available On Duty' : 'Off Duty / Out'}
+            </div>
+            <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 6px;">Shift: ${escapeHTML(d.shift || 'Regular')}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  grid.innerHTML = html;
+
+  // Attach click listeners
+  grid.querySelectorAll('.dentist-card').forEach(card => {
+    card.addEventListener('click', () => {
+      grid.querySelectorAll('.dentist-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      const chosenName = card.getAttribute('data-name') || 'No Preference';
+      const isOn = card.getAttribute('data-is-on') === 'true';
+      const hiddenInput = document.getElementById('wizard-dentist-name');
+      if (hiddenInput) hiddenInput.value = chosenName;
+      updateDentistSummary(chosenName);
+
+      // If chosen doctor is off duty, show advisory notice
+      if (warningBox) {
+        if (chosenName !== 'No Preference' && !isOn) {
+          warningBox.className = 'dentist-offduty-warning';
+          warningBox.innerHTML = `
+            <i class="ti ti-info-circle" style="font-size: 1.15rem; flex-shrink: 0;"></i>
+            <span><strong>Doctor Schedule Notice:</strong> ${escapeHTML(chosenName)} is currently marked out/off duty today. If you choose this doctor, the clinic will contact you to confirm advance availability or an on-duty colleague will assist you.</span>
+          `;
+          warningBox.style.display = 'flex';
+        } else {
+          warningBox.style.display = 'none';
+        }
+      }
+    });
+  });
+
+  updateDentistSummary(currentSelected);
 }
 
 function checkAvailableSlots() {

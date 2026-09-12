@@ -109,7 +109,79 @@ function setupUserProfile(user) {
   if (profContactEl) profContactEl.textContent = user.contact_number || '+63 917 555 0192';
   if (editNameEl) editNameEl.value = cleanName;
   if (editPhoneEl) editPhoneEl.value = user.contact_number || '';
+
+  loadDentistDutyStatus(user);
 }
+
+let currentDentistDutyStatus = 'On Duty';
+let currentDentistBranch = 'Main Branch (Naga)';
+
+async function loadDentistDutyStatus(userObj) {
+  const targetUser = userObj || currentUser;
+  if (!targetUser) return;
+
+  try {
+    const list = await api.get('/dentists');
+    if (Array.isArray(list)) {
+      const match = list.find(d => 
+        (targetUser.id && d.id === targetUser.id) ||
+        (targetUser.email && d.email && d.email.toLowerCase() === targetUser.email.toLowerCase()) ||
+        (targetUser.name && d.name && d.name.toLowerCase().includes(targetUser.name.toLowerCase()))
+      );
+      if (match) {
+        currentDentistDutyStatus = match.availability || 'On Duty';
+        currentDentistBranch = match.branch || 'Main Branch (Naga)';
+        updateDentistDutyUI();
+      }
+    }
+  } catch (_) {}
+}
+
+function updateDentistDutyUI() {
+  const dutyTextEl = document.getElementById('prof-duty-text');
+  const dutyPulseEl = document.getElementById('prof-duty-pulse');
+  const branchTextEl = document.getElementById('prof-branch-text');
+  const dutyBadgeEl = document.getElementById('prof-duty-badge');
+  const sidebarDutyEl = document.getElementById('dentist-sidebar-duty');
+
+  const isOn = currentDentistDutyStatus === 'On Duty';
+
+  if (dutyTextEl) {
+    dutyTextEl.innerHTML = isOn ? 'On Duty &bull; Clinical Practitioner' : 'Off Duty / Out &bull; Click to Activate';
+  }
+  if (dutyPulseEl) {
+    dutyPulseEl.style.background = isOn ? '#10b981' : '#ef4444';
+  }
+  if (dutyBadgeEl) {
+    dutyBadgeEl.style.background = isOn ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)';
+    dutyBadgeEl.style.color = isOn ? '#059669' : '#dc2626';
+  }
+  if (branchTextEl) {
+    branchTextEl.textContent = currentDentistBranch;
+  }
+  if (sidebarDutyEl) {
+    sidebarDutyEl.innerHTML = `${isOn ? 'On Duty' : 'Off Duty'} &bull; ${currentDentistBranch.replace(/branch$/i, '').trim()}`;
+  }
+}
+
+async function toggleDentistSelfDuty() {
+  const newStatus = currentDentistDutyStatus === 'On Duty' ? 'Off Duty' : 'On Duty';
+  currentDentistDutyStatus = newStatus;
+  updateDentistDutyUI();
+
+  try {
+    const dentistId = (currentUser && (currentUser.id || currentUser._id)) || 'self';
+    await api.put(`/dentists/${dentistId}/duty`, {
+      availability: newStatus,
+      branch: currentDentistBranch,
+      name: currentUser?.name || 'Dentist'
+    });
+    alert(`Your duty status has been updated to: ${newStatus}`);
+  } catch (err) {
+    console.warn('[Self duty update warning]', err.message);
+  }
+}
+window.toggleDentistSelfDuty = toggleDentistSelfDuty;
 
 // ─── Mobile Sidebar Drawer Controller ─────────────────────────────
 function toggleDentistMobileSidebar(forceState) {
@@ -1355,8 +1427,17 @@ async function loadCalendarTab() {
     });
     CalendarView.setAppointments(appts);
 
-    document.getElementById('cal-prev').onclick = () => CalendarView.prev();
-    document.getElementById('cal-next').onclick = () => CalendarView.next();
+    const btnPrev = document.getElementById('cal-prev');
+    const btnNext = document.getElementById('cal-next');
+    const btnToday = document.getElementById('cal-today');
+    const btnWeek = document.getElementById('cal-view-week');
+    const btnDay = document.getElementById('cal-view-day');
+
+    if (btnPrev) btnPrev.onclick = () => CalendarView.prev();
+    if (btnNext) btnNext.onclick = () => CalendarView.next();
+    if (btnToday) btnToday.onclick = () => CalendarView.today();
+    if (btnWeek) btnWeek.onclick = () => CalendarView.setViewMode('week');
+    if (btnDay) btnDay.onclick = () => CalendarView.setViewMode('day');
   } catch (err) {
     document.getElementById('calendar-root').innerHTML = `<p class="error">${esc(err.message)}</p>`;
   }

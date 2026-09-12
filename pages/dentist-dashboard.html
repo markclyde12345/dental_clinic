@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../css/dentist-dashboard.css?v=20260911_avatar_colors">
+  <link rel="stylesheet" href="../css/dentist-dashboard.css?v=20260911_tp_modal_v2">
 </head>
 <body>
 
@@ -564,7 +564,7 @@
                 <p class="panel-sub">Create multi-stage treatment plans, assign procedures, and track progress</p>
               </div>
               <button class="btn btn-primary" onclick="openCreatePlanModal()">
-                <i class="fa-solid fa-plus"></i> + Create Treatment Plan
+                <i class="fa-solid fa-plus"></i> New Treatment Plan
               </button>
             </div>
 
@@ -644,15 +644,64 @@
 
         <!-- ==================== 9. CLINICAL CALENDAR TAB ==================== -->
         <section id="tab-calendar" class="tab-panel" hidden>
-          <div class="panel-card">
-            <div class="schedule-toolbar">
-              <button class="btn btn-ghost" id="cal-prev"><i class="fa-solid fa-chevron-left"></i> Prev</button>
-              <h3 id="cal-title" style="margin:0; font-family: var(--font-display); color: var(--primary-color);">Week</h3>
-              <button class="btn btn-ghost" id="cal-next">Next <i class="fa-solid fa-chevron-right"></i></button>
-              <div style="flex:1"></div>
-              <button class="btn btn-ghost small active" id="cal-view-week">Week View</button>
-              <button class="btn btn-ghost small" id="cal-view-day">Today</button>
+          <div class="panel-card calendar-panel-card">
+            <div class="panel-header" style="margin-bottom: 16px;">
+              <div>
+                <h3><i class="fa-solid fa-calendar-days text-gold" style="margin-right: 8px;"></i>Clinical Appointments Schedule</h3>
+                <p class="panel-sub">Doctor's weekly and daily time slots, patient visits, and consultation timetable</p>
+              </div>
             </div>
+
+            <div class="schedule-toolbar">
+              <div class="cal-nav-group">
+                <button type="button" class="btn-cal-nav" id="cal-prev" title="Previous Period">
+                  <i class="fa-solid fa-chevron-left"></i>
+                  <span>Prev</span>
+                </button>
+                <button type="button" class="btn-cal-nav" id="cal-today" title="Jump to Today">
+                  <span>Today</span>
+                </button>
+                <button type="button" class="btn-cal-nav" id="cal-next" title="Next Period">
+                  <span>Next</span>
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+
+              <div class="cal-title-wrap">
+                <h3 id="cal-title">Week</h3>
+                <span id="cal-subtitle" class="cal-subtitle-badge">Weekly View</span>
+              </div>
+
+              <div class="cal-view-toggle">
+                <button type="button" class="btn small active" id="cal-view-week">
+                  <i class="fa-solid fa-calendar-week"></i> Week
+                </button>
+                <button type="button" class="btn small" id="cal-view-day">
+                  <i class="fa-solid fa-calendar-day"></i> Day
+                </button>
+              </div>
+            </div>
+
+            <!-- Calendar Legend Strip -->
+            <div class="cal-legend-bar">
+              <div class="cal-legend-item">
+                <span class="legend-dot status-approved"></span>
+                <span>Confirmed / Approved</span>
+              </div>
+              <div class="cal-legend-item">
+                <span class="legend-dot status-in-progress"></span>
+                <span>In Chair / Active</span>
+              </div>
+              <div class="cal-legend-item">
+                <span class="legend-dot status-pending"></span>
+                <span>Pending</span>
+              </div>
+              <div class="cal-legend-item">
+                <span class="legend-dot status-completed"></span>
+                <span>Completed</span>
+              </div>
+            </div>
+
             <div id="calendar-root" class="calendar-grid"></div>
           </div>
         </section>
@@ -723,9 +772,12 @@
               <div class="dentist-header-meta">
                 <h3 id="prof-name" class="dentist-profile-name">Dr. Dentist</h3>
                 <div class="dentist-specialty-pill" id="prof-specialty">General Dentist &amp; Orthodontics</div>
-                <div class="dentist-onduty-badge">
-                  <span class="onduty-pulse"></span>
-                  <span>On Duty &bull; Clinical Practitioner</span>
+                <div class="dentist-onduty-badge" id="prof-duty-badge" onclick="toggleDentistSelfDuty()" style="cursor: pointer;" title="Click to toggle your duty status (On Duty vs Out)">
+                  <span class="onduty-pulse" id="prof-duty-pulse"></span>
+                  <span id="prof-duty-text">On Duty &bull; Clinical Practitioner</span>
+                </div>
+                <div id="prof-branch-badge" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 12px; border-radius: 20px; margin-top: 6px;">
+                  <i class="fa-solid fa-location-dot"></i> <span id="prof-branch-text">Talisay Branch</span>
                 </div>
               </div>
 
@@ -883,11 +935,11 @@
   <!-- Component Scripts -->
   <script src="../js/api.js"></script>
   <script src="../js/components/modal.js"></script>
-  <script src="../js/components/calendar.js"></script>
+  <script src="../js/components/calendar.js?v=20260911_calendar_fix"></script>
   <script src="../js/components/patientRecords.js"></script>
   <script src="../js/components/clinicalWorkspace.js"></script>
-  <script src="../js/components/treatmentPlans.js"></script>
-  <script src="../js/dentist-dashboard.js?v=20260911_avatar_colors"></script>
+  <script src="../js/components/treatmentPlans.js?v=20260912_friendly_v1"></script>
+  <script src="../js/dentist-dashboard.js?v=20260911_calendar_fix"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>
 </html>

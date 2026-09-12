@@ -576,8 +576,8 @@
   }
 
   window.setStatusChip = function(status) {
-    const hiddenInput = document.getElementById('inv-status-filter');
-    if (hiddenInput) hiddenInput.value = status;
+    const filterSelect = document.getElementById('inv-status-filter');
+    if (filterSelect) filterSelect.value = status;
 
     document.querySelectorAll('.status-chip').forEach(btn => {
       btn.classList.toggle('active', btn.getAttribute('data-status') === status);
