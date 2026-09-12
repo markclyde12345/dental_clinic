@@ -66,18 +66,38 @@ app.use((req, res, next) => {
   next();
 });
 
-// ─── Security: HTTP Headers (Helmet) ─────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://unpkg.com", "https://cdn.jsdelivr.net"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://unpkg.com", "https://cdn.jsdelivr.net"],
-      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
-      imgSrc: ["'self'", "data:", "blob:", "https://*.tile.openstreetmap.org", "https://unpkg.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
-      connectSrc: ["'self'", "https://nominatim.openstreetmap.org", "https://*.tile.openstreetmap.org", "https://*.supabase.co"],
-      frameSrc: ["'none'"],
-      objectSrc: ["'none'"],
+      defaultSrc:       ["'self'"],
+      scriptSrc:        ["'self'", "'unsafe-inline'", "'unsafe-eval'",
+                         "https://fonts.googleapis.com",
+                         "https://cdnjs.cloudflare.com",
+                         "https://unpkg.com",
+                         "https://cdn.jsdelivr.net"],
+      scriptSrcAttr:    ["'unsafe-inline'"],   // ← allows onclick="..." attributes
+      styleSrc:         ["'self'", "'unsafe-inline'",
+                         "https://fonts.googleapis.com",
+                         "https://fonts.gstatic.com",
+                         "https://cdnjs.cloudflare.com",
+                         "https://unpkg.com",
+                         "https://cdn.jsdelivr.net"],
+      fontSrc:          ["'self'", "data:",
+                         "https://fonts.gstatic.com",
+                         "https://cdnjs.cloudflare.com",
+                         "https://cdn.jsdelivr.net"],
+      imgSrc:           ["'self'", "data:", "blob:",
+                         "https://*.tile.openstreetmap.org",
+                         "https://unpkg.com",
+                         "https://cdnjs.cloudflare.com",
+                         "https://cdn.jsdelivr.net"],
+      connectSrc:       ["'self'",
+                         "https://nominatim.openstreetmap.org",
+                         "https://*.tile.openstreetmap.org",
+                         "https://*.supabase.co"],
+      workerSrc:        ["'self'", "blob:"],
+      frameSrc:         ["'none'"],
+      objectSrc:        ["'none'"],
     },
   },
   crossOriginEmbedderPolicy: false,
