@@ -189,6 +189,10 @@
               <i class="ti ti-calendar-plus"></i>
               <span>Book Appointment</span>
             </button>
+            <button type="button" class="btn btn-stock-action" onclick="openReportLowStockModal()" title="Report Low Stock Supplies to Clinic Admin" style="background: #fffbeb; border: 1.5px solid #f59e0b; color: #b45309; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="ti ti-alert-triangle" style="font-size: 1.1rem; color: #d97706;"></i>
+              <span>Report Low Stock</span>
+            </button>
             <button class="btn btn-outline-secondary btn-audit-action" onclick="openAuditLogsModal()" title="View front-desk daily activity and operations log">
               <i class="ti ti-activity"></i>
               <span>Activity Log</span>
@@ -1439,6 +1443,93 @@
             <i class="ti ti-check"></i> Close Profile
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REPORT LOW STOCK MODAL ================= -->
+  <div class="modal-overlay" id="modal-report-low-stock" style="display: none; position: fixed; inset: 0; background: rgba(11,60,77,0.45); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
+    <div class="modal-content" style="background: #ffffff; border-radius: 14px; max-width: 500px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden; border: 1px solid #e2e8f0; animation: modalSlideIn 0.25s ease-out;">
+      <div class="modal-header" style="padding: 16px 20px; background: #fffbeb; border-bottom: 1px solid #fef3c7; display: flex; align-items: center; justify-content: space-between;">
+        <h3 style="display: flex; align-items: center; gap: 8px; margin: 0; color: #b45309; font-size: 1.15rem; font-weight: 700;">
+          <i class="ti ti-alert-triangle" style="font-size: 1.35rem; color: #d97706;"></i> Report Low Stock / Supplies
+        </h3>
+        <button type="button" class="modal-close" onclick="closeReportLowStockModal()" style="background: none; border: none; font-size: 1.5rem; line-height: 1; color: #94a3b8; cursor: pointer; padding: 0;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <p style="margin-top: 0; margin-bottom: 16px; font-size: 0.86rem; color: #64748b; line-height: 1.5;">
+          Report dental supplies, disposables, or clinic materials running low. This alert updates the clinic inventory and notifies Admin immediately.
+        </p>
+        <form id="form-report-low-stock" onsubmit="handleReportLowStockSubmit(event)">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="stock-item-name" style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #1e293b;">Supply / Item Name *</label>
+            <input type="text" id="stock-item-name" list="common-supplies-list" placeholder="e.g. Nitrile Gloves (Medium), Cotton Rolls..." required style="width: 100%; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0 12px; font-size: 0.88rem; box-sizing: border-box;">
+            <datalist id="common-supplies-list">
+              <option value="Nitrile Gloves (Medium)"></option>
+              <option value="Nitrile Gloves (Small)"></option>
+              <option value="Nitrile Gloves (Large)"></option>
+              <option value="Cotton Rolls (#2 Medium)"></option>
+              <option value="Sterilization Pouches (3.5x9)"></option>
+              <option value="Saliva Ejectors (Blue)"></option>
+              <option value="Anesthetic Cartridges (Lidocaine 2%)"></option>
+              <option value="Dental Composite (A2)"></option>
+              <option value="Dental Bibs (Lavender)"></option>
+              <option value="Prophy Paste (Mint/Medium)"></option>
+              <option value="Suction Tips"></option>
+              <option value="Alcohol 70% (1 Gallon)"></option>
+              <option value="Face Masks (3-Ply Box)"></option>
+            </datalist>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label for="stock-category" style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #1e293b;">Category</label>
+              <select id="stock-category" style="width: 100%; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0 12px; font-size: 0.88rem; box-sizing: border-box;">
+                <option value="Disposables">Disposables</option>
+                <option value="Hygiene">Hygiene &amp; Sterilization</option>
+                <option value="Anesthetics">Anesthetics</option>
+                <option value="Restorative">Restorative Materials</option>
+                <option value="Office">Front Desk / Office</option>
+                <option value="Other">Other Supplies</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="stock-unit" style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #1e293b;">Unit of Measure</label>
+              <input type="text" id="stock-unit" placeholder="Boxes, Syringes, Packs..." value="Boxes" style="width: 100%; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0 12px; font-size: 0.88rem; box-sizing: border-box;">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label for="stock-remaining" style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #1e293b;">Quantity Remaining *</label>
+              <input type="number" id="stock-remaining" min="0" placeholder="e.g. 2" required style="width: 100%; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0 12px; font-size: 0.88rem; box-sizing: border-box;">
+            </div>
+            <div class="form-group">
+              <label for="stock-threshold" style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #1e293b;">Minimum Threshold</label>
+              <input type="number" id="stock-threshold" min="1" placeholder="e.g. 10" value="10" style="width: 100%; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0 12px; font-size: 0.88rem; box-sizing: border-box;">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="stock-status" style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #1e293b;">Stock Severity Level</label>
+            <select id="stock-status" style="width: 100%; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0 12px; font-size: 0.88rem; box-sizing: border-box;">
+              <option value="Low Stock">⚠️ Low Stock (Running out soon)</option>
+              <option value="Out of Stock">🚨 Out of Stock (Completely depleted)</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="stock-notes" style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #1e293b;">Front Desk Remarks (Optional)</label>
+            <textarea id="stock-notes" rows="2" placeholder="e.g. Down to last box in cabinet, needed for upcoming appointments" style="width: 100%; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; resize: vertical; box-sizing: border-box;"></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn btn-outline-secondary" onclick="closeReportLowStockModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-submit-low-stock" style="background: #d97706; border-color: #d97706; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="ti ti-send"></i> Submit Low Stock Report
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

@@ -51,13 +51,13 @@ router.route('/logs')
   .post(protect, authorize('Admin'), addSystemLog)
   .delete(protect, authorize('Admin'), clearSystemLogs);
 
-// Inventory routes — Accounting can read for cost analysis; only Admin can modify
+// Inventory routes — Accounting can read for cost analysis; Receptionist can report low stock; Admin full access
 router.route('/inventory')
-  .get(protect, authorize('Admin', 'Accounting'), getInventory)
-  .post(protect, authorize('Admin'), addInventory);
+  .get(protect, authorize('Admin', 'Accounting', 'Receptionist'), getInventory)
+  .post(protect, authorize('Admin', 'Receptionist'), addInventory);
 
 router.route('/inventory/:id')
-  .put(protect, authorize('Admin'), updateInventory)
+  .put(protect, authorize('Admin', 'Receptionist'), updateInventory)
   .delete(protect, authorize('Admin'), deleteInventory);
 
 // Staff schedules routes

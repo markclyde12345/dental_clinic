@@ -1136,6 +1136,14 @@ let currentExpensesPeriod = '12months';
 let chartSelectInitialized = false;
 
 async function loadStats() {
+  // Clear any legacy mock inventory cache
+  try {
+    const rawInv = localStorage.getItem('admin_cached_inventory');
+    if (rawInv && (rawInv.includes('Nitrile') || rawInv.includes('377') || rawInv.includes('28000'))) {
+      localStorage.removeItem('admin_cached_inventory');
+    }
+  } catch (_) {}
+
   let curToken = getAuthToken();
   if (!curToken) {
     curToken = await ensureAdminAuth();
@@ -2167,22 +2175,11 @@ function renderOverviewInventory(inventoryList = localInventory) {
     }
   });
 
-  if (items.length === 0) {
-    totalUnits = 377;
-    totalVal = 28000;
-    availCount = 2;
-    lowCount = 2;
-    outCount = 0;
-    lowStockItems.push(
-      { name: 'Nitrile Gloves (Medium)', stock: 5, threshold: 10, isOut: false },
-      { name: 'Cotton Rolls (#2 Medium)', stock: 2, threshold: 5, isOut: false }
-    );
-  }
-
-  const totalTypes = availCount + lowCount + outCount || 1;
-  const availPct = Math.round((availCount / totalTypes) * 100);
-  const lowPct = Math.round((lowCount / totalTypes) * 100);
-  const outPct = Math.max(0, 100 - (availPct + lowPct));
+  // Real count calculations (starts at 0 when empty)
+  const totalTypes = availCount + lowCount + outCount;
+  const availPct = totalTypes > 0 ? Math.round((availCount / totalTypes) * 100) : 0;
+  const lowPct = totalTypes > 0 ? Math.round((lowCount / totalTypes) * 100) : 0;
+  const outPct = totalTypes > 0 ? Math.max(0, 100 - (availPct + lowPct)) : 0;
 
   const totalValEl = document.getElementById('overview-inv-total-val');
   if (totalValEl) totalValEl.textContent = `${getCurrencySymbol()}${Math.round(totalVal).toLocaleString('en-US')}`;
@@ -2231,6 +2228,10 @@ function renderOverviewInventory(inventoryList = localInventory) {
           </span>
         </div>
       `).join('');
+    } else if (items.length === 0) {
+      warningList.style.textAlign = 'center';
+      warningList.style.padding = '14px 0';
+      warningList.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; gap:8px; padding: 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; color: #64748b; font-size: 0.84rem;"><i class="ti ti-box" style="font-size:18px;"></i> No low stock items reported</div>';
     } else {
       warningList.style.textAlign = 'center';
       warningList.style.padding = '14px 0';

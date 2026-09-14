@@ -561,30 +561,86 @@ const getInventory = async (req, res) => {
 // @access  Private (Admin)
 const addInventory = async (req, res) => {
   try {
-    const { name, category, unit, stock, threshold, status } = req.body;
+    const { name, category, unit, stock, threshold, status, notes } = req.body;
+    if (!name) {
+      return res.status(400).json({ message: 'Item name is required' });
+    }
+
     const parsedStock = parseInt(stock, 10) || 0;
     const parsedThreshold = parseInt(threshold, 10) || 0;
-    const calculatedStatus = status || (parsedStock < parsedThreshold ? 'Low Stock' : 'In Stock');
+    const calculatedStatus = status || (parsedStock === 0 ? 'Out of Stock' : (parsedStock <= parsedThreshold ? 'Low Stock' : 'In Stock'));
 
-    const { data: newItem, error } = await supabase
+    // Check if an item with the same name already exists (case-insensitive)
+    const { data: existing } = await supabase
       .from('inventory')
-      .insert([{
-        name,
-        category,
-        unit,
-        stock: parsedStock,
-        threshold: parsedThreshold,
-        status: calculatedStatus
-      }])
-      .select()
-      .single();
+      .select('*')
+      .ilike('name', name.trim())
+      .maybeSingle();
 
-    if (error) throw error;
+    let itemResult = null;
+    if (existing) {
+      const { data: updated, error: updateErr } = await supabase
+        .from('inventory')
+        .update({
+          stock: parsedStock,
+          threshold: parsedThreshold || existing.threshold,
+          status: calculatedStatus,
+          unit: unit || existing.unit,
+          category: category || existing.category
+        })
+        .eq('id', existing.id)
+        .select()
+        .single();
 
-    const { data: fullList } = await supabase.from('inventory').select('*').order('created_at', { ascending: true });
-    if (fullList) createBackup(INVENTORY_FILE, fullList);
+      if (updateErr) throw updateErr;
+      itemResult = updated;
+    } else {
+      const { data: newItem, error: insertErr } = await supabase
+        .from('inventory')
+        .insert([{
+          name: name.trim(),
+          category: category || 'Disposables',
+          unit: unit || 'Units',
+          stock: parsedStock,
+          threshold: parsedThreshold || 10,
+          status: calculatedStatus
+        }])
+        .select()
+        .single();
 
-    res.status(201).json(newItem);
+      if (insertErr) throw insertErr;
+      itemResult = newItem;
+    }
+
+    // Detailed Audit Logging
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      const reporter = req.user?.name || `${req.user?.firstName || ''} ${req.user?.lastName || ''}`.trim() || req.user?.email || 'Staff';
+      const role = req.user?.role || 'Staff';
+      logAuditAction({
+        action: 'INVENTORY_REPORTED',
+        entityType: 'inventory',
+        entityId: itemResult.id,
+        details: `${role} ${reporter} reported stock for "${name}": ${parsedStock} remaining (${calculatedStatus})${notes ? ` — Remarks: ${notes}` : ''}`,
+        metadata: {
+          item_id: itemResult.id,
+          name,
+          stock: parsedStock,
+          threshold: parsedThreshold,
+          status: calculatedStatus,
+          reported_by: reporter,
+          role
+        },
+        req
+      });
+    } catch (_) {}
+
+    try {
+      const { data: fullList } = await supabase.from('inventory').select('*').order('created_at', { ascending: true });
+      if (fullList && !process.env.VERCEL) createBackup(INVENTORY_FILE, fullList);
+    } catch (_) {}
+
+    res.status(201).json(itemResult);
   } catch (error) {
     console.error('[Admin Add Inventory Error]', error.message);
     res.status(500).json({ message: error.message });

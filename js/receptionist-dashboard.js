@@ -4267,6 +4267,90 @@ function printStandeeCard() {
   printWindow.document.close();
 }
 
+// ─── Front Desk Low Stock Reporting System ──────────────────────────────────
+function openReportLowStockModal() {
+  const modal = document.getElementById('modal-report-low-stock');
+  if (modal) {
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      const nameInput = document.getElementById('stock-item-name');
+      if (nameInput) nameInput.focus();
+    }, 100);
+  }
+}
+
+function closeReportLowStockModal() {
+  const modal = document.getElementById('modal-report-low-stock');
+  if (modal) modal.style.display = 'none';
+}
+
+window.openReportLowStockModal = openReportLowStockModal;
+window.closeReportLowStockModal = closeReportLowStockModal;
+
+async function handleReportLowStockSubmit(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const nameEl = document.getElementById('stock-item-name');
+  const catEl = document.getElementById('stock-category');
+  const unitEl = document.getElementById('stock-unit');
+  const remainingEl = document.getElementById('stock-remaining');
+  const thresholdEl = document.getElementById('stock-threshold');
+  const statusEl = document.getElementById('stock-status');
+  const notesEl = document.getElementById('stock-notes');
+  const submitBtn = document.getElementById('btn-submit-low-stock');
+
+  const name = nameEl?.value?.trim();
+  if (!name) {
+    showToast('Please specify the supply or item name.', 'warning');
+    return;
+  }
+
+  const payload = {
+    name,
+    category: catEl?.value || 'Disposables',
+    unit: unitEl?.value || 'Boxes',
+    stock: parseInt(remainingEl?.value, 10) || 0,
+    threshold: parseInt(thresholdEl?.value, 10) || 10,
+    status: statusEl?.value || 'Low Stock',
+    notes: notesEl?.value?.trim() || ''
+  };
+
+  const origBtnText = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="ti ti-loader"></i> Submitting...';
+  }
+
+  try {
+    const res = await fetch(`${BASE_ORIGIN}/api/admin/inventory`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || 'Failed to submit low stock report.');
+    }
+
+    showToast(`✅ Low stock report for "${name}" submitted to clinic admin!`, 'success');
+    closeReportLowStockModal();
+    const form = document.getElementById('form-report-low-stock');
+    if (form) form.reset();
+  } catch (err) {
+    console.error('[Report Low Stock Error]', err);
+    showToast(err.message || 'Error submitting report. Please try again.', 'error');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origBtnText;
+    }
+  }
+}
+window.handleReportLowStockSubmit = handleReportLowStockSubmit;
+
 // Global Keyboard Listener for Modal & Drawer Escape Key
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
@@ -4274,6 +4358,10 @@ document.addEventListener('keydown', (e) => {
     const qrModal = document.getElementById('modal-clinic-qr');
     if (qrModal && (qrModal.classList.contains('open') || qrModal.style.display === 'flex')) {
       closeClinicQrModal();
+    }
+    const stockModal = document.getElementById('modal-report-low-stock');
+    if (stockModal && stockModal.style.display === 'flex') {
+      closeReportLowStockModal();
     }
   }
 });
