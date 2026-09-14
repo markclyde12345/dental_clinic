@@ -544,28 +544,7 @@ const getInventory = async (req, res) => {
 
     if (error) throw error;
 
-    // Seed defaults if empty
-    if (!inventory || inventory.length === 0) {
-      const defaultInventory = [
-        { name: 'Dental Composite (A2)', category: 'Restorative', stock: 45, unit: 'Syringes', threshold: 15, status: 'In Stock' },
-        { name: 'Anesthetic Cartridges (Lidocaine 2%)', category: 'Anesthetics', stock: 8, unit: 'Boxes (100ct)', threshold: 20, status: 'Low Stock' },
-        { name: 'Nitrile Gloves (Medium)', category: 'Disposables', stock: 5, unit: 'Boxes (100ct)', threshold: 10, status: 'Low Stock' },
-        { name: 'Sterilization Pouches (3.5x9")', category: 'Hygiene', stock: 250, unit: 'Pouches', threshold: 100, status: 'In Stock' },
-        { name: 'Saliva Ejectors (Blue)', category: 'Disposables', stock: 120, unit: 'Packs (100ct)', threshold: 50, status: 'In Stock' },
-        { name: 'Prophy Paste (Mint/Medium)', category: 'Hygiene', stock: 12, unit: 'Tubs', threshold: 10, status: 'In Stock' },
-        { name: 'Cotton Rolls (#2 Medium)', category: 'Disposables', stock: 2, unit: 'Boxes (2000ct)', threshold: 5, status: 'Low Stock' }
-      ];
-
-      const { data: seeded, error: seedError } = await supabase
-        .from('inventory')
-        .insert(defaultInventory)
-        .select();
-
-      if (seedError) throw seedError;
-      inventory = seeded;
-    }
-
-    res.json(inventory);
+    res.json(inventory || []);
   } catch (error) {
     console.error('[Admin Get Inventory Error]', error.message);
     res.status(500).json({ message: error.message });
