@@ -79,54 +79,43 @@ const defaultAdmin = {
 };
 
 async function ensureAdminAuth() {
-  let curToken = getAuthToken();
-  if (curToken) {
-    try {
-      const res = await fetch(`${AUTH_API}/profile`, {
-        headers: { 'Authorization': `Bearer ${curToken}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && !data.message) {
-          user = data;
-          token = curToken;
-          return token;
-        }
-      }
-    } catch (_) {}
+  const curToken = getAuthToken();
+  if (!curToken) {
+    // No token at all — send to login
+    window.location.replace('../pages/login.html');
+    return null;
   }
 
-  // If token is missing or invalid, auto-authenticate with default admin account
   try {
-    const res = await fetch(`${AUTH_API}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@fanoclinic.com', password: 'adminpassword123' })
+    const res = await fetch(`${AUTH_API}/profile`, {
+      headers: { 'Authorization': `Bearer ${curToken}` }
     });
     if (res.ok) {
       const data = await res.json();
-      if (data && data.token) {
-        token = data.token;
-        user = data.user || defaultAdmin;
-        try {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('userInfo', JSON.stringify(data.user || defaultAdmin));
-        } catch (_) {}
+      if (data && !data.message) {
+        // Extra safety: make sure this user is actually an Admin
+        if (data.role && data.role !== 'Admin' && data.role !== 'Super Admin') {
+          window.location.replace('../pages/login.html');
+          return null;
+        }
+        user = data;
+        token = curToken;
         return token;
       }
     }
-  } catch (err) {
-    console.warn('[Admin] Auto-auth attempt error:', err);
-  }
+  } catch (_) {}
 
-  user = defaultAdmin;
-  token = getAuthToken();
-  return token;
+  // Token invalid or expired — clear it and redirect to login
+  localStorage.removeItem('token');
+  sessionStorage.removeItem('token');
+  localStorage.removeItem('userInfo');
+  window.location.replace('../pages/login.html');
+  return null;
 }
 
-// Always open dashboard first without forcing a redirect to login.html
 async function startAdminApp() {
-  await ensureAdminAuth();
+  const validToken = await ensureAdminAuth();
+  if (!validToken) return; // Redirected to login, stop execution
   renderAdminSidebar();
   initDashboard();
 }
