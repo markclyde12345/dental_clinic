@@ -503,12 +503,17 @@ const getDetailedStats = async (req, res) => {
       });
     }
 
-    // Low stock alert (static check linked to mock inventory)
-    alerts.push({
-      type: 'danger',
-      message: 'Low stock warning: "Anesthetic Cartridges" and "Nitrile Gloves (M)" are below threshold.',
-      category: 'Inventory'
-    });
+    // Low stock alert (dynamic — based on real inventory data)
+    const lowStockItems = inventory.filter(item => item.status === 'Low Stock' || (item.stock !== undefined && item.threshold !== undefined && item.stock <= item.threshold));
+    if (lowStockItems.length > 0) {
+      const names = lowStockItems.slice(0, 2).map(i => `"${i.name}"`).join(' and ');
+      const extra = lowStockItems.length > 2 ? ` (+${lowStockItems.length - 2} more)` : '';
+      alerts.push({
+        type: 'danger',
+        message: `Low stock warning: ${names}${extra} ${lowStockItems.length === 1 ? 'is' : 'are'} below threshold.`,
+        category: 'Inventory'
+      });
+    }
 
     res.json({
       todayAppointments: todayAppts,

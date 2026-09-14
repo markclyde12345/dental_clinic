@@ -1162,13 +1162,14 @@ async function loadStats() {
       return;
     }
 
-    // Cache responses
+    // Cache responses — always trust the server's inventory (even empty)
     allInvoices = data.invoices || [];
     if (Array.isArray(data.allAppointments) && data.allAppointments.length > 0) {
       allAppointments = data.allAppointments;
     }
     cachedBranchAnalytics = data.branchAnalytics || null;
-    if (Array.isArray(data.inventory) && data.inventory.length > 0) {
+    // Always overwrite localInventory with the server's value (empty = empty)
+    if (Array.isArray(data.inventory)) {
       localInventory = data.inventory;
     }
     if (Array.isArray(data.expenses) && data.expenses.length > 0) {
@@ -1185,9 +1186,8 @@ async function loadStats() {
       if (cachedBranchAnalytics) {
         localStorage.setItem('admin_cached_branch_analytics', JSON.stringify(cachedBranchAnalytics));
       }
-      if (localInventory && localInventory.length > 0) {
-        localStorage.setItem('admin_cached_inventory', JSON.stringify(localInventory));
-      }
+      // Always write inventory cache (even empty) so cleared inventory stays cleared
+      localStorage.setItem('admin_cached_inventory', JSON.stringify(localInventory || []));
       if (allExpenses && allExpenses.length > 0) {
         localStorage.setItem('admin_cached_expenses', JSON.stringify(allExpenses));
       }
