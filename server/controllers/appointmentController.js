@@ -337,6 +337,11 @@ const createAppointment = async (req, res) => {
       ...appointment,
       invoice: createdInvoice
     });
+
+    // Send "booking received" email after responding (fire-and-forget)
+    if (appointment?.patient?.email) {
+      sendAppointmentStatusEmail(appointment, appointment.status || 'Pending').catch(() => {});
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -360,12 +365,33 @@ const sendAppointmentStatusEmail = async (updated, status) => {
     const treatmentName = treatment ? treatment.name : 'General Consultation';
 
     const statusConfig = {
+      Pending: {
+        subject: '📋 Booking Received — Awaiting Approval | Fano Dental Clinic',
+        label: 'Pending Approval',
+        color: '#1d4ed8',
+        bg: '#dbeafe',
+        message: 'We have received your appointment booking request. Our team is reviewing it and you will receive a confirmation email once it has been approved. Thank you for choosing Fano Dental Clinic!'
+      },
       Approved: {
         subject: '✅ Appointment Confirmed — Fano Dental Clinic',
         label: 'Confirmed',
         color: '#0b3c4d',
         bg: '#e6f7f2',
         message: 'Great news! Your appointment has been <strong>confirmed</strong> by our team. Please make sure to arrive 10 minutes early. If you need to reschedule or cancel, you can do so through your patient dashboard at least 24 hours before the appointment.'
+      },
+      'Checked In': {
+        subject: '🏥 You Are Checked In — Fano Dental Clinic',
+        label: 'Checked In',
+        color: '#92400e',
+        bg: '#fef3c7',
+        message: 'You have been successfully <strong>checked in</strong> at Fano Dental Clinic. Please relax in the waiting lounge while the dental team prepares your chair. You will be called shortly.'
+      },
+      'In Progress': {
+        subject: '🦷 Your Procedure Is In Progress — Fano Dental Clinic',
+        label: 'In Progress',
+        color: '#5b21b6',
+        bg: '#ede9fe',
+        message: 'Your dental procedure is currently <strong>in progress</strong>. Our dental team is working to provide you with the best care. This is a real-time update from the clinic.'
       },
       Cancelled: {
         subject: '❌ Appointment Cancelled — Fano Dental Clinic',
@@ -391,7 +417,8 @@ const sendAppointmentStatusEmail = async (updated, status) => {
     };
 
     const cfg = statusConfig[status];
-    if (!cfg) return; // No email for minor status changes
+    if (!cfg) return; // No email for unrecognized status
+
 
     const htmlContent = `<!DOCTYPE html>
 <html lang="en">

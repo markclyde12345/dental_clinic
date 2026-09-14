@@ -1,4 +1,142 @@
 const supabase = require('../config/db');
+const sendEmail = require('../utils/emailService');
+
+// ── Invoice notification email ─────────────────────────────────────────────
+const sendInvoiceEmail = async (patientEmail, patientName, invoiceId, amount, status, treatmentName) => {
+  try {
+    const ref = invoiceId ? invoiceId.slice(0, 8).toUpperCase() : 'N/A';
+    const amtFormatted = parseFloat(amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const configs = {
+      Unpaid: {
+        subject: `🧾 Invoice Issued — ₱${amtFormatted} Due | Fano Dental Clinic`,
+        badgeLabel: 'Invoice Issued — Payment Due',
+        badgeColor: '#92400e',
+        badgeBg: '#fef3c7',
+        message: `An invoice of <strong>₱${amtFormatted}</strong> has been issued for your recent dental visit (${treatmentName || 'Dental Service'}). Please settle your balance at the clinic front desk or through any accepted payment method at your earliest convenience.`,
+        cta: 'View My Invoice'
+      },
+      Paid: {
+        subject: `✅ Payment Confirmed — Invoice #${ref} | Fano Dental Clinic`,
+        badgeLabel: 'Payment Received — Thank You!',
+        badgeColor: '#065f46',
+        badgeBg: '#d1fae5',
+        message: `We have received your payment of <strong>₱${amtFormatted}</strong> for Invoice #${ref}. Thank you for settling your balance! You may log in to your patient dashboard to download your official receipt.`,
+        cta: 'View Receipt'
+      }
+    };
+
+    const cfg = configs[status];
+    if (!cfg || !patientEmail) return;
+
+    const appUrl = process.env.APP_URL || 'http://localhost:5000';
+    const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${cfg.subject}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:32px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(11,60,77,0.10);">
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#0b3c4d 0%,#14536a 100%);padding:32px 40px;text-align:center;">
+              <p style="margin:0 0 4px 0;font-size:13px;color:#c59b27;letter-spacing:2px;text-transform:uppercase;font-weight:600;">Fano Dental Clinic</p>
+              <h1 style="margin:0;font-size:26px;color:#ffffff;font-weight:700;line-height:1.3;">Billing Notification</h1>
+            </td>
+          </tr>
+          <!-- Status Badge -->
+          <tr>
+            <td style="padding:28px 40px 8px 40px;text-align:center;">
+              <span style="display:inline-block;background:${cfg.badgeBg};color:${cfg.badgeColor};font-size:15px;font-weight:700;padding:10px 28px;border-radius:50px;border:1.5px solid ${cfg.badgeColor}44;letter-spacing:0.5px;">
+                ${cfg.badgeLabel}
+              </span>
+            </td>
+          </tr>
+          <!-- Greeting -->
+          <tr>
+            <td style="padding:20px 40px 4px 40px;">
+              <p style="margin:0;font-size:16px;color:#1e293b;">Hello, <strong>${patientName || 'Patient'}</strong>,</p>
+            </td>
+          </tr>
+          <!-- Message -->
+          <tr>
+            <td style="padding:12px 40px 20px 40px;">
+              <p style="margin:0;font-size:15px;color:#475569;line-height:1.7;">${cfg.message}</p>
+            </td>
+          </tr>
+          <!-- Invoice Details -->
+          <tr>
+            <td style="padding:0 40px 28px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;">
+                <tr>
+                  <td style="background:#0b3c4d;padding:12px 20px;">
+                    <p style="margin:0;font-size:12px;font-weight:700;color:#c59b27;letter-spacing:1.5px;text-transform:uppercase;">Invoice Details</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <table width="100%" cellpadding="4" cellspacing="0">
+                      <tr>
+                        <td style="font-size:13px;color:#64748b;width:140px;font-weight:600;">&#128203; Reference #</td>
+                        <td style="font-size:13px;color:#1e293b;font-family:monospace;">${ref}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:13px;color:#64748b;font-weight:600;">&#129463; Service</td>
+                        <td style="font-size:13px;color:#1e293b;">${treatmentName || 'Dental Service'}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:13px;color:#64748b;font-weight:600;">&#128181; Amount</td>
+                        <td style="font-size:13px;color:#0b3c4d;font-weight:700;">&#8369;${amtFormatted}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:13px;color:#64748b;font-weight:600;">&#128203; Status</td>
+                        <td style="font-size:13px;color:${cfg.badgeColor};font-weight:700;">${status}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- CTA -->
+          <tr>
+            <td style="padding:0 40px 28px 40px;text-align:center;">
+              <a href="${appUrl}/pages/patient-dashboard.html" style="display:inline-block;background:linear-gradient(135deg,#0b3c4d,#14536a);color:#ffffff;font-size:14px;font-weight:700;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;">${cfg.cta} &#8594;</a>
+            </td>
+          </tr>
+          <!-- Divider -->
+          <tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e2e8f0;margin:0;"></td></tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 40px 28px 40px;text-align:center;">
+              <p style="margin:0 0 6px 0;font-size:13px;color:#0b3c4d;font-weight:700;">Fano Dental Clinic</p>
+              <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6;">
+                &#128205; 123 Dental Street, Your City, Philippines<br>
+                &#128222; (02) 8-XXX-XXXX &nbsp;|&nbsp; &#9993;&#65039; ${process.env.GMAIL_USER || 'clinic@fanodental.com'}<br>
+                <span style="font-size:11px;">This is an automated notification. Please do not reply to this email.</span>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+    const plainText = `Fano Dental Clinic — ${cfg.badgeLabel}\n\nHello ${patientName || 'Patient'},\n\n${cfg.message.replace(/<[^>]+>/g, '')}\n\nInvoice Details:\n- Reference #: ${ref}\n- Service: ${treatmentName || 'Dental Service'}\n- Amount: ₱${amtFormatted}\n- Status: ${status}\n\nFano Dental Clinic\n123 Dental Street, Your City, Philippines`;
+
+    await sendEmail(patientEmail, cfg.subject, htmlContent, plainText);
+    console.log(`📧 [Invoice Email] "${status}" email sent to ${patientEmail} for Invoice #${ref}`);
+  } catch (err) {
+    console.error('[Invoice Email Error]', err.message);
+  }
+};
 
 // @desc    Get all invoices
 // @route   GET /api/invoices
@@ -83,19 +221,48 @@ const getInvoices = async (req, res) => {
 const createInvoice = async (req, res) => {
   const { patient_id, patientId, appointment_id, appointmentId, amount, totalAmount, status } = req.body;
   try {
+    const resolvedPatientId = patient_id || patientId;
+    const resolvedStatus = status || 'Unpaid';
+
     const { data: invoice, error } = await supabase
       .from('invoices')
       .insert([{
-        patient_id: patient_id || patientId,
+        patient_id: resolvedPatientId,
         appointment_id: appointment_id || appointmentId || null,
         amount: amount || totalAmount,
-        status: status || 'Unpaid'
+        status: resolvedStatus
       }])
       .select()
       .single();
 
     if (error) throw error;
     res.status(201).json(invoice);
+
+    // Send invoice notification email (fire-and-forget)
+    if (resolvedPatientId) {
+      try {
+        const { data: patientData } = await supabase
+          .from('users')
+          .select('name, email')
+          .eq('id', resolvedPatientId)
+          .maybeSingle();
+
+        // Try to get treatment name from appointment
+        let treatmentName = 'Dental Service';
+        if (appointment_id || appointmentId) {
+          const { data: apptData } = await supabase
+            .from('appointments')
+            .select('treatment:treatment_id ( name )')
+            .eq('id', appointment_id || appointmentId)
+            .maybeSingle();
+          if (apptData?.treatment?.name) treatmentName = apptData.treatment.name;
+        }
+
+        if (patientData?.email) {
+          sendInvoiceEmail(patientData.email, patientData.name, invoice.id, invoice.amount, resolvedStatus, treatmentName).catch(() => {});
+        }
+      } catch (_) {}
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -155,6 +322,31 @@ const updateInvoice = async (req, res) => {
     }
 
     res.json(invoice);
+
+    // Send payment confirmation email (fire-and-forget, only for Paid)
+    if (status === 'Paid' && invoice.patient_id) {
+      try {
+        const { data: patientData } = await supabase
+          .from('users')
+          .select('name, email')
+          .eq('id', invoice.patient_id)
+          .maybeSingle();
+
+        let treatmentName = 'Dental Service';
+        if (invoice.appointment_id) {
+          const { data: apptData } = await supabase
+            .from('appointments')
+            .select('treatment:treatment_id ( name )')
+            .eq('id', invoice.appointment_id)
+            .maybeSingle();
+          if (apptData?.treatment?.name) treatmentName = apptData.treatment.name;
+        }
+
+        if (patientData?.email) {
+          sendInvoiceEmail(patientData.email, patientData.name, id, paid_amount || invoice.amount, 'Paid', treatmentName).catch(() => {});
+        }
+      } catch (_) {}
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
