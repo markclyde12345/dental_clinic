@@ -1,5 +1,107 @@
 [
   {
+    "id": "7d935405-05ac-484b-b330-efaab135788d",
+    "timestamp": "2026-09-14T13:37:13.306Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "727dcd82-59dd-41f9-9bdb-1ed2a4a9d858",
+    "timestamp": "2026-09-14T13:36:26.463Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "5979b7f6-1654-4f6c-9f0d-077ec0b72ed2",
+    "timestamp": "2026-09-14T13:35:56.125Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "40b8542a-6d08-4656-9463-c717a284e43c",
+    "timestamp": "2026-09-14T13:34:32.039Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "03a23103-9c34-49b6-883f-4c55721882a6",
+    "timestamp": "2026-09-14T13:22:10.361Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
+    "id": "456f1702-ce20-439f-881c-e7ea60df1405",
+    "timestamp": "2026-09-12T15:44:52.521Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Avast/151.0.0.0"
+  },
+  {
     "id": "9067264f-adc3-4902-af6f-c7c7d20b8b66",
     "timestamp": "2026-09-12T13:22:49.417Z",
     "action": "USER_LOGIN_SUCCESS",

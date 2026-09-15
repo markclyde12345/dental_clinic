@@ -9,14 +9,15 @@ const {
 } = require('../controllers/treatmentController');
 const { protect, authorize } = require('../middleware/auth');
 
+// Catalog is viewable publicly (for QR booking, patient booking, front desk and admin)
 router.route('/')
-  .get(protect, getTreatments)
-  .post(protect, authorize('Dentist', 'Admin'), addTreatment);
+  .get(getTreatments)
+  .post(protect, authorize('Dentist', 'Admin', 'Super Admin'), addTreatment);
 
-router.post('/upload-image', protect, authorize('Dentist', 'Admin'), uploadTreatmentImage);
+router.post('/upload-image', protect, authorize('Dentist', 'Admin', 'Super Admin'), uploadTreatmentImage);
 
 router.route('/:id')
-  .put(protect, authorize('Dentist', 'Admin'), updateTreatment)
-  .delete(protect, authorize('Dentist', 'Admin'), deleteTreatment);
+  .put(protect, authorize('Dentist', 'Admin', 'Super Admin'), updateTreatment)
+  .delete(protect, authorize('Dentist', 'Admin', 'Super Admin'), deleteTreatment);
 
 module.exports = router;

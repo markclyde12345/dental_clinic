@@ -60,9 +60,29 @@ function getDefaultImageForName(name = '') {
   return '../Resources/services/cleaning.jpg';
 }
 
+function extractMetadataFromDescription(rawDesc = '') {
+  if (!rawDesc) return { cleanDescription: '', meta: {} };
+  const match = rawDesc.match(/<!--METADATA:([\s\S]*?)-->/);
+  if (match) {
+    try {
+      const meta = JSON.parse(match[1]);
+      const cleanDescription = rawDesc.replace(/<!--METADATA:[\s\S]*?-->/, '').trim();
+      return { cleanDescription, meta: meta || {} };
+    } catch (_) {}
+  }
+  return { cleanDescription: rawDesc.trim(), meta: {} };
+}
+
+function embedMetadataIntoDescription(cleanDesc = '', meta = {}) {
+  const base = (cleanDesc || '').trim();
+  const hasMeta = meta && Object.keys(meta).length > 0;
+  if (!hasMeta) return base;
+  return `${base}\n<!--METADATA:${JSON.stringify(meta)}-->`;
+}
+
 // @desc    Get all available treatments (services catalog)
 // @route   GET /api/treatments
-// @access  Public / Private
+// @access  Public
 const getTreatments = async (req, res) => {
   try {
     const { data: treatments, error } = await supabase
@@ -74,24 +94,30 @@ const getTreatments = async (req, res) => {
 
     const map = readTreatmentImages();
     const metaMap = readTreatmentMetadata();
+
     const enriched = (treatments || []).map(t => {
-      const img = map[t.id] || getDefaultImageForName(t.name);
-      const meta = metaMap[t.id] || {};
+      const { cleanDescription, meta: embeddedMeta } = extractMetadataFromDescription(t.description);
+      const fileMeta = metaMap[t.id] || {};
+      const mergedMeta = { ...fileMeta, ...embeddedMeta };
+
+      const img = mergedMeta.image_url || map[t.id] || getDefaultImageForName(t.name);
       return {
         ...t,
+        description: cleanDescription,
         image_url: img,
-        category: meta.category || undefined,
-        tagline: meta.tagline || undefined,
-        highlights: meta.highlights || undefined,
-        indications: meta.indications || undefined,
-        steps: meta.steps || undefined,
-        preparation: meta.preparation || undefined,
-        aftercare: meta.aftercare || undefined
+        category: mergedMeta.category || undefined,
+        tagline: mergedMeta.tagline || undefined,
+        highlights: mergedMeta.highlights || undefined,
+        indications: mergedMeta.indications || undefined,
+        steps: mergedMeta.steps || undefined,
+        preparation: mergedMeta.preparation || undefined,
+        aftercare: mergedMeta.aftercare || undefined
       };
     });
 
     res.json(enriched);
   } catch (error) {
+    console.error('[Get Treatments Error]', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -116,12 +142,33 @@ const addTreatment = async (req, res) => {
     preparation,
     aftercare
   } = req.body;
+
   try {
+    if (!name) {
+      return res.status(400).json({ message: 'Service name is required.' });
+    }
+
+    const cleanDesc = (description || 'Professional dental procedure administered by certified specialists.').replace(/<!--METADATA:[\s\S]*?-->/, '').trim();
+    const finalImage = image_url || getDefaultImageForName(name);
+
+    const meta = {
+      image_url: finalImage,
+      category: category || 'General Dentistry',
+      tagline: tagline || '',
+      highlights: Array.isArray(highlights) ? highlights : [],
+      indications: Array.isArray(indications) ? indications : [],
+      steps: Array.isArray(steps) ? steps : [],
+      preparation: preparation || '',
+      aftercare: aftercare || ''
+    };
+
+    const combinedDescription = embedMetadataIntoDescription(cleanDesc, meta);
+
     const { data: treatment, error } = await supabase
       .from('treatments')
       .insert([{
-        name,
-        description: description || 'Professional dental procedure administered by certified specialists.',
+        name: name.trim(),
+        description: combinedDescription,
         price: parseFloat(price) || 0,
         duration_minutes: duration_minutes || durationMinutes || 45,
         is_active: is_active !== undefined ? is_active : true
@@ -131,39 +178,48 @@ const addTreatment = async (req, res) => {
 
     if (error) throw error;
 
-    if (image_url && treatment.id) {
-      const map = readTreatmentImages();
-      map[treatment.id] = image_url;
-      saveTreatmentImages(map);
+    // Optional sync to local files if writable
+    if (!process.env.VERCEL) {
+      if (finalImage && treatment.id) {
+        const map = readTreatmentImages();
+        map[treatment.id] = finalImage;
+        saveTreatmentImages(map);
+      }
+      if (treatment.id) {
+        const metaMap = readTreatmentMetadata();
+        metaMap[treatment.id] = meta;
+        saveTreatmentMetadata(metaMap);
+      }
     }
 
-    if (treatment.id && (category || tagline || highlights || indications || steps || preparation || aftercare)) {
-      const metaMap = readTreatmentMetadata();
-      metaMap[treatment.id] = {
-        category,
-        tagline,
-        highlights,
-        indications,
-        steps,
-        preparation,
-        aftercare
-      };
-      saveTreatmentMetadata(metaMap);
-    }
+    // Detailed Audit Logging
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      const actor = req.user?.name || req.user?.email || 'Admin';
+      logAuditAction({
+        action: 'TREATMENT_CREATED',
+        entityType: 'treatment',
+        entityId: treatment.id,
+        details: `${actor} added new service: "${treatment.name}" (₱${treatment.price}, ${treatment.duration_minutes}m)`,
+        metadata: { treatment_id: treatment.id, name: treatment.name, price: treatment.price },
+        req
+      });
+    } catch (_) {}
 
-    const finalImage = image_url || getDefaultImageForName(treatment.name);
     res.status(201).json({
       ...treatment,
+      description: cleanDesc,
       image_url: finalImage,
-      category,
-      tagline,
-      highlights,
-      indications,
-      steps,
-      preparation,
-      aftercare
+      category: meta.category,
+      tagline: meta.tagline,
+      highlights: meta.highlights,
+      indications: meta.indications,
+      steps: meta.steps,
+      preparation: meta.preparation,
+      aftercare: meta.aftercare
     });
   } catch (error) {
+    console.error('[Add Treatment Error]', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -189,64 +245,98 @@ const updateTreatment = async (req, res) => {
     preparation,
     aftercare
   } = req.body;
+
   try {
+    // Fetch existing treatment to merge metadata
+    const { data: existing, error: fetchErr } = await supabase
+      .from('treatments')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (fetchErr) throw fetchErr;
+    if (!existing) return res.status(404).json({ message: 'Treatment not found.' });
+
+    const { cleanDescription: oldCleanDesc, meta: existingMeta } = extractMetadataFromDescription(existing.description);
+
+    const updatedCleanDesc = description !== undefined
+      ? description.replace(/<!--METADATA:[\s\S]*?-->/, '').trim()
+      : oldCleanDesc;
+
+    const finalImage = image_url !== undefined ? image_url : (existingMeta.image_url || getDefaultImageForName(name || existing.name));
+
+    const updatedMeta = {
+      ...existingMeta,
+      image_url: finalImage,
+      ...(category !== undefined && { category }),
+      ...(tagline !== undefined && { tagline }),
+      ...(highlights !== undefined && { highlights }),
+      ...(indications !== undefined && { indications }),
+      ...(steps !== undefined && { steps }),
+      ...(preparation !== undefined && { preparation }),
+      ...(aftercare !== undefined && { aftercare })
+    };
+
+    const combinedDescription = embedMetadataIntoDescription(updatedCleanDesc, updatedMeta);
+
     const updatePayload = {};
-    if (name !== undefined) updatePayload.name = name;
-    if (description !== undefined) updatePayload.description = description;
+    if (name !== undefined) updatePayload.name = name.trim();
+    updatePayload.description = combinedDescription;
     if (price !== undefined) updatePayload.price = parseFloat(price) || 0;
     if (duration_minutes !== undefined || durationMinutes !== undefined) {
       updatePayload.duration_minutes = duration_minutes || durationMinutes;
     }
     if (is_active !== undefined) updatePayload.is_active = is_active;
 
-    const { data: updated, error } = await supabase
+    const { data: updated, error: updateErr } = await supabase
       .from('treatments')
       .update(updatePayload)
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
-    if (!updated) return res.status(404).json({ message: 'Treatment not found.' });
+    if (updateErr) throw updateErr;
 
-    if (image_url !== undefined) {
-      const map = readTreatmentImages();
-      map[id] = image_url;
-      saveTreatmentImages(map);
-    }
-
-    if (category !== undefined || tagline !== undefined || highlights !== undefined || indications !== undefined || steps !== undefined || preparation !== undefined || aftercare !== undefined) {
+    // Optional sync to local files if writable
+    if (!process.env.VERCEL) {
+      if (finalImage) {
+        const map = readTreatmentImages();
+        map[id] = finalImage;
+        saveTreatmentImages(map);
+      }
       const metaMap = readTreatmentMetadata();
-      metaMap[id] = {
-        ...(metaMap[id] || {}),
-        ...(category !== undefined && { category }),
-        ...(tagline !== undefined && { tagline }),
-        ...(highlights !== undefined && { highlights }),
-        ...(indications !== undefined && { indications }),
-        ...(steps !== undefined && { steps }),
-        ...(preparation !== undefined && { preparation }),
-        ...(aftercare !== undefined && { aftercare })
-      };
+      metaMap[id] = updatedMeta;
       saveTreatmentMetadata(metaMap);
     }
 
-    const map = readTreatmentImages();
-    const metaMap = readTreatmentMetadata();
-    const finalImage = map[id] || image_url || getDefaultImageForName(updated.name);
-    const meta = metaMap[id] || {};
+    // Detailed Audit Logging
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      const actor = req.user?.name || req.user?.email || 'Admin';
+      logAuditAction({
+        action: 'TREATMENT_UPDATED',
+        entityType: 'treatment',
+        entityId: updated.id,
+        details: `${actor} updated service: "${updated.name}" (₱${updated.price}, ${updated.duration_minutes}m)`,
+        metadata: { treatment_id: updated.id, name: updated.name, price: updated.price },
+        req
+      });
+    } catch (_) {}
 
     res.json({
       ...updated,
+      description: updatedCleanDesc,
       image_url: finalImage,
-      category: meta.category,
-      tagline: meta.tagline,
-      highlights: meta.highlights,
-      indications: meta.indications,
-      steps: meta.steps,
-      preparation: meta.preparation,
-      aftercare: meta.aftercare
+      category: updatedMeta.category,
+      tagline: updatedMeta.tagline,
+      highlights: updatedMeta.highlights,
+      indications: updatedMeta.indications,
+      steps: updatedMeta.steps,
+      preparation: updatedMeta.preparation,
+      aftercare: updatedMeta.aftercare
     });
   } catch (error) {
+    console.error('[Update Treatment Error]', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -262,10 +352,6 @@ const uploadTreatmentImage = async (req, res) => {
       return res.status(400).json({ message: 'No image data provided.' });
     }
 
-    if (!fs.existsSync(SERVICES_UPLOAD_DIR)) {
-      fs.mkdirSync(SERVICES_UPLOAD_DIR, { recursive: true });
-    }
-
     const matches = rawData.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
     let ext = 'jpg';
     let buffer;
@@ -276,24 +362,78 @@ const uploadTreatmentImage = async (req, res) => {
       buffer = Buffer.from(rawData, 'base64');
     }
 
-    const safeName = `service_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
-    const filePath = path.join(SERVICES_UPLOAD_DIR, safeName);
-    fs.writeFileSync(filePath, buffer);
+    // If on Vercel or read-only environment, serve directly as base64 data URI
+    if (process.env.VERCEL) {
+      const dataUri = rawData.startsWith('data:') ? rawData : `data:image/${ext};base64,${rawData}`;
+      return res.json({ success: true, image_url: dataUri, filename: `service_${Date.now()}.${ext}` });
+    }
 
-    const relativeUrl = `../Resources/services/${safeName}`;
-    res.json({ success: true, image_url: relativeUrl, filename: safeName });
+    try {
+      if (!fs.existsSync(SERVICES_UPLOAD_DIR)) {
+        fs.mkdirSync(SERVICES_UPLOAD_DIR, { recursive: true });
+      }
+
+      const safeName = `service_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+      const filePath = path.join(SERVICES_UPLOAD_DIR, safeName);
+      fs.writeFileSync(filePath, buffer);
+
+      const relativeUrl = `../Resources/services/${safeName}`;
+      return res.json({ success: true, image_url: relativeUrl, filename: safeName });
+    } catch (fsErr) {
+      console.warn('[Upload FS Warning] Read-only filesystem fallback to data URI:', fsErr.message);
+      const dataUri = rawData.startsWith('data:') ? rawData : `data:image/${ext};base64,${rawData}`;
+      return res.json({ success: true, image_url: dataUri, filename: `service_${Date.now()}.${ext}` });
+    }
   } catch (error) {
     console.error('[Upload Error]', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Delete treatment service
+// @desc    Delete treatment service (safe check for appointments)
 // @route   DELETE /api/treatments/:id
 // @access  Private (Admin / Dentist)
 const deleteTreatment = async (req, res) => {
   const { id } = req.params;
   try {
+    // Check if appointments reference this treatment
+    const { data: existingAppts, error: checkErr } = await supabase
+      .from('appointments')
+      .select('id')
+      .eq('treatment_id', id)
+      .limit(1);
+
+    if (existingAppts && existingAppts.length > 0) {
+      // Deactivate/archive instead of violating foreign key constraint
+      const { data: archivedItem, error: archErr } = await supabase
+        .from('treatments')
+        .update({ is_active: false })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (archErr) throw archErr;
+
+      try {
+        const { logAuditAction } = require('../utils/auditLogger');
+        const actor = req.user?.name || req.user?.email || 'Admin';
+        logAuditAction({
+          action: 'TREATMENT_ARCHIVED',
+          entityType: 'treatment',
+          entityId: id,
+          details: `${actor} archived service "${archivedItem.name}" because it is linked to existing clinic appointments.`,
+          req
+        });
+      } catch (_) {}
+
+      return res.json({
+        success: true,
+        archived: true,
+        message: `Service "${archivedItem.name}" has active appointments on file. It has been deactivated and hidden from the catalog.`
+      });
+    }
+
+    // No existing appointment references — permanently delete
     const { error } = await supabase
       .from('treatments')
       .delete()
@@ -301,20 +441,34 @@ const deleteTreatment = async (req, res) => {
 
     if (error) throw error;
 
-    const map = readTreatmentImages();
-    if (map[id]) {
-      delete map[id];
-      saveTreatmentImages(map);
+    if (!process.env.VERCEL) {
+      const map = readTreatmentImages();
+      if (map[id]) {
+        delete map[id];
+        saveTreatmentImages(map);
+      }
+      const metaMap = readTreatmentMetadata();
+      if (metaMap[id]) {
+        delete metaMap[id];
+        saveTreatmentMetadata(metaMap);
+      }
     }
 
-    const metaMap = readTreatmentMetadata();
-    if (metaMap[id]) {
-      delete metaMap[id];
-      saveTreatmentMetadata(metaMap);
-    }
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      const actor = req.user?.name || req.user?.email || 'Admin';
+      logAuditAction({
+        action: 'TREATMENT_DELETED',
+        entityType: 'treatment',
+        entityId: id,
+        details: `${actor} permanently deleted service ID ${id}`,
+        req
+      });
+    } catch (_) {}
 
-    res.json({ success: true, message: 'Treatment service deleted successfully' });
+    res.json({ success: true, message: 'Treatment service deleted successfully.' });
   } catch (error) {
+    console.error('[Delete Treatment Error]', error.message);
     res.status(500).json({ message: error.message });
   }
 };

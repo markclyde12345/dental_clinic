@@ -3508,9 +3508,10 @@ function loadAdminTreatments(forceRefresh = false) {
     showToast('Refreshing services catalog...', 'info');
   }
 
-  fetch(`${TREATMENT_API}`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  })
+  const curToken = getAuthToken() || token;
+  const headers = curToken ? { 'Authorization': `Bearer ${curToken}` } : {};
+
+  fetch(`${TREATMENT_API}`, { headers })
     .then(res => res.json())
     .then(data => {
       if (data && data.message) {
@@ -3627,6 +3628,7 @@ function renderAdminTreatments(treatments) {
     const isActive = t.is_active !== false;
     const priceFormatted = `${curr}${parseFloat(t.price || 0).toFixed(2)}`;
     const duration = t.duration_minutes || 45;
+    const cleanDesc = (t.description || '').replace(/<!--METADATA:[\s\S]*?-->/, '').trim();
 
     // Build 2 highlights pills
     const highlights = ((t.highlights && t.highlights.length) ? t.highlights : (meta.highlights || [])).slice(0, 2);
@@ -3659,7 +3661,7 @@ function renderAdminTreatments(treatments) {
             <div class="asc-duration"><i class="ti ti-clock" style="font-size: 13px;"></i> ${duration} min</div>
           </div>
 
-          <p class="asc-description">${escapeHTML(t.description || meta.summary || '')}</p>
+          <p class="asc-description">${escapeHTML(cleanDesc || meta.summary || '')}</p>
 
           <div class="asc-highlights-pills">
             ${highlightsHtml}
@@ -3768,7 +3770,8 @@ function openAdminEditServiceModal(treatmentId) {
   document.getElementById('admin-service-price').value = treatment.price || 0;
   document.getElementById('admin-service-duration').value = treatment.duration_minutes || 45;
   document.getElementById('admin-service-status').value = treatment.is_active !== false ? 'true' : 'false';
-  document.getElementById('admin-service-description').value = treatment.description || meta.summary || '';
+  const cleanDesc = (treatment.description || '').replace(/<!--METADATA:[\s\S]*?-->/, '').trim();
+  document.getElementById('admin-service-description').value = cleanDesc || meta.summary || '';
 
   // Highlights, Indications, Steps, Aftercare
   const highlightsList = (treatment.highlights && treatment.highlights.length) ? treatment.highlights : (meta.highlights || []);
@@ -3778,7 +3781,12 @@ function openAdminEditServiceModal(treatmentId) {
   document.getElementById('admin-service-indications').value = indicationsList.join('\n');
 
   const stepsList = (treatment.steps && treatment.steps.length) ? treatment.steps : (meta.steps || []);
-  document.getElementById('admin-service-steps').value = stepsList.map(s => s.desc ? `${s.title}: ${s.desc}` : (s.title || '')).join('\n');
+  document.getElementById('admin-service-steps').value = stepsList.map(s => {
+    if (typeof s === 'string') return s;
+    if (s && s.desc) return `${s.title}: ${s.desc}`;
+    if (s && s.title) return s.title;
+    return '';
+  }).filter(Boolean).join('\n');
 
   document.getElementById('admin-service-aftercare').value = treatment.aftercare || meta.aftercare || '';
 
@@ -3834,12 +3842,13 @@ function handleAdminServiceFileSelect(fileInput) {
   const reader = new FileReader();
   reader.onload = function(e) {
     const base64Data = e.target.result;
+    const curToken = getAuthToken() || token;
 
     fetch(`${TREATMENT_API}/upload-image`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${curToken}`
       },
       body: JSON.stringify({ image: base64Data })
     })
@@ -3940,12 +3949,13 @@ function saveAdminService(event) {
   const isEdit = !!id;
   const endpoint = isEdit ? `${TREATMENT_API}/${id}` : `${TREATMENT_API}`;
   const method = isEdit ? 'PUT' : 'POST';
+  const curToken = getAuthToken() || token;
 
   fetch(endpoint, {
     method,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${curToken}`
     },
     body: JSON.stringify(payload)
   })
@@ -4024,8 +4034,9 @@ function openAdminServiceDetailsModal(treatmentId) {
   if (durationEl) durationEl.textContent = `${treatment.duration_minutes || 45} minutes`;
 
   // Overview
+  const cleanDesc = (treatment.description || '').replace(/<!--METADATA:[\s\S]*?-->/, '').trim();
   const descEl = document.getElementById('admin-detail-description');
-  if (descEl) descEl.textContent = treatment.description || meta.summary || 'No clinical description provided.';
+  if (descEl) descEl.textContent = cleanDesc || meta.summary || 'No clinical description provided.';
 
   // Highlights
   const highlightsEl = document.getElementById('admin-detail-highlights');
@@ -4049,15 +4060,20 @@ function openAdminServiceDetailsModal(treatmentId) {
   const stepsContainer = document.getElementById('admin-detail-steps-timeline');
   if (stepsContainer) {
     const steps = (treatment.steps && treatment.steps.length) ? treatment.steps : (meta.steps || []);
-    stepsContainer.innerHTML = steps.map((s, idx) => `
-      <div class="timeline-step-row">
-        <div class="timeline-step-num">${s.step || (idx + 1)}</div>
-        <div class="timeline-step-content">
-          <div class="timeline-step-title">${escapeHTML(s.title || `Phase ${idx + 1}`)}</div>
-          <p class="timeline-step-desc">${escapeHTML(s.desc || '')}</p>
+    stepsContainer.innerHTML = steps.map((s, idx) => {
+      const stepNum = (typeof s === 'object' && s.step) ? s.step : (idx + 1);
+      const title = (typeof s === 'object' && s.title) ? s.title : (typeof s === 'string' ? s : `Phase ${idx + 1}`);
+      const desc = (typeof s === 'object' && s.desc) ? s.desc : '';
+      return `
+        <div class="timeline-step-row">
+          <div class="timeline-step-num">${stepNum}</div>
+          <div class="timeline-step-content">
+            <div class="timeline-step-title">${escapeHTML(title)}</div>
+            ${desc ? `<p class="timeline-step-desc">${escapeHTML(desc)}</p>` : ''}
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   // Preparation & Aftercare
@@ -4104,18 +4120,24 @@ function deleteAdminService(treatmentId) {
   const name = treatment ? treatment.name : 'this service';
 
   showDeleteConfirmation(`Are you sure you want to permanently delete the clinic service "${name}"? This will remove it from the clinic catalog.`, () => {
+    const curToken = getAuthToken() || token;
     fetch(`${TREATMENT_API}/${treatmentId}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'Authorization': `Bearer ${curToken}` }
     })
       .then(res => res.json())
       .then(data => {
-        if (data && data.message && !data.success && !data.id) {
+        if (data && data.message && !data.success && !data.id && !data.archived) {
           showToast(data.message, 'error');
           return;
         }
-        allAdminTreatments = (allAdminTreatments || []).filter(t => String(t.id) !== String(treatmentId));
-        showToast(`Service "${name}" deleted from catalog.`, 'success');
+        if (data && data.archived) {
+          if (treatment) treatment.is_active = false;
+          showToast(data.message || `Service "${name}" has bookings and was deactivated.`, 'info');
+        } else {
+          allAdminTreatments = (allAdminTreatments || []).filter(t => String(t.id) !== String(treatmentId));
+          showToast(`Service "${name}" deleted from catalog.`, 'success');
+        }
         updateAdminServicesKPIs(allAdminTreatments);
         filterAndRenderAdminServices();
       })
@@ -4127,6 +4149,19 @@ function deleteAdminService(treatmentId) {
 }
 window.deleteAdminService = deleteAdminService;
 
+// Keyboard shortcut: Escape to close service modals
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const serviceModal = document.getElementById('modal-admin-service');
+    if (serviceModal && (serviceModal.classList.contains('active') || serviceModal.style.display === 'flex')) {
+      closeAdminServiceModal();
+    }
+    const detailsModal = document.getElementById('modal-admin-service-details');
+    if (detailsModal && (detailsModal.classList.contains('active') || detailsModal.style.display === 'flex')) {
+      closeAdminServiceDetailsModal();
+    }
+  }
+});
 
 // ─── 6. Inventory stock ledger ────────────────────────────────────────────────
 function loadInventory() {
@@ -5849,8 +5884,9 @@ if (addBranchForm) {
 
 // Treatments & Services management
 window.loadSettingsTreatments = function() {
+  const curToken = getAuthToken() || token;
   fetch(TREATMENT_API, {
-    headers: { 'Authorization': `Bearer ${token}` }
+    headers: { 'Authorization': `Bearer ${curToken}` }
   })
   .then(res => res.json())
   .then(treatments => {
@@ -5890,9 +5926,10 @@ window.deleteTreatmentItem = function(id) {
   if (!confirm('Are you sure you want to permanently delete this treatment service?')) {
     return;
   }
+  const curToken = getAuthToken() || token;
   fetch(`${TREATMENT_API}/${id}`, {
     method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
+    headers: { 'Authorization': `Bearer ${curToken}` }
   })
   .then(res => res.json())
   .then(data => {
@@ -5924,11 +5961,12 @@ if (addTreatForm) {
     btnSave.disabled = true;
     btnSave.textContent = 'Saving...';
 
+    const curToken = getAuthToken() || token;
     fetch(TREATMENT_API, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${curToken}`
       },
       body: JSON.stringify(payload)
     })
