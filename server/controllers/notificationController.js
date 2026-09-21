@@ -149,7 +149,7 @@ const getUserNotifications = async (req, res) => {
         }
       });
 
-      // 1c. General Preventive Care Recall
+      // 1c. General Preventive Care Recall (Today)
       notifications.push({
         id: 'preventive-recall-notice',
         category: 'reminder',
@@ -159,6 +159,18 @@ const getUserNotifications = async (req, res) => {
         icon: 'tooth',
         time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         action: { type: 'book_now' }
+      });
+
+      // 1d. Oral Hygiene Tips / Clinic Update (Yesterday / Last Day)
+      notifications.push({
+        id: 'hygiene-tip-yesterday',
+        category: 'announcement',
+        title: 'Daily Oral Care Tip',
+        message: 'Remember to floss daily and brush twice for 2 minutes to prevent plaque accumulation and protect enamel.',
+        type: 'success',
+        icon: 'circle-check',
+        time: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
+        action: { type: 'switch_tab', tab: 'services' }
       });
     }
 

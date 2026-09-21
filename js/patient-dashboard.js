@@ -4760,7 +4760,7 @@ function loadPatientNotifications(isManual = false) {
         unreadLabel.textContent = `${unreadCount} New`;
       }
 
-      // Render list
+      // Render list grouped by day (Today, Yesterday, Earlier)
       if (list) {
         if (notifs.length === 0) {
           list.innerHTML = `
@@ -4770,24 +4770,63 @@ function loadPatientNotifications(isManual = false) {
           </div>
         `;
         } else {
-          list.innerHTML = notifs.map(n => {
-            const isUnread = !readSet.has(n.id);
-            const timeStr = formatNotificationTime(n.time);
-            const iconSvg = getNotificationIconSvg(n.icon, n.type);
+          // Sort newest first
+          notifs.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
 
-            return `
-            <div class="pnd-item ${isUnread ? 'unread' : ''}" onclick="onPatientNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.id || ''}', '${n.action?.tab || ''}')">
-              <div class="pnd-icon-wrap type-${n.type || 'info'}">
-                ${iconSvg}
+          const groups = {
+            'Today': [],
+            'Yesterday': [],
+            'Earlier': []
+          };
+
+          notifs.forEach(n => {
+            const g = getNotificationDayGroup(n.time);
+            if (!groups[g]) groups[g] = [];
+            groups[g].push(n);
+          });
+
+          let html = '';
+          const groupOrder = ['Today', 'Yesterday', 'Earlier'];
+
+          groupOrder.forEach(groupName => {
+            const items = groups[groupName];
+            if (!items || items.length === 0) return;
+
+            const unreadInGroup = items.filter(n => !readSet.has(n.id)).length;
+            const countLabel = unreadInGroup > 0 ? `${unreadInGroup} new` : `${items.length} ${items.length === 1 ? 'alert' : 'alerts'}`;
+            const groupIcon = groupName === 'Today' ? 'ti-clock' : (groupName === 'Yesterday' ? 'ti-calendar-event' : 'ti-history');
+
+            html += `
+              <div class="pnd-date-group">
+                <div class="pnd-date-header">
+                  <span class="pnd-date-title"><i class="ti ${groupIcon}" style="font-size: 13px;"></i> ${groupName}</span>
+                  <span class="pnd-date-count">${countLabel}</span>
+                </div>
+                <div class="pnd-date-items">
+                  ${items.map(n => {
+                    const isUnread = !readSet.has(n.id);
+                    const timeStr = formatNotificationTime(n.time);
+                    const iconSvg = getNotificationIconSvg(n.icon, n.type);
+
+                    return `
+                      <div class="pnd-item ${isUnread ? 'unread' : ''}" onclick="onPatientNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.id || ''}', '${n.action?.tab || ''}')">
+                        <div class="pnd-icon-wrap type-${n.type || 'info'}">
+                          ${iconSvg}
+                        </div>
+                        <div class="pnd-content">
+                          <div class="pnd-title">${escapeHTML(n.title)}</div>
+                          <div class="pnd-desc">${escapeHTML(n.message)}</div>
+                          <span class="pnd-time">${timeStr}</span>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
               </div>
-              <div class="pnd-content">
-                <div class="pnd-title">${escapeHTML(n.title)}</div>
-                <div class="pnd-desc">${escapeHTML(n.message)}</div>
-                <span class="pnd-time">${timeStr}</span>
-              </div>
-            </div>
-          `;
-          }).join('');
+            `;
+          });
+
+          list.innerHTML = html;
         }
       }
 
@@ -4798,6 +4837,21 @@ function loadPatientNotifications(isManual = false) {
     .catch(err => {
       console.error('Failed to load notifications:', err);
     });
+}
+
+function getNotificationDayGroup(isoStr) {
+  if (!isoStr) return 'Earlier';
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return 'Earlier';
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const notifDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diffDays = Math.round((today - notifDay) / (1000 * 60 * 60 * 24));
+
+  if (diffDays <= 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  return 'Earlier';
 }
 
 function onPatientNotificationClick(notifId, actionType, actionTarget, actionTab) {
@@ -4839,17 +4893,25 @@ function formatNotificationTime(isoStr) {
   const d = new Date(isoStr);
   if (isNaN(d.getTime())) return 'Recently';
 
-  const now = Date.now();
-  const diffMinutes = Math.floor((now - d.getTime()) / 60000);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const notifDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diffDays = Math.round((today - notifDay) / (1000 * 60 * 60 * 24));
 
-  if (diffMinutes < 1) return 'Just now';
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays}d ago`;
+  const timeString = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (diffDays <= 0) {
+    const diffMinutes = Math.floor((now.getTime() - d.getTime()) / 60000);
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 6) return `${diffHours}h ago`;
+    return timeString;
+  } else if (diffDays === 1) {
+    return timeString;
+  } else {
+    return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} • ${timeString}`;
+  }
 }
 
 function getNotificationIconSvg(iconName, type) {
