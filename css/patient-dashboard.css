@@ -5343,11 +5343,6 @@ body.reduce-motion * {
   border: 1.5px solid var(--border);
 }
 
-/* ═════════════════ MOBILE BOTTOM TASKBAR (<= 768px) ═════════════════ */
-.mobile-bottom-taskbar {
-  display: none;
-}
-
 .deposit-col-header {
   display: flex;
   align-items: center;
@@ -5640,11 +5635,6 @@ body.reduce-motion * {
   border-radius: 6px;
   font-size: 0.76rem;
   color: #475569;
-}
-
-/* ═════════════════ MOBILE BOTTOM TASKBAR (<= 768px) ═════════════════ */
-.mobile-bottom-taskbar {
-  display: none;
 }
 
 /* ═════════════════════ MY RECORDS REFINEMENTS ═════════════════════ */
@@ -5944,125 +5934,6 @@ body.reduce-motion * {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-}
-
-/* ═════════════════ MOBILE BOTTOM TASKBAR (<= 768px) ═════════════════ */
-.mobile-bottom-taskbar {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .mobile-bottom-taskbar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 58px;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid #e2e8f0;
-    box-shadow: 0 -3px 18px rgba(11, 60, 77, 0.08);
-    display: flex !important;
-    align-items: center;
-    justify-content: space-around;
-    z-index: 1100;
-    padding: 0 4px;
-    padding-bottom: env(safe-area-inset-bottom, 0);
-    box-sizing: border-box;
-  }
-
-  [data-theme="dark"] .mobile-bottom-taskbar {
-    background: rgba(15, 23, 42, 0.96);
-    border-top-color: #334155;
-    box-shadow: 0 -3px 18px rgba(0, 0, 0, 0.35);
-  }
-
-  .taskbar-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    height: 100%;
-    background: none;
-    border: none;
-    color: #64748b;
-    cursor: pointer;
-    padding: 6px 2px;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .taskbar-item .taskbar-icon {
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease;
-  }
-
-  .taskbar-item .taskbar-icon svg {
-    width: 19px;
-    height: 19px;
-  }
-
-  .taskbar-item .taskbar-icon i {
-    font-size: 1.05rem;
-  }
-
-  .taskbar-item .taskbar-label {
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
-  }
-
-  .taskbar-item:hover,
-  .taskbar-item:focus {
-    color: var(--primary-color, #0b3c4d);
-  }
-
-  .taskbar-item.active {
-    color: var(--primary-color, #0b3c4d);
-  }
-
-  [data-theme="dark"] .taskbar-item.active {
-    color: #38bdf8;
-  }
-
-  .taskbar-item.active .taskbar-icon {
-    transform: translateY(-2px);
-  }
-
-  .taskbar-item.active .taskbar-label {
-    font-weight: 700;
-  }
-
-  /* Safe padding so bottom content is never hidden behind bottom taskbar */
-  body, .main-content {
-    padding-bottom: 74px !important;
-  }
-}
-
-@media (max-width: 420px) {
-  .taskbar-item {
-    padding: 4px 1px !important;
-  }
-  .taskbar-item .taskbar-icon {
-    width: 20px !important;
-    height: 20px !important;
-  }
-  .taskbar-item .taskbar-icon svg {
-    width: 17px !important;
-    height: 17px !important;
-  }
-  .taskbar-item .taskbar-label {
-    font-size: 0.62rem !important;
-  }
 }
 
 /* ═════════════════════ 6-PILLAR PATIENT TREATMENT PLANS ═════════════════════ */
@@ -6868,128 +6739,116 @@ body.reduce-motion * {
     left: 0 !important;
   }
 
-  /* ═════════════ DARK PILL BOTTOM NAV ═════════════════════════ */
-
+  /* ═════════════ DARK PILL BOTTOM NAV (PATIENT PORTAL) ═════════════ */
   .mobile-bottom-taskbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-
-    position: fixed;
-    bottom: 14px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 28px);
-    max-width: 440px;
-
-    background: #0b2535;
-    border-radius: 30px;
-    padding: 8px 10px 10px;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    bottom: 12px !important;
+    left: 14px !important;
+    right: 14px !important;
+    margin: 0 auto !important;
+    max-width: 440px !important;
+    width: calc(100% - 28px) !important;
+    height: 62px !important;
+    background: #0b2535 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 32px !important;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)) !important;
     box-shadow:
-      0 12px 40px rgba(11, 37, 53, 0.5),
-      0 4px 12px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255,255,255,0.06);
-    z-index: 9999;
-    gap: 2px;
-
-    /* Smooth entry animation */
-    animation: navSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  @keyframes navSlideUp {
-    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+      0 12px 36px rgba(11, 37, 53, 0.55),
+      0 4px 14px rgba(0, 0, 0, 0.35) !important;
+    z-index: 999999 !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    box-sizing: border-box !important;
+    pointer-events: auto !important;
   }
 
   /* ── Each tab button ────────────────────────────────────────── */
   .taskbar-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    min-width: 0;
-
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 6px 4px 5px;
-    border-radius: 22px;
-    gap: 4px;
-
-    color: rgba(255, 255, 255, 0.38);
-    transition:
-      color 0.2s ease,
-      transform 0.15s ease;
-
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    position: relative;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 4px 2px !important;
+    border-radius: 20px !important;
+    gap: 3px !important;
+    color: rgba(255, 255, 255, 0.65) !important;
+    transition: color 0.2s ease, transform 0.15s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+    user-select: none !important;
+    position: relative !important;
+    text-decoration: none !important;
   }
 
   .taskbar-item:active {
-    transform: scale(0.88);
+    transform: scale(0.92) !important;
   }
 
   /* ── Icon wrapper ───────────────────────────────────────────── */
   .taskbar-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 34px;
-    border-radius: 18px;
-    background: transparent;
-    transition:
-      background 0.25s ease,
-      transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 38px !important;
+    height: 30px !important;
+    border-radius: 16px !important;
+    background: transparent !important;
+    transition: background 0.2s ease, transform 0.2s ease !important;
+    position: relative !important;
   }
 
   .taskbar-icon i {
-    font-size: 1.25rem;
-    line-height: 1;
+    font-size: 1.3rem !important;
+    line-height: 1 !important;
   }
 
   /* ── Label ──────────────────────────────────────────────────── */
   .taskbar-label {
-    font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
-    font-size: 0.59rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 58px;
-    transition: color 0.2s ease, opacity 0.2s ease;
-    opacity: 0.7;
+    font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif) !important;
+    font-size: 0.64rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.01em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 60px !important;
+    color: inherit !important;
+    opacity: 0.85 !important;
+    transition: opacity 0.2s ease, color 0.2s ease !important;
   }
 
   /* ── Inactive hover ─────────────────────────────────────────── */
   .taskbar-item:hover:not(.active) {
-    color: rgba(255, 255, 255, 0.65);
+    color: #ffffff !important;
   }
 
   .taskbar-item:hover:not(.active) .taskbar-label {
-    opacity: 0.85;
+    opacity: 1 !important;
   }
 
   /* ── ACTIVE state ───────────────────────────────────────────── */
   .taskbar-item.active {
-    color: #ffffff;
+    color: #38bdf8 !important;
   }
 
   .taskbar-item.active .taskbar-label {
-    opacity: 1;
-    font-weight: 700;
+    opacity: 1 !important;
+    font-weight: 700 !important;
+    color: #38bdf8 !important;
   }
 
   .taskbar-item.active .taskbar-icon {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-    box-shadow:
-      0 4px 14px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255,255,255,0.15);
+    background: rgba(56, 189, 248, 0.16) !important;
+    transform: translateY(-2px) !important;
   }
 
   /* ── Active glow dot ────────────────────────────────────────── */
@@ -7002,15 +6861,15 @@ body.reduce-motion * {
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: #4dc8e8;
-    box-shadow: 0 0 6px #4dc8e8;
+    background: #38bdf8;
+    box-shadow: 0 0 8px #38bdf8;
   }
 
   /* ── Notification badge on taskbar icon ─────────────────────── */
   .taskbar-badge {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 2px;
+    right: 2px;
     min-width: 16px;
     height: 16px;
     background: #ef4444;
