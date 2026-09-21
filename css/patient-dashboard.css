@@ -6535,9 +6535,11 @@ body.reduce-motion * {
 .mobile-bottom-taskbar { display: none; }
 
 /* ════════════════════════════════════════════════════════════════
-   @media (max-width: 768px) — ALL MOBILE IMPROVEMENTS
+   @media (max-width: 1024px) — MOBILE & TABLETS (PHONES & TABS)
+   Shows bottom taskbar navigation for all mobile phones and tablets.
+   On PC / Laptops (> 1024px), shows full desktop website with sidebar.
 ════════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
 
   /* ── Layout: hide sidebar, expand main ─────────────────────── */
   .sidebar,
