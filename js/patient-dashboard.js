@@ -4533,7 +4533,10 @@ document.querySelectorAll('[data-section]').forEach(link => {
   });
 });
 
-function switchSection(sectionId) {
+function switchSection(sectionId, event) {
+  if (event && event.stopPropagation) {
+    event.stopPropagation();
+  }
   // Update active nav & taskbar
   document.querySelectorAll('.nav-item, .taskbar-item').forEach(item => {
     item.classList.toggle('active', item.getAttribute('data-section') === sectionId);
@@ -4553,8 +4556,24 @@ function switchSection(sectionId) {
     finances: 'Financial Summary',
     profile: 'My Profile',
     settings: 'Settings',
+    notifications: 'Notifications',
     chats: 'Chats'
   };
+
+  // Notifications tab → toggle notification center dropdown
+  if (sectionId === 'notifications') {
+    const dropdown = document.getElementById('patient-notif-dropdown');
+    if (dropdown) {
+      dropdown.hidden = !dropdown.hidden;
+      if (!dropdown.hidden) {
+        loadPatientNotifications();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        syncActiveTaskbarToCurrentSection();
+      }
+    }
+    return;
+  }
 
   // Chats tab → open AI chat panel
   if (sectionId === 'chats') {
@@ -4645,6 +4664,14 @@ function logout() {
 
 let allPatientNotifications = [];
 
+function syncActiveTaskbarToCurrentSection() {
+  const activeSec = document.querySelector('.content-section.active');
+  const activeId = activeSec ? activeSec.id.replace('-section', '') : 'overview';
+  document.querySelectorAll('.taskbar-item').forEach(item => {
+    item.classList.toggle('active', item.getAttribute('data-section') === activeId);
+  });
+}
+
 function setupPatientNotifications() {
   const toggleBtn = document.getElementById('btn-patient-notif');
   const dropdown = document.getElementById('patient-notif-dropdown');
@@ -4655,18 +4682,25 @@ function setupPatientNotifications() {
       dropdown.hidden = !dropdown.hidden;
       if (!dropdown.hidden) {
         loadPatientNotifications();
+        document.querySelectorAll('.taskbar-item').forEach(item => {
+          item.classList.toggle('active', item.getAttribute('data-section') === 'notifications');
+        });
+      } else {
+        syncActiveTaskbarToCurrentSection();
       }
     });
 
     document.addEventListener('click', (e) => {
-      if (!dropdown.hidden && !dropdown.contains(e.target) && !toggleBtn.contains(e.target)) {
+      if (!dropdown.hidden && !dropdown.contains(e.target) && !toggleBtn.contains(e.target) && !e.target.closest('[data-section="notifications"]')) {
         dropdown.hidden = true;
+        syncActiveTaskbarToCurrentSection();
       }
     });
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !dropdown.hidden) {
         dropdown.hidden = true;
+        syncActiveTaskbarToCurrentSection();
       }
     });
   }
@@ -4693,6 +4727,7 @@ function saveReadNotificationId(id) {
 
 function loadPatientNotifications(isManual = false) {
   const badge = document.getElementById('patient-notif-count');
+  const taskbarBadge = document.getElementById('patient-taskbar-notif-count');
   const unreadLabel = document.getElementById('pnd-unread-label');
   const list = document.getElementById('patient-notif-list');
 
@@ -4706,13 +4741,19 @@ function loadPatientNotifications(isManual = false) {
       const unreadCount = notifs.filter(n => !readSet.has(n.id)).length;
 
       // Update badge & header
-      if (badge) {
-        if (unreadCount > 0) {
-          badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+      if (unreadCount > 0) {
+        const text = unreadCount > 99 ? '99+' : unreadCount;
+        if (badge) {
+          badge.textContent = text;
           badge.style.display = 'inline-flex';
-        } else {
-          badge.style.display = 'none';
         }
+        if (taskbarBadge) {
+          taskbarBadge.textContent = text;
+          taskbarBadge.style.display = 'flex';
+        }
+      } else {
+        if (badge) badge.style.display = 'none';
+        if (taskbarBadge) taskbarBadge.style.display = 'none';
       }
 
       if (unreadLabel) {
