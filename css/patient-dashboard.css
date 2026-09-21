@@ -6766,6 +6766,13 @@ body.reduce-motion * {
     pointer-events: auto !important;
   }
 
+  /* ── Floating AI chat orb above bottom taskbar on mobile ───────── */
+  .ai-chat-triggers {
+    bottom: 84px !important;
+    right: 14px !important;
+    z-index: 99999 !important;
+  }
+
   /* ── Each tab button ────────────────────────────────────────── */
   .taskbar-item {
     display: flex !important;
@@ -6814,13 +6821,13 @@ body.reduce-motion * {
   /* ── Label ──────────────────────────────────────────────────── */
   .taskbar-label {
     font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif) !important;
-    font-size: 0.64rem !important;
+    font-size: 0.60rem !important;
     font-weight: 600 !important;
-    letter-spacing: 0.01em !important;
+    letter-spacing: -0.01em !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    max-width: 60px !important;
+    max-width: 100% !important;
     color: inherit !important;
     opacity: 0.85 !important;
     transition: opacity 0.2s ease, color 0.2s ease !important;

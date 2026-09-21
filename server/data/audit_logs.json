@@ -1,5 +1,22 @@
 [
   {
+    "id": "7335d9c9-81d9-4100-8ed8-eea26e37ed0d",
+    "timestamp": "2026-09-21T02:48:29.764Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "6f3e5cef-650e-45d9-9614-9e330ca92389",
+    "user_id": "system",
+    "user_name": "John Doe",
+    "user_role": "Patient",
+    "details": "Successful login for user testpatient@example.com (Patient)",
+    "metadata": {
+      "email": "testpatient@example.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+  },
+  {
     "id": "a18701d3-9a90-4599-92b4-33e26ea3f813",
     "timestamp": "2026-09-21T02:25:16.726Z",
     "action": "USER_LOGIN_SUCCESS",
