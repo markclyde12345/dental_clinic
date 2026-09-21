@@ -5343,6 +5343,11 @@ body.reduce-motion * {
   border: 1.5px solid var(--border);
 }
 
+/* ═════════════════ MOBILE BOTTOM TASKBAR (<= 768px) ═════════════════ */
+.mobile-bottom-taskbar {
+  display: none;
+}
+
 .deposit-col-header {
   display: flex;
   align-items: center;
@@ -5635,6 +5640,11 @@ body.reduce-motion * {
   border-radius: 6px;
   font-size: 0.76rem;
   color: #475569;
+}
+
+/* ═════════════════ MOBILE BOTTOM TASKBAR (<= 768px) ═════════════════ */
+.mobile-bottom-taskbar {
+  display: none;
 }
 
 /* ═════════════════════ MY RECORDS REFINEMENTS ═════════════════════ */
@@ -5938,7 +5948,7 @@ body.reduce-motion * {
 
 /* ═════════════════ MOBILE BOTTOM TASKBAR (<= 768px) ═════════════════ */
 .mobile-bottom-taskbar {
-  display: none !important;
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -6130,124 +6140,7 @@ body.reduce-motion * {
   gap: 8px;
 }
 
-/* ═════════════════ MOBILE BOTTOM TASKBAR (<= 768px) ═════════════════ */
-.mobile-bottom-taskbar {
-  display: none !important;
-}
-
-@media (max-width: 768px) {
-  .mobile-bottom-taskbar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 58px;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid #e2e8f0;
-    box-shadow: 0 -3px 18px rgba(11, 60, 77, 0.08);
-    display: flex !important;
-    align-items: center;
-    justify-content: space-around;
-    z-index: 1100;
-    padding: 0 4px;
-    padding-bottom: env(safe-area-inset-bottom, 0);
-    box-sizing: border-box;
-  }
-
-  [data-theme="dark"] .mobile-bottom-taskbar {
-    background: rgba(15, 23, 42, 0.96);
-    border-top-color: #334155;
-    box-shadow: 0 -3px 18px rgba(0, 0, 0, 0.35);
-  }
-
-  .taskbar-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    height: 100%;
-    background: none;
-    border: none;
-    color: #64748b;
-    cursor: pointer;
-    padding: 6px 2px;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .taskbar-item .taskbar-icon {
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease;
-  }
-
-  .taskbar-item .taskbar-icon svg {
-    width: 19px;
-    height: 19px;
-  }
-
-  .taskbar-item .taskbar-icon i {
-    font-size: 1.05rem;
-  }
-
-  .taskbar-item .taskbar-label {
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
-  }
-
-  .taskbar-item:hover,
-  .taskbar-item:focus {
-    color: var(--primary-color, #0b3c4d);
-  }
-
-  .taskbar-item.active {
-    color: var(--primary-color, #0b3c4d);
-  }
-
-  [data-theme="dark"] .taskbar-item.active {
-    color: #38bdf8;
-  }
-
-  .taskbar-item.active .taskbar-icon {
-    transform: translateY(-2px);
-  }
-
-  .taskbar-item.active .taskbar-label {
-    font-weight: 700;
-  }
-
-  /* Safe padding so bottom content is never hidden behind bottom taskbar */
-  body, .main-content {
-    padding-bottom: 74px !important;
-  }
-}
-
-@media (max-width: 420px) {
-  .taskbar-item {
-    padding: 4px 1px !important;
-  }
-  .taskbar-item .taskbar-icon {
-    width: 20px !important;
-    height: 20px !important;
-  }
-  .taskbar-item .taskbar-icon svg {
-    width: 17px !important;
-    height: 17px !important;
-  }
-  .taskbar-item .taskbar-label {
-    font-size: 0.62rem !important;
-  }
-}
+/* old taskbar block removed — see end of file for new dark pill nav */
 
 /* ═════════════════════ 6-PILLAR PATIENT TREATMENT PLANS ═════════════════════ */
 .records-subtabs {
@@ -6760,4 +6653,417 @@ body.reduce-motion * {
     padding-left: 36px;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE UI OVERHAUL — Full responsive redesign for ≤ 768px
+   Inspired by SmileMate / reference dental app design
+═══════════════════════════════════════════════════════════════ */
+
+/* ─── Hidden on desktop ─────────────────────────────────────── */
+.mobile-bottom-taskbar { display: none; }
+
+/* ════════════════════════════════════════════════════════════════
+   @media (max-width: 768px) — ALL MOBILE IMPROVEMENTS
+════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Layout: hide sidebar, expand main ─────────────────────── */
+  .sidebar,
+  .sidebar-overlay {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding-bottom: 100px !important;
+    background: #f0f4f8;
+  }
+
+  /* ── Top Header — mobile redesign ──────────────────────────── */
+  .top-header {
+    height: auto;
+    min-height: 64px;
+    padding: 12px 18px;
+    background: #ffffff;
+    border-bottom: 1px solid #e8edf2;
+    box-shadow: 0 2px 12px rgba(11, 60, 77, 0.07);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* Hide the burger toggle on mobile since sidebar is gone */
+  .burger-toggle {
+    display: none !important;
+  }
+
+  /* Logo pill in header */
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+
+  /* Make breadcrumb look like a page title */
+  .breadcrumb {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+  }
+
+  .breadcrumb-item {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .breadcrumb-item i {
+    font-size: 11px;
+  }
+
+  .breadcrumb-current {
+    font-size: 1.0rem;
+    font-weight: 800;
+    color: #0b3c4d;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  /* Chevron separator — hide on mobile */
+  .breadcrumb .ti-chevron-right {
+    display: none;
+  }
+
+  /* Header right — compact */
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  /* Hide the live clock on small screens */
+  .live-clock-card {
+    display: none;
+  }
+
+  /* Notification bell — keep it visible */
+  .notif-btn {
+    width: 38px;
+    height: 38px;
+    background: #f1f5f9;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* ── Content wrapper ────────────────────────────────────────── */
+  .content-wrapper,
+  .page-content,
+  .section-content,
+  .content-section {
+    padding: 16px 16px 0 !important;
+  }
+
+  /* ── Section heading ────────────────────────────────────────── */
+  .section-header,
+  .page-header {
+    padding: 4px 0 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .page-title,
+  .section-title,
+  h1.section-title {
+    font-size: 1.35rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.025em;
+  }
+
+  .page-subtitle,
+  .section-subtitle {
+    font-size: 0.82rem !important;
+  }
+
+  /* ── Stat / KPI cards — 2 columns ──────────────────────────── */
+  .stats-grid,
+  .kpi-grid,
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .stat-card,
+  .kpi-card {
+    padding: 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .stat-value,
+  .kpi-value {
+    font-size: 1.5rem !important;
+  }
+
+  /* ── General cards ──────────────────────────────────────────── */
+  .card,
+  .dashboard-card,
+  .patient-card,
+  .appt-card,
+  .billing-card {
+    border-radius: 18px !important;
+    padding: 16px !important;
+    margin-bottom: 14px !important;
+    box-shadow: 0 2px 10px rgba(11, 60, 77, 0.05) !important;
+  }
+
+  /* ── Tables — scroll horizontally ──────────────────────────── */
+  .table-wrapper,
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 14px;
+  }
+
+  table {
+    min-width: 480px;
+  }
+
+  /* ── Appointment cards ──────────────────────────────────────── */
+  .appt-list-item,
+  .appointment-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+
+  /* ── Buttons — full-width on mobile ────────────────────────── */
+  .btn-full-mobile {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* ── Form inputs — bigger touch targets ────────────────────── */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important; /* prevents iOS zoom */
+    min-height: 44px;
+  }
+
+  /* ── Modals — full-screen on mobile ─────────────────────────── */
+  .modal-content,
+  .modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+  }
+
+  /* ═════════════ DARK PILL BOTTOM NAV ═════════════════════════ */
+
+  .mobile-bottom-taskbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 28px);
+    max-width: 440px;
+
+    background: #0b2535;
+    border-radius: 30px;
+    padding: 8px 10px 10px;
+    box-shadow:
+      0 12px 40px rgba(11, 37, 53, 0.5),
+      0 4px 12px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+    z-index: 9999;
+    gap: 2px;
+
+    /* Smooth entry animation */
+    animation: navSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes navSlideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* ── Each tab button ────────────────────────────────────────── */
+  .taskbar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 4px 5px;
+    border-radius: 22px;
+    gap: 4px;
+
+    color: rgba(255, 255, 255, 0.38);
+    transition:
+      color 0.2s ease,
+      transform 0.15s ease;
+
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    position: relative;
+  }
+
+  .taskbar-item:active {
+    transform: scale(0.88);
+  }
+
+  /* ── Icon wrapper ───────────────────────────────────────────── */
+  .taskbar-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 34px;
+    border-radius: 18px;
+    background: transparent;
+    transition:
+      background 0.25s ease,
+      transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+
+  .taskbar-icon i {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  /* ── Label ──────────────────────────────────────────────────── */
+  .taskbar-label {
+    font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+    font-size: 0.59rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 58px;
+    transition: color 0.2s ease, opacity 0.2s ease;
+    opacity: 0.7;
+  }
+
+  /* ── Inactive hover ─────────────────────────────────────────── */
+  .taskbar-item:hover:not(.active) {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .taskbar-item:hover:not(.active) .taskbar-label {
+    opacity: 0.85;
+  }
+
+  /* ── ACTIVE state ───────────────────────────────────────────── */
+  .taskbar-item.active {
+    color: #ffffff;
+  }
+
+  .taskbar-item.active .taskbar-label {
+    opacity: 1;
+    font-weight: 700;
+  }
+
+  .taskbar-item.active .taskbar-icon {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow:
+      0 4px 14px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+
+  /* ── Active glow dot ────────────────────────────────────────── */
+  .taskbar-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #4dc8e8;
+    box-shadow: 0 0 6px #4dc8e8;
+  }
+
+  /* ── Notification badge on taskbar icon ─────────────────────── */
+  .taskbar-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 16px;
+    height: 16px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.58rem;
+    font-weight: 800;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    border: 2px solid #0b2535;
+  }
+}
+
+/* ── Very small phones (< 390px) ────────────────────────────── */
+@media (max-width: 390px) {
+  .mobile-bottom-taskbar {
+    bottom: 10px;
+    width: calc(100% - 20px);
+    padding: 7px 6px 9px;
+  }
+
+  .taskbar-item {
+    padding: 5px 2px 4px;
+    gap: 3px;
+  }
+
+  .taskbar-icon {
+    width: 36px;
+    height: 30px;
+  }
+
+  .taskbar-icon i {
+    font-size: 1.1rem;
+  }
+
+  .taskbar-label {
+    font-size: 0.55rem;
+    max-width: 48px;
+  }
+
+  /* Header compact */
+  .breadcrumb-current {
+    font-size: 0.9rem !important;
+  }
+
+  .content-wrapper,
+  .content-section {
+    padding: 12px 12px 0 !important;
+  }
+}
+
+
+/* ── end of patient-dashboard.css ── */
 

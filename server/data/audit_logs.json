@@ -1,5 +1,39 @@
 [
   {
+    "id": "a18701d3-9a90-4599-92b4-33e26ea3f813",
+    "timestamp": "2026-09-21T02:25:16.726Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.138.0 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36"
+  },
+  {
+    "id": "f21f8bc7-789d-488d-a0dc-67c9d9c8af7a",
+    "timestamp": "2026-09-19T07:28:30.658Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.137.0 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36"
+  },
+  {
     "id": "7d935405-05ac-484b-b330-efaab135788d",
     "timestamp": "2026-09-14T13:37:13.306Z",
     "action": "USER_LOGIN_SUCCESS",

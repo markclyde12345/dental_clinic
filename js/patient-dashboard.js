@@ -4545,15 +4545,25 @@ function switchSection(sectionId) {
 
   // Breadcrumb
   const labels = {
-    overview: 'Overview',
+    overview: 'Home',
     services: 'Clinic Services',
-    appointments: 'Book Appointment',
+    appointments: 'Appointment',
     records: 'My Records',
-    billing: 'Billing & Invoices',
+    billing: 'Payment',
     finances: 'Financial Summary',
     profile: 'My Profile',
-    settings: 'Settings'
+    settings: 'Settings',
+    chats: 'Chats'
   };
+
+  // Chats tab → open AI chat panel
+  if (sectionId === 'chats') {
+    const aiToggle = document.getElementById('ai-unified-trigger') ||
+                     document.getElementById('ai-chat-toggle') ||
+                     document.querySelector('.ai-chat-fab');
+    if (aiToggle) aiToggle.click();
+    return;
+  }
   safeSet('breadcrumb-current', labels[sectionId] || 'Dashboard');
 
   if (sectionId === 'services') {
