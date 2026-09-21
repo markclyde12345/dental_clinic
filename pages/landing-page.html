@@ -7,7 +7,7 @@
   <meta name="description" content="Experience advanced, comfortable, and professional dental services designed for every smile. Where science meets artistry at Fano Dental Clinic.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/style.css?v=13">
+  <link rel="stylesheet" href="../css/style.css?v=20260921_auth">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -30,6 +30,7 @@
     </a>
     <button class="mobile-close" id="mobileClose" aria-label="Close menu"><i class="ti ti-x"></i></button>
   </div>
+  <div id="mobileAccountContainer" class="mobile-account-slot"></div>
   <div class="mobile-menu-links">
     <a href="#hero" onclick="closeMobileMenu()">Home</a>
     <a href="#about" onclick="closeMobileMenu()">About</a>
@@ -44,16 +45,19 @@
   <a href="#hero" class="nav-logo">
     <img src="../Resources/logo.png" alt="Fano Dental Clinic Logo" class="nav-logo-img">
   </a>
-  <ul class="nav-links">
-    <li><a href="#hero">Home</a></li>
-    <li><a href="#about">About</a></li>
-    <li><a href="#services">Services</a></li>
-    <li><a href="#dentist">Dentist</a></li>
-    <li><a href="#booking" class="nav-cta">Book Now</a></li>
-  </ul>
-  <button class="hamburger" id="hamburger" aria-label="Open menu">
-    <span></span><span></span><span></span>
-  </button>
+  <div class="nav-right-cluster">
+    <ul class="nav-links">
+      <li><a href="#hero">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#dentist">Dentist</a></li>
+      <li><a href="#booking" class="nav-cta">Book Now</a></li>
+    </ul>
+    <div class="nav-auth-wrapper" id="navAuthWrapper"></div>
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </nav>
 
 <!-- ===== HERO ===== -->
@@ -72,8 +76,8 @@
       Experience advanced, comfortable, and professional dental services
       designed for every smile. Where science meets artistry.
     </p>
-    <div class="hero-actions">
-      <a href="login.html" class="btn-primary">Get Started →</a>
+    <div class="hero-actions" id="heroActions">
+      <a href="login.html" class="btn-primary" id="heroPrimaryCta">Get Started →</a>
     </div>
     <div class="hero-stats">
       <div class="hero-stat">
@@ -559,7 +563,7 @@
     </div>
   </div>
 
-  <script src="../js/main.js?v=20260906_qr"></script>
+  <script src="../js/main.js?v=20260921_auth"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>
 </html>

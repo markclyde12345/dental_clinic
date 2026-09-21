@@ -175,14 +175,15 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('admin_active_tab');
         sessionStorage.removeItem('admin_active_tab');
 
-        // Persist session based on "Remember me"
-        if (remember) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('userInfo', JSON.stringify(data));
-        } else {
-          sessionStorage.setItem('token', data.token);
-          sessionStorage.setItem('userInfo', JSON.stringify(data));
-        }
+        // Persist session: account stays active for 30 days
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+        const expiry = Date.now() + thirtyDaysMs;
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userInfo', JSON.stringify(data));
+        localStorage.setItem('sessionExpiry', expiry.toString());
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('userInfo', JSON.stringify(data));
+        sessionStorage.setItem('sessionExpiry', expiry.toString());
         // Redirect based on role
         redirectByRole(data.role);
       } else if (status === 403 && data.requireVerification) {
@@ -315,8 +316,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.requireVerification) {
           window.location.href = `verify.html?email=${encodeURIComponent(data.email)}&channel=email&flow=signup`;
         } else {
+          const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+          const expiry = Date.now() + thirtyDaysMs;
           localStorage.setItem('token', data.token);
           localStorage.setItem('userInfo', JSON.stringify(data));
+          localStorage.setItem('sessionExpiry', expiry.toString());
+          sessionStorage.setItem('token', data.token);
+          sessionStorage.setItem('userInfo', JSON.stringify(data));
+          sessionStorage.setItem('sessionExpiry', expiry.toString());
           redirectByRole(data.role);
         }
       } else {

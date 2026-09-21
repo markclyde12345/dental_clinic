@@ -306,13 +306,15 @@ async function handleVerifySubmit(e) {
           role: data.role,
           token: data.token
         };
-        if (trustDevice) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('userInfo', JSON.stringify(userInfo));
-        } else {
-          sessionStorage.setItem('token', data.token);
-          sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
-        }
+        // Persist session: active for 30 days in localStorage
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+        const expiry = Date.now() + thirtyDaysMs;
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+        localStorage.setItem('sessionExpiry', expiry.toString());
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
+        sessionStorage.setItem('sessionExpiry', expiry.toString());
 
         if (flow === 'admin-mfa' || data.role === 'Admin') {
           showOtpSuccess('🛡️ Admin MFA verification confirmed! Launching Admin Console…');

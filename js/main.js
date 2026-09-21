@@ -113,8 +113,10 @@ window.addEventListener('scroll', () => {
   });
 });
 
-/* ===== DYNAMIC PATIENT COUNT ===== */
+/* ===== DYNAMIC PATIENT COUNT & ACTIVE USER SESSION ===== */
 document.addEventListener('DOMContentLoaded', () => {
+  initLandingUserSession();
+
   const patientStat = document.getElementById('patient-count-stat');
   if (patientStat) {
     const baseOrigin = ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000' && window.location.port !== '') ? 'http://localhost:5000' : '';
@@ -216,4 +218,158 @@ document.addEventListener('keydown', (e) => {
     closeLandingQrModal();
   }
 });
+
+/* ===== ACTIVE USER SESSION & DASHBOARD NAVIGATION ON LANDING PAGE ===== */
+function initLandingUserSession() {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  let userInfo = null;
+  try {
+    const raw = localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo');
+    if (raw) userInfo = JSON.parse(raw);
+  } catch (e) {
+    userInfo = null;
+  }
+
+  // 30-day session expiry check
+  const expiry = localStorage.getItem('sessionExpiry') || sessionStorage.getItem('sessionExpiry');
+  if (expiry && Date.now() > parseInt(expiry, 10)) {
+    // Expired after 30 days
+    localStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
+    localStorage.removeItem('sessionExpiry');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('userInfo');
+    sessionStorage.removeItem('sessionExpiry');
+    userInfo = null;
+  }
+
+  const isTestUser = window.location.search.includes('test_user=1');
+  if (isTestUser && !userInfo) {
+    userInfo = { name: 'Maria Santos', email: 'maria@example.com', role: 'Patient' };
+  }
+
+  const navAuthWrapper = document.getElementById('navAuthWrapper');
+  const mobileAccountContainer = document.getElementById('mobileAccountContainer');
+  const heroActions = document.getElementById('heroActions');
+
+  const roleMap = {
+    'Admin': 'admin-dashboard.html',
+    'Dentist': 'dentist-dashboard.html',
+    'Dental Assistant': 'dentist-dashboard.html',
+    'Receptionist': 'receptionist-dashboard.html',
+    'Accounting': 'accounting-dashboard.html',
+    'Patient': 'patient-dashboard.html'
+  };
+
+  const isLoggedIn = !!((token && userInfo) || isTestUser);
+  const userRole = userInfo?.role || 'Patient';
+  const dashUrl = roleMap[userRole] || 'patient-dashboard.html';
+
+  const rawName = userInfo?.name || userInfo?.fullName || (userInfo?.email ? userInfo.email.split('@')[0] : 'Patient');
+  const initial = rawName.charAt(0).toUpperCase();
+
+  // 1. Desktop / Tablet Navbar
+  if (navAuthWrapper) {
+    if (isLoggedIn) {
+      navAuthWrapper.innerHTML = `
+        <div class="nav-account-pill">
+          <div class="nav-account-user" title="${escapeHtml(rawName)} (${userRole})">
+            <div class="nav-account-avatar">${initial}</div>
+            <div class="nav-account-info">
+              <span class="nav-account-name">${escapeHtml(rawName)}</span>
+              <span class="nav-account-status"><span class="nav-status-dot"></span> Active</span>
+            </div>
+          </div>
+          <a href="${dashUrl}" class="btn-nav-dashboard" title="Return to ${userRole} Dashboard">
+            <i class="ti ti-layout-dashboard"></i>
+            <span>Dashboard</span>
+            <i class="ti ti-arrow-right"></i>
+          </a>
+          <button type="button" class="btn-nav-logout" onclick="landingLogout()" title="Sign Out">
+            <i class="ti ti-logout"></i>
+          </button>
+        </div>
+      `;
+    } else {
+      navAuthWrapper.innerHTML = `
+        <a href="login.html" class="btn-nav-login" title="Sign in to your account">
+          <i class="ti ti-user"></i>
+          <span>Log In</span>
+        </a>
+      `;
+    }
+  }
+
+  // 2. Mobile Drawer
+  if (mobileAccountContainer) {
+    if (isLoggedIn) {
+      mobileAccountContainer.innerHTML = `
+        <div class="mobile-account-card">
+          <div class="mobile-account-header">
+            <div class="mobile-account-avatar">${initial}</div>
+            <div class="mobile-account-meta">
+              <div class="mobile-account-name">${escapeHtml(rawName)}</div>
+              <div class="mobile-account-status"><span class="nav-status-dot"></span> Active for 30 Days</div>
+            </div>
+          </div>
+          <a href="${dashUrl}" class="btn-mobile-dash-cta" onclick="closeMobileMenu()">
+            <i class="ti ti-layout-dashboard"></i>
+            <span>Go to Dashboard</span>
+            <i class="ti ti-arrow-right"></i>
+          </a>
+          <button type="button" class="btn-mobile-signout" onclick="landingLogout()">
+            <i class="ti ti-logout"></i> Sign Out
+          </button>
+        </div>
+      `;
+    } else {
+      mobileAccountContainer.innerHTML = `
+        <div class="mobile-account-guest">
+          <a href="login.html" class="btn-mobile-guest-login" onclick="closeMobileMenu()">
+            <i class="ti ti-user"></i>
+            <span>Log In to Account</span>
+          </a>
+        </div>
+      `;
+    }
+  }
+
+  // 3. Hero Section CTA
+  if (heroActions && isLoggedIn) {
+    heroActions.innerHTML = `
+      <div style="width: 100%; margin-bottom: 8px;">
+        <div class="hero-account-badge">
+          <i class="ti ti-circle-check-filled" style="color: #0d9488; font-size: 1.1rem;"></i>
+          <span>Welcome back, <strong>${escapeHtml(rawName)}</strong> (Logged In)</span>
+        </div>
+      </div>
+      <a href="${dashUrl}" class="btn-primary">
+        <i class="ti ti-layout-dashboard" style="font-size: 1.15rem;"></i>
+        <span>Go to Dashboard →</span>
+      </a>
+      <a href="#booking" class="btn-hero-secondary">
+        <i class="ti ti-calendar-plus" style="font-size: 1.1rem; color: #0d9488;"></i>
+        <span>Book Appointment</span>
+      </a>
+    `;
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const p = document.createElement('p');
+  p.textContent = str;
+  return p.innerHTML;
+}
+
+window.landingLogout = function() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userInfo');
+  localStorage.removeItem('sessionExpiry');
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('userInfo');
+  sessionStorage.removeItem('sessionExpiry');
+  window.location.reload();
+};
+
 

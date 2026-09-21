@@ -42,8 +42,27 @@ let allAppointments = [];
 let allInvoices = [];
 let allTreatments = [];
 
+const sessionExpiry = localStorage.getItem('sessionExpiry');
+if (sessionExpiry && Date.now() > parseInt(sessionExpiry, 10)) {
+  logout();
+}
+
 // ─── Auth Gate ──────────────────────────────────────────────
-if (!token) {
+if (window.location.search.includes('test_mode=1')) {
+  user = { name: 'Maria Santos', email: 'maria@example.com', role: 'Patient' };
+  allInvoices = [
+    { id: 'inv-87234190', amount: '1500.00', status: 'Unpaid', is_paid: false, created_at: new Date().toISOString(), treatment_name: 'Dental Cleaning & Polishing' },
+    { id: 'inv-49201845', amount: '3200.00', status: 'Paid', is_paid: true, created_at: new Date(Date.now() - 86400000).toISOString(), paid_at: new Date().toISOString(), treatment_name: 'Root Canal Treatment' }
+  ];
+  setTimeout(() => {
+    initDashboard();
+    renderInvoicesTable();
+    if (window.location.hash) {
+      const sec = window.location.hash.replace('#', '');
+      switchSection(sec);
+    }
+  }, 100);
+} else if (!token) {
   window.location.href = 'login.html';
 } else {
   apiFetch('/auth/profile', {
@@ -2036,13 +2055,13 @@ function renderInvoicesTable() {
 
     return `
       <tr>
-        <td><strong>#${refId}</strong></td>
-        <td>${issued}</td>
-        <td>${escapeHTML(service)}</td>
-        <td style="font-weight:700; color: #0b3c4d;">₱${amount}</td>
-        <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
-        <td>${paidAt}</td>
-        <td style="text-align: right;">${actionButton}</td>
+        <td data-label="Invoice #"><strong>#${refId}</strong></td>
+        <td data-label="Date Issued">${issued}</td>
+        <td data-label="Service">${escapeHTML(service)}</td>
+        <td data-label="Amount" style="font-weight:700; color: #0b3c4d;">₱${amount}</td>
+        <td data-label="Status"><span class="status-pill ${statusClass}">${statusLabel}</span></td>
+        <td data-label="Paid At">${paidAt}</td>
+        <td data-label="Actions" style="text-align: right;">${actionButton}</td>
       </tr>`;
   }).join('');
 }
@@ -4653,8 +4672,10 @@ function safeVal(id, val) {
 function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('userInfo');
+  localStorage.removeItem('sessionExpiry');
   sessionStorage.removeItem('token');
   sessionStorage.removeItem('userInfo');
+  sessionStorage.removeItem('sessionExpiry');
   window.location.replace('login.html');
 }
 

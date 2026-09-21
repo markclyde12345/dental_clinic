@@ -4662,6 +4662,157 @@ body.reduce-motion * {
     font-size: 0.82rem !important;
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     MOBILE INVOICES CARD VIEW (≤ 768px)
+     Renders each invoice row as a dedicated responsive card with
+     zero horizontal overflow and clears the mobile bottom taskbar.
+  ═══════════════════════════════════════════════════════════════ */
+  #billing-section {
+    padding-bottom: 120px !important;
+  }
+  #billing-section .card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  #billing-section .table-wrapper {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  #billing-section .data-table {
+    min-width: 0 !important;
+    width: 100% !important;
+    display: block !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  #billing-section .data-table thead {
+    display: none !important;
+  }
+  #billing-section .data-table tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+  #billing-section .data-table tr {
+    display: flex !important;
+    flex-direction: column !important;
+    background: #ffffff !important;
+    border: 1px solid var(--border, #e2e8f0) !important;
+    border-radius: var(--radius-md, 14px) !important;
+    padding: 15px 16px !important;
+    box-shadow: 0 2px 8px rgba(11, 60, 77, 0.06) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  #billing-section .data-table td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 9px 0 !important;
+    border: none !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-size: 0.85rem !important;
+    background: transparent !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    text-align: right !important;
+    min-width: 0 !important;
+  }
+  #billing-section .data-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  #billing-section .data-table td[data-label="Actions"] {
+    display: block !important;
+    border-bottom: none !important;
+    padding-top: 13px !important;
+    padding-bottom: 2px !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+  #billing-section .data-table td[data-label="Actions"]::before {
+    display: none !important;
+  }
+  #billing-section .data-table td[data-label="Actions"]:empty {
+    display: none !important;
+  }
+  #billing-section .data-table td .btn-paymongo {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 11px 16px !important;
+    font-size: 0.88rem !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+  }
+  #billing-section .data-table td .btn-receipt-view {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 9px 16px !important;
+    font-size: 0.84rem !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+  }
+  #billing-section .status-pill.pending {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+    border: 1px solid #fde68a !important;
+    font-weight: 700 !important;
+  }
+  #billing-section .status-pill.confirmed {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    border: 1px solid #bbf7d0 !important;
+    font-weight: 700 !important;
+  }
+  #billing-section .data-table td.empty-table-row {
+    display: block !important;
+    text-align: center !important;
+    padding: 32px 16px !important;
+    border-bottom: none !important;
+    font-style: italic !important;
+  }
+  #billing-section .data-table td.empty-table-row::before {
+    display: none !important;
+  }
+
+  /* Dark mode support for billing cards */
+  [data-theme="dark"] #billing-section .data-table tr {
+    background: #141f2d !important;
+    border-color: var(--border) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  }
+  [data-theme="dark"] #billing-section .data-table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  }
+  [data-theme="dark"] #billing-section .data-table td::before {
+    color: #94a3b8 !important;
+  }
+  [data-theme="dark"] #billing-section .data-table td[data-label="Amount"] {
+    color: #38bdf8 !important;
+  }
+
   /* Booking Wizard Cards */
   .booking-form-card {
     padding: 22px 16px !important;

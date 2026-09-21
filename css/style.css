@@ -1119,3 +1119,380 @@ footer {
   box-shadow: 0 6px 18px rgba(13, 148, 136, 0.4);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   LANDING PAGE AUTH & ACTIVE ACCOUNT NAVIGATION
+═══════════════════════════════════════════════════════════════ */
+.nav-right-cluster {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-auth-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+/* Logged-in Account Pill on Desktop Navbar */
+.nav-account-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 4px 8px 4px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(11, 60, 77, 0.16);
+  box-shadow: 0 3px 12px rgba(11, 60, 77, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+}
+.nav-account-pill:hover {
+  box-shadow: 0 6px 18px rgba(11, 60, 77, 0.12);
+  border-color: rgba(13, 148, 136, 0.3);
+}
+
+.nav-account-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px;
+}
+
+.nav-account-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0b3c4d 0%, #0d9488 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
+  flex-shrink: 0;
+}
+
+.nav-account-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  text-align: left;
+}
+
+.nav-account-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0b3c4d;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-account-status {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: dotPulse 2s infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.btn-nav-dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #0b3c4d 0%, #082d3b 100%);
+  color: #ffffff !important;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 3px 10px rgba(11, 60, 77, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.btn-nav-dashboard:hover {
+  background: linear-gradient(135deg, #072530 0%, #0b3c4d 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(11, 60, 77, 0.35);
+}
+
+.btn-nav-dashboard::after {
+  display: none !important;
+}
+
+.btn-nav-logout {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  margin-left: 2px;
+}
+
+.btn-nav-logout:hover {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #fca5a5;
+  transform: scale(1.05);
+}
+
+/* Guest Login Link */
+.btn-nav-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #0b3c4d !important;
+  border: 1.5px solid rgba(11, 60, 77, 0.25);
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(11, 60, 77, 0.06);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-nav-login:hover {
+  border-color: #0b3c4d;
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 60, 77, 0.12);
+}
+
+.btn-nav-login::after {
+  display: none !important;
+}
+
+/* Mobile Drawer Account Card */
+.mobile-account-slot {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto 16px;
+  padding: 0 10px;
+}
+
+.mobile-account-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(11, 60, 77, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-account-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-account-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0b3c4d 0%, #0d9488 100%);
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(13, 148, 136, 0.3);
+  flex-shrink: 0;
+}
+
+.mobile-account-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+}
+
+.mobile-account-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0b3c4d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-account-status {
+  font-size: 0.72rem;
+  color: #059669;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.btn-mobile-dash-cta,
+.mobile-menu a.btn-mobile-dash-cta {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: linear-gradient(135deg, #0b3c4d 0%, #0d9488 100%) !important;
+  color: #ffffff !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  padding: 12px 20px !important;
+  border-radius: 12px !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 12px rgba(11, 60, 77, 0.2) !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+}
+
+.btn-mobile-dash-cta:hover,
+.mobile-menu a.btn-mobile-dash-cta:hover {
+  opacity: 0.95 !important;
+  transform: translateY(-1px) !important;
+  color: #ffffff !important;
+}
+
+.btn-mobile-signout {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.btn-mobile-signout:hover {
+  text-decoration: underline;
+}
+
+.mobile-account-guest {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-mobile-guest-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #0b3c4d !important;
+  border: 1.5px solid #0b3c4d;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 11px 20px;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(11, 60, 77, 0.08);
+}
+
+/* Hero section logged-in styling */
+.hero-account-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(13, 148, 136, 0.1);
+  border: 1px solid rgba(13, 148, 136, 0.35);
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #0b3c4d;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.12);
+}
+
+.btn-hero-secondary {
+  background: #ffffff;
+  color: #0b3c4d;
+  border: 1.5px solid rgba(11, 60, 77, 0.25);
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(11, 60, 77, 0.08);
+  transition: all 0.2s ease;
+}
+
+.btn-hero-secondary:hover {
+  border-color: #0b3c4d;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(11, 60, 77, 0.15);
+}
+
+@media (max-width: 960px) {
+  .nav-right-cluster {
+    gap: 10px;
+  }
+  .nav-account-pill .nav-account-info {
+    display: none;
+  }
+  .nav-account-pill {
+    padding: 3px 5px;
+  }
+  .btn-nav-dashboard span {
+    display: none;
+  }
+  .btn-nav-dashboard {
+    padding: 6px 9px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+  }
+  .btn-nav-dashboard i.ti-arrow-right {
+    display: none;
+  }
+  .btn-nav-login span {
+    display: none;
+  }
+  .btn-nav-login {
+    padding: 6px 10px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+  }
+}
+
