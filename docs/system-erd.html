@@ -1,0 +1,2029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Figure 6. Entity Relationship Diagram (ERD) — FANO Dental Clinic</title>
+  <meta name="description" content="Entity Relationship Diagram (ERD) of FANO: Dental Clinic Management System with direct PK to FK relational connectors.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #e2e8f0;
+      --paper: #ffffff;
+      --ink: #0f172a;
+      --muted: #475569;
+      --line: #0f172a;
+      --line-highlight: #0284c7;
+      --border-box: #0f172a;
+      --table-head-bg: #f8fafc;
+      --pk-bg: #fef3c7;
+      --pk-border: #f59e0b;
+      --pk-color: #92400e;
+      --fk-bg: #e0f2fe;
+      --fk-border: #38bdf8;
+      --fk-color: #0369a1;
+      --pin-pk: #d97706;
+      --pin-fk: #0284c7;
+      --font-body: Arial, Helvetica, sans-serif;
+      --font-code: 'JetBrains Mono', monospace;
+    }
+
+    body.color {
+      --bg: #0f172a;
+      --paper: #ffffff;
+      --ink: #0f172a;
+      --muted: #334155;
+      --line: #2563eb;
+      --line-highlight: #e11d48;
+      --border-box: #0284c7;
+      --table-head-bg: #e0f2fe;
+      --pk-bg: #fef2f2;
+      --pk-border: #ef4444;
+      --pk-color: #b91c1c;
+      --fk-bg: #f0fdf4;
+      --fk-border: #22c55e;
+      --fk-color: #15803d;
+      --pin-pk: #ef4444;
+      --pin-fk: #16a34a;
+      --font-body: 'Inter', Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top Toolbar ── */
+    .toolbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      padding: 12px 24px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+      border-bottom: 1px solid #334155;
+    }
+    .toolbar-left h1 {
+      font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px;
+    }
+    .toolbar-left small {
+      color: #94a3b8; font-weight: 400; font-size: 0.8rem; margin-left: 6px;
+    }
+    .toolbar .badge-status {
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+
+    .toolbar .actions {
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    }
+    .toolbar button {
+      font: 600 0.8rem 'Inter', sans-serif;
+      padding: 8px 13px; border-radius: 8px; cursor: pointer;
+      border: 1px solid #475569; background: #1e293b; color: #f8fafc;
+      transition: background .15s, transform .1s, border-color .15s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .toolbar button:hover { background: #334155; border-color: #64748b; }
+    .toolbar button:active { transform: scale(.97); }
+    .toolbar button.primary { background: #0284c7; border-color: #38bdf8; }
+    .toolbar button.primary:hover { background: #0369a1; }
+    .toolbar button.active-btn { background: #0e7490; border-color: #22d3ee; }
+
+    /* ── Workspace Paper ── */
+    .paper-wrapper {
+      flex: 1;
+      padding: 24px 20px 48px;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    .paper {
+      width: 1540px;
+      background: var(--paper);
+      padding: 36px 40px 48px;
+      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4);
+      border-radius: 4px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .figure-header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .figure-header h2 {
+      font-size: 16px; font-weight: 800; letter-spacing: 0.02em; color: var(--ink);
+    }
+    .figure-header p {
+      font-size: 12px; color: var(--muted); margin-top: 4px;
+    }
+
+    /* ── Filter Strip ── */
+    .filter-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+    .filter-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+    .filter-chip {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    .filter-chip:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+    .filter-chip.active {
+      background: #0284c7;
+      border-color: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+    }
+
+    /* ── ERD Canvas Board ── */
+    .erd-board {
+      position: relative;
+      width: 100%;
+      min-height: 1080px;
+      display: grid;
+      grid-template-columns: 270px 290px 290px 280px;
+      column-gap: 95px;
+      padding: 24px 45px 50px 45px;
+    }
+
+    #erd-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+      overflow: visible;
+      z-index: 1;
+    }
+    #erd-svg path.erd-wire {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke .15s, stroke-width .15s, opacity .15s, filter .15s;
+      cursor: pointer;
+    }
+    #erd-svg path.erd-wire.dimmed {
+      opacity: 0.12 !important;
+    }
+    #erd-svg path.erd-wire:hover,
+    #erd-svg path.erd-wire.active {
+      stroke: var(--line-highlight) !important;
+      stroke-width: 3.2 !important;
+      filter: drop-shadow(0 0 6px rgba(2, 132, 199, 0.7));
+    }
+    #erd-svg circle.pin-pk {
+      fill: var(--pin-pk);
+      stroke: #ffffff;
+      stroke-width: 1.2;
+    }
+
+    /* Columns */
+    .col {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      z-index: 2;
+    }
+
+    /* Entity Table Box */
+    .entity-table {
+      background: #ffffff;
+      border: 1.5px solid var(--border-box);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      width: 100%;
+      font-size: 11px;
+      position: relative;
+      user-select: none;
+      transition: transform .15s, box-shadow .15s;
+    }
+    body.color .entity-table {
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    body.color .entity-table:hover {
+      box-shadow: 0 8px 20px -6px rgba(2, 132, 199, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .entity-header {
+      background: var(--table-head-bg);
+      border-bottom: 1.5px solid var(--border-box);
+      padding: 7px 10px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .entity-header .icon {
+      font-size: 12px;
+    }
+
+    .entity-rows {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .entity-row {
+      display: grid;
+      grid-template-columns: 32px 1fr 68px;
+      align-items: center;
+      padding: 4px 8px;
+      border-bottom: 1px solid #e2e8f0;
+      line-height: 1.35;
+      position: relative;
+      transition: background .15s, color .15s, outline .15s;
+      cursor: default;
+    }
+    .entity-row:last-child {
+      border-bottom: none;
+    }
+
+    /* PK and FK highlighted rows */
+    .entity-row.is-pk {
+      background: var(--pk-bg);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .entity-row.is-fk {
+      background: var(--fk-bg);
+      cursor: pointer;
+    }
+    .entity-row.is-pk:hover {
+      background: #fde68a;
+    }
+    .entity-row.is-fk:hover {
+      background: #bae6fd;
+    }
+    .entity-row.row-highlight-pk {
+      background: #fef3c7 !important;
+      outline: 2px solid #d97706 !important;
+      color: #78350f !important;
+      box-shadow: 0 0 10px rgba(217, 119, 6, 0.45);
+      z-index: 20;
+    }
+    .entity-row.row-highlight-fk {
+      background: #e0f2fe !important;
+      outline: 2px solid #0284c7 !important;
+      color: #0369a1 !important;
+      box-shadow: 0 0 10px rgba(2, 132, 199, 0.45);
+      z-index: 20;
+    }
+
+    .col-key {
+      font-family: var(--font-code);
+      font-weight: 700;
+      font-size: 9.5px;
+      color: var(--muted);
+      letter-spacing: -0.02em;
+    }
+    .col-key.pk {
+      color: var(--pk-color);
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .col-key.fk {
+      color: var(--fk-color);
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .col-name {
+      font-family: var(--font-code);
+      font-size: 10.5px;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+    }
+    .col-name.bold {
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .fk-ref {
+      font-family: var(--font-code);
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--fk-color);
+      background: rgba(3, 105, 161, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      padding: 0 4px;
+      border-radius: 3px;
+      margin-left: 5px;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1.35;
+    }
+
+    .col-type {
+      font-family: var(--font-code);
+      font-size: 9px;
+      color: #64748b;
+      text-align: right;
+    }
+
+    /* HMO / Insurance Box Visibility */
+    .hmo-box {
+      transition: opacity .2s, max-height .2s;
+    }
+    .hmo-box.hidden {
+      display: none !important;
+    }
+
+    /* Floating Legend */
+    .erd-legend {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px dashed #cbd5e1;
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-chip {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      font-size: 10px;
+    }
+    .legend-chip.pk {
+      background: var(--pk-bg);
+      color: var(--pk-color);
+      border: 1px solid var(--pk-border);
+    }
+    .legend-chip.fk {
+      background: var(--fk-bg);
+      color: var(--fk-color);
+      border: 1px solid var(--fk-border);
+    }
+
+    /* Figure Caption Footer */
+    .figure-caption {
+      text-align: center;
+      margin-top: 14px;
+    }
+    .figure-caption h3 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .figure-caption p {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Tooltip */
+    #erd-tooltip {
+      position: absolute;
+      background: #0f172a;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: var(--font-code);
+      pointer-events: none;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      white-space: nowrap;
+    }
+
+    /* ── Dictionary & SQL Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000; display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 12px;
+      max-width: 980px; width: 100%;
+      max-height: 90vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+    .modal-header {
+      padding: 16px 24px;
+      background: #0f172a;
+      color: #fff;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-header h3 { font-size: 1.05rem; font-weight: 700; }
+    .modal-close {
+      background: transparent; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      font-size: 13px;
+      color: #1e293b;
+      line-height: 1.5;
+    }
+    .dict-table {
+      width: 100%; border-collapse: collapse; margin-top: 14px; margin-bottom: 20px;
+    }
+    .dict-table th, .dict-table td {
+      border: 1px solid #cbd5e1; padding: 7px 10px; font-size: 11.5px; text-align: left;
+    }
+    .dict-table th { background: #f1f5f9; font-weight: 700; }
+    .dict-table code {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #0284c7; background: #f0f9ff; padding: 1px 4px; border-radius: 3px;
+    }
+
+    pre.code-block {
+      background: #0f172a; color: #f8fafc; padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; overflow-x: auto;
+    }
+
+    @media print {
+      @page { size: A3 landscape; margin: 8mm; }
+      body { background: #fff !important; }
+      .toolbar, .modal-overlay, #erd-tooltip { display: none !important; }
+      .paper-wrapper { padding: 0 !important; }
+      .paper { box-shadow: none !important; width: 100% !important; padding: 10px !important; }
+      .entity-table:hover { transform: none !important; box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body class="academic">
+
+  <!-- TOP TOOLBAR -->
+  <header class="toolbar">
+    <div class="toolbar-left">
+      <h1>
+        <span>🦷 FANO ERD</span>
+        <span class="badge-status">Figure 6</span>
+        <small>Direct Primary Key (PK) &rarr; Foreign Key (FK) Relational Connections</small>
+      </h1>
+    </div>
+    <div class="actions">
+      <button type="button" id="btn-theme" onclick="toggleColorMode()">🎨 Color Mode</button>
+      <button type="button" id="btn-hmo" class="active-btn" onclick="toggleHmo()">🛡️ HMO: Excluded</button>
+      <button type="button" onclick="openDictionary()">📖 Data Dictionary</button>
+      <button type="button" onclick="openSqlModal()">💾 SQL Schema</button>
+      <button type="button" class="primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+    </div>
+  </header>
+
+  <!-- PAPER CANVAS -->
+  <div class="paper-wrapper">
+    <main class="paper" id="paper">
+      
+      <div class="figure-header">
+        <h2>Figure 6</h2>
+        <p>Entity Relationship Diagram (ERD) with Direct Key-to-Key Relational Integrity Mapping</p>
+      </div>
+
+      <div class="filter-strip">
+        <span class="filter-title">⚡ Focus Key Relations:</span>
+        <button type="button" class="filter-chip active" data-cat="all" onclick="setFilter('all', this)">All (15 Connections)</button>
+        <button type="button" class="filter-chip" data-cat="patient" onclick="setFilter('patient', this)">🏥 Patient Keys</button>
+        <button type="button" class="filter-chip" data-cat="appt" onclick="setFilter('appt', this)">📅 Appointment Keys</button>
+        <button type="button" class="filter-chip" data-cat="treatment" onclick="setFilter('treatment', this)">🦷 Clinical Treatment &amp; Rx</button>
+        <button type="button" class="filter-chip" data-cat="rbac" onclick="setFilter('rbac', this)">👤 Users &amp; Staff Roles</button>
+      </div>
+
+      <div class="erd-board" id="erd-board">
+        <!-- SVG CONNECTOR PATHS -->
+        <svg id="erd-svg">
+          <defs>
+            <!-- Crow's Foot "Many" (N) Marker -->
+            <marker id="marker-fk" viewBox="0 0 14 14" refX="13" refY="7" markerWidth="11" markerHeight="11" orient="auto">
+              <path d="M 1,1.5 L 13,7 L 1,12.5 M 1,7 L 13,7 M 13,0.5 L 13,13.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            </marker>
+            <!-- One and Only One "1" (PK) Marker -->
+            <marker id="marker-pk" viewBox="0 0 14 14" refX="2" refY="7" markerWidth="10" markerHeight="10" orient="auto">
+              <circle cx="8" cy="7" r="3.5" fill="currentColor"></circle>
+              <line x1="2" y1="1" x2="2" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
+            </marker>
+          </defs>
+        </svg>
+
+        <!-- ═════════ COLUMN 1: ACCESS & CLINICAL ROLES ═════════ -->
+        <div class="col" id="col-1">
+
+          <!-- 1. Role -->
+          <div class="entity-table" id="ent-role">
+            <div class="entity-header">
+              <span class="icon">🛡️</span> Role
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-role-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Role_id</span>
+                <span class="col-type">INT</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Rolename</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Description</span>
+                <span class="col-type">TEXT</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Users -->
+          <div class="entity-table" id="ent-users">
+            <div class="entity-header">
+              <span class="icon">👤</span> Users
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-users-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">User_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-users-role-fk" data-target="row-role-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Role_ID <span class="fk-ref">↳ Role</span></span>
+                <span class="col-type">INT</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Full_Name</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Role</span>
+                <span class="col-type">VARCHAR(30)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Password_hash</span>
+                <span class="col-type">VARCHAR(255)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Active</span>
+                <span class="col-type">BOOLEAN</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">CreatedAt</span>
+                <span class="col-type">TIMESTAMP</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">UpdatedAt</span>
+                <span class="col-type">TIMESTAMP</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. STAFF -->
+          <div class="entity-table" id="ent-staff">
+            <div class="entity-header">
+              <span class="icon">🧑‍💼</span> STAFF
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-staff-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Staff_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-staff-user-fk" data-target="row-users-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">User_ID <span class="fk-ref">↳ Users</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Name</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Email</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Phone</span>
+                <span class="col-type">VARCHAR(20)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Role</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">License_No</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. DENTIST -->
+          <div class="entity-table" id="ent-dentist">
+            <div class="entity-header">
+              <span class="icon">🩺</span> DENTIST
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-dentist-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Dentist_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-dentist-staff-fk" data-target="row-staff-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Staff_ID <span class="fk-ref">↳ STAFF</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Name</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Specialization</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Schedule_at</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Status</span>
+                <span class="col-type">VARCHAR(30)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Type</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Created_At</span>
+                <span class="col-type">TIMESTAMP</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ═════════ COLUMN 2: ANALYTICS, PATIENT, APPOINTMENT, FEEDBACK ═════════ -->
+        <div class="col" id="col-2">
+
+          <!-- 5. ANALYTICS -->
+          <div class="entity-table" id="ent-analytics">
+            <div class="entity-header">
+              <span class="icon">📊</span> ANALYTICS
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-analytics-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Analytics_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Total_Appointment</span>
+                <span class="col-type">INT</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">New_Patient</span>
+                <span class="col-type">INT</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Total_Revenue</span>
+                <span class="col-type">DECIMAL(12,2)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Avg_Rating</span>
+                <span class="col-type">DECIMAL(3,2)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Treatment_Done</span>
+                <span class="col-type">INT</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. Patient -->
+          <div class="entity-table" id="ent-patient">
+            <div class="entity-header">
+              <span class="icon">🏥</span> Patient
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-patient-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Patient_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-patient-user-fk" data-target="row-users-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">User_ID <span class="fk-ref">↳ Users</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">First_name</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Last_name</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Date_of_Birth</span>
+                <span class="col-type">DATE</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Email</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Address</span>
+                <span class="col-type">TEXT</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Contact_No</span>
+                <span class="col-type">VARCHAR(20)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Active</span>
+                <span class="col-type">BOOLEAN</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">CreatedAt</span>
+                <span class="col-type">TIMESTAMP</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">UpdatedAt</span>
+                <span class="col-type">TIMESTAMP</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7. APPOINTMENT -->
+          <div class="entity-table" id="ent-appointment">
+            <div class="entity-header">
+              <span class="icon">📅</span> APPOINTMENT
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-appt-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Appointment_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-appt-user-fk" data-target="row-users-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">User_ID <span class="fk-ref">↳ Users</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-appt-patient-fk" data-target="row-patient-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Patient_ID <span class="fk-ref">↳ Patient</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-appt-dentist-fk" data-target="row-dentist-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Dentist_ID <span class="fk-ref">↳ DENTIST</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-appt-sched-fk" data-target="row-schedule-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Schedule_ID <span class="fk-ref">↳ SCHEDULE</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Appointment_Time</span>
+                <span class="col-type">TIME</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Schedule_at</span>
+                <span class="col-type">DATE</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Status</span>
+                <span class="col-type">VARCHAR(30)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Type</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Created_At</span>
+                <span class="col-type">TIMESTAMP</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 8. FEEDBACK -->
+          <div class="entity-table" id="ent-feedback">
+            <div class="entity-header">
+              <span class="icon">⭐</span> FEEDBACK
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-feedback-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Feedback_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-feedback-appt-fk" data-target="row-appt-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Appointment_ID <span class="fk-ref">↳ APPT</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Ratings</span>
+                <span class="col-type">INT</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Comments</span>
+                <span class="col-type">TEXT</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Submitted_At</span>
+                <span class="col-type">TIMESTAMP</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ═════════ COLUMN 3: INVOICE, NOTIFICATION, TREATMENT, PRESCRIPTION ═════════ -->
+        <div class="col" id="col-3">
+
+          <!-- 9. INVOICE -->
+          <div class="entity-table" id="ent-invoice">
+            <div class="entity-header">
+              <span class="icon">🧾</span> INVOICE
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-invoice-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Invoice_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-invoice-patient-fk" data-target="row-patient-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Patient_ID <span class="fk-ref">↳ Patient</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Total_Amount</span>
+                <span class="col-type">DECIMAL(10,2)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Tax</span>
+                <span class="col-type">DECIMAL(10,2)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Status</span>
+                <span class="col-type">VARCHAR(30)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Issued_date</span>
+                <span class="col-type">TIMESTAMP</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Paid_Date</span>
+                <span class="col-type">TIMESTAMP</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 10. NOTIFICATION -->
+          <div class="entity-table" id="ent-notification">
+            <div class="entity-header">
+              <span class="icon">🔔</span> NOTIFICATION
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-notif-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Notification_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-notif-patient-fk" data-target="row-patient-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Patient_ID <span class="fk-ref">↳ Patient</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Channel</span>
+                <span class="col-type">VARCHAR(30)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Message</span>
+                <span class="col-type">TEXT</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Status</span>
+                <span class="col-type">VARCHAR(30)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Sent_At</span>
+                <span class="col-type">TIMESTAMP</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 11. TREATMENT -->
+          <div class="entity-table" id="ent-treatment">
+            <div class="entity-header">
+              <span class="icon">🦷</span> TREATMENT
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-treatment-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Treatment_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-treatment-appt-fk" data-target="row-appt-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Appointment_ID <span class="fk-ref">↳ APPT</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-treatment-patient-fk" data-target="row-patient-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Patient_ID <span class="fk-ref">↳ Patient</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Procedure_Name</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Tooth_Number</span>
+                <span class="col-type">VARCHAR(10)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Notes</span>
+                <span class="col-type">TEXT</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Price_Charged</span>
+                <span class="col-type">DECIMAL(10,2)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 12. PRESCRIPTION -->
+          <div class="entity-table" id="ent-prescription">
+            <div class="entity-header">
+              <span class="icon">💊</span> PRESCRIPTION
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-prescription-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Prescription_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-prescription-treatment-fk" data-target="row-treatment-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Treatment_ID <span class="fk-ref">↳ TREATMENT</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Medication</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Dosage</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Frequency</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Duration_Days</span>
+                <span class="col-type">INT</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ═════════ COLUMN 4: SCHEDULE, INSURANCE (HMO), MEDICAL HISTORY ═════════ -->
+        <div class="col" id="col-4">
+
+          <!-- 13. SCHEDULE -->
+          <div class="entity-table" id="ent-schedule">
+            <div class="entity-header">
+              <span class="icon">⏰</span> SCHEDULE
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-schedule-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Schedule_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Day_of_Week</span>
+                <span class="col-type">VARCHAR(20)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Start_Time</span>
+                <span class="col-type">TIME</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">End_Time</span>
+                <span class="col-type">TIME</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Status</span>
+                <span class="col-type">VARCHAR(30)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Is_Available</span>
+                <span class="col-type">BOOLEAN</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 14. INSURANCE / HMO (Removable / Toggled based on user requirement) -->
+          <div class="entity-table hmo-box hidden" id="ent-insurance">
+            <div class="entity-header" style="background:#fee2e2; border-color:#ef4444; color:#991b1b;">
+              <span class="icon">🛡️</span> INSURANCE (HMO)
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-insurance-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">Insurance_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-insurance-patient-fk" data-target="row-patient-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Patient_ID <span class="fk-ref">↳ Patient</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Provider_Name</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Policy_Number</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Coverage_Type</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Expiry_date</span>
+                <span class="col-type">DATE</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 15. MEDICAL_HISTORY -->
+          <div class="entity-table" id="ent-medhistory">
+            <div class="entity-header">
+              <span class="icon">📋</span> MEDICAL_HISTORY
+            </div>
+            <div class="entity-rows">
+              <div class="entity-row is-pk" id="row-medhistory-pk">
+                <span class="col-key pk">PK</span>
+                <span class="col-name bold">History_ID</span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row is-fk" id="row-medhistory-patient-fk" data-target="row-patient-pk">
+                <span class="col-key fk">FK</span>
+                <span class="col-name">Patient_ID <span class="fk-ref">↳ Patient</span></span>
+                <span class="col-type">UUID</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Full_Name</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Dentist_Name</span>
+                <span class="col-type">VARCHAR(100)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Schedule</span>
+                <span class="col-type">VARCHAR(50)</span>
+              </div>
+              <div class="entity-row">
+                <span class="col-key"></span>
+                <span class="col-name">Status</span>
+                <span class="col-type">VARCHAR(30)</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- KEY CONVENTION LEGEND -->
+      <div class="erd-legend">
+        <div class="legend-item">
+          <span class="legend-chip pk">PK</span>
+          <span>Primary Key (1: Parent Table Endpoint)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-chip fk">FK</span>
+          <span>Foreign Key (N: Child Table Endpoint)</span>
+        </div>
+        <div class="legend-item">
+          <svg width="34" height="12"><path d="M0,6 L26,6 M26,1 L34,6 L26,11" stroke="#0f172a" stroke-width="1.6" fill="none"></path></svg>
+          <span>Crow's Foot 1-to-Many Relational Dependency</span>
+        </div>
+        <div class="legend-item" style="color:#0284c7; font-weight:600;">
+          <span>💡 Tip: Hover any row or line to illuminate its key relationship</span>
+        </div>
+      </div>
+
+      <div class="figure-caption">
+        <h3>Figure 6. Entity Relationship Diagram (ERD)</h3>
+        <p>Relational Data Model of FANO Dental Clinic Management System with Precise Key-to-Key Referential Integrity</p>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="erd-tooltip"></div>
+
+  <!-- ═════════ MODAL 1: DATA DICTIONARY ═════════ -->
+  <div class="modal-overlay" id="modal-dict" onclick="if(event.target===this)closeDictionary()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📖 Comprehensive Data Dictionary (Database Schema)</h3>
+        <button type="button" class="modal-close" onclick="closeDictionary()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>This data dictionary specifies the relational schema, constraints, data types, and primary/foreign key mappings implemented in the Fano Dental Clinic Management System:</p>
+        
+        <h4 style="margin-top:16px; color:#0e7490;">1. Role &amp; Access Control (`Role`, `Users`, `STAFF`, `DENTIST`)</h4>
+        <table class="dict-table">
+          <thead>
+            <tr><th>Table</th><th>Field</th><th>Data Type</th><th>Key</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Role</code></td><td><code>Role_id</code></td><td>INT</td><td>PK</td><td>Unique role identifier (1: Admin, 2: Dentist, 3: Staff, etc.)</td></tr>
+            <tr><td><code>Role</code></td><td><code>Rolename</code></td><td>VARCHAR(50)</td><td>-</td><td>Name of system role (Admin, Dentist, Receptionist, Patient)</td></tr>
+            <tr><td><code>Users</code></td><td><code>User_ID</code></td><td>UUID</td><td>PK</td><td>Primary user key for authentication &amp; RBAC</td></tr>
+            <tr><td><code>Users</code></td><td><code>Role_ID</code></td><td>INT</td><td>FK</td><td>References <code>Role(Role_id)</code></td></tr>
+            <tr><td><code>Users</code></td><td><code>Password_hash</code></td><td>VARCHAR(255)</td><td>-</td><td>Bcrypt encrypted password hash</td></tr>
+            <tr><td><code>STAFF</code></td><td><code>Staff_ID</code></td><td>UUID</td><td>PK</td><td>Clinical and front desk staff identifier</td></tr>
+            <tr><td><code>STAFF</code></td><td><code>User_ID</code></td><td>UUID</td><td>FK</td><td>References <code>Users(User_ID)</code></td></tr>
+            <tr><td><code>DENTIST</code></td><td><code>Dentist_ID</code></td><td>UUID</td><td>PK</td><td>Dental doctor practitioner profile</td></tr>
+            <tr><td><code>DENTIST</code></td><td><code>Staff_ID</code></td><td>UUID</td><td>FK</td><td>References <code>STAFF(Staff_ID)</code></td></tr>
+          </tbody>
+        </table>
+
+        <h4 style="margin-top:16px; color:#0e7490;">2. Patient &amp; Appointments (`Patient`, `APPOINTMENT`, `SCHEDULE`)</h4>
+        <table class="dict-table">
+          <thead>
+            <tr><th>Table</th><th>Field</th><th>Data Type</th><th>Key</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Patient</code></td><td><code>Patient_ID</code></td><td>UUID</td><td>PK</td><td>Unique patient record key</td></tr>
+            <tr><td><code>Patient</code></td><td><code>User_ID</code></td><td>UUID</td><td>FK</td><td>References <code>Users(User_ID)</code> for patient portal access</td></tr>
+            <tr><td><code>APPOINTMENT</code></td><td><code>Appointment_ID</code></td><td>UUID</td><td>PK</td><td>Unique appointment consultation record</td></tr>
+            <tr><td><code>APPOINTMENT</code></td><td><code>Patient_ID</code></td><td>UUID</td><td>FK</td><td>References <code>Patient(Patient_ID)</code></td></tr>
+            <tr><td><code>APPOINTMENT</code></td><td><code>Dentist_ID</code></td><td>UUID</td><td>FK</td><td>References <code>DENTIST(Dentist_ID)</code></td></tr>
+            <tr><td><code>APPOINTMENT</code></td><td><code>Schedule_ID</code></td><td>UUID</td><td>FK</td><td>References <code>SCHEDULE(Schedule_ID)</code></td></tr>
+            <tr><td><code>SCHEDULE</code></td><td><code>Schedule_ID</code></td><td>UUID</td><td>PK</td><td>Operatory slot &amp; working schedule calendar</td></tr>
+          </tbody>
+        </table>
+
+        <h4 style="margin-top:16px; color:#0e7490;">3. Clinical Workflow &amp; Billing (`TREATMENT`, `PRESCRIPTION`, `INVOICE`)</h4>
+        <table class="dict-table">
+          <thead>
+            <tr><th>Table</th><th>Field</th><th>Data Type</th><th>Key</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>TREATMENT</code></td><td><code>Treatment_ID</code></td><td>UUID</td><td>PK</td><td>Procedure rendered (e.g. Oral Prophylaxis, Extraction)</td></tr>
+            <tr><td><code>TREATMENT</code></td><td><code>Appointment_ID</code></td><td>UUID</td><td>FK</td><td>References <code>APPOINTMENT(Appointment_ID)</code></td></tr>
+            <tr><td><code>TREATMENT</code></td><td><code>Patient_ID</code></td><td>UUID</td><td>FK</td><td>References <code>Patient(Patient_ID)</code></td></tr>
+            <tr><td><code>PRESCRIPTION</code></td><td><code>Prescription_ID</code></td><td>UUID</td><td>PK</td><td>Medical Rx issued by dentist</td></tr>
+            <tr><td><code>PRESCRIPTION</code></td><td><code>Treatment_ID</code></td><td>UUID</td><td>FK</td><td>References <code>TREATMENT(Treatment_ID)</code></td></tr>
+            <tr><td><code>INVOICE</code></td><td><code>Invoice_ID</code></td><td>UUID</td><td>PK</td><td>Financial invoice &amp; billing charge</td></tr>
+            <tr><td><code>INVOICE</code></td><td><code>Patient_ID</code></td><td>UUID</td><td>FK</td><td>References <code>Patient(Patient_ID)</code></td></tr>
+            <tr><td><code>FEEDBACK</code></td><td><code>Feedback_ID</code></td><td>UUID</td><td>PK</td><td>Patient star rating &amp; evaluation comment</td></tr>
+            <tr><td><code>NOTIFICATION</code></td><td><code>Notification_ID</code></td><td>UUID</td><td>PK</td><td>SMS/Email alert &amp; appointment reminder</td></tr>
+          </tbody>
+        </table>
+
+        <h4 style="margin-top:16px; color:#0e7490;">4. Extended Production Database Entities (Operational Features)</h4>
+        <table class="dict-table">
+          <thead>
+            <tr><th>Table</th><th>Field</th><th>Data Type</th><th>Key</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>dental_charts</code></td><td><code>id / chart_id</code></td><td>UUID</td><td>PK</td><td>Interactive adult &amp; pediatric odontogram visual mapping (JSONB)</td></tr>
+            <tr><td><code>dental_charts</code></td><td><code>patient_id</code></td><td>UUID</td><td>FK</td><td>References <code>patient(id)</code></td></tr>
+            <tr><td><code>treatment_plans</code></td><td><code>id</code></td><td>UUID</td><td>PK</td><td>Comprehensive multi-visit clinical treatment plans</td></tr>
+            <tr><td><code>treatment_plan_items</code></td><td><code>id</code></td><td>UUID</td><td>PK</td><td>Phased procedures &amp; sequential steps within a treatment plan</td></tr>
+            <tr><td><code>appointment_treatments</code></td><td><code>id</code></td><td>UUID</td><td>PK</td><td>Junction linking appointment to specific procedures performed</td></tr>
+            <tr><td><code>follow_ups</code></td><td><code>id</code></td><td>UUID</td><td>PK</td><td>Post-operative patient recovery reminders &amp; recall tracking</td></tr>
+            <tr><td><code>inventory</code></td><td><code>id</code></td><td>UUID</td><td>PK</td><td>Dental clinic supplies, consumables, and stock alert levels</td></tr>
+            <tr><td><code>expenses</code></td><td><code>id</code></td><td>UUID</td><td>PK</td><td>Clinic overhead, utilities, vendor bills, and accounting ledger</td></tr>
+            <tr><td><code>chat_rooms</code> / <code>messages</code></td><td><code>id</code></td><td>UUID</td><td>PK</td><td>Direct messaging between patient portal and clinic front desk</td></tr>
+            <tr><td><code>audit_logs</code></td><td><code>id</code></td><td>UUID</td><td>PK</td><td>System security compliance trail logging logins, updates &amp; actions</td></tr>
+            <tr><td><code>payments</code></td><td><code>id</code></td><td>UUID</td><td>PK</td><td>Financial transaction records for invoices (Cash, GCash, Card)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ MODAL 2: SQL DDL SCRIPT ═════════ -->
+  <div class="modal-overlay" id="modal-sql" onclick="if(event.target===this)closeSqlModal()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>💾 PostgreSQL / Supabase DDL SQL Schema</h3>
+        <button type="button" class="modal-close" onclick="closeSqlModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Copy and paste this production-ready SQL script directly into your <strong>Supabase SQL Editor</strong> to create all tables with proper Primary and Foreign Keys:</p>
+        <pre class="code-block"><code>-- =========================================================================
+-- FANO DENTAL CLINIC — FIGURE 6 ENTITY RELATIONSHIP SCHEMA (DDL)
+-- =========================================================================
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 1. Roles
+CREATE TABLE IF NOT EXISTS roles (
+  role_id SERIAL PRIMARY KEY,
+  rolename VARCHAR(50) UNIQUE NOT NULL,
+  description TEXT
+);
+
+-- 2. Users
+CREATE TABLE IF NOT EXISTS users (
+  user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  role_id INT REFERENCES roles(role_id) ON DELETE SET NULL,
+  full_name VARCHAR(100) NOT NULL,
+  role VARCHAR(30) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3. Staff
+CREATE TABLE IF NOT EXISTS staff (
+  staff_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100),
+  phone VARCHAR(20),
+  role VARCHAR(50),
+  license_no VARCHAR(50)
+);
+
+-- 4. Dentist
+CREATE TABLE IF NOT EXISTS dentist (
+  dentist_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  staff_id UUID REFERENCES staff(staff_id) ON DELETE SET NULL,
+  name VARCHAR(100) NOT NULL,
+  specialization VARCHAR(100),
+  schedule_at VARCHAR(100),
+  status VARCHAR(30) DEFAULT 'Active',
+  type VARCHAR(50),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 5. Schedule
+CREATE TABLE IF NOT EXISTS schedule (
+  schedule_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  day_of_week VARCHAR(20) NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  status VARCHAR(30) DEFAULT 'Active',
+  is_available BOOLEAN DEFAULT TRUE
+);
+
+-- 6. Patient
+CREATE TABLE IF NOT EXISTS patient (
+  patient_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50) NOT NULL,
+  date_of_birth DATE,
+  email VARCHAR(100),
+  address TEXT,
+  contact_no VARCHAR(20),
+  active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 7. Appointment
+CREATE TABLE IF NOT EXISTS appointment (
+  appointment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
+  patient_id UUID REFERENCES patient(patient_id) ON DELETE CASCADE,
+  dentist_id UUID REFERENCES dentist(dentist_id) ON DELETE SET NULL,
+  schedule_id UUID REFERENCES schedule(schedule_id) ON DELETE SET NULL,
+  appointment_time TIME,
+  schedule_at DATE NOT NULL,
+  status VARCHAR(30) DEFAULT 'Pending',
+  type VARCHAR(50),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 8. Treatment
+CREATE TABLE IF NOT EXISTS treatment (
+  treatment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  appointment_id UUID REFERENCES appointment(appointment_id) ON DELETE CASCADE,
+  patient_id UUID REFERENCES patient(patient_id) ON DELETE CASCADE,
+  procedure_name VARCHAR(100) NOT NULL,
+  tooth_number VARCHAR(10),
+  notes TEXT,
+  price_charged DECIMAL(10,2) NOT NULL DEFAULT 0.00
+);
+
+-- 9. Prescription
+CREATE TABLE IF NOT EXISTS prescription (
+  prescription_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  treatment_id UUID REFERENCES treatment(treatment_id) ON DELETE CASCADE,
+  medication VARCHAR(100) NOT NULL,
+  dosage VARCHAR(50),
+  frequency VARCHAR(50),
+  duration_days INT DEFAULT 7
+);
+
+-- 10. Invoice
+CREATE TABLE IF NOT EXISTS invoice (
+  invoice_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  patient_id UUID REFERENCES patient(patient_id) ON DELETE CASCADE,
+  total_amount DECIMAL(10,2) NOT NULL,
+  tax DECIMAL(10,2) DEFAULT 0.00,
+  status VARCHAR(30) DEFAULT 'Unpaid',
+  issued_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  paid_date TIMESTAMP WITH TIME ZONE
+);
+
+-- 11. Notification
+CREATE TABLE IF NOT EXISTS notification (
+  notification_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  patient_id UUID REFERENCES patient(patient_id) ON DELETE CASCADE,
+  channel VARCHAR(30) DEFAULT 'Email',
+  message TEXT NOT NULL,
+  status VARCHAR(30) DEFAULT 'Sent',
+  sent_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 12. Feedback
+CREATE TABLE IF NOT EXISTS feedback (
+  feedback_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  appointment_id UUID REFERENCES appointment(appointment_id) ON DELETE CASCADE,
+  ratings INT CHECK (ratings BETWEEN 1 AND 5),
+  comments TEXT,
+  submitted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 13. Medical History
+CREATE TABLE IF NOT EXISTS medical_history (
+  history_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  patient_id UUID REFERENCES patient(patient_id) ON DELETE CASCADE,
+  full_name VARCHAR(100),
+  dentist_name VARCHAR(100),
+  schedule VARCHAR(50),
+  status VARCHAR(30)
+);
+
+-- 14. Analytics Cache
+CREATE TABLE IF NOT EXISTS analytics (
+  analytics_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  total_appointment INT DEFAULT 0,
+  new_patient INT DEFAULT 0,
+  total_revenue DECIMAL(12,2) DEFAULT 0.00,
+  avg_rating DECIMAL(3,2) DEFAULT 5.00,
+  treatment_done INT DEFAULT 0
+);</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── EXACT ROW-TO-ROW RELATIONAL PATH GENERATOR ──────────────────────────
+    const NS = 'http://www.w3.org/2000/svg';
+    const tooltip = document.getElementById('erd-tooltip');
+    let currentFilter = 'all';
+
+    const categoryColors = {
+      patient: '#059669',    // Emerald
+      appt: '#2563eb',       // Blue
+      treatment: '#e11d48',  // Rose
+      rbac: '#7c3aed',       // Purple
+      schedule: '#d97706'    // Amber
+    };
+
+    function getAnchor(rowId, side = 'right') {
+      const el = document.getElementById(rowId);
+      if (!el) return null;
+      const board = document.getElementById('erd-board').getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      return {
+        el,
+        x: side === 'left' ? (r.left - board.left) : (r.right - board.left),
+        y: r.top - board.top + r.height / 2,
+        side
+      };
+    }
+
+    function addPin(svg, x, y, type = 'pk') {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', x);
+      c.setAttribute('cy', y);
+      c.setAttribute('r', '3.5');
+      c.setAttribute('class', 'pin-pk');
+      svg.appendChild(c);
+    }
+
+    function connectRows({ fromId, toId, fromSide = 'right', toSide = 'left', pts = [], descFrom = '', descTo = '', category = 'all' }) {
+      const from = getAnchor(fromId, fromSide);
+      const to = getAnchor(toId, toSide);
+      if (!from || !to) return;
+
+      const svg = document.getElementById('erd-svg');
+
+      // Start precisely at PK anchor, finish precisely at FK anchor
+      const fullPts = [[from.x, from.y], ...pts, [to.x, to.y]];
+      const d = fullPts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0] + ',' + p[1]).join(' ');
+
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('class', 'erd-wire');
+      path.setAttribute('marker-start', 'url(#marker-pk)');
+      path.setAttribute('marker-end', 'url(#marker-fk)');
+      path.setAttribute('data-category', category);
+      path.setAttribute('data-from', fromId);
+      path.setAttribute('data-to', toId);
+      path.setAttribute('data-desc-from', descFrom);
+      path.setAttribute('data-desc-to', descTo);
+
+      // Color mode specific line tint
+      const isColor = document.body.classList.contains('color');
+      if (isColor && categoryColors[category.split(' ')[0]]) {
+        path.style.stroke = categoryColors[category.split(' ')[0]];
+      }
+
+      // Interactive hover illumination
+      path.addEventListener('mouseenter', (e) => {
+        highlightRelation(path, from.el, to.el, descFrom, descTo, e);
+      });
+      path.addEventListener('mousemove', (e) => {
+        tooltip.style.left = (e.pageX + 14) + 'px';
+        tooltip.style.top = (e.pageY + 14) + 'px';
+      });
+      path.addEventListener('mouseleave', () => {
+        clearRelationHighlight();
+      });
+
+      svg.appendChild(path);
+
+      // Add Anchor Port Pin ONLY at PK end (Crow's foot marker acts as FK terminal)
+      addPin(svg, from.x, from.y, 'pk');
+    }
+
+    function highlightRelation(activePath, fromEl, toEl, descFrom, descTo, e) {
+      document.querySelectorAll('#erd-svg path.erd-wire').forEach(p => {
+        if (p === activePath) {
+          p.classList.add('active');
+          p.classList.remove('dimmed');
+        } else {
+          p.classList.add('dimmed');
+        }
+      });
+
+      if (fromEl) fromEl.classList.add('row-highlight-pk');
+      if (toEl) toEl.classList.add('row-highlight-fk');
+
+      if (descFrom && descTo) {
+        tooltip.innerHTML = `
+          <div style="font-weight:800; color:#38bdf8; margin-bottom:4px; font-size:11px;">🔗 RELATIONAL INTEGRITY (1 ────&lt; N)</div>
+          <div style="margin-bottom:2px;"><span style="color:#f59e0b; font-weight:800;">● [PK]</span> <strong>${descFrom}</strong> <span style="color:#94a3b8; font-size:10px;">(Primary Key, Parent)</span></div>
+          <div><span style="color:#38bdf8; font-weight:800;">&gt;| [FK]</span> <strong>${descTo}</strong> <span style="color:#94a3b8; font-size:10px;">(Foreign Key, Child)</span></div>
+        `;
+        tooltip.style.display = 'block';
+        if (e) {
+          tooltip.style.left = (e.pageX + 14) + 'px';
+          tooltip.style.top = (e.pageY + 14) + 'px';
+        }
+      }
+    }
+
+    function clearRelationHighlight() {
+      tooltip.style.display = 'none';
+      document.querySelectorAll('.entity-row').forEach(r => {
+        r.classList.remove('row-highlight-pk', 'row-highlight-fk');
+      });
+      applyFilterState();
+    }
+
+    function applyFilterState() {
+      const wires = document.querySelectorAll('#erd-svg path.erd-wire');
+      if (currentFilter === 'all') {
+        wires.forEach(w => {
+          w.classList.remove('dimmed', 'active');
+        });
+      } else {
+        wires.forEach(w => {
+          const cats = (w.getAttribute('data-category') || '').split(' ');
+          if (cats.includes(currentFilter)) {
+            w.classList.add('active');
+            w.classList.remove('dimmed');
+            const fromEl = document.getElementById(w.getAttribute('data-from'));
+            const toEl = document.getElementById(w.getAttribute('data-to'));
+            if (fromEl) fromEl.classList.add('row-highlight-pk');
+            if (toEl) toEl.classList.add('row-highlight-fk');
+          } else {
+            w.classList.add('dimmed');
+            w.classList.remove('active');
+          }
+        });
+      }
+    }
+
+    function setFilter(cat, btn) {
+      currentFilter = cat;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      document.querySelectorAll('.entity-row').forEach(r => {
+        r.classList.remove('row-highlight-pk', 'row-highlight-fk');
+      });
+      applyFilterState();
+    }
+
+    function bindRowHoverEvents() {
+      document.querySelectorAll('.entity-row.is-pk, .entity-row.is-fk').forEach(row => {
+        row.addEventListener('mouseenter', (e) => {
+          const rowId = row.id;
+          const matchingWire = document.querySelector(`#erd-svg path.erd-wire[data-from="${rowId}"], #erd-svg path.erd-wire[data-to="${rowId}"]`);
+          if (matchingWire) {
+            const fromId = matchingWire.getAttribute('data-from');
+            const toId = matchingWire.getAttribute('data-to');
+            const fromEl = document.getElementById(fromId);
+            const toEl = document.getElementById(toId);
+            const descFrom = matchingWire.getAttribute('data-desc-from') || fromId;
+            const descTo = matchingWire.getAttribute('data-desc-to') || toId;
+            highlightRelation(matchingWire, fromEl, toEl, descFrom, descTo, e);
+          }
+        });
+        row.addEventListener('mouseleave', () => {
+          clearRelationHighlight();
+        });
+      });
+    }
+
+    function drawConnectors() {
+      const svg = document.getElementById('erd-svg');
+      // Clear previous paths & circles, preserving marker defs
+      svg.querySelectorAll('path.erd-wire, circle.pin-pk').forEach(el => el.remove());
+
+      // Get Board & Columns bounding boxes
+      const board = document.getElementById('erd-board').getBoundingClientRect();
+      const col1 = document.getElementById('col-1').getBoundingClientRect();
+      const col2 = document.getElementById('col-2').getBoundingClientRect();
+      const col3 = document.getElementById('col-3').getBoundingClientRect();
+      const col4 = document.getElementById('col-4').getBoundingClientRect();
+
+      const c1 = { left: col1.left - board.left, right: col1.right - board.left };
+      const c2 = { left: col2.left - board.left, right: col2.right - board.left };
+      const c3 = { left: col3.left - board.left, right: col3.right - board.left };
+      const c4 = { left: col4.left - board.left, right: col4.right - board.left };
+
+      // 1. Role.Role_id (PK) ──< Users.Role_ID (FK)
+      const r_role = getAnchor('row-role-pk', 'left');
+      const r_user_role = getAnchor('row-users-role-fk', 'left');
+      if (r_role && r_user_role) {
+        const laneX = c1.left - 20;
+        connectRows({
+          fromId: 'row-role-pk',
+          toId: 'row-users-role-fk',
+          fromSide: 'left',
+          toSide: 'left',
+          pts: [[laneX, r_role.y], [laneX, r_user_role.y]],
+          descFrom: 'Role.Role_id',
+          descTo: 'Users.Role_ID',
+          category: 'rbac'
+        });
+      }
+
+      // 2. Users.User_ID (PK) ──< STAFF.User_ID (FK)
+      const r_user_l = getAnchor('row-users-pk', 'left');
+      const r_staff_user = getAnchor('row-staff-user-fk', 'left');
+      if (r_user_l && r_staff_user) {
+        const laneX = c1.left - 30;
+        connectRows({
+          fromId: 'row-users-pk',
+          toId: 'row-staff-user-fk',
+          fromSide: 'left',
+          toSide: 'left',
+          pts: [[laneX, r_user_l.y], [laneX, r_staff_user.y]],
+          descFrom: 'Users.User_ID',
+          descTo: 'STAFF.User_ID',
+          category: 'rbac'
+        });
+      }
+
+      // 3. STAFF.Staff_ID (PK) ──< DENTIST.Staff_ID (FK)
+      const r_staff_l = getAnchor('row-staff-pk', 'left');
+      const r_dentist_staff = getAnchor('row-dentist-staff-fk', 'left');
+      if (r_staff_l && r_dentist_staff) {
+        const laneX = c1.left - 18;
+        connectRows({
+          fromId: 'row-staff-pk',
+          toId: 'row-dentist-staff-fk',
+          fromSide: 'left',
+          toSide: 'left',
+          pts: [[laneX, r_staff_l.y], [laneX, r_dentist_staff.y]],
+          descFrom: 'STAFF.Staff_ID',
+          descTo: 'DENTIST.Staff_ID',
+          category: 'rbac'
+        });
+      }
+
+      // 4. Users.User_ID (PK) ──< Patient.User_ID (FK)
+      const r_user_r = getAnchor('row-users-pk', 'right');
+      const r_patient_user = getAnchor('row-patient-user-fk', 'left');
+      if (r_user_r && r_patient_user) {
+        const laneX = c1.right + 18;
+        connectRows({
+          fromId: 'row-users-pk',
+          toId: 'row-patient-user-fk',
+          fromSide: 'right',
+          toSide: 'left',
+          pts: [[laneX, r_user_r.y], [laneX, r_patient_user.y]],
+          descFrom: 'Users.User_ID',
+          descTo: 'Patient.User_ID',
+          category: 'rbac'
+        });
+      }
+
+      // 5. Users.User_ID (PK) ──< APPOINTMENT.User_ID (FK)
+      const r_appt_user = getAnchor('row-appt-user-fk', 'left');
+      if (r_user_r && r_appt_user) {
+        const laneX = c1.right + 32;
+        connectRows({
+          fromId: 'row-users-pk',
+          toId: 'row-appt-user-fk',
+          fromSide: 'right',
+          toSide: 'left',
+          pts: [[laneX, r_user_r.y], [laneX, r_appt_user.y]],
+          descFrom: 'Users.User_ID',
+          descTo: 'APPOINTMENT.User_ID',
+          category: 'rbac appt'
+        });
+      }
+
+      // 6. DENTIST.Dentist_ID (PK) ──< APPOINTMENT.Dentist_ID (FK)
+      const r_dentist = getAnchor('row-dentist-pk', 'right');
+      const r_appt_dentist = getAnchor('row-appt-dentist-fk', 'left');
+      if (r_dentist && r_appt_dentist) {
+        const laneX = c1.right + 48;
+        connectRows({
+          fromId: 'row-dentist-pk',
+          toId: 'row-appt-dentist-fk',
+          fromSide: 'right',
+          toSide: 'left',
+          pts: [[laneX, r_dentist.y], [laneX, r_appt_dentist.y]],
+          descFrom: 'DENTIST.Dentist_ID',
+          descTo: 'APPOINTMENT.Dentist_ID',
+          category: 'rbac appt'
+        });
+      }
+
+      // 7. Patient.Patient_ID (PK) ──< APPOINTMENT.Patient_ID (FK)
+      const r_patient_l = getAnchor('row-patient-pk', 'left');
+      const r_appt_patient = getAnchor('row-appt-patient-fk', 'left');
+      if (r_patient_l && r_appt_patient) {
+        const laneX = c2.left - 26;
+        connectRows({
+          fromId: 'row-patient-pk',
+          toId: 'row-appt-patient-fk',
+          fromSide: 'left',
+          toSide: 'left',
+          pts: [[laneX, r_patient_l.y], [laneX, r_appt_patient.y]],
+          descFrom: 'Patient.Patient_ID',
+          descTo: 'APPOINTMENT.Patient_ID',
+          category: 'patient appt'
+        });
+      }
+
+      // 8. APPOINTMENT.Appointment_ID (PK) ──< FEEDBACK.Appointment_ID (FK)
+      const r_appt_pk_l = getAnchor('row-appt-pk', 'left');
+      const r_feedback_appt = getAnchor('row-feedback-appt-fk', 'left');
+      if (r_appt_pk_l && r_feedback_appt) {
+        const laneX = c2.left - 14;
+        connectRows({
+          fromId: 'row-appt-pk',
+          toId: 'row-feedback-appt-fk',
+          fromSide: 'left',
+          toSide: 'left',
+          pts: [[laneX, r_appt_pk_l.y], [laneX, r_feedback_appt.y]],
+          descFrom: 'APPOINTMENT.Appointment_ID',
+          descTo: 'FEEDBACK.Appointment_ID',
+          category: 'appt'
+        });
+      }
+
+      // 9. APPOINTMENT.Appointment_ID (PK) ──< TREATMENT.Appointment_ID (FK)
+      const r_appt_pk_r = getAnchor('row-appt-pk', 'right');
+      const r_treat_appt = getAnchor('row-treatment-appt-fk', 'left');
+      if (r_appt_pk_r && r_treat_appt) {
+        const laneX = c2.right + 26;
+        connectRows({
+          fromId: 'row-appt-pk',
+          toId: 'row-treatment-appt-fk',
+          fromSide: 'right',
+          toSide: 'left',
+          pts: [[laneX, r_appt_pk_r.y], [laneX, r_treat_appt.y]],
+          descFrom: 'APPOINTMENT.Appointment_ID',
+          descTo: 'TREATMENT.Appointment_ID',
+          category: 'appt treatment'
+        });
+      }
+
+      // 10. Patient.Patient_ID (PK) ──< TREATMENT.Patient_ID (FK)
+      const r_patient_r = getAnchor('row-patient-pk', 'right');
+      const r_treat_patient = getAnchor('row-treatment-patient-fk', 'left');
+      if (r_patient_r && r_treat_patient) {
+        const laneX = c2.right + 66;
+        connectRows({
+          fromId: 'row-patient-pk',
+          toId: 'row-treatment-patient-fk',
+          fromSide: 'right',
+          toSide: 'left',
+          pts: [[laneX, r_patient_r.y], [laneX, r_treat_patient.y]],
+          descFrom: 'Patient.Patient_ID',
+          descTo: 'TREATMENT.Patient_ID',
+          category: 'patient treatment'
+        });
+      }
+
+      // 11. TREATMENT.Treatment_ID (PK) ──< PRESCRIPTION.Treatment_ID (FK)
+      // Routed cleanly on the RIGHT side of Column 3 to avoid colliding with Col 2 - Col 3 lanes
+      const r_treat_pk_r = getAnchor('row-treatment-pk', 'right');
+      const r_presc_treat_r = getAnchor('row-prescription-treatment-fk', 'right');
+      if (r_treat_pk_r && r_presc_treat_r) {
+        const laneX = c3.right + 20;
+        connectRows({
+          fromId: 'row-treatment-pk',
+          toId: 'row-prescription-treatment-fk',
+          fromSide: 'right',
+          toSide: 'right',
+          pts: [[laneX, r_treat_pk_r.y], [laneX, r_presc_treat_r.y]],
+          descFrom: 'TREATMENT.Treatment_ID',
+          descTo: 'PRESCRIPTION.Treatment_ID',
+          category: 'treatment'
+        });
+      }
+
+      // 12. Patient.Patient_ID (PK) ──< INVOICE.Patient_ID (FK)
+      const r_invoice_patient = getAnchor('row-invoice-patient-fk', 'left');
+      if (r_patient_r && r_invoice_patient) {
+        const laneX = c2.right + 40;
+        connectRows({
+          fromId: 'row-patient-pk',
+          toId: 'row-invoice-patient-fk',
+          fromSide: 'right',
+          toSide: 'left',
+          pts: [[laneX, r_patient_r.y], [laneX, r_invoice_patient.y]],
+          descFrom: 'Patient.Patient_ID',
+          descTo: 'INVOICE.Patient_ID',
+          category: 'patient'
+        });
+      }
+
+      // 13. Patient.Patient_ID (PK) ──< NOTIFICATION.Patient_ID (FK)
+      const r_notif_patient = getAnchor('row-notif-patient-fk', 'left');
+      if (r_patient_r && r_notif_patient) {
+        const laneX = c2.right + 52;
+        connectRows({
+          fromId: 'row-patient-pk',
+          toId: 'row-notif-patient-fk',
+          fromSide: 'right',
+          toSide: 'left',
+          pts: [[laneX, r_patient_r.y], [laneX, r_notif_patient.y]],
+          descFrom: 'Patient.Patient_ID',
+          descTo: 'NOTIFICATION.Patient_ID',
+          category: 'patient'
+        });
+      }
+
+      // 14. Patient.Patient_ID (PK) ──< MEDICAL_HISTORY.Patient_ID (FK)
+      const r_medhist_patient = getAnchor('row-medhistory-patient-fk', 'left');
+      if (r_patient_r && r_medhist_patient) {
+        // Route through horizontal corridor between INVOICE and NOTIFICATION (Y ~260)
+        const corrY = 255;
+        const laneX1 = c2.right + 78;
+        const laneX2 = c3.right + 34;
+        connectRows({
+          fromId: 'row-patient-pk',
+          toId: 'row-medhistory-patient-fk',
+          fromSide: 'right',
+          toSide: 'left',
+          pts: [[laneX1, r_patient_r.y], [laneX1, corrY], [laneX2, corrY], [laneX2, r_medhist_patient.y]],
+          descFrom: 'Patient.Patient_ID',
+          descTo: 'MEDICAL_HISTORY.Patient_ID',
+          category: 'patient'
+        });
+      }
+
+      // 15. SCHEDULE.Schedule_ID (PK) ──< APPOINTMENT.Schedule_ID (FK)
+      const r_sched_pk = getAnchor('row-schedule-pk', 'left');
+      const r_appt_sched = getAnchor('row-appt-sched-fk', 'right');
+      if (r_sched_pk && r_appt_sched) {
+        // Route from Schedule left, down through corridor between NOTIF & TREATMENT, into Appt right
+        const corrY = 530;
+        const laneX1 = c3.right + 48;
+        const laneX2 = c2.right + 14;
+        connectRows({
+          fromId: 'row-schedule-pk',
+          toId: 'row-appt-sched-fk',
+          fromSide: 'left',
+          toSide: 'right',
+          pts: [[laneX1, r_sched_pk.y], [laneX1, corrY], [laneX2, corrY], [laneX2, r_appt_sched.y]],
+          descFrom: 'SCHEDULE.Schedule_ID',
+          descTo: 'APPOINTMENT.Schedule_ID',
+          category: 'appt schedule'
+        });
+      }
+
+      // 16. Patient.Patient_ID (PK) ──< INSURANCE.Patient_ID (FK) (if HMO is toggled on)
+      const insEl = document.getElementById('ent-insurance');
+      if (insEl && !insEl.classList.contains('hidden')) {
+        const r_ins_patient = getAnchor('row-insurance-patient-fk', 'left');
+        if (r_patient_r && r_ins_patient) {
+          const corrY = 255;
+          const laneX1 = c2.right + 78;
+          const laneX2 = c3.right + 20;
+          connectRows({
+            fromId: 'row-patient-pk',
+            toId: 'row-insurance-patient-fk',
+            fromSide: 'right',
+            toSide: 'left',
+            pts: [[laneX1, r_patient_r.y], [laneX1, corrY], [laneX2, corrY], [laneX2, r_ins_patient.y]],
+            descFrom: 'Patient.Patient_ID',
+            descTo: 'INSURANCE.Patient_ID',
+            category: 'patient'
+          });
+        }
+      }
+
+      applyFilterState();
+      bindRowHoverEvents();
+    }
+
+    // ─── Interactive Controls ───────────────────────────────────────────────
+    function toggleColorMode() {
+      const isColor = document.body.classList.toggle('color');
+      document.body.classList.toggle('academic', !isColor);
+      document.getElementById('btn-theme').textContent = isColor ? '⬛ Academic (B&W)' : '🎨 Color Mode';
+      requestAnimationFrame(drawConnectors);
+    }
+
+    function toggleHmo() {
+      const ins = document.getElementById('ent-insurance');
+      const isHidden = ins.classList.toggle('hidden');
+      const btn = document.getElementById('btn-hmo');
+      if (isHidden) {
+        btn.textContent = '🛡️ HMO: Excluded';
+        btn.classList.add('active-btn');
+      } else {
+        btn.textContent = '🛡️ HMO: Included';
+        btn.classList.remove('active-btn');
+      }
+      requestAnimationFrame(drawConnectors);
+    }
+
+    function openDictionary() {
+      document.getElementById('modal-dict').classList.add('open');
+    }
+    function closeDictionary() {
+      document.getElementById('modal-dict').classList.remove('open');
+    }
+
+    function openSqlModal() {
+      document.getElementById('modal-sql').classList.add('open');
+    }
+    function closeSqlModal() {
+      document.getElementById('modal-sql').classList.remove('open');
+    }
+
+    window.addEventListener('load', drawConnectors);
+    window.addEventListener('resize', drawConnectors);
+    window.addEventListener('beforeprint', drawConnectors);
+    window.addEventListener('afterprint', drawConnectors);
+    if (document.fonts) document.fonts.ready.then(drawConnectors);
+  </script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FANO — System Development Framework</title>
+  <meta name="description" content="System development life cycle framework of FANO: Dental Clinic Management System with Data Analytics.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #111111;
+      --muted: #333333;
+      --paper: #ffffff;
+      --line: #111111;
+      --box-bg: #ffffff;
+      --head: #111111;
+      --tag-bg: transparent;
+      --tag-ink: #111111;
+      --font: Arial, Helvetica, sans-serif;
+    }
+    body.color {
+      --ink: #0f172a;
+      --muted: #334155;
+      --line: #0e7490;
+      --box-bg: #ffffff;
+      --head: #0e7490;
+      --tag-bg: #ecfeff;
+      --tag-ink: #0e7490;
+      --font: 'Inter', Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: #e2e8f0;
+      color: var(--ink);
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 12px 24px;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(10px);
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+    }
+    .toolbar h1 { font-size: 1rem; font-weight: 700; }
+    .toolbar h1 small { color: #94a3b8; font-weight: 500; margin-left: 8px; }
+    .toolbar .actions { display: flex; gap: 8px; }
+    .toolbar button {
+      font: 600 0.82rem 'Inter', sans-serif;
+      padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      border: 1px solid #475569; background: #1e293b; color: #f8fafc;
+      transition: background .2s, transform .1s;
+    }
+    .toolbar button:hover { background: #334155; }
+    .toolbar button:active { transform: scale(.97); }
+    .toolbar button.primary { background: #0e7490; border-color: #22d3ee; }
+
+    /* ── Paper ── */
+    .paper {
+      width: 1180px;
+      margin: 28px auto;
+      background: var(--paper);
+      padding: 56px 48px 64px;
+      box-shadow: 0 20px 50px -12px rgba(15, 23, 42, .35);
+    }
+    .figure-title {
+      text-align: center; font-size: 15px; font-weight: 700; margin-bottom: 36px; color: var(--ink);
+    }
+
+    .board {
+      position: relative;
+      display: grid;
+      grid-template-columns: 190px 600px 230px;
+      column-gap: 40px;
+    }
+    #arrows { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+    #arrows path { fill: none; stroke: var(--line); stroke-width: 1.4; }
+    #arrows marker path { fill: var(--line); stroke: none; }
+
+    .col-left  { padding-top: 0; }
+    .col-mid   { display: flex; flex-direction: column; gap: 64px; padding-top: 70px; }
+    .col-right { display: flex; align-items: center; }
+
+    .box {
+      background: var(--box-bg);
+      border: 1.4px solid var(--line);
+      padding: 18px 22px;
+      font-size: 12.5px;
+      line-height: 1.45;
+      position: relative;
+      transition: box-shadow .2s, transform .2s;
+    }
+    body.color .box { border-radius: 10px; }
+    body.color .box:hover { box-shadow: 0 10px 24px -10px rgba(14, 116, 144, .45); transform: translateY(-2px); }
+
+    .box h2 {
+      font-size: 14px; font-weight: 700; color: var(--head); margin-bottom: 12px;
+    }
+    .box h2.center { text-align: center; }
+    .box h3 { font-size: 12.5px; font-weight: 700; margin: 10px 0 6px; color: var(--ink); }
+    .box h4 { font-size: 12px; font-weight: 600; margin: 10px 0 4px; color: var(--muted); }
+    .box ul { padding-left: 18px; }
+    .box li { margin: 1px 0; }
+
+    .box.small { font-size: 11px; padding: 12px 14px; }
+    .box.small h2 { font-size: 11.5px; text-align: center; margin-bottom: 8px; }
+
+    .two-col { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; }
+
+    .tag {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .04em;
+      padding: 1px 6px; margin-left: 4px; border: 1px solid var(--tag-ink);
+      color: var(--tag-ink); background: var(--tag-bg); border-radius: 3px; vertical-align: 1px;
+    }
+    body:not(.show-tags) .tag { display: none; }
+
+    /* ── FANO hexagon ── */
+    .hex {
+      width: 230px; height: 120px;
+      position: relative;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      font-size: 13px; font-weight: 600; line-height: 1.35; padding: 0 30px;
+      color: var(--ink);
+    }
+    .hex svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .hex polygon { fill: var(--box-bg); stroke: var(--line); stroke-width: 1.4; }
+    body.color .hex polygon { fill: #ecfeff; }
+    .hex span { position: relative; }
+
+    .legend {
+      margin-top: 40px; font-size: 11px; color: var(--muted); text-align: center;
+    }
+
+    @media print {
+      @page { size: A3 portrait; margin: 10mm; }
+      body { background: #fff; }
+      .toolbar { display: none; }
+      .paper { box-shadow: none; margin: 0 auto; padding: 0; }
+      .box:hover { transform: none; box-shadow: none; }
+    }
+  </style>
+</head>
+<body class="show-tags">
+
+  <header class="toolbar">
+    <h1>FANO — System Development Framework <small>Based on the implemented system</small></h1>
+    <div class="actions">
+      <button id="btn-theme" type="button" onclick="toggleTheme()">🎨 Color Mode</button>
+      <button id="btn-tags" type="button" onclick="toggleTags()">🏷️ Hide "New" Tags</button>
+      <button id="btn-print" type="button" class="primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+    </div>
+  </header>
+
+  <main class="paper">
+    <p class="figure-title">Figure 1. System Development Framework of FANO: Dental Clinic Management System with Data Analytics</p>
+
+    <div class="board" id="board">
+      <svg id="arrows">
+        <defs>
+          <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z"></path>
+          </marker>
+        </defs>
+      </svg>
+
+      <!-- LEFT: Planning -->
+      <div class="col-left">
+        <section class="box small" id="planning">
+          <h2>Planning</h2>
+          <ul>
+            <li>Stakeholder Consultation (Clinic Owner, Dentists, Front Desk)</li>
+            <li>Techniques Used (Interview, Observation, Questionnaire)</li>
+            <li>Problem Identification</li>
+            <li>Identified Functional Requirements</li>
+            <li>Identified Non-functional Requirements</li>
+            <li>Project Scope &amp; Timeline <span class="tag">NEW</span></li>
+            <li>Outputs</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- MIDDLE: SDLC phases -->
+      <div class="col-mid">
+
+        <!-- ANALYSIS -->
+        <section class="box" id="analysis">
+          <h2 class="center">Analysis</h2>
+          <div class="two-col">
+            <div>
+              <h3>Functional Requirements</h3>
+              <ul>
+                <li>Login / Register (Email &amp; Google Sign-In)</li>
+                <li>Email Verification &amp; Forgot Password</li>
+                <li>Two-Factor Authentication (Email OTP &amp; Authenticator App)</li>
+                <li>Role-Based Access (Admin, Dentist, Receptionist, Dental Assistant, Accounting, Patient)</li>
+                <li>Role-Based Dashboards</li>
+                <li>Manage Users</li>
+                <li>Manage Patient Records</li>
+                <li>View Patient Records</li>
+                <li>Book Appointment</li>
+                <li>Book via QR / Patient Portal</li>
+                <li>Manage &amp; View Appointments</li>
+                <li>Live Patient Queue <span class="tag">NEW</span></li>
+                <li>View Schedule &amp; Calendar</li>
+                <li>Interactive Dental Chart (Odontogram) <span class="tag">NEW</span></li>
+                <li>Treatment Plans &amp; Clinical Notes <span class="tag">NEW</span></li>
+                <li>Prescriptions (Rx) <span class="tag">NEW</span></li>
+                <li>Post-Op Follow-Ups <span class="tag">NEW</span></li>
+                <li>Billing, Invoices &amp; Record Payment</li>
+                <li>Expense &amp; Accounting <span class="tag">NEW</span></li>
+                <li>Manage Inventory</li>
+                <li>Reports &amp; Data Analytics</li>
+                <li>Send SMS / Email Reminders &amp; Notifications</li>
+                <li>AI Dental Chatbot Assistant <span class="tag">NEW</span></li>
+                <li>Audit Logs &amp; Database Backup <span class="tag">NEW</span></li>
+                <li>Logout</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Non-Functional Requirements</h3>
+              <h4>Hardware:</h4>
+              <ul>
+                <li>Personal Computer / Desktop / Laptop</li>
+                <li>Smartphone / Tablet <span class="tag">NEW</span></li>
+                <li>Internet Connection</li>
+              </ul>
+              <h4>Software:</h4>
+              <ul>
+                <li>Operating System (OS)</li>
+                <li>Web Browser</li>
+                <li>HTML5</li>
+                <li>CSS3</li>
+                <li>JavaScript</li>
+                <li>Node.js &amp; Express.js</li>
+                <li>Supabase (PostgreSQL)</li>
+                <li>JWT Authentication &amp; bcrypt</li>
+                <li>Twilio API (SMS)</li>
+                <li>Nodemailer (Email)</li>
+                <li>Google Gemini API (AI)</li>
+                <li>OTPLib &amp; QRCode (2FA)</li>
+                <li>Vercel (Hosting)</li>
+                <li>Visual Studio Code</li>
+                <li>Postman (API Testing)</li>
+                <li>Git &amp; GitHub</li>
+              </ul>
+              <h4>Quality Attributes: <span class="tag">NEW</span></h4>
+              <ul>
+                <li>Security (Helmet, Rate Limiting, XSS &amp; HPP protection)</li>
+                <li>Usability (Responsive, Mobile-friendly)</li>
+                <li>Reliability (Backups, Offline Monitor)</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- DESIGN -->
+        <section class="box" id="design">
+          <h2>Design</h2>
+          <ul>
+            <li>System Architecture Design (3-Tier: Client – Express REST API – Supabase)</li>
+            <li>Database Schema Design (PostgreSQL / Supabase, ERD)</li>
+            <li>UI/UX Design (Responsive, Role-Based Dashboards)</li>
+            <li>RESTful API Design</li>
+            <li>System Flowchart &amp; Data Flow Diagram <span class="tag">NEW</span></li>
+            <li>Security Design (JWT, RBAC, 2FA) <span class="tag">NEW</span></li>
+          </ul>
+        </section>
+
+        <!-- IMPLEMENTATION -->
+        <section class="box" id="implementation">
+          <h2>Implementation</h2>
+          <ul>
+            <li>Front-end Development (HTML, CSS, JavaScript)</li>
+            <li>Back-end Development (Node.js, Express.js REST API)</li>
+            <li>Database Setup &amp; Migrations (Supabase PostgreSQL)</li>
+            <li>Third-party Integrations (Twilio, Nodemailer, Google Sign-In, Gemini AI)</li>
+            <li>Security Hardening (Helmet, Rate Limiting, Input Validation)</li>
+          </ul>
+        </section>
+
+        <!-- TESTING -->
+        <section class="box" id="testing">
+          <h2>Testing <span class="tag">NEW</span></h2>
+          <ul>
+            <li>Unit &amp; API Testing (Postman)</li>
+            <li>Functional Testing per User Role</li>
+            <li>Security Testing (Authentication, 2FA, Access Control)</li>
+            <li>Cross-browser &amp; Mobile Responsiveness Testing</li>
+            <li>User Acceptance Testing (UAT) with Clinic Staff &amp; Patients</li>
+            <li>System Evaluation (ISO/IEC 25010 &amp; System Usability Scale)</li>
+          </ul>
+        </section>
+
+        <!-- DEPLOYMENT -->
+        <section class="box" id="deployment">
+          <h2>Deployment <span class="tag">NEW</span></h2>
+          <ul>
+            <li>Web Hosting (Vercel)</li>
+            <li>Cloud Database (Supabase)</li>
+            <li>Environment &amp; API Key Configuration</li>
+            <li>User Training &amp; Orientation</li>
+          </ul>
+        </section>
+
+        <!-- MAINTENANCE -->
+        <section class="box" id="maintenance">
+          <h2>Maintenance <span class="tag">NEW</span></h2>
+          <ul>
+            <li>Scheduled Database Backups</li>
+            <li>Audit Log &amp; System Log Monitoring</li>
+            <li>Bug Fixes &amp; Feature Updates from User Feedback</li>
+            <li>Security Patches &amp; Dependency Updates</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- RIGHT: Output -->
+      <div class="col-right">
+        <div class="hex" id="fano">
+          <svg viewBox="0 0 230 120" preserveAspectRatio="none">
+            <polygon points="18,0 212,0 230,60 212,120 18,120 0,60"></polygon>
+          </svg>
+          <span>FANO: DENTAL CLINIC MANAGEMENT SYSTEM WITH DATA ANALYTICS</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="legend" id="legend">Items marked <strong>NEW</strong> are added on top of the original framework, based on features in the current system.</p>
+  </main>
+
+  <script>
+    const NS = 'http://www.w3.org/2000/svg';
+
+    function rel(el) {
+      const b = document.getElementById('board').getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      return { left: r.left - b.left, right: r.right - b.left, top: r.top - b.top, bottom: r.bottom - b.top,
+               cx: r.left - b.left + r.width / 2, cy: r.top - b.top + r.height / 2, w: r.width, h: r.height };
+    }
+
+    function addPath(svg, pts) {
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', pts.map((pt, i) => (i ? 'L' : 'M') + pt[0] + ',' + pt[1]).join(' '));
+      p.setAttribute('marker-end', 'url(#arrowhead)');
+      svg.appendChild(p);
+    }
+
+    function drawArrows() {
+      const svg = document.getElementById('arrows');
+      svg.querySelectorAll('path:not(marker path)').forEach(p => p.remove());
+
+      const planning = rel(document.getElementById('planning'));
+      const analysis = rel(document.getElementById('analysis'));
+      const fano = rel(document.getElementById('fano'));
+      const phases = ['analysis', 'design', 'implementation', 'testing', 'deployment', 'maintenance']
+        .map(id => rel(document.getElementById(id)));
+      const last = phases[phases.length - 1];
+
+      // 1. Planning → Analysis (over the top)
+      const topY = Math.min(planning.top, analysis.top) - 24;
+      const aX1 = analysis.left + analysis.w * 0.25;
+      addPath(svg, [[planning.cx, planning.top], [planning.cx, topY], [aX1, topY], [aX1, analysis.top]]);
+
+      // 2. Phase → next phase (straight down)
+      for (let i = 0; i < phases.length - 1; i++) {
+        const a = phases[i], b = phases[i + 1];
+        const x = a.left + Math.min(a.w, b.w) / 2;
+        addPath(svg, [[x, a.bottom], [x, b.top]]);
+      }
+
+      // 3. Maintenance → FANO (right, then up)
+      const midY = last.cy;
+      addPath(svg, [[last.right, midY], [fano.cx, midY], [fano.cx, fano.bottom]]);
+
+      // 4. FANO → Analysis feedback loop (up, left, down)
+      const loopY = analysis.top - 50;
+      const aX2 = analysis.left + analysis.w * 0.62;
+      addPath(svg, [[fano.cx, fano.top], [fano.cx, loopY], [aX2, loopY], [aX2, analysis.top]]);
+    }
+
+    function toggleTheme() {
+      const on = document.body.classList.toggle('color');
+      document.getElementById('btn-theme').textContent = on ? '⬛ Academic (B&W)' : '🎨 Color Mode';
+      requestAnimationFrame(drawArrows);
+    }
+    function toggleTags() {
+      const on = document.body.classList.toggle('show-tags');
+      document.getElementById('btn-tags').textContent = on ? '🏷️ Hide "New" Tags' : '🏷️ Show "New" Tags';
+      document.getElementById('legend').style.display = on ? '' : 'none';
+      requestAnimationFrame(drawArrows);
+    }
+
+    window.addEventListener('load', drawArrows);
+    window.addEventListener('resize', drawArrows);
+    window.addEventListener('beforeprint', drawArrows);
+    window.addEventListener('afterprint', drawArrows);
+    if (document.fonts) document.fonts.ready.then(drawArrows);
+  </script>
+</body>
+</html>

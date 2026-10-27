@@ -850,6 +850,7 @@ function loadAppointments() {
       renderAppointmentsFullList();
       renderPatientHistoryRecords();
       updateHistoryStats();
+      checkUnratedVisitsBanner();
     })
     .catch(err => console.error('Appointments error:', err));
 }
@@ -986,9 +987,16 @@ function renderOverviewHistoryPreview() {
           <div class="appt-time">${time}</div>
         </div>
         <span class="status-pill ${statusClass}">${appt.status || 'Completed'}</span>
-        <button type="button" class="btn-view-appt" onclick="event.stopPropagation(); openAppointmentDetailsModal('${appt.id}')">
-          View →
-        </button>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          ${(appt.status || '').toLowerCase() === 'completed' ? `
+            <button type="button" class="btn btn-sm" onclick="event.stopPropagation(); openRateTreatmentModal('${appt.id}')" title="Rate this completed visit" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; border-radius:8px; padding:5px 9px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+              <span style="color:#f59e0b; font-size:13px; line-height:1;">★</span> Rate
+            </button>
+          ` : ''}
+          <button type="button" class="btn-view-appt" onclick="event.stopPropagation(); openAppointmentDetailsModal('${appt.id}')">
+            View →
+          </button>
+        </div>
       </div>`;
   }).join('');
 }
@@ -1040,42 +1048,7 @@ function filterPatientHistory() {
 }
 
 function formatShortBranchName(raw) {
-  if (!raw || typeof raw !== 'string') return 'Main Branch (Naga)';
-  const str = raw.trim();
-
-  const lower = str.toLowerCase();
-  if (lower.includes('naga') || lower.includes('balirong')) {
-    return 'Main Branch (Naga)';
-  }
-  if (lower.includes('minglanilla') || lower.includes('ward ii') || lower.includes('ward 2')) {
-    return 'Minglanilla Branch';
-  }
-  if (lower.includes('talisay') || lower.includes('tabunok')) {
-    return 'Talisay Branch';
-  }
-  if (lower.includes('cebu city') || lower.includes('cebu branch') || lower.includes('urgello') || lower.includes('sambag') || lower.includes('cebu')) {
-    return 'Cebu Branch';
-  }
-
-  // Generic cleaner for any custom branch location
-  let cleaned = str
-    .replace(/\s*\([^)]*\)/g, '') // strip parenthesized address e.g. (Balirong Highway...)
-    .replace(/^Fano\s*(?:Dental\s*)?Clinic\s*[-–—:]\s*/i, '') // strip clinic prefix
-    .trim();
-
-  // If there are still separators, take the branch title
-  if (cleaned.includes('–')) cleaned = cleaned.split('–')[0].trim();
-  if (cleaned.includes('—')) cleaned = cleaned.split('—')[0].trim();
-  if (cleaned.includes(' - ')) cleaned = cleaned.split(' - ')[0].trim();
-  if (cleaned.includes(',')) cleaned = cleaned.split(',')[0].trim();
-
-  if (!cleaned) return 'Main Branch (Naga)';
-
-  // Clip if still overly verbose
-  if (cleaned.length > 24) {
-    cleaned = cleaned.slice(0, 23).trim() + '…';
-  }
-  return cleaned;
+  return 'Balirong, Naga';
 }
 
 function renderPatientHistoryRecords(list = null) {
@@ -1088,9 +1061,9 @@ function renderPatientHistoryRecords(list = null) {
   if (!dataset || dataset.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" class="empty-table-row">
-          <div style="padding: 28px; text-align: center;">
-            <i class="ti ti-calendar" style="font-size: 40px; margin-bottom: 8px; color: #94a3b8; display: inline-block;"></i>
+        <td colspan="4" class="empty-table-row">
+          <div style="padding: 32px 16px; text-align: center;">
+            <i class="ti ti-calendar-off" style="font-size: 38px; margin-bottom: 8px; color: #94a3b8; display: inline-block;"></i>
             <p style="margin: 0; font-weight: 600; color: #64748b;">No dental visit records found.</p>
           </div>
         </td>
@@ -1108,13 +1081,10 @@ function renderPatientHistoryRecords(list = null) {
     const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     const treatmentName = appt.treatment?.name || appt.reason || 'Dental Consultation';
-    const priceVal = appt.treatment?.price ? parseFloat(appt.treatment.price) : 0;
-    const priceStr = `₱${priceVal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
 
     const rawNotes = appt.notes || '';
     let dentistName = 'Staff Specialist';
     let rawBranch = 'Main Branch (Naga)';
-    let concern = 'General Dental Care';
 
     const branchMatch = rawNotes.match(/\[Branch:\s*([^\]]+)\]/i);
     if (branchMatch) rawBranch = branchMatch[1].trim();
@@ -1122,23 +1092,6 @@ function renderPatientHistoryRecords(list = null) {
 
     const dentistMatch = rawNotes.match(/\[Dentist:\s*([^\]]+)\]/i);
     if (dentistMatch && dentistMatch[1] !== 'No Preference') dentistName = dentistMatch[1];
-
-    const concernMatch = rawNotes.match(/\[Concern:\s*([^\]]+)\]/i);
-    if (concernMatch) concern = concernMatch[1];
-
-    const inv = (allInvoices || []).find(i => i.appointment_id === appt.id);
-    let paymentBadge = '';
-    if (inv) {
-      if (inv.status === 'Paid') {
-        paymentBadge = `<span class="history-payment-status paid"><i class="ti ti-check"></i> Paid</span>`;
-      } else if (inv.status === 'Written Off') {
-        paymentBadge = `<span class="history-payment-status" style="color: #64748b;"><i class="ti ti-ban"></i> Written Off</span>`;
-      } else {
-        paymentBadge = `<span class="history-payment-status unpaid"><i class="ti ti-clock"></i> Unpaid</span>`;
-      }
-    } else {
-      paymentBadge = `<span class="history-payment-status" style="color: #64748b;">Pending Invoice</span>`;
-    }
 
     const s = appt.status || 'Pending';
     let statusClass = 'pending';
@@ -1149,37 +1102,37 @@ function renderPatientHistoryRecords(list = null) {
 
     return `
       <tr>
-        <td>
+        <td style="white-space: nowrap;">
           <div style="font-weight: 700; color: var(--text-primary); font-size: 0.88rem;">${dateStr}</div>
-          <div style="font-size: 0.76rem; color: #64748b;"><i class="ti ti-clock"></i> ${timeStr}</div>
+          <div style="font-size: 0.76rem; color: #64748b; margin-top: 1px;"><i class="ti ti-clock" style="font-size: 12px;"></i> ${timeStr}</div>
         </td>
         <td>
-          <div class="history-treatment-title">
-            <i class="ti ti-tooth" style="color: var(--primary-color);"></i>
+          <div class="history-treatment-title" style="font-weight: 700; color: var(--text-primary); font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+            <i class="ti ti-dental" style="color: var(--accent); font-size: 16px;"></i>
             <span>${escapeHTML(treatmentName)}</span>
           </div>
-          <span class="ref-pill" style="font-size: 0.7rem; margin-top: 3px; display: inline-block;">#${appt.id ? appt.id.substring(0, 8).toUpperCase() : '--'}</span>
-        </td>
-        <td>
-          <div class="history-dentist-row">
-            <span class="history-dentist-name"><i class="ti ti-stethoscope" style="color: #0284c7; font-size: 0.75rem;"></i> ${escapeHTML(dentistName)}</span>
-            <span class="history-branch-pill" title="${escapeHTML(rawBranch)}"><i class="ti ti-map-pin" style="flex-shrink: 0;"></i><span class="history-branch-text">${escapeHTML(branchName)}</span></span>
+          <div style="font-size: 0.76rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span><i class="ti ti-stethoscope" style="font-size: 12px; color: #0284c7;"></i> ${escapeHTML(dentistName)}</span>
+            <span>•</span>
+            <span><i class="ti ti-map-pin" style="font-size: 12px; color: #64748b;"></i> ${escapeHTML(branchName)}</span>
           </div>
         </td>
-        <td>
-          <span class="history-concern-tag">${escapeHTML(concern)}</span>
-        </td>
-        <td>
-          <div class="history-fee-amount">${priceStr}</div>
-          ${paymentBadge}
-        </td>
-        <td>
+        <td style="white-space: nowrap;">
           <span class="status-pill ${statusClass}">${s}</span>
         </td>
-        <td>
-          <button type="button" class="btn-view-appt" onclick="openAppointmentDetailsModal('${appt.id}')" title="View appointment clinical sheet and details" style="padding: 5px 10px; font-size: 0.78rem;">
-            Details →
-          </button>
+        <td style="text-align: right; white-space: nowrap;">
+          <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px;">
+            ${s === 'Completed' ? `
+              <button type="button" class="btn btn-sm" onclick="openRateTreatmentModal('${appt.id}')" title="Rate your dental visit" style="padding: 6px 10px; font-size: 0.78rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; background: #fef3c7; color: #b45309; border: 1px solid #fde68a; cursor: pointer;">
+                <span style="color: #f59e0b; font-size: 13px; line-height: 1;">★</span>
+                <span>Rate Visit</span>
+              </button>
+            ` : ''}
+            <button type="button" class="btn btn-secondary btn-view-appt" onclick="openAppointmentDetailsModal('${appt.id}')" title="View appointment clinical sheet and full details" style="padding: 6px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;">
+              <span>View Details</span>
+              <i class="ti ti-arrow-right" style="font-size: 12px;"></i>
+            </button>
+          </div>
         </td>
       </tr>`;
   }).join('');
@@ -1957,17 +1910,19 @@ function renderFinancialActivity() {
 
   container.innerHTML = activities.map(act => `
     <div class="financial-activity-item">
-      <div class="activity-icon ${act.type}">${act.type === 'payment' ? '✓' : '📄'}</div>
+      <div class="activity-icon ${act.type}">
+        ${act.type === 'payment' ? '<i class="ti ti-circle-check"></i>' : '<i class="ti ti-file-invoice"></i>'}
+      </div>
       <div class="activity-content">
         <div class="activity-header">
-          <span class="activity-type">${act.title}</span>
+          <span class="activity-type">${escapeHTML(act.title)}</span>
           <span class="activity-amount ${act.status}">${act.status === 'completed' ? '+' : ''}₱${act.amount.toFixed(2)}</span>
         </div>
         <div class="activity-details">
-          <span class="activity-invoice">${act.invoiceNumber}</span>
+          <span class="activity-invoice">${escapeHTML(act.invoiceNumber)}</span>
           <span class="activity-date">${act.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-          <span class="activity-method">${act.method}</span>
-          <span class="activity-status ${act.status}">${act.status}</span>
+          <span class="activity-method">${escapeHTML(act.method)}</span>
+          <span class="activity-status ${act.status}">${act.status === 'completed' ? 'Paid' : 'Pending'}</span>
         </div>
       </div>
     </div>
@@ -2912,11 +2867,33 @@ function closeServiceDetailsModal() {
 }
 window.closeServiceDetailsModal = closeServiceDetailsModal;
 
+let currentServiceCategory = 'all';
+
+function selectServiceCategory(cat) {
+  currentServiceCategory = cat || 'all';
+  document.querySelectorAll('.svc-cat-chip').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-cat') === currentServiceCategory);
+  });
+  filterServicesCatalog();
+}
+window.selectServiceCategory = selectServiceCategory;
+
 function filterServicesCatalog() {
   const query = (document.getElementById('services-search-input')?.value || '').toLowerCase().trim();
   const sortMode = document.getElementById('services-sort-select')?.value || 'default';
 
   let filtered = allTreatments.filter(t => {
+    // 1. Category check
+    if (currentServiceCategory !== 'all') {
+      const name = (t.name || '').toLowerCase();
+      if (currentServiceCategory === 'cleaning' && !(name.includes('clean') || name.includes('prophylaxis') || name.includes('scaling'))) return false;
+      if (currentServiceCategory === 'restorative' && !(name.includes('fill') || name.includes('cavity') || name.includes('composite') || name.includes('restor'))) return false;
+      if (currentServiceCategory === 'surgery' && !(name.includes('extract') || name.includes('wisdom') || name.includes('surgery') || name.includes('odontec'))) return false;
+      if (currentServiceCategory === 'rootcanal' && !(name.includes('root canal') || name.includes('endodontic'))) return false;
+      if (currentServiceCategory === 'ortho' && !(name.includes('brace') || name.includes('aligner') || name.includes('ortho'))) return false;
+    }
+
+    // 2. Query check
     if (!query) return true;
     const name = (t.name || '').toLowerCase();
     const desc = (t.description || '').toLowerCase();
@@ -3012,6 +2989,17 @@ function updateDateTimeSummary() {
   } else {
     summaryEl.textContent = '—';
   }
+
+  const preview = document.getElementById('schedule-selected-preview');
+  const previewText = document.getElementById('schedule-preview-text');
+  if (preview && previewText) {
+    if (dateVal && timeVal) {
+      previewText.textContent = `${summaryEl.textContent}`;
+      preview.style.display = 'inline-flex';
+    } else {
+      preview.style.display = 'none';
+    }
+  }
 }
 
 function updateDentistSummary(dentistName) {
@@ -3043,24 +3031,15 @@ function setupBookingWizard() {
   // Load Dentists List
   loadDentists();
 
-  // Load Patient Profile Details for Step 4 auto-fill
+  // Load Patient Profile Details for Step 1 auto-fill
   if (user) {
-    safeVal('wizard-pat-name', user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown');
+    safeVal('wizard-pat-name', user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || '');
     safeVal('wizard-pat-email', user.email || '');
-    safeVal('wizard-pat-phone', user.contact_number || user.contactNumber || 'N/A');
-    safeVal('wizard-pat-address', user.address || 'Balirong, City of Naga, Cebu');
+    safeVal('wizard-pat-phone', user.contact_number || user.contactNumber || user.phone || '');
   }
 
-  // Address input change listener
-  const addrInput = document.getElementById('wizard-pat-address');
-  addrInput?.addEventListener('change', () => {
-    geocodeAndLocate(addrInput.value);
-  });
-
-  // GPS detect button
-  document.getElementById('btn-detect-gps')?.addEventListener('click', () => {
-    detectGPSLocation();
-  });
+  // Populate branch picker cards for clinic selection
+  updateNearestBranchAndMap(10.2098, 123.7540, 'Balirong, City of Naga, Cebu');
 
   // Next Button Click
   btnNext?.addEventListener('click', () => {
@@ -3107,91 +3086,19 @@ function setupBookingWizard() {
 // ═══════════════════════════════════════════════════════════
 
 function getClinicBranches() {
-  const defaultBranches = [
+  return [
     {
       id: 'main-balirong',
-      name: 'Fano Dental Clinic — Main Branch',
-      shortName: 'Main Branch (Balirong)',
+      name: 'Fano Dental Clinic',
+      shortName: 'Fano Dental Clinic (Naga)',
       address: 'Balirong Highway, City of Naga, Cebu',
       city: 'City of Naga',
       lat: 10.2098,
       lng: 123.7580,
       phone: '(032) 489-1200',
       hours: 'Mon - Sat: 8:00 AM - 6:00 PM'
-    },
-    {
-      id: 'minglanilla',
-      name: 'Fano Dental Clinic — Minglanilla',
-      shortName: 'Minglanilla Branch',
-      address: 'Poblacion Ward II, Minglanilla, Cebu',
-      city: 'Minglanilla',
-      lat: 10.2444,
-      lng: 123.7972,
-      phone: '(032) 272-3456',
-      hours: 'Mon - Sun: 8:30 AM - 6:30 PM'
-    },
-    {
-      id: 'san-fernando',
-      name: 'Fano Dental Clinic — San Fernando',
-      shortName: 'San Fernando Branch',
-      address: 'Poblacion South, San Fernando, Cebu',
-      city: 'San Fernando',
-      lat: 10.1612,
-      lng: 123.7088,
-      phone: '(032) 488-9900',
-      hours: 'Mon - Sat: 9:00 AM - 5:00 PM'
-    },
-    {
-      id: 'talisay',
-      name: 'Fano Dental Clinic — Talisay City',
-      shortName: 'Talisay City Branch',
-      address: 'Tabunok Commercial Strip, Talisay City, Cebu',
-      city: 'Talisay City',
-      lat: 10.2601,
-      lng: 123.8347,
-      phone: '(032) 273-8888',
-      hours: 'Mon - Sat: 8:00 AM - 7:00 PM'
     }
   ];
-
-  try {
-    const saved = localStorage.getItem('set-clinic-branches-detailed');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((item, idx) => {
-          if (typeof item === 'string') {
-            return {
-              id: `custom-branch-${idx}`,
-              name: item,
-              shortName: item,
-              address: 'Fano Dental Clinic',
-              city: 'Cebu',
-              lat: 10.2098 + (idx * 0.01),
-              lng: 123.7580 + (idx * 0.01),
-              phone: '(032) 489-1200',
-              hours: 'Mon - Sat: 8:00 AM - 6:00 PM'
-            };
-          }
-          return {
-            id: `admin-branch-${idx}-${(item.name || '').replace(/\s+/g, '-').toLowerCase()}`,
-            name: item.name || `Fano Dental Branch ${idx + 1}`,
-            shortName: item.name || `Branch ${idx + 1}`,
-            address: item.address || 'Clinic Branch Address',
-            city: item.address ? (item.address.split(',')[1] || 'Cebu').trim() : 'Cebu',
-            lat: parseFloat(item.lat) || 10.2098,
-            lng: parseFloat(item.lng) || 123.7580,
-            phone: item.phone || '(032) 489-1200',
-            hours: item.hours || 'Mon - Sat: 8:00 AM - 6:00 PM'
-          };
-        });
-      }
-    }
-  } catch (e) {
-    console.warn('Failed to parse admin branches:', e);
-  }
-
-  return defaultBranches;
 }
 
 const KNOWN_COORDS = {
@@ -3361,9 +3268,10 @@ function renderMapVisuals(patientLat, patientLng, addressLabel, targetBranch) {
       zoomControl: true
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_49xg_1_ea6e2bbc9eb40a1fa32d14c8', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      maxZoom: 20,
+      subdomains: 'abcd'
     }).addTo(branchMap);
   }
 
@@ -3553,12 +3461,25 @@ function validateStep(step) {
   if (step === 1) {
     const date = document.getElementById('wizard-date')?.value;
     const time = document.getElementById('wizard-time')?.value;
+    const name = document.getElementById('wizard-pat-name')?.value?.trim();
+    const phone = document.getElementById('wizard-pat-phone')?.value?.trim();
     if (!date) {
       showToast('Please pick a preferred appointment date.', 'error');
+      document.getElementById('wizard-date')?.focus();
       return false;
     }
     if (!time) {
       showToast('Please select an available time slot.', 'error');
+      return false;
+    }
+    if (!name) {
+      showToast('Please enter your full name.', 'error');
+      document.getElementById('wizard-pat-name')?.focus();
+      return false;
+    }
+    if (!phone) {
+      showToast('Please enter your mobile contact number.', 'error');
+      document.getElementById('wizard-pat-phone')?.focus();
       return false;
     }
     return true;
@@ -3604,38 +3525,15 @@ function renderDentistsPicker() {
   const warningBox = document.getElementById('dentist-offduty-warning-box');
   if (warningBox) warningBox.style.display = 'none';
 
-  // Determine current active branch
-  let branchName = 'Main Branch (Naga)';
-  if (typeof selectedBranchObj !== 'undefined' && selectedBranchObj && (selectedBranchObj.shortName || selectedBranchObj.name)) {
-    branchName = selectedBranchObj.shortName || selectedBranchObj.name;
-  } else {
-    const raw = document.getElementById('wizard-selected-branch')?.value || '';
-    if (raw) {
-      branchName = raw.split('(')[0].trim().replace(/^Fano Dental Clinic\s*[—–-]?\s*/i, '');
-    }
-  }
-
-  const activeBranchEl = document.getElementById('dentist-active-branch-name');
-  if (activeBranchEl) activeBranchEl.textContent = branchName;
-
-  // Filter dentists matching this branch (e.g. Talisay -> Talisay Branch)
-  const cleanQ = branchName.toLowerCase().replace(/fano\s*dental\s*clinic\s*[—–-]?/i, '').replace(/branch$/i, '').trim();
-  let branchDentists = cachedClinicDentists.filter(d => {
-    const b = (d.branch || '').toLowerCase();
-    return b.includes(cleanQ) || cleanQ.includes(b.replace(/branch$/i, '').trim());
-  });
-
-  const isBranchFiltered = branchDentists.length > 0;
-  const listToRender = isBranchFiltered ? branchDentists : cachedClinicDentists;
+  const listToRender = cachedClinicDentists;
 
   const matchCountEl = document.getElementById('dentist-branch-match-count');
   if (matchCountEl) {
     const onDutyCount = listToRender.filter(d => d.isOnDuty).length;
-    matchCountEl.textContent = `${onDutyCount} Doctor${onDutyCount === 1 ? '' : 's'} On Duty at ${branchName}`;
+    matchCountEl.textContent = `${onDutyCount} Doctor${onDutyCount === 1 ? '' : 's'} On Duty`;
   }
 
   let currentSelected = document.getElementById('wizard-dentist-name')?.value || 'No Preference';
-  // If previously selected doctor is not in this branch's list, reset to No Preference
   if (currentSelected !== 'No Preference' && !listToRender.some(d => d.name === currentSelected)) {
     currentSelected = 'No Preference';
     const hiddenInput = document.getElementById('wizard-dentist-name');
@@ -3647,7 +3545,7 @@ function renderDentistsPicker() {
     <div class="dentist-card ${currentSelected === 'No Preference' ? 'selected' : ''}" data-name="No Preference" data-is-on="true">
       <div>
         <div class="dentist-name">No Preference</div>
-        <div class="dentist-specialty">Auto-assigned to an available on-duty specialist at ${escapeHTML(branchName)}</div>
+        <div class="dentist-specialty">Auto-assigned to an available on-duty specialist</div>
       </div>
       <div>
         <div class="dentist-duty-pill on" style="margin-top: 10px;">
@@ -3657,21 +3555,17 @@ function renderDentistsPicker() {
     </div>
   `;
 
-  // 2. Doctor Cards for this branch
+  // 2. Doctor Cards
   if (listToRender.length > 0) {
     html += listToRender.map(d => {
       const isSelected = currentSelected === d.name;
       const isOn = !!d.isOnDuty;
-      const branchLabel = d.branch ? d.branch.replace(/branch$/i, '').trim() : branchName;
 
       return `
         <div class="dentist-card ${isSelected ? 'selected' : ''} ${!isOn ? 'off-duty' : ''}" data-name="${escapeHTML(d.name)}" data-is-on="${isOn}">
           <div>
             <div class="dentist-name">${escapeHTML(d.name)}</div>
             <div class="dentist-specialty">Licensed Dental Specialist</div>
-            <div class="dentist-branch-pill">
-              <i class="ti ti-map-pin"></i> ${escapeHTML(branchLabel)}
-            </div>
           </div>
           <div>
             <div class="dentist-duty-pill ${isOn ? 'on' : 'off'}">
@@ -4011,7 +3905,7 @@ function submitBooking() {
 
   // Combine branch, dentist, and comprehensive medical details into structured notes string
   const priceTag = treatmentPrice > 0 ? `[TreatmentPrice: ₱${treatmentPrice.toFixed(2)}]` : '';
-  const notes = `[Branch: ${branchVal}] [Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] ${priceTag} [Emergency: ${emergName} (${emergPhone})] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [HMO: ${hmo} / ${hmoId}] [AnxietySupport: ${anxiety}] [ReminderPref: ${reminderPref}] [PatientAddr: ${patientAddr}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`.trim();
+  const notes = `[Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] ${priceTag} [Emergency: ${emergName} (${emergPhone})] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [HMO: ${hmo} / ${hmoId}] [AnxietySupport: ${anxiety}] [ReminderPref: ${reminderPref}] [PatientAddr: ${patientAddr}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`.trim();
 
   // Parse preferred date & time into ISO string
   const [time, modifier] = timeVal.split(' ');
@@ -4137,9 +4031,9 @@ function openAppointmentDetailsModal(apptId) {
 
   // Set modal texts
   safeSet('modal-appt-service', treatmentName);
-  safeSet('modal-appt-dentist-branch', `Dentist: ${dentistName} • ${formatShortBranchName(branchName)}`);
+  safeSet('modal-appt-dentist-branch', `Dentist: ${dentistName}`);
   safeSet('modal-appt-datetime', `${formattedDate} at ${formattedTime}`);
-  safeSet('modal-appt-branch', branchName);
+  safeSet('modal-appt-branch', 'Balirong Highway, City of Naga, Cebu');
   safeSet('modal-appt-price', price);
   safeSet('modal-appt-duration', duration);
 
@@ -4177,6 +4071,77 @@ function openAppointmentDetailsModal(apptId) {
   displayText += cleanNotes ? `Special Notes: ${cleanNotes}` : (alertsList.length > 0 ? '' : 'No special requests or alerts.');
   safeSet('modal-appt-notes', displayText);
 
+  // Treatment Satisfaction & Rating Section for Completed Visits
+  const reviewSection = document.getElementById('modal-appt-review-section');
+  const reviewContent = document.getElementById('modal-review-content');
+  if (reviewSection && reviewContent) {
+    if (status === 'Completed') {
+      reviewSection.style.display = 'block';
+      reviewContent.innerHTML = `<div style="font-size:0.8rem; color:#64748b; padding:4px 0;"><i class="ti ti-loader ti-spin"></i> Checking review status...</div>`;
+      
+      apiFetch(`/appointments/${appt.id}/review`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => {
+        if (res && res.review) {
+          const rev = res.review;
+          const starsHtml = Array.from({ length: 5 }, (_, i) => 
+            `<span style="color: ${i < rev.rating ? '#f59e0b' : '#cbd5e1'}; font-size: 18px; line-height: 1;">★</span>`
+          ).join('');
+          const tagsHtml = (rev.tags && rev.tags.length > 0)
+            ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">${rev.tags.map(t => `<span style="background:#e0f2fe; color:#0369a1; border-radius:12px; font-size:0.72rem; font-weight:600; padding:2px 8px;">${escapeHTML(t)}</span>`).join('')}</div>`
+            : '';
+          const commentHtml = rev.comment
+            ? `<div style="font-size:0.82rem; color:#334155; margin-top:6px; font-style:italic; background:#fff; padding:8px 12px; border-radius:8px; border:1px solid #fde68a;">"${escapeHTML(rev.comment)}"</div>`
+            : '';
+          const dateStr = rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+          reviewContent.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:4px;">
+                  ${starsHtml}
+                  <strong style="margin-left:6px; font-size:0.88rem; color:#78350f;">${rev.rating}.0 / 5.0</strong>
+                </div>
+                ${dateStr ? `<span style="font-size:0.75rem; color:#94a3b8;">${dateStr}</span>` : ''}
+              </div>
+              ${tagsHtml}
+              ${commentHtml}
+              <div style="margin-top:6px; font-size:0.75rem; color:#15803d; font-weight:600; display:flex; align-items:center; gap:4px;">
+                <i class="ti ti-circle-check"></i> Verified patient review — included in clinical satisfaction score.
+              </div>
+            </div>
+          `;
+        } else {
+          reviewContent.innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:4px 0;">
+              <div>
+                <p style="margin:0; font-size:0.82rem; font-weight:700; color:#92400e;">How was your visit with ${escapeHTML(dentistName)}?</p>
+                <p style="margin:2px 0 0 0; font-size:0.76rem; color:#78350f;">Rate your experience to help calculate our real clinic satisfaction score.</p>
+              </div>
+              <button type="button" class="btn btn-sm" onclick="openRateTreatmentModal('${appt.id}')" style="background:#0b3c4d; color:white; border:none; padding:7px 14px; font-size:0.8rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:6px; cursor:pointer; box-shadow:0 2px 4px rgba(11,60,77,0.2);">
+                <span style="color:#facc15; font-size:14px; line-height:1;">★</span>
+                <span>Rate Visit</span>
+              </button>
+            </div>
+          `;
+        }
+      })
+      .catch(() => {
+        reviewContent.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <p style="margin:0; font-size:0.8rem; color:#78350f;">Share your experience to improve patient care.</p>
+            <button type="button" class="btn btn-sm" onclick="openRateTreatmentModal('${appt.id}')" style="background:#0b3c4d; color:white; border:none; padding:6px 12px; font-size:0.78rem; font-weight:700; border-radius:8px; cursor:pointer;">
+              <span style="color:#facc15; font-size:14px; line-height:1;">★</span> Rate Visit
+            </button>
+          </div>
+        `;
+      });
+    } else {
+      reviewSection.style.display = 'none';
+    }
+  }
+
   // Disable / Enable action buttons based on status
   const btnReschedule = document.getElementById('btn-modal-reschedule');
   const btnCancel = document.getElementById('btn-modal-cancel');
@@ -4213,6 +4178,246 @@ document.getElementById('appointment-details-modal')?.addEventListener('click', 
     closeAppointmentModal();
   }
 });
+
+// ═══════════════════════════════════════════════════════════
+//  PATIENT VISIT RATING & REAL SATISFACTION SYSTEM
+// ═══════════════════════════════════════════════════════════
+
+let currentRatingValue = 5;
+const ratingLabels = {
+  1: '1 Star — Poor Experience',
+  2: '2 Stars — Fair / Needs Improvement',
+  3: '3 Stars — Good / Average',
+  4: '4 Stars — Very Good & Pleased',
+  5: '5 Stars — Excellent & Highly Satisfied!'
+};
+
+function initStarRatingEvents() {
+  const container = document.getElementById('star-rating-selector');
+  if (!container || container.dataset.initialized) return;
+  container.dataset.initialized = 'true';
+
+  const stars = container.querySelectorAll('.star-item');
+  const label = document.getElementById('star-rating-label');
+  const hiddenInput = document.getElementById('rate-selected-value');
+
+  function updateStars(val) {
+    stars.forEach((star, index) => {
+      const starVal = index + 1;
+      if (starVal <= val) {
+        star.classList.add('active');
+        star.style.color = '#f59e0b';
+      } else {
+        star.classList.remove('active');
+        star.style.color = '#cbd5e1';
+      }
+    });
+    if (label) label.textContent = ratingLabels[val] || `${val} Stars`;
+    if (hiddenInput) hiddenInput.value = val;
+  }
+
+  stars.forEach((star) => {
+    star.addEventListener('click', () => {
+      const val = parseInt(star.getAttribute('data-rating'), 10) || 5;
+      currentRatingValue = val;
+      updateStars(val);
+    });
+
+    star.addEventListener('mouseenter', () => {
+      const hoverVal = parseInt(star.getAttribute('data-rating'), 10) || 5;
+      updateStars(hoverVal);
+    });
+  });
+
+  container.addEventListener('mouseleave', () => {
+    updateStars(currentRatingValue);
+  });
+
+  updateStars(currentRatingValue);
+}
+
+function toggleRatingTag(btn) {
+  if (!btn) return;
+  btn.classList.toggle('active');
+  if (btn.classList.contains('active')) {
+    btn.style.background = '#e0f2fe';
+    btn.style.borderColor = '#0284c7';
+    btn.style.color = '#0369a1';
+    btn.style.fontWeight = '700';
+  } else {
+    btn.style.background = '#f8fafc';
+    btn.style.borderColor = '#cbd5e1';
+    btn.style.color = '#475569';
+    btn.style.fontWeight = '600';
+  }
+}
+
+function checkUnratedVisitsBanner() {
+  const bannerWrap = document.getElementById('unrated-visit-banner-wrap');
+  if (!bannerWrap) return;
+
+  const completedAppts = (allAppointments || []).filter(a => (a.status || '').toLowerCase() === 'completed');
+  if (completedAppts.length === 0) {
+    bannerWrap.innerHTML = '';
+    return;
+  }
+
+  // Find the most recent completed appointment
+  const mostRecent = [...completedAppts].sort((a, b) =>
+    new Date(b.appointment_date || b.dateTime) - new Date(a.appointment_date || a.dateTime)
+  )[0];
+
+  apiFetch(`/appointments/${mostRecent.id}/review`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+  .then(res => {
+    if (res && res.review) {
+      bannerWrap.innerHTML = '';
+    } else {
+      const treatmentName = mostRecent.treatment?.name || mostRecent.reason || 'Dental Visit';
+      bannerWrap.innerHTML = `
+        <div class="unrated-visit-banner" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #f59e0b; border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12); margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);">
+              <span style="line-height: 1;">★</span>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h4 style="margin: 0; color: #78350f; font-size: 0.96rem; font-weight: 800;">Rate your completed visit for ${escapeHTML(treatmentName)}</h4>
+                <span class="status-pill completed" style="font-size: 0.68rem; padding: 2px 7px;">Completed</span>
+              </div>
+              <p style="margin: 2px 0 0 0; color: #92400e; font-size: 0.8rem;">Share your experience to help calculate our clinic's real satisfaction score!</p>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="openRateTreatmentModal('${mostRecent.id}')" style="background: #0b3c4d; color: white; border: none; padding: 9px 18px; border-radius: 10px; font-weight: 700; font-size: 0.84rem; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(11, 60, 77, 0.25);">
+            <span style="color: #facc15; font-size: 14px; line-height: 1;">★</span>
+            <span>Rate Visit Now</span>
+          </button>
+        </div>
+      `;
+    }
+  })
+  .catch(() => {
+    bannerWrap.innerHTML = '';
+  });
+}
+
+function openRateTreatmentModal(apptId) {
+  const appt = (allAppointments || []).find(a => a.id === apptId || String(a.id) === String(apptId)) || selectedAppointment;
+  if (!appt) {
+    showToast('Appointment record not found.', 'error');
+    return;
+  }
+
+  const inputApptId = document.getElementById('rate-appt-id');
+  if (inputApptId) inputApptId.value = appt.id;
+
+  const treatmentName = appt.treatment?.name || appt.reason || 'Dental Visit';
+  let dentistName = 'Staff Specialist';
+  const notesRaw = appt.notes || '';
+  const dentistMatch = notesRaw.match(/\[Dentist:\s*([^\]]+)\]/i);
+  if (dentistMatch && dentistMatch[1] !== 'No Preference') dentistName = dentistMatch[1];
+
+  let branchName = 'Main Branch (Naga)';
+  const branchMatch = notesRaw.match(/\[Branch:\s*([^\]]+)\]/i);
+  if (branchMatch) branchName = formatShortBranchName(branchMatch[1]);
+
+  safeSet('rate-treatment-name', treatmentName);
+  safeSet('rate-dentist-name', `Dentist: ${dentistName} • ${branchName}`);
+
+  // Reset inputs
+  currentRatingValue = 5;
+  const commentInput = document.getElementById('rate-comment-input');
+  if (commentInput) commentInput.value = '';
+
+  const tags = document.querySelectorAll('#rate-tags-container .rating-tag-pill');
+  tags.forEach(t => {
+    t.classList.remove('active');
+    t.style.background = '#f8fafc';
+    t.style.borderColor = '#cbd5e1';
+    t.style.color = '#475569';
+    t.style.fontWeight = '600';
+  });
+
+  initStarRatingEvents();
+  const hiddenInput = document.getElementById('rate-selected-value');
+  if (hiddenInput) hiddenInput.value = '5';
+  const label = document.getElementById('star-rating-label');
+  if (label) label.textContent = ratingLabels[5];
+  const stars = document.querySelectorAll('#star-rating-selector .star-item');
+  stars.forEach(star => {
+    star.classList.add('active');
+    star.style.color = '#f59e0b';
+  });
+
+  const modal = document.getElementById('modal-rate-treatment');
+  if (modal) modal.classList.add('active');
+}
+
+function closeRateTreatmentModal() {
+  const modal = document.getElementById('modal-rate-treatment');
+  if (modal) modal.classList.remove('active');
+}
+
+function submitTreatmentRating(e) {
+  if (e) e.preventDefault();
+
+  const apptId = document.getElementById('rate-appt-id')?.value;
+  if (!apptId) {
+    showToast('Missing appointment reference.', 'error');
+    return;
+  }
+
+  const rating = parseInt(document.getElementById('rate-selected-value')?.value || currentRatingValue, 10);
+  const comment = document.getElementById('rate-comment-input')?.value.trim() || '';
+
+  const selectedTags = [];
+  document.querySelectorAll('#rate-tags-container .rating-tag-pill.active').forEach(tagEl => {
+    const val = tagEl.getAttribute('data-tag');
+    if (val) selectedTags.push(val);
+  });
+
+  const submitBtn = document.getElementById('btn-submit-review');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="ti ti-loader ti-spin"></i> Submitting...`;
+  }
+
+  apiFetch(`/appointments/${apptId}/review`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      rating,
+      comment,
+      tags: selectedTags
+    })
+  })
+  .then(data => {
+    showToast('Thank you! Your satisfaction rating has been recorded.', 'success');
+    closeRateTreatmentModal();
+
+    // Refresh unrated visits banner
+    checkUnratedVisitsBanner();
+
+    // If appointment details modal is open, refresh its review section
+    if (selectedAppointment && (selectedAppointment.id === apptId || String(selectedAppointment.id) === String(apptId))) {
+      openAppointmentDetailsModal(apptId);
+    }
+  })
+  .catch(err => {
+    console.error('Error submitting rating:', err);
+    showToast('Failed to submit rating. Please try again.', 'error');
+  })
+  .finally(() => {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i class="ti ti-check"></i> <span>Submit Rating</span>`;
+    }
+  });
+}
 
 function toggleReschedulePanel(show) {
   const panel = document.getElementById('inline-reschedule-panel');
@@ -4383,8 +4588,8 @@ function downloadCalendarEvent() {
     `DTSTART:${formatICSDate(start)}`,
     `DTEND:${formatICSDate(end)}`,
     `SUMMARY:Dental Appointment: ${treatmentName} at Fano Dental Clinic`,
-    `DESCRIPTION:Your scheduled visit for ${treatmentName}. Assigned Clinic: ${branchName}. Phone: (032) 489-1200.`,
-    `LOCATION:${branchName}`,
+    `DESCRIPTION:Your scheduled visit for ${treatmentName}. Assigned Clinic: Balirong Highway, City of Naga, Cebu. Phone: (032) 489-1200.`,
+    `LOCATION:Balirong Highway, City of Naga, Cebu`,
     'STATUS:CONFIRMED',
     'BEGIN:VALARM',
     'ACTION:DISPLAY',
@@ -4417,7 +4622,7 @@ function openBranchDirections() {
     branchAddr = branchMatch[1];
   }
 
-  const query = encodeURIComponent(`Fano Dental Clinic, ${branchAddr}`);
+  const query = encodeURIComponent('Fano Dental Clinic, Balirong Highway, City of Naga, Cebu');
   window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
 }
 
@@ -4469,7 +4674,7 @@ function printAppointmentSlip() {
         <div class="row"><span class="label">Patient Name:</span><span class="val">${user?.name || user?.firstName || 'Valued Patient'}</span></div>
         <div class="row"><span class="label">Dental Service:</span><span class="val">${escapeHTML(treatmentName)}</span></div>
         <div class="row"><span class="label">Date &amp; Time:</span><span class="val">${dateStr} at ${timeStr}</span></div>
-        <div class="row"><span class="label">Clinic Location:</span><span class="val">${escapeHTML(branchName)}</span></div>
+        <div class="row"><span class="label">Clinic Location:</span><span class="val">Balirong Highway, City of Naga, Cebu</span></div>
         <div class="row"><span class="label">Total Procedure Fee:</span><span class="val">${price}</span></div>
         ${feeMatch ? `<div class="row"><span class="label">Booking Deposit (30%):</span><span class="val" style="color: #059669;">${escapeHTML(feeMatch[1])}</span></div>` : ''}
         ${balanceMatch ? `<div class="row"><span class="label">Balance on Visit (70%):</span><span class="val">${escapeHTML(balanceMatch[1])}</span></div>` : ''}
@@ -4579,18 +4784,13 @@ function switchSection(sectionId, event) {
     chats: 'Chats'
   };
 
-  // Notifications tab → toggle notification center dropdown
+  // Notifications tab → display dedicated Notification Center
   if (sectionId === 'notifications') {
     const dropdown = document.getElementById('patient-notif-dropdown');
-    if (dropdown) {
-      dropdown.hidden = !dropdown.hidden;
-      if (!dropdown.hidden) {
-        loadPatientNotifications();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        syncActiveTaskbarToCurrentSection();
-      }
-    }
+    if (dropdown) dropdown.hidden = true;
+    safeSet('breadcrumb-current', 'Notifications');
+    loadPatientNotifications();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
 
@@ -4614,6 +4814,17 @@ function switchSection(sectionId, event) {
   if (sectionId === 'finances') {
     renderFinancialWidgets();
     renderFinancialActivity();
+  }
+
+  if (sectionId === 'appointments') {
+    if (typeof branchMap !== 'undefined' && branchMap) {
+      setTimeout(() => {
+        branchMap.invalidateSize();
+      }, 150);
+    }
+    if (typeof autoDetectPatientLocation === 'function') {
+      autoDetectPatientLocation();
+    }
   }
 
   // Scroll to top
@@ -4693,35 +4904,48 @@ function syncActiveTaskbarToCurrentSection() {
   });
 }
 
+let currentNotificationFilter = 'all';
+
+function filterPatientNotifications(filterType) {
+  currentNotificationFilter = filterType || 'all';
+  document.querySelectorAll('.notif-filter-chip').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-filter') === currentNotificationFilter);
+  });
+  renderNotificationCenterList();
+}
+window.filterPatientNotifications = filterPatientNotifications;
+
 function setupPatientNotifications() {
   const toggleBtn = document.getElementById('btn-patient-notif');
   const dropdown = document.getElementById('patient-notif-dropdown');
 
-  if (toggleBtn && dropdown) {
+  if (toggleBtn) {
     toggleBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      dropdown.hidden = !dropdown.hidden;
-      if (!dropdown.hidden) {
-        loadPatientNotifications();
-        document.querySelectorAll('.taskbar-item').forEach(item => {
-          item.classList.toggle('active', item.getAttribute('data-section') === 'notifications');
-        });
-      } else {
-        syncActiveTaskbarToCurrentSection();
+      // On mobile screens, navigate directly to the dedicated Notifications section
+      if (window.innerWidth <= 768) {
+        if (dropdown) dropdown.hidden = true;
+        switchSection('notifications');
+        return;
+      }
+      // On desktop, toggle dropdown
+      if (dropdown) {
+        dropdown.hidden = !dropdown.hidden;
+        if (!dropdown.hidden) {
+          loadPatientNotifications();
+        }
       }
     });
 
     document.addEventListener('click', (e) => {
-      if (!dropdown.hidden && !dropdown.contains(e.target) && !toggleBtn.contains(e.target) && !e.target.closest('[data-section="notifications"]')) {
+      if (dropdown && !dropdown.hidden && !dropdown.contains(e.target) && !toggleBtn.contains(e.target) && !e.target.closest('[data-section="notifications"]')) {
         dropdown.hidden = true;
-        syncActiveTaskbarToCurrentSection();
       }
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !dropdown.hidden) {
+      if (e.key === 'Escape' && dropdown && !dropdown.hidden) {
         dropdown.hidden = true;
-        syncActiveTaskbarToCurrentSection();
       }
     });
   }
@@ -4749,8 +4973,10 @@ function saveReadNotificationId(id) {
 function loadPatientNotifications(isManual = false) {
   const badge = document.getElementById('patient-notif-count');
   const taskbarBadge = document.getElementById('patient-taskbar-notif-count');
+  const sidebarBadge = document.getElementById('patient-sidebar-notif-count');
   const unreadLabel = document.getElementById('pnd-unread-label');
-  const list = document.getElementById('patient-notif-list');
+  const chipAll = document.getElementById('notif-chip-all-count');
+  const chipUnread = document.getElementById('notif-chip-unread-count');
 
   apiFetch('/notifications', {
     headers: { 'Authorization': `Bearer ${token}` }
@@ -4761,95 +4987,27 @@ function loadPatientNotifications(isManual = false) {
       const readSet = getReadNotificationIds();
       const unreadCount = notifs.filter(n => !readSet.has(n.id)).length;
 
-      // Update badge & header
+      // Update badge & labels
+      const countText = unreadCount > 99 ? '99+' : unreadCount;
       if (unreadCount > 0) {
-        const text = unreadCount > 99 ? '99+' : unreadCount;
-        if (badge) {
-          badge.textContent = text;
-          badge.style.display = 'inline-flex';
-        }
-        if (taskbarBadge) {
-          taskbarBadge.textContent = text;
-          taskbarBadge.style.display = 'flex';
-        }
+        if (badge) { badge.textContent = countText; badge.style.display = 'inline-flex'; }
+        if (taskbarBadge) { taskbarBadge.textContent = countText; taskbarBadge.style.display = 'flex'; }
+        if (sidebarBadge) { sidebarBadge.textContent = countText; sidebarBadge.style.display = 'inline-flex'; }
       } else {
         if (badge) badge.style.display = 'none';
         if (taskbarBadge) taskbarBadge.style.display = 'none';
+        if (sidebarBadge) sidebarBadge.style.display = 'none';
       }
 
-      if (unreadLabel) {
-        unreadLabel.textContent = `${unreadCount} New`;
-      }
+      if (unreadLabel) unreadLabel.textContent = `${unreadCount} New`;
+      if (chipAll) chipAll.textContent = notifs.length;
+      if (chipUnread) chipUnread.textContent = unreadCount;
 
-      // Render list grouped by day (Today, Yesterday, Earlier)
-      if (list) {
-        if (notifs.length === 0) {
-          list.innerHTML = `
-          <div class="pnd-empty">
-            <i class="ti ti-bell-off" style="font-size: 32px; color: #94a3b8;"></i>
-            <p>You have no notifications right now.</p>
-          </div>
-        `;
-        } else {
-          // Sort newest first
-          notifs.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
+      // Render Dropdown List
+      renderNotificationDropdownList(notifs, readSet);
 
-          const groups = {
-            'Today': [],
-            'Yesterday': [],
-            'Earlier': []
-          };
-
-          notifs.forEach(n => {
-            const g = getNotificationDayGroup(n.time);
-            if (!groups[g]) groups[g] = [];
-            groups[g].push(n);
-          });
-
-          let html = '';
-          const groupOrder = ['Today', 'Yesterday', 'Earlier'];
-
-          groupOrder.forEach(groupName => {
-            const items = groups[groupName];
-            if (!items || items.length === 0) return;
-
-            const unreadInGroup = items.filter(n => !readSet.has(n.id)).length;
-            const countLabel = unreadInGroup > 0 ? `${unreadInGroup} new` : `${items.length} ${items.length === 1 ? 'alert' : 'alerts'}`;
-            const groupIcon = groupName === 'Today' ? 'ti-clock' : (groupName === 'Yesterday' ? 'ti-calendar-event' : 'ti-history');
-
-            html += `
-              <div class="pnd-date-group">
-                <div class="pnd-date-header">
-                  <span class="pnd-date-title"><i class="ti ${groupIcon}" style="font-size: 13px;"></i> ${groupName}</span>
-                  <span class="pnd-date-count">${countLabel}</span>
-                </div>
-                <div class="pnd-date-items">
-                  ${items.map(n => {
-                    const isUnread = !readSet.has(n.id);
-                    const timeStr = formatNotificationTime(n.time);
-                    const iconSvg = getNotificationIconSvg(n.icon, n.type);
-
-                    return `
-                      <div class="pnd-item ${isUnread ? 'unread' : ''}" onclick="onPatientNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.id || ''}', '${n.action?.tab || ''}')">
-                        <div class="pnd-icon-wrap type-${n.type || 'info'}">
-                          ${iconSvg}
-                        </div>
-                        <div class="pnd-content">
-                          <div class="pnd-title">${escapeHTML(n.title)}</div>
-                          <div class="pnd-desc">${escapeHTML(n.message)}</div>
-                          <span class="pnd-time">${timeStr}</span>
-                        </div>
-                      </div>
-                    `;
-                  }).join('')}
-                </div>
-              </div>
-            `;
-          });
-
-          list.innerHTML = html;
-        }
-      }
+      // Render Full Section List
+      renderNotificationCenterList();
 
       if (isManual) {
         showToast('Notifications refreshed', 'success');
@@ -4858,6 +5016,180 @@ function loadPatientNotifications(isManual = false) {
     .catch(err => {
       console.error('Failed to load notifications:', err);
     });
+}
+
+function renderNotificationDropdownList(notifs, readSet) {
+  const list = document.getElementById('patient-notif-list');
+  if (!list) return;
+
+  if (notifs.length === 0) {
+    list.innerHTML = `
+      <div class="pnd-empty">
+        <i class="ti ti-bell-off" style="font-size: 32px; color: #94a3b8;"></i>
+        <p>You have no notifications right now.</p>
+      </div>`;
+    return;
+  }
+
+  // Sort newest first
+  const sorted = [...notifs].sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
+
+  const groups = { 'Today': [], 'Yesterday': [], 'Earlier': [] };
+  sorted.forEach(n => {
+    const g = getNotificationDayGroup(n.time);
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(n);
+  });
+
+  let html = '';
+  const groupOrder = ['Today', 'Yesterday', 'Earlier'];
+
+  groupOrder.forEach(groupName => {
+    const items = groups[groupName];
+    if (!items || items.length === 0) return;
+
+    const unreadInGroup = items.filter(n => !readSet.has(n.id)).length;
+    const countLabel = unreadInGroup > 0 ? `${unreadInGroup} new` : `${items.length} ${items.length === 1 ? 'alert' : 'alerts'}`;
+    const groupIcon = groupName === 'Today' ? 'ti-clock' : (groupName === 'Yesterday' ? 'ti-calendar-event' : 'ti-history');
+
+    html += `
+      <div class="pnd-date-group">
+        <div class="pnd-date-header">
+          <span class="pnd-date-title"><i class="ti ${groupIcon}" style="font-size: 13px;"></i> ${groupName}</span>
+          <span class="pnd-date-count">${countLabel}</span>
+        </div>
+        <div class="pnd-date-items">
+          ${items.map(n => {
+            const isUnread = !readSet.has(n.id);
+            const timeStr = formatNotificationTime(n.time);
+            const iconSvg = getNotificationIconSvg(n.icon, n.type);
+
+            return `
+              <div class="pnd-item ${isUnread ? 'unread' : ''}" onclick="onPatientNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.id || ''}', '${n.action?.tab || ''}')">
+                <div class="pnd-icon-wrap type-${n.type || 'info'}">
+                  ${iconSvg}
+                </div>
+                <div class="pnd-content">
+                  <div class="pnd-title">${escapeHTML(n.title)}</div>
+                  <div class="pnd-desc">${escapeHTML(n.message)}</div>
+                  <span class="pnd-time">${timeStr}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  list.innerHTML = html;
+}
+
+function renderNotificationCenterList() {
+  const sectionList = document.getElementById('patient-section-notif-list');
+  if (!sectionList) return;
+
+  const readSet = getReadNotificationIds();
+  let notifs = allPatientNotifications || [];
+
+  // Filter based on active filter chip
+  if (currentNotificationFilter === 'unread') {
+    notifs = notifs.filter(n => !readSet.has(n.id));
+  } else if (currentNotificationFilter === 'appointment') {
+    notifs = notifs.filter(n => n.category === 'appointment' || n.id.startsWith('appt-'));
+  } else if (currentNotificationFilter === 'billing') {
+    notifs = notifs.filter(n => n.category === 'billing' || n.id.startsWith('inv-'));
+  }
+
+  if (notifs.length === 0) {
+    sectionList.innerHTML = `
+      <div class="pnd-empty" style="padding: 56px 24px; text-align: center;">
+        <i class="ti ti-bell-off" style="font-size: 44px; color: #94a3b8; display: block; margin: 0 auto 12px;"></i>
+        <h4 style="margin: 0 0 6px 0; color: var(--text-primary); font-weight: 700; font-size: 1.1rem;">No Notifications in this filter</h4>
+        <p style="margin: 0; color: var(--text-secondary); font-size: 0.88rem;">Try selecting "All Alerts" to view your full notification history.</p>
+      </div>`;
+    return;
+  }
+
+  // Sort newest first
+  const sorted = [...notifs].sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
+
+  const groups = { 'Today': [], 'Yesterday': [], 'Earlier': [] };
+  sorted.forEach(n => {
+    const g = getNotificationDayGroup(n.time);
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(n);
+  });
+
+  let html = '';
+  const groupOrder = ['Today', 'Yesterday', 'Earlier'];
+
+  groupOrder.forEach(groupName => {
+    const items = groups[groupName];
+    if (!items || items.length === 0) return;
+
+    const unreadInGroup = items.filter(n => !readSet.has(n.id)).length;
+    const countLabel = unreadInGroup > 0 ? `${unreadInGroup} new` : `${items.length} ${items.length === 1 ? 'alert' : 'alerts'}`;
+    const groupIcon = groupName === 'Today' ? 'ti-clock' : (groupName === 'Yesterday' ? 'ti-calendar-event' : 'ti-history');
+
+    html += `
+      <div class="pnd-sec-group">
+        <div class="pnd-sec-group-header">
+          <span class="pnd-sec-group-title"><i class="ti ${groupIcon}"></i> ${groupName}</span>
+          <span class="pnd-sec-group-badge">${countLabel}</span>
+        </div>
+        <div class="pnd-sec-items-list">
+          ${items.map(n => {
+            const isUnread = !readSet.has(n.id);
+            const timeStr = formatNotificationTime(n.time);
+            const iconSvg = getNotificationIconSvg(n.icon, n.type);
+            const categoryLabel = (n.category || (n.id.startsWith('appt-') ? 'Appointment' : 'Billing')).toUpperCase();
+
+            let actionButtonHtml = '';
+            if (n.action?.type === 'view_appointment' && n.action?.id) {
+              actionButtonHtml = `
+                <button type="button" class="pnd-card-action-btn appt" onclick="event.stopPropagation(); onPatientNotificationClick('${n.id}', 'view_appointment', '${n.action.id}')">
+                  <i class="ti ti-calendar"></i> View Details
+                </button>
+              `;
+            } else if (n.action?.type === 'pay_invoice' && n.action?.id) {
+              actionButtonHtml = `
+                <button type="button" class="pnd-card-action-btn pay" onclick="event.stopPropagation(); onPatientNotificationClick('${n.id}', 'pay_invoice', '${n.action.id}')">
+                  <i class="ti ti-credit-card"></i> Pay Invoice
+                </button>
+              `;
+            } else if (n.action?.type === 'view_receipt' && n.action?.id) {
+              actionButtonHtml = `
+                <button type="button" class="pnd-card-action-btn receipt" onclick="event.stopPropagation(); onPatientNotificationClick('${n.id}', 'view_receipt', '${n.action.id}')">
+                  <i class="ti ti-receipt"></i> View Receipt
+                </button>
+              `;
+            }
+
+            return `
+              <div class="pnd-sec-card ${isUnread ? 'unread' : 'read'}" onclick="onPatientNotificationClick('${n.id}', '${n.action?.type || ''}', '${n.action?.id || ''}', '${n.action?.tab || ''}')">
+                <div class="pnd-sec-card-icon type-${n.type || 'info'}">
+                  ${iconSvg}
+                </div>
+                <div class="pnd-sec-card-content">
+                  <div class="pnd-sec-card-top">
+                    <span class="pnd-sec-category-pill cat-${n.type || 'info'}">${categoryLabel}</span>
+                    <span class="pnd-sec-time"><i class="ti ti-clock" style="font-size: 12px;"></i> ${timeStr}</span>
+                  </div>
+                  <h4 class="pnd-sec-card-title">${escapeHTML(n.title)}</h4>
+                  <p class="pnd-sec-card-desc">${escapeHTML(n.message)}</p>
+                  ${actionButtonHtml ? `<div class="pnd-sec-card-actions">${actionButtonHtml}</div>` : ''}
+                </div>
+                ${isUnread ? '<span class="pnd-sec-unread-dot" title="Unread alert"></span>' : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  sectionList.innerHTML = html;
 }
 
 function getNotificationDayGroup(isoStr) {

@@ -25,6 +25,8 @@
     "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.9",
+    "otplib": "^13.5.0",
+    "qrcode": "^1.5.4",
     "twilio": "^6.0.2",
     "xss-clean": "^0.1.4"
   },

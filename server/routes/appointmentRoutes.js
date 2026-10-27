@@ -9,7 +9,9 @@ const {
   createAppointment,
   createQrAppointment,
   updateAppointment,
-  deleteAppointment
+  deleteAppointment,
+  getAppointmentReview,
+  createAppointmentReview
 } = require('../controllers/appointmentController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -21,6 +23,11 @@ router.get('/occupied', protect, getOccupiedSlots);
 
 router.get('/my', protect, authorize('Dentist', 'Dental Assistant'), getMyAppointments);
 router.put('/:id/start', protect, authorize('Dentist', 'Dental Assistant'), startAppointment);
+
+// Patient review / rating routes
+router.route('/:id/review')
+  .get(protect, getAppointmentReview)
+  .post(protect, createAppointmentReview);
 
 router.route('/')
   .get(protect, getAppointments)

@@ -12,12 +12,11 @@ let currentEmail = '';
 let currentChannel = 'email';
 let resendCooldown = 60;
 let cooldownTimer = null;
-
 document.addEventListener('DOMContentLoaded', () => {
   // Parse params
   const params = new URLSearchParams(window.location.search);
   currentEmail = params.get('email');
-  currentChannel = params.get('channel') || 'email';
+  currentChannel = 'email';
 
   if (!currentEmail) {
     // If no email, send back to login
@@ -33,7 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (flow === 'admin-mfa') {
     document.title = 'Admin Two-Factor Authentication — Fano Dental Clinic';
     const titleEl = document.getElementById('verify-title');
-    if (titleEl) titleEl.textContent = 'Admin Two-Factor Authentication';
+    if (titleEl) {
+      titleEl.textContent = 'Admin Two-Factor Authentication';
+    }
 
     const shieldEl = document.getElementById('verify-shield');
     if (shieldEl) {
@@ -58,11 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
     showDevCodeHelper(devCode);
   }
 
-  // On page load, the backend has already sent the OTP code during registration or login.
-  // Set UI state to sent and start the resend timer to avoid spamming / rate limiting.
+  // On page load, show status & start cooldown
   const statusText = document.getElementById('status-text');
   const statusDot = document.querySelector('.status-dot');
-  if (statusText) statusText.textContent = `Security code sent via ${currentChannel === 'sms' ? 'SMS' : 'Email'} successfully`;
+  if (statusText) statusText.textContent = 'Security code sent via Email successfully';
   if (statusDot) statusDot.style.background = '#2ed573'; // success green
   startResendCooldown();
 
@@ -87,7 +87,13 @@ function switchChannel(channel) {
   // Clear inputs
   clearOtpInputs();
 
-  // Resend code via new channel
+  // Manage visibility of status / resend footer
+  const statusSection = document.getElementById('verify-status');
+  const resendSection = document.getElementById('verify-footer-resend');
+
+  if (statusSection) statusSection.style.display = 'flex';
+  if (resendSection) resendSection.style.display = 'block';
+  // Dispatch OTP code via new email/SMS channel
   sendOTPCode();
 }
 
@@ -98,17 +104,25 @@ function updateChannelTabs() {
   const isAdminMfa = flow === 'admin-mfa';
 
   if (currentChannel === 'sms') {
-    smsTab.classList.add('active');
-    emailTab.classList.remove('active');
-    document.getElementById('verify-subtitle').innerHTML = isAdminMfa
-      ? 'We sent a 6-digit MFA security code to your registered mobile number.<br>Enter it below to authenticate the Admin Console.'
-      : 'We sent a 6-digit code to your registered mobile number.<br>Enter it below to continue. Code is valid for 30 days.';
+    if (smsTab) smsTab.classList.add('active');
+    if (emailTab) emailTab.classList.remove('active');
+
+    const subtitleEl = document.getElementById('verify-subtitle');
+    if (subtitleEl) {
+      subtitleEl.innerHTML = isAdminMfa
+        ? 'We sent a 6-digit MFA security code to your registered mobile number.<br>Enter it below to authenticate the Admin Console.'
+        : 'We sent a 6-digit code to your registered mobile number.<br>Enter it below to continue. Code is valid for 30 days.';
+    }
   } else {
-    emailTab.classList.add('active');
-    smsTab.classList.remove('active');
-    document.getElementById('verify-subtitle').innerHTML = isAdminMfa
-      ? 'We sent a 6-digit MFA security code to <strong>' + currentEmail + '</strong>.<br>Enter it below to authenticate the Admin Console.'
-      : 'We sent a 6-digit code to your email address <strong>' + currentEmail + '</strong>.<br>Enter it below. Code is valid for 30 days.';
+    if (emailTab) emailTab.classList.add('active');
+    if (smsTab) smsTab.classList.remove('active');
+
+    const subtitleEl = document.getElementById('verify-subtitle');
+    if (subtitleEl) {
+      subtitleEl.innerHTML = isAdminMfa
+        ? 'We sent a 6-digit MFA security code to <strong>' + currentEmail + '</strong>.<br>Enter it below to authenticate the Admin Console.'
+        : 'We sent a 6-digit code to your email address <strong>' + currentEmail + '</strong>.<br>Enter it below. Code is valid for 30 days.';
+    }
   }
 }
 
@@ -129,7 +143,7 @@ async function sendOTPCode() {
     const data = await res.json();
     
     if (res.ok) {
-      if (statusText) statusText.textContent = `Code sent via ${currentChannel === 'sms' ? 'SMS' : 'Email'} successfully`;
+      if (statusText) statusText.textContent = 'Code sent via Email successfully';
       if (statusDot) statusDot.style.background = '#2ed573'; // success green
       startResendCooldown();
       if (data.devCode) {
@@ -247,13 +261,13 @@ function clearOtpInputs() {
 async function handleVerifySubmit(e) {
   e.preventDefault();
   
-  const container = document.getElementById('otp-boxes');
-  const inputs = container.querySelectorAll('.otp-box');
   let code = '';
-  inputs.forEach(input => code += input.value);
-
   const errorDiv = document.getElementById('otp-error');
   if (errorDiv) errorDiv.style.display = 'none';
+
+  const container = document.getElementById('otp-boxes');
+  const inputs = container ? container.querySelectorAll('.otp-box') : [];
+  inputs.forEach(input => code += input.value);
 
   if (code.length < 6) {
     showOtpError('Please enter the complete 6-digit code.');

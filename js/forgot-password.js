@@ -264,7 +264,7 @@ function showSuccessScreen(msg) {
 
   section.innerHTML = `
     <div class="forgot-icon" style="background:#e3fcef; border-color:#c1f5d6;">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="10" stroke="#0e6245" stroke-width="1.8"/>
         <path d="M8 12.5L10.5 15L16 9.5" stroke="#0e6245" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>

@@ -62,7 +62,6 @@ const PatientRecords = (() => {
   function renderDetail(d) {
     const appts = d.appointments || [];
     const rx = d.prescriptions || [];
-    const plans = d.treatmentPlans || [];
 
     const apptHtml = appts.length ? appts.map(a => {
       const t = a.treatment ? a.treatment.name : 'General Consultation';
@@ -74,17 +73,6 @@ const PatientRecords = (() => {
       return `<li><strong>${esc(r.medication)}</strong> — ${esc(r.dosage || '')} ${esc(r.frequency || '')} for ${esc(r.duration || '')}
         <div class="muted small">${esc(r.instructions || '')}</div></li>`;
     }).join('') : '<li class="muted">No prescriptions on file.</li>';
-
-    const planHtml = plans.length ? plans.map(p => {
-      const items = (p.items || []).map(i =>
-        `<li><span class="badge ${statusBadge(i.status)}">${esc(i.status)}</span> ${esc(i.treatment_name)}</li>`
-      ).join('');
-      return `<div class="plan-mini">
-        <div class="plan-mini-head">${esc(p.name)} <span class="muted small">(${esc(p.status)})</span></div>
-        <ol class="plan-items">${items || '<li class="muted">No items</li>'}</ol>
-        <div class="muted small">Est. cost: ₱${Number(p.total_estimated_cost || 0).toFixed(2)}</div>
-      </div>`;
-    }).join('') : '<p class="muted">No treatment plans.</p>';
 
     const allergies = (d.allergies && d.allergies.length) ? d.allergies.join(', ') : 'None recorded';
 
@@ -109,8 +97,6 @@ const PatientRecords = (() => {
             <ul class="record-list">${apptHtml}</ul>
             <h4>Prescriptions</h4>
             <ul class="record-list">${rxHtml}</ul>
-            <h4>Treatment Plans</h4>
-            ${planHtml}
           </div>
         </div>
       </div>

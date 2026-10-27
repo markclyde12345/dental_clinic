@@ -117,17 +117,14 @@ function openReceptionistProfileModal() {
   const fullName = currentUser?.name || `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || 'Front Desk Staff';
   const initial = fullName.charAt(0).toUpperCase() || 'R';
   const email = currentUser?.email || 'reception@fanoclinic.com';
-  const branch = currentUser?.branch || 'Makati Main Clinic';
 
   const nameEl = document.getElementById('staff-modal-name');
   const avatarEl = document.getElementById('staff-modal-avatar');
   const emailEl = document.getElementById('staff-modal-email');
-  const branchEl = document.getElementById('staff-modal-branch');
 
   if (nameEl) nameEl.textContent = fullName;
   if (avatarEl) avatarEl.textContent = initial;
   if (emailEl) emailEl.textContent = email;
-  if (branchEl) branchEl.textContent = branch;
 
   modal.style.display = 'flex';
 }
@@ -502,7 +499,6 @@ function renderOverviewDentists() {
 
   container.innerHTML = allDentists.slice(0, 6).map(d => {
     const isOn = !!d.isOnDuty;
-    const branchTag = d.branch ? d.branch.replace(/branch$/i, '').trim() : 'Main';
     return `
       <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
         <div style="display: flex; align-items: center; gap: 10px;">
@@ -513,8 +509,6 @@ function renderOverviewDentists() {
             <strong style="font-size: 0.88rem; color: var(--dark-color);">${escapeHtml(d.name)}</strong>
             <div style="font-size: 0.74rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">
               <span style="color: ${isOn ? '#10b981' : '#ef4444'};">${isOn ? '&bull; On Duty' : '&bull; Out'}</span>
-              <span style="color: #94a3b8;">&bull;</span>
-              <span style="color: #64748b;">${escapeHtml(branchTag)}</span>
             </div>
           </div>
         </div>
@@ -533,7 +527,6 @@ function parseAppointmentNotes(rawNotes) {
   const parsed = {
     hasData: true,
     type: '',
-    branch: '',
     dentist: '',
     emergency: '',
     conditions: '',
@@ -562,7 +555,7 @@ function parseAppointmentNotes(rawNotes) {
     const val = match[2].trim();
 
     if (key === 'type') parsed.type = val;
-    else if (key === 'branch') parsed.branch = val;
+    else if (key === 'branch') { /* legacy multi-branch tag — ignored */ }
     else if (key === 'dentist') parsed.dentist = val;
     else if (key === 'emergency') parsed.emergency = val;
     else if (key === 'conditions') parsed.conditions = val;
@@ -1024,10 +1017,6 @@ function openApptIntakeDetails(apptId) {
               <span class="intake-lbl">Assigned Doctor</span>
               <span class="intake-val font-semibold">${escapeHtml(parsed.dentist || 'Assigned to Shift Doctor')}</span>
             </div>
-            <div class="intake-field">
-              <span class="intake-lbl">Clinic Branch</span>
-              <span class="intake-val">${escapeHtml(parsed.branch || 'Fano Dental Clinic — Main Branch')}</span>
-            </div>
             ${parsed.bookingFee ? `
             <div class="intake-field">
               <span class="intake-lbl">30% Booking Reservation Deposit</span>
@@ -1384,15 +1373,9 @@ function filterPatients() {
 // ─── Dentists On Duty Tab ─────────────────────────────────────────────────────
 // ─── Dentists On Duty Tab ─────────────────────────────────────────────────────
 function filterReceptionistDentists() {
-  const branchFilter = document.getElementById('receptionist-dentists-branch-filter')?.value || 'ALL';
   const dutyFilter = document.getElementById('receptionist-dentists-duty-filter')?.value || 'ALL';
 
   let filtered = allDentists;
-
-  if (branchFilter !== 'ALL') {
-    const q = branchFilter.toLowerCase().replace(/fano\s*dental\s*clinic\s*[—–-]?/i, '').replace(/branch$/i, '').trim();
-    filtered = filtered.filter(d => (d.branch || '').toLowerCase().includes(q) || q.includes((d.branch || '').toLowerCase().replace(/branch$/i, '').trim()));
-  }
 
   if (dutyFilter === 'ON_DUTY') {
     filtered = filtered.filter(d => d.isOnDuty);
@@ -1422,7 +1405,7 @@ function renderDentistsRoster(customList) {
     container.innerHTML = `
       <div class="empty-state" style="grid-column: 1 / -1; padding: 40px 20px;">
         <i class="ti ti-stethoscope" style="font-size: 2.2rem; color: #94a3b8; margin-bottom: 10px;"></i>
-        <p style="color: #64748b; font-weight: 600;">No dentists match the selected branch and duty filters.</p>
+        <p style="color: #64748b; font-weight: 600;">No dentists match the selected duty filter.</p>
       </div>
     `;
     return;
@@ -1433,18 +1416,12 @@ function renderDentistsRoster(customList) {
   container.innerHTML = list.map(d => {
     const sched = allStaffSchedules.find(s => s.email === d.email || s.name === d.name);
     const shift = d.shift || (sched ? sched.shift : '08:00 AM - 05:00 PM');
-    const branch = d.branch || (sched ? sched.branch : 'Main Branch (Naga)');
     const isOn = !!d.isOnDuty;
 
     const docAppts = allAppointments.filter(a => {
       const matchDoc = a.dentist_id === d.id || (a.notes && a.notes.toLowerCase().includes(d.name.toLowerCase()));
       return matchDoc && a.appointment_date && a.appointment_date.startsWith(todayStr);
     });
-
-    const isTalisay = branch.toLowerCase().includes('talisay');
-    const isMing = branch.toLowerCase().includes('minglanilla');
-    const isCebu = branch.toLowerCase().includes('cebu');
-    const isMain = !isTalisay && !isMing && !isCebu;
 
     return `
       <div class="dentist-card" id="dentist-card-${d.id}">
@@ -1473,17 +1450,6 @@ function renderDentistsRoster(customList) {
             <input type="checkbox" ${isOn ? 'checked' : ''} onchange="toggleDentistDuty('${d.id}', this.checked, '${escapeHtml(d.name)}')">
             <span class="duty-slider"></span>
           </label>
-        </div>
-
-        <!-- Branch Assignment Dropdown -->
-        <div class="dentist-branch-row">
-          <label><i class="ti ti-map-pin"></i> Assigned Clinic Branch</label>
-          <select class="dentist-branch-select" onchange="updateDentistBranch('${d.id}', this.value, '${escapeHtml(d.name)}')">
-            <option value="Main Branch (Naga)" ${isMain ? 'selected' : ''}>Main Branch (Naga)</option>
-            <option value="Minglanilla Branch" ${isMing ? 'selected' : ''}>Minglanilla Branch</option>
-            <option value="Talisay Branch" ${isTalisay ? 'selected' : ''}>Talisay Branch</option>
-            <option value="Fano Dental Clinic - Cebu Branch" ${isCebu ? 'selected' : ''}>Cebu Branch</option>
-          </select>
         </div>
 
         <div class="dentist-schedule-info">
@@ -1548,45 +1514,6 @@ async function toggleDentistDuty(id, isOn, name) {
   }
 }
 window.toggleDentistDuty = toggleDentistDuty;
-
-async function updateDentistBranch(id, branch, name) {
-  const target = allDentists.find(d => d.id === id || (name && d.name.toLowerCase().trim() === name.toLowerCase().trim()));
-  if (target) {
-    target.branch = branch;
-  }
-  const sched = allStaffSchedules.find(s => s.id === id || (name && s.name && s.name.toLowerCase().trim() === name.toLowerCase().trim()));
-  if (sched) {
-    sched.branch = branch;
-  }
-
-  renderDentistsRoster();
-  renderOverviewDentists();
-  populateModalSelects();
-
-  try {
-    const res = await fetch(`${BASE_ORIGIN}/api/dentists/${id}/duty`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAuthToken()}`
-      },
-      body: JSON.stringify({ branch, name })
-    });
-    if (res.ok) {
-      showToast(`Dr. ${name} duty branch reassigned to ${branch}.`, 'success');
-    }
-  } catch (err) {
-    console.warn('[Branch update warning]', err.message);
-    showToast(`Dr. ${name} reassigned to ${branch}.`, 'info');
-  }
-}
-window.updateDentistBranch = updateDentistBranch;
-
-function handleReceptionistBranchChange() {
-  const branchVal = document.getElementById('book-branch-select')?.value || '';
-  populateModalSelects(branchVal);
-}
-window.handleReceptionistBranchChange = handleReceptionistBranchChange;
 
 // ─── Billing & Check-Out Tab ──────────────────────────────────────────────────
 function renderBillingTable(list) {
@@ -1777,12 +1704,10 @@ window.addEventListener('click', (e) => {
   }
 });
 
-function populateModalSelects(branchFilter) {
-  const isBranchFilterOnly = branchFilter !== undefined;
-
-  // Patient select (only rebuild on initial modal setup / not when filtering branch)
+function populateModalSelects() {
+  // Patient select
   const patientSelect = document.getElementById('book-patient-select');
-  if (patientSelect && !isBranchFilterOnly) {
+  if (patientSelect) {
     const prevPatientVal = patientSelect.value;
     const prevPatientText = patientSelect.selectedOptions?.[0]?.text;
 
@@ -1809,9 +1734,9 @@ function populateModalSelects(branchFilter) {
     }
   }
 
-  // Treatment select (only rebuild on initial modal setup / not when filtering branch)
+  // Treatment select
   const treatmentSelect = document.getElementById('book-treatment-select');
-  if (treatmentSelect && !isBranchFilterOnly) {
+  if (treatmentSelect) {
     const prevTreatVal = treatmentSelect.value;
     treatmentSelect.innerHTML = `<option value="">-- Select Treatment --</option>` +
       allTreatments.map(t => {
@@ -1824,23 +1749,15 @@ function populateModalSelects(branchFilter) {
     }
   }
 
-  // Dentist select with branch filtering and duty status
+  // Dentist select with duty status
   const dentistSelect = document.getElementById('book-dentist-select');
   if (dentistSelect) {
     const prevDentistVal = dentistSelect.value;
-    let filtered = allDentists;
-    const currentBranch = branchFilter !== undefined ? branchFilter : (document.getElementById('book-branch-select')?.value || '');
-    if (currentBranch && currentBranch !== 'ALL') {
-      const q = currentBranch.toLowerCase().replace(/fano\s*dental\s*clinic\s*[—–-]?/i, '').replace(/branch$/i, '').trim();
-      const match = allDentists.filter(d => (d.branch || '').toLowerCase().includes(q) || q.includes((d.branch || '').toLowerCase().replace(/branch$/i, '').trim()));
-      if (match.length > 0) filtered = match;
-    }
 
     dentistSelect.innerHTML = `<option value="">Any Available Dentist / Staff Auto-Assign</option>` +
-      filtered.map(d => {
+      allDentists.map(d => {
         const dutyTag = d.isOnDuty ? ' (● On Duty)' : ' (○ Off Duty / Out)';
-        const branchTag = d.branch ? ` • ${d.branch.replace(/branch$/i, '').trim()}` : '';
-        return `<option value="${d.id}">${escapeHtml(d.name)}${dutyTag}${branchTag}</option>`;
+        return `<option value="${d.id}">${escapeHtml(d.name)}${dutyTag}</option>`;
       }).join('');
 
     if (prevDentistVal) {
@@ -2122,21 +2039,7 @@ function rebookAppointment(apptId) {
   // Force existing patient mode
   toggleWalkInPatientMode('existing');
 
-  // Pre-select Branch and filter dentist roster
   const parsedNotes = parseAppointmentNotes(appt.notes);
-  if (parsedNotes.branch) {
-    const branchSelect = document.getElementById('book-branch-select');
-    if (branchSelect) {
-      const bTarget = parsedNotes.branch.toLowerCase().replace(/fano\s*dental\s*clinic\s*[—–-]?/i, '').replace(/branch$/i, '').trim();
-      for (let opt of branchSelect.options) {
-        if (opt.value && (opt.value.toLowerCase().includes(bTarget) || opt.text.toLowerCase().includes(bTarget))) {
-          branchSelect.value = opt.value;
-          break;
-        }
-      }
-      populateModalSelects(branchSelect.value);
-    }
-  }
 
   // Pre-select Dentist if known
   if (parsedNotes.dentist && parsedNotes.dentist !== 'No Preference') {
@@ -2206,7 +2109,7 @@ function rebookAppointment(apptId) {
     if (allergInput) allergInput.value = parsedNotes.allergies;
   }
 
-  // Resolve and actively select patient (run AFTER branch & dentist selects are populated)
+  // Resolve and actively select patient (run AFTER dentist selects are populated)
   const pat = appt.patient || {};
   const patId = pat.id || pat.user_id || appt.patient_id || '';
   const patName = pat.name || (pat.first_name ? `${pat.first_name} ${pat.last_name || ''}`.trim() : 'Patient');
@@ -2236,21 +2139,7 @@ function openBookWithDentist(dentistId) {
 
   toggleWalkInPatientMode('existing');
 
-  const doc = allDentists.find(d => d.id === dentistId);
-  if (doc && doc.branch) {
-    const branchSelect = document.getElementById('book-branch-select');
-    if (branchSelect) {
-      const q = doc.branch.toLowerCase().replace(/branch$/i, '').trim();
-      for (let opt of branchSelect.options) {
-        if (opt.value.toLowerCase().includes(q) || q.includes(opt.value.toLowerCase().replace(/branch$/i, '').trim())) {
-          branchSelect.value = opt.value;
-          break;
-        }
-      }
-    }
-  }
-
-  populateModalSelects(doc ? doc.branch : undefined);
+  populateModalSelects();
 
   const dentistSelect = document.getElementById('book-dentist-select');
   if (dentistSelect) dentistSelect.value = dentistId;
@@ -2412,7 +2301,6 @@ async function handleBookAppointment(e) {
     }
 
     const treatmentId = document.getElementById('book-treatment-select')?.value;
-    const branchVal = document.getElementById('book-branch-select')?.value || 'Main Branch, Fano Dental Clinic';
     const dentistId = document.getElementById('book-dentist-select')?.value;
     const dateVal = document.getElementById('book-date')?.value;
     const timeVal = document.getElementById('book-time')?.value;
@@ -2452,7 +2340,7 @@ async function handleBookAppointment(e) {
     // Structured notes matching clinic format
     const priceTag = treatmentPrice > 0 ? `[TreatmentPrice: ₱${treatmentPrice.toFixed(2)}]` : '';
     const settlementTag = `[Settlement: ${paymentSettlement}]`;
-    const structuredNotes = `[Branch: ${branchVal}] [Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] ${settlementTag} ${priceTag} [Emergency: ${emergContact}] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [AnxietySupport: ${anxiety === 'Gentle' ? 'Yes (Gentle Care)' : 'Standard'}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`.trim();
+    const structuredNotes = `[Dentist: ${dentistName}] [PaymentMethod: ${paymentMethod}] ${settlementTag} ${priceTag} [Emergency: ${emergContact}] [Conditions: ${conditionsStr}] [Allergies: ${allergies}] [Meds: ${medications}] [Concern: ${concern}] [AnxietySupport: ${anxiety === 'Gentle' ? 'Yes (Gentle Care)' : 'Standard'}] ${rawNotes ? 'Notes: ' + rawNotes : ''}`.trim();
 
     const appointmentDateTime = timeVal.length === 5 ? `${dateVal}T${timeVal}:00` : `${dateVal}T${timeVal}`;
     const isPaid = (paymentSettlement === 'Full');
@@ -2549,7 +2437,7 @@ function printWalkInAppointmentSlip(appt) {
   const notesRaw = appt.notes || '';
   const parsed = parseAppointmentNotes(notesRaw);
 
-  const branchName = parsed.branch || 'Main Branch — Balirong, City of Naga';
+  const branchName = 'Balirong Highway, City of Naga, Cebu';
   const dentistName = parsed.dentist || 'Assigned Dental Specialist';
   const concern = parsed.concern || 'Clinical Consultation';
   const paymentMethod = parsed.paymentMethod || 'Cash';
@@ -3062,9 +2950,9 @@ function getStatusBadge(status) {
     case 'Confirmed':
       return `<span class="status-badge badge-approved"><i class="ti ti-check"></i> Confirmed</span>`;
     case 'Checked In':
-      return `<span class="status-badge badge-checkedin"><i class="ti ti-user-clock"></i> In Lounge</span>`;
+      return `<span class="status-badge badge-checkedin"><i class="ti ti-armchair"></i> In Lounge</span>`;
     case 'In Progress':
-      return `<span class="status-badge badge-inprogress"><i class="ti ti-tooth"></i> In Chair</span>`;
+      return `<span class="status-badge badge-inprogress"><i class="ti ti-dental"></i> In Chair</span>`;
     case 'Completed':
       return `<span class="status-badge badge-completed"><i class="ti ti-circle-check"></i> Completed</span>`;
     case 'Cancelled':
@@ -3246,9 +3134,17 @@ async function loadAuditLogs(forceRefresh = false) {
     console.warn('[Activity Log API notice]', err.message);
   }
 
-  // Filter out pure server IT auth events so receptionist sees true front-desk operations
+  // Filter out pure server IT, security, MFA, and authentication events so receptionist sees true front-desk operations
+  const authKeywords = ['LOGIN', 'LOGOUT', 'MFA', 'TOTP', 'BACKUP_CODE', 'ACCOUNT_LOCKED', 'PASSWORD', 'SECURITY'];
   let operationsLogs = fetchedLogs.filter(item => {
-    return item.action !== 'USER_LOGIN_SUCCESS' && item.action !== 'USER_LOGIN_FAILED' && item.action !== 'USER_LOGOUT';
+    const act = (item.action || '').toUpperCase();
+    const entity = (item.entity_type || '').toLowerCase();
+    const isAuthAction = authKeywords.some(kw => act.includes(kw));
+    if (isAuthAction) return false;
+    if (item.user_role === 'Admin' && (entity === 'user' || entity === 'system' || !['appointment', 'invoice', 'payment', 'treatment', 'patient'].includes(entity))) {
+      return false;
+    }
+    return true;
   });
 
   // Synthesize and merge real live operations from current in-memory clinic records
@@ -4061,23 +3957,18 @@ function closeClinicQrModal() {
   closeModal('modal-clinic-qr');
 }
 
+const CLINIC_LOCATION_LABEL = 'City of Naga, Cebu';
+
 function getStandeeTargetUrl() {
-  const branchSelect = document.getElementById('qr-standee-branch');
-  const branchName = branchSelect ? branchSelect.value : 'Main Clinic - Naga City';
   const origin = window.location.origin && window.location.origin !== 'null'
     ? window.location.origin
     : 'https://dental-clinic-bxfb.vercel.app';
   const pathname = window.location.pathname || '';
   const basePath = pathname.substring(0, pathname.lastIndexOf('/pages'));
-  return `${origin}${basePath}/pages/book-qr.html?branch=${encodeURIComponent(branchName)}`;
+  return `${origin}${basePath}/pages/book-qr.html`;
 }
 
 function updateStandeeQr() {
-  const branchSelect = document.getElementById('qr-standee-branch');
-  const branchName = branchSelect ? branchSelect.value : 'Main Clinic - Naga City';
-  const previewBranchEl = document.getElementById('standee-preview-branch');
-  if (previewBranchEl) previewBranchEl.textContent = branchName;
-
   const urlInput = document.getElementById('qr-standee-url-input');
   const targetUrl = getStandeeTargetUrl();
   if (urlInput) urlInput.value = targetUrl;
@@ -4133,14 +4024,12 @@ function copyStandeeUrl() {
 }
 
 function shareStandeeViaMsg() {
-  const branchSelect = document.getElementById('qr-standee-branch');
-  const branchName = branchSelect ? branchSelect.value : 'Main Clinic - Naga City';
   const targetUrl = getStandeeTargetUrl();
-  const msgText = `Hello! You can book an appointment or check in directly at Fano Dental Clinic (${branchName}) via our patient portal: ${targetUrl}`;
+  const msgText = `Hello! You can book an appointment or check in directly at Fano Dental Clinic (${CLINIC_LOCATION_LABEL}) via our patient portal: ${targetUrl}`;
 
   if (navigator.share) {
     navigator.share({
-      title: `Fano Dental Clinic Booking - ${branchName}`,
+      title: 'Fano Dental Clinic Booking',
       text: msgText,
       url: targetUrl
     }).catch(() => {});
@@ -4182,11 +4071,9 @@ function downloadStandeeQrPng() {
     return;
   }
 
-  const branchSelect = document.getElementById('qr-standee-branch');
-  const branchClean = (branchSelect ? branchSelect.value : 'Clinic').replace(/[^a-zA-Z0-9]/g, '_');
   const a = document.createElement('a');
   a.href = dataUrl;
-  a.download = `Fano_Dental_QR_Standee_${branchClean}.png`;
+  a.download = 'Fano_Dental_QR_Standee.png';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -4194,8 +4081,7 @@ function downloadStandeeQrPng() {
 }
 
 function printStandeeCard() {
-  const branchSelect = document.getElementById('qr-standee-branch');
-  const branchName = branchSelect ? branchSelect.value : 'Main Clinic - Naga City';
+  const locationLabel = CLINIC_LOCATION_LABEL;
   const targetContainer = document.getElementById('standee-qr-target');
   const canvas = targetContainer?.querySelector('canvas');
   const qrImgSrc = canvas ? canvas.toDataURL('image/png') : '';
@@ -4210,13 +4096,13 @@ function printStandeeCard() {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Fano Dental Clinic — QR Counter Standee (${branchName})</title>
+      <title>Fano Dental Clinic — QR Counter Standee (${locationLabel})</title>
       <style>
         body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; margin: 0; padding: 40px; display: flex; justify-content: center; align-items: center; min-height: 90vh; background: #f8fafc; }
         .standee-card { width: 440px; border: 4px solid #0b3c4d; border-radius: 28px; padding: 36px 30px; text-align: center; background: #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
         .logo-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px; }
         .clinic-title { font-size: 26px; font-weight: 800; color: #0b3c4d; margin: 0; }
-        .branch-tag { font-size: 13px; font-weight: 700; color: #0d9488; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+        .location-tag { font-size: 13px; font-weight: 700; color: #0d9488; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
         .headline { font-size: 22px; font-weight: 800; color: #0b131e; margin: 20px 0 6px; }
         .subhead { font-size: 14px; color: #64748b; margin-bottom: 24px; line-height: 1.4; }
         .qr-box { padding: 18px; border: 2.5px solid #e2e8f0; border-radius: 22px; display: inline-block; background: #ffffff; margin-bottom: 24px; }
@@ -4233,7 +4119,7 @@ function printStandeeCard() {
         <div class="logo-row">
           <div>
             <h1 class="clinic-title">Fano Dental Clinic</h1>
-            <div class="branch-tag">${branchName}</div>
+            <div class="location-tag">${locationLabel}</div>
           </div>
         </div>
         <div class="headline">📱 Scan to Book &amp; Check-In</div>

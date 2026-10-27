@@ -1,4 +1,6 @@
 const supabase = require('../config/db');
+const fs = require('fs');
+const path = require('path');
 
 // @desc    Get appointments assigned to the logged-in dentist
 // @route   GET /api/appointments/my
@@ -620,12 +622,13 @@ const updateAppointment = async (req, res) => {
           .eq('appointment_id', id)
           .maybeSingle();
 
-        if (!existing && updated.patient_id) {
+        const patientId = updated.patient_id || updated.patient?.id || existingAppt?.patient_id;
+        if (!existing && patientId) {
           const amount = updated.treatment ? Number(updated.treatment.price) || 0 : 0;
           await supabase
             .from('invoices')
             .insert([{
-              patient_id: updated.patient_id,
+              patient_id: patientId,
               appointment_id: id,
               amount,
               status: 'Unpaid'
@@ -643,6 +646,7 @@ const updateAppointment = async (req, res) => {
       const patientName = updated.patient ? (updated.patient.name || updated.patient.email) : 'Patient';
       const actorName = req.user?.name || `${req.user?.firstName || ''} ${req.user?.lastName || ''}`.trim() || 'User';
       const actorRole = req.user?.role || 'Staff';
+      const patientId = updated.patient_id || updated.patient?.id || existingAppt?.patient_id;
 
       if (isRescheduled) {
         logAuditAction({
@@ -652,7 +656,7 @@ const updateAppointment = async (req, res) => {
           details: `${actorName} (${actorRole}) rescheduled appointment #${apptRef} for ${patientName} from ${previousDate} to ${targetDate}`,
           metadata: {
             appointment_id: id,
-            patient_id: updated.patient_id,
+            patient_id: patientId,
             previous_date: previousDate,
             new_date: targetDate,
             previous_status: previousStatus,
@@ -673,7 +677,7 @@ const updateAppointment = async (req, res) => {
           details: `${actorName} (${actorRole}) cancelled appointment #${apptRef} for ${patientName}`,
           metadata: {
             appointment_id: id,
-            patient_id: updated.patient_id,
+            patient_id: patientId,
             previous_status: previousStatus,
             new_status: 'Cancelled',
             appointment_date: updated.appointment_date,
@@ -691,7 +695,7 @@ const updateAppointment = async (req, res) => {
           details: `${actorName} (${actorRole}) updated appointment #${apptRef} for ${patientName} from '${previousStatus}' to '${status}'`,
           metadata: {
             appointment_id: id,
-            patient_id: updated.patient_id,
+            patient_id: patientId,
             previous_status: previousStatus,
             new_status: status,
             changed_by_user_id: req.user?.id || req.user?._id,
@@ -752,7 +756,6 @@ const createQrAppointment = async (req, res) => {
     contact_number,
     phone,
     email,
-    branch,
     dentist_name,
     treatment_id,
     appointment_date,
@@ -909,7 +912,6 @@ const createQrAppointment = async (req, res) => {
 
     const combinedNotes = [
       `[QR Standee / Portal Booking • Ref: ${refCode}]`,
-      branch ? `Branch: ${branch}` : null,
       dentist_name ? `Requested Dentist: ${dentist_name}` : null,
       notes ? `Notes: ${notes}` : null
     ].filter(Boolean).join(' | ');
@@ -960,7 +962,6 @@ const createQrAppointment = async (req, res) => {
       appointment: {
         ...appointment,
         reference_code: refCode,
-        branch: branch || 'Main Clinic',
         dentist_name: dentist_name || 'Assigned on arrival',
         invoice: createdInvoice
       }
@@ -968,6 +969,111 @@ const createQrAppointment = async (req, res) => {
   } catch (error) {
     console.error('[createQrAppointment Error]', error);
     res.status(500).json({ message: error.message || 'Failed to book appointment via QR.' });
+  }
+};
+
+// ─── Patient Reviews & Ratings Module ──────────────────────────────────────────
+const REVIEWS_FILE = path.join(__dirname, '../data/patient_reviews.json');
+
+function getReviewsStore() {
+  if (fs.existsSync(REVIEWS_FILE)) {
+    try { return JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8')); } catch (_) { return []; }
+  }
+  return [];
+}
+
+function saveReviewsStore(data) {
+  try {
+    const dir = path.dirname(REVIEWS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(REVIEWS_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.error('[saveReviewsStore Error]:', e.message);
+  }
+}
+
+// @desc    Get review for an appointment
+// @route   GET /api/appointments/:id/review
+// @access  Private
+const getAppointmentReview = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const reviews = getReviewsStore();
+    const rev = reviews.find(r => String(r.appointment_id) === String(id));
+    res.json(rev || null);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Submit review for a completed appointment
+// @route   POST /api/appointments/:id/review
+// @access  Private
+const createAppointmentReview = async (req, res) => {
+  const { id } = req.params;
+  const { rating, comment, tags } = req.body;
+
+  try {
+    const numRating = Number(rating);
+    if (!numRating || numRating < 1 || numRating > 5) {
+      return res.status(400).json({ message: 'Rating must be a number between 1 and 5 stars.' });
+    }
+
+    // Fetch appointment to ensure it exists or fall back to client metadata
+    let appt = null;
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('id, patient_id, appointment_date, status, notes, treatment:treatment_id(name)')
+        .eq('id', id)
+        .maybeSingle();
+      if (!error && data) appt = data;
+    } catch (_) {}
+
+    if (!appt) {
+      appt = {
+        id,
+        patient_id: req.user?.id || 'patient-user',
+        treatment: { name: req.body.treatment_name || 'Dental Treatment' },
+        notes: req.body.notes || ''
+      };
+    }
+
+    let dentistName = 'Assigned Doctor';
+    const notesRaw = appt.notes || '';
+    const match = notesRaw.match(/\[Dentist:\s*([^\]]+)\]/i);
+    if (match && match[1] && match[1] !== 'No Preference') {
+      dentistName = match[1].trim();
+    } else if (req.body.dentist_name) {
+      dentistName = req.body.dentist_name;
+    }
+
+    const reviews = getReviewsStore();
+    const existingIndex = reviews.findIndex(r => String(r.appointment_id) === String(id));
+
+    const reviewData = {
+      id: existingIndex >= 0 ? reviews[existingIndex].id : 'rev_' + Date.now(),
+      appointment_id: id,
+      patient_id: req.user?.id || appt.patient_id,
+      patient_name: req.user?.name || 'Patient',
+      dentist_name: dentistName,
+      treatment_name: appt.treatment?.name || 'General Dental Treatment',
+      rating: Math.round(numRating),
+      tags: Array.isArray(tags) ? tags : [],
+      comment: (comment || '').trim(),
+      created_at: new Date().toISOString()
+    };
+
+    if (existingIndex >= 0) {
+      reviews[existingIndex] = reviewData;
+    } else {
+      reviews.unshift(reviewData);
+    }
+
+    saveReviewsStore(reviews);
+    res.status(201).json({ success: true, review: reviewData });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -980,5 +1086,7 @@ module.exports = {
   createAppointment,
   createQrAppointment,
   updateAppointment,
-  deleteAppointment
+  deleteAppointment,
+  getAppointmentReview,
+  createAppointmentReview
 };

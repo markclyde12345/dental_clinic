@@ -1,5 +1,742 @@
 [
   {
+    "id": "cd555306-231d-4e57-b9f9-558174c4578d",
+    "timestamp": "2026-10-22T01:23:58.280Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_id": "system",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Successful login for user dentist@fanoclinic.com (Dentist)",
+    "metadata": {
+      "email": "dentist@fanoclinic.com",
+      "role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Avast/153.0.0.0"
+  },
+  {
+    "id": "f6d51b97-ea4a-4105-ab3a-641ccce7b67b",
+    "timestamp": "2026-10-18T12:30:16.699Z",
+    "action": "APPOINTMENT_STATUS_CHANGED",
+    "entity_type": "appointment",
+    "entity_id": "18891a1a-b7d4-4106-8c2c-3f780a056f0b",
+    "user_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Dr. John Doe (Dentist) updated appointment #18891A1A for mark clyde Castillote from 'Approved' to 'In Progress'",
+    "metadata": {
+      "appointment_id": "18891a1a-b7d4-4106-8c2c-3f780a056f0b",
+      "patient_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+      "previous_status": "Approved",
+      "new_status": "In Progress",
+      "changed_by_user_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+      "changed_by_name": "Dr. John Doe",
+      "changed_by_role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Avast/153.0.0.0"
+  },
+  {
+    "id": "9809be0a-c40b-4872-90f6-c6f2edc0ecb1",
+    "timestamp": "2026-10-18T09:34:47.928Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_id": "system",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Successful login for user dentist@fanoclinic.com (Dentist)",
+    "metadata": {
+      "email": "dentist@fanoclinic.com",
+      "role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Avast/153.0.0.0"
+  },
+  {
+    "id": "c263b6f9-21bf-4666-9db1-bc2f640e0e48",
+    "timestamp": "2026-10-18T07:23:00.363Z",
+    "action": "APPOINTMENT_STATUS_CHANGED",
+    "entity_type": "appointment",
+    "entity_id": "18891a1a-b7d4-4106-8c2c-3f780a056f0b",
+    "user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Sarah Clerk (Receptionist) updated appointment #18891A1A for mark clyde Castillote from 'Pending' to 'Approved'",
+    "metadata": {
+      "appointment_id": "18891a1a-b7d4-4106-8c2c-3f780a056f0b",
+      "patient_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+      "previous_status": "Pending",
+      "new_status": "Approved",
+      "changed_by_user_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+      "changed_by_name": "Sarah Clerk",
+      "changed_by_role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Avast/153.0.0.0"
+  },
+  {
+    "id": "b21fb4f7-4a0a-4d96-b609-6b5dbc8731ea",
+    "timestamp": "2026-10-18T07:20:43.486Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "79a92372-b9a4-4ab6-8e5a-85f3c7d89370",
+    "user_id": "system",
+    "user_name": "Sarah Clerk",
+    "user_role": "Receptionist",
+    "details": "Successful login for user receptionist@fanoclinic.com (Receptionist)",
+    "metadata": {
+      "email": "receptionist@fanoclinic.com",
+      "role": "Receptionist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Avast/153.0.0.0"
+  },
+  {
+    "id": "66625409-322e-4308-85d8-b5350ebb2fb9",
+    "timestamp": "2026-10-18T05:18:00.921Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "0706b9b2-c821-4e0a-b437-c7bd5d742794",
+    "user_id": "system",
+    "user_name": "Mark Clyde Castillote",
+    "user_role": "Admin",
+    "details": "Successful login for user markycastillote@gmail.com (Admin)",
+    "metadata": {
+      "email": "markycastillote@gmail.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Avast/153.0.0.0"
+  },
+  {
+    "id": "67be8535-9048-4fae-a665-1cc575341ff3",
+    "timestamp": "2026-10-13T02:42:16.849Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Avast/153.0.0.0"
+  },
+  {
+    "id": "1e5df111-bbed-4188-906f-803cfce0df95",
+    "timestamp": "2026-10-13T02:38:46.221Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Avast/153.0.0.0"
+  },
+  {
+    "id": "23ae314b-5cb7-4c04-9eda-bfb768b238b9",
+    "timestamp": "2026-10-05T01:36:43.694Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "22dd4e89-f623-4f0a-8bcc-a28263d2974d",
+    "timestamp": "2026-10-05T01:34:01.161Z",
+    "action": "ADMIN_BACKUP_CODE_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA Emergency Backup Recovery Code verification succeeded for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "method": "backup_code",
+      "trustDevice": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "74c75e51-0e4d-4df2-aa6d-7eaa9c6accae",
+    "timestamp": "2026-10-05T01:31:10.083Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin Authenticator App (TOTP) challenge issued for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "totp"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "616ca426-7573-44ff-baf9-a12aeba55b85",
+    "timestamp": "2026-10-05T01:31:00.411Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "0706b9b2-c821-4e0a-b437-c7bd5d742794",
+    "user_id": "system",
+    "user_name": "Mark Clyde Castillote",
+    "user_role": "Admin",
+    "details": "Admin Authenticator App (TOTP) challenge issued for markycastillote@gmail.com",
+    "metadata": {
+      "email": "markycastillote@gmail.com",
+      "role": "Admin",
+      "channel": "totp"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "9f6b7611-d7fd-4ddc-a09a-3a9431bdd61b",
+    "timestamp": "2026-09-27T13:54:25.003Z",
+    "action": "ADMIN_TOTP_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA TOTP Authenticator verification succeeded for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "method": "demo_bypass",
+      "trustDevice": true
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+  },
+  {
+    "id": "79b2b3b6-285f-46d1-b5db-251344ae7de6",
+    "timestamp": "2026-09-27T13:52:44.996Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin Authenticator App (TOTP) challenge issued for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "totp"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+  },
+  {
+    "id": "c76d0230-b1a5-49c9-91d1-d9a593c5405e",
+    "timestamp": "2026-09-27T13:50:28.283Z",
+    "action": "ADMIN_TOTP_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA TOTP Authenticator verification succeeded for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "method": "totp",
+      "trustDevice": false
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "6ac699c0-3a2e-49c5-beaa-4d8fada9962a",
+    "timestamp": "2026-09-27T13:50:27.827Z",
+    "action": "ADMIN_BACKUP_CODE_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA Emergency Backup Recovery Code verification succeeded for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "method": "backup_code",
+      "trustDevice": false
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "ab7e1f11-276e-4a2b-85aa-58eb64ed1f54",
+    "timestamp": "2026-09-27T13:50:27.675Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin Authenticator App (TOTP) challenge issued for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "totp"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "0fbc6963-e964-40a2-82e3-6fe22c418746",
+    "timestamp": "2026-09-27T13:50:26.606Z",
+    "action": "ADMIN_TOTP_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA TOTP Authenticator verification succeeded for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "method": "demo_bypass",
+      "trustDevice": false
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "cbc253d3-f5d7-4a66-a802-bb5421fa915a",
+    "timestamp": "2026-09-27T13:50:26.301Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin Authenticator App (TOTP) challenge issued for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "totp"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "58d170e9-b5e4-4ea4-a2a0-f9eee3b003b0",
+    "timestamp": "2026-09-27T13:49:08.761Z",
+    "action": "ADMIN_TOTP_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA TOTP Authenticator verification succeeded for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "method": "totp",
+      "trustDevice": false
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "da05f8cb-d839-41e2-8594-bc01b6e257dc",
+    "timestamp": "2026-09-27T13:49:08.547Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin Authenticator App (TOTP) challenge issued for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "totp"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "219338eb-6a71-4276-adcf-bb6a5fe7a158",
+    "timestamp": "2026-09-27T13:49:07.809Z",
+    "action": "ADMIN_MFA_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA identity verification succeeded for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "trustDevice": false
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "8ceeedb2-98a4-4f0b-8442-5b56e5f254d3",
+    "timestamp": "2026-09-27T13:49:07.373Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA challenge issued for admin@fanoclinic.com (email)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "email"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "01e9828a-06b0-4e28-981e-eff3d4ce37cb",
+    "timestamp": "2026-09-27T13:48:49.927Z",
+    "action": "ADMIN_MFA_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA identity verification succeeded for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "trustDevice": false
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "0d743d3c-f3e6-41f4-b2ef-b7d1140193ae",
+    "timestamp": "2026-09-27T13:48:49.331Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA challenge issued for admin@fanoclinic.com (email)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "email"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "65888ac1-8fb7-40dc-ab76-25a40538c5e8",
+    "timestamp": "2026-09-27T13:48:34.413Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "3a8b87b7-ed60-4b63-b5f3-ad2b4fb3bab7",
+    "timestamp": "2026-09-27T13:48:34.027Z",
+    "action": "ADMIN_MFA_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA identity verification succeeded for admin@fanoclinic.com",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "trustDevice": true
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "eb756318-38e1-4914-bd26-2313068a7d72",
+    "timestamp": "2026-09-27T13:48:33.313Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA challenge issued for admin@fanoclinic.com (email)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "email"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "cbdf6791-c0a8-4964-9121-4f66ba39cda4",
+    "timestamp": "2026-09-27T13:48:12.907Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA challenge issued for admin@fanoclinic.com (email)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "email"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "da454a5e-2f7e-4507-9d29-5d5dcd68f8e2",
+    "timestamp": "2026-09-27T13:45:27.266Z",
+    "action": "ADMIN_MFA_CHALLENGE",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Admin MFA challenge issued for admin@fanoclinic.com (email)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin",
+      "channel": "email"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "8d17b2ee-8025-41df-980e-7ad2e096a0ad",
+    "timestamp": "2026-09-27T13:38:19.528Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "90c304b7-7957-4764-96e7-030ee11d16f2",
+    "user_id": "system",
+    "user_name": "Fano Admin",
+    "user_role": "Admin",
+    "details": "Successful login for user admin@fanoclinic.com (Admin)",
+    "metadata": {
+      "email": "admin@fanoclinic.com",
+      "role": "Admin"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "de240911-8f23-45cc-a04a-307d1a5d811a",
+    "timestamp": "2026-09-27T03:24:07.761Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "f962f053-57ce-46d5-b33b-b8995baf191e",
+    "timestamp": "2026-09-25T10:32:38.075Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "a18c6b96-7668-45df-9ac0-40396780b265",
+    "timestamp": "2026-09-25T10:22:40.290Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "10c88875-a759-4445-89c1-3a2d969e3893",
+    "timestamp": "2026-09-24T12:35:35.839Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "912561b0-08ac-4878-b76f-435304cf2fe1",
+    "user_id": "system",
+    "user_name": "mark clyde Castillote",
+    "user_role": "Patient",
+    "details": "Successful login for user castillotemclyde@gmail.com (Patient)",
+    "metadata": {
+      "email": "castillotemclyde@gmail.com",
+      "role": "Patient"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "6a3f64c9-e786-40fa-9fe6-972c86d9cad4",
+    "timestamp": "2026-09-24T11:54:22.509Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_id": "system",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Successful login for user dentist@fanoclinic.com (Dentist)",
+    "metadata": {
+      "email": "dentist@fanoclinic.com",
+      "role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "8d143484-f3a8-4bdf-9daf-f06185e080b2",
+    "timestamp": "2026-09-24T11:49:18.472Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_id": "system",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Successful login for user dentist@fanoclinic.com (Dentist)",
+    "metadata": {
+      "email": "dentist@fanoclinic.com",
+      "role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Avast/152.0.0.0"
+  },
+  {
+    "id": "8c65be26-416b-4deb-b412-73c2759b5f4d",
+    "timestamp": "2026-09-24T11:23:25.660Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_id": "system",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Successful login for user dentist@fanoclinic.com (Dentist)",
+    "metadata": {
+      "email": "dentist@fanoclinic.com",
+      "role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "1b613fce-15f1-4686-8f59-14e26a72a90f",
+    "timestamp": "2026-09-24T11:22:26.393Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_id": "system",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Successful login for user dentist@fanoclinic.com (Dentist)",
+    "metadata": {
+      "email": "dentist@fanoclinic.com",
+      "role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "57034ac1-2197-4d36-ac82-faa726e05a9e",
+    "timestamp": "2026-09-24T11:22:17.526Z",
+    "action": "USER_LOGIN_SUCCESS",
+    "entity_type": "user",
+    "entity_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_id": "system",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Successful login for user dentist@fanoclinic.com (Dentist)",
+    "metadata": {
+      "email": "dentist@fanoclinic.com",
+      "role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
+    "id": "04aa7915-e861-4122-84c1-7d7d5fc91637",
+    "timestamp": "2026-09-24T10:14:24.773Z",
+    "action": "APPOINTMENT_STATUS_CHANGED",
+    "entity_type": "appointment",
+    "entity_id": "6c77d8db-0617-49e1-8b48-1303292e9f9b",
+    "user_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+    "user_name": "Dr. John Doe",
+    "user_role": "Dentist",
+    "details": "Dr. John Doe (Dentist) updated appointment #6C77D8DB for mark clyde Castillote from 'In Progress' to 'Completed'",
+    "metadata": {
+      "appointment_id": "6c77d8db-0617-49e1-8b48-1303292e9f9b",
+      "previous_status": "In Progress",
+      "new_status": "Completed",
+      "changed_by_user_id": "d7fdd987-5709-41ad-9fd5-16707c2f1828",
+      "changed_by_name": "Dr. John Doe",
+      "changed_by_role": "Dentist"
+    },
+    "ip_address": "::1",
+    "user_agent": "node"
+  },
+  {
     "id": "7335d9c9-81d9-4100-8ed8-eea26e37ed0d",
     "timestamp": "2026-09-21T02:48:29.764Z",
     "action": "USER_LOGIN_SUCCESS",

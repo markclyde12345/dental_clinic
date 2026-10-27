@@ -1045,29 +1045,6 @@ footer {
   display: block;
 }
 
-.landing-qr-branch-picker {
-  text-align: left;
-  margin-bottom: 12px;
-}
-.landing-qr-branch-picker label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #475569;
-  margin-bottom: 4px;
-}
-.landing-qr-branch-picker select {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #1e293b;
-  background: #fff;
-  outline: none;
-}
-
 .landing-qr-url-row {
   display: flex;
   gap: 6px;

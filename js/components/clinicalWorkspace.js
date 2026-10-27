@@ -151,6 +151,8 @@ const ClinicalWorkspace = (() => {
           document.getElementById('cw-status').textContent = updated.status;
           document.getElementById('cw-status').className = 'badge ' + statusBadge(updated.status);
           currentAppt = { ...currentAppt, status: updated.status };
+          if (typeof loadQueueView === 'function') loadQueueView();
+          if (typeof loadOverview === 'function') loadOverview();
         } catch (err) { alert(err.message); }
         finally { busy = false; }
       });

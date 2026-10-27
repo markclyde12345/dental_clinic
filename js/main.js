@@ -136,16 +136,14 @@ document.addEventListener('DOMContentLoaded', () => {
 let landingQrInstance = null;
 
 function getLandingPortalUrl() {
-  const branchSelect = document.getElementById('landingBranchSelect');
-  const branch = branchSelect ? branchSelect.value : 'Main Clinic - Naga City';
   const origin = window.location.origin && window.location.origin !== 'null' ? window.location.origin : '';
   const pathname = window.location.pathname || '';
   const basePath = pathname.substring(0, pathname.lastIndexOf('/pages'));
   
   if (origin && !origin.startsWith('file')) {
-    return `${origin}${basePath}/pages/book-qr.html?branch=${encodeURIComponent(branch)}`;
+    return `${origin}${basePath}/pages/book-qr.html`;
   }
-  return `book-qr.html?branch=${encodeURIComponent(branch)}`;
+  return `book-qr.html`;
 }
 
 function generateLandingQr() {

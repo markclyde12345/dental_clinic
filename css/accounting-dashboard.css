@@ -1560,12 +1560,6 @@ html, body {
   white-space: nowrap;
 }
 
-.info-pill.branch-pill {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
 .info-pill.doctor-pill {
   background: #eff6ff;
   color: #1d4ed8;

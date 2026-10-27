@@ -66,7 +66,10 @@ const api = {
   getFollowUps() { return this.get('/dentist/followups'); },
   createFollowUp(data) { return this.post('/dentist/followups', data); },
   getDentistReports() { return this.get('/dentist/reports'); },
-  getDentistNotifications() { return this.get('/dentist/notifications'); }
+  getDentistNotifications() { return this.get('/dentist/notifications'); },
+  changePassword(data) { return this.put('/auth/change-password', data); },
+  getAppointmentReview(id) { return this.get(`/appointments/${id}/review`); },
+  submitAppointmentReview(id, data) { return this.post(`/appointments/${id}/review`, data); }
 };
 
 // Expose globally for non-module scripts

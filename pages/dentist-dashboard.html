@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../css/dentist-dashboard.css?v=20260911_tp_modal_v2">
+  <link rel="stylesheet" href="../css/dentist-dashboard.css?v=20261011_settings_v1">
 </head>
 <body>
 
@@ -87,12 +87,7 @@
               <span>Dental Charting</span>
             </a>
           </li>
-          <li>
-            <a href="#" data-tab="treatments">
-              <i class="fa-solid fa-stethoscope"></i>
-              <span>Treatments & Plans</span>
-            </a>
-          </li>
+
           <li>
             <a href="#" data-tab="prescriptions">
               <i class="fa-solid fa-prescription"></i>
@@ -124,8 +119,8 @@
             </a>
           </li>
           <li>
-            <a href="#" data-tab="Settings">
-              <i class="fa-solid fa-Settings"></i>
+            <a href="#" data-tab="settings">
+              <i class="fa-solid fa-gear"></i>
               <span>Settings</span>
             </a>
           </li>
@@ -555,24 +550,7 @@
           </div>
         </section>
 
-        <!-- ==================== 6. TREATMENTS & PLANS TAB ==================== -->
-        <section id="tab-treatments" class="tab-panel" hidden>
-          <div class="panel-card">
-            <div class="panel-header flex-wrap">
-              <div>
-                <h3>Treatment Plans & Clinical Procedures</h3>
-                <p class="panel-sub">Create multi-stage treatment plans, assign procedures, and track progress</p>
-              </div>
-              <button class="btn btn-primary" onclick="openCreatePlanModal()">
-                <i class="fa-solid fa-plus"></i> New Treatment Plan
-              </button>
-            </div>
 
-            <div class="plan-list" id="plan-list">
-              <!-- Injected via JS -->
-            </div>
-          </div>
-        </section>
 
         <!-- ==================== 7. PRESCRIPTION MANAGEMENT TAB ==================== -->
         <section id="tab-prescriptions" class="tab-panel" hidden>
@@ -722,8 +700,9 @@
                   <span class="report-stat-label">Appointment Completion Rate</span>
                 </div>
                 <div class="report-stat-item">
-                  <span class="report-stat-num" id="rep-satisfaction">98.5%</span>
+                  <span class="report-stat-num" id="rep-satisfaction">--%</span>
                   <span class="report-stat-label">Patient Satisfaction Score</span>
+                  <small id="rep-satisfaction-sub" style="font-size:0.75rem; color:#64748b; display:block; margin-top:3px;">Calculating ratings...</small>
                 </div>
               </div>
             </div>
@@ -746,6 +725,23 @@
               </div>
             </div>
             <div class="bar-chart-container" id="rep-monthly-bars">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Verified Patient Reviews Card -->
+          <div class="panel-card mt-4">
+            <div class="panel-header">
+              <div>
+                <h3>Recent Patient Feedback &amp; Ratings</h3>
+                <p class="panel-sub">Real evaluations and verified treatment reviews submitted by patients</p>
+              </div>
+              <div id="rep-satisfaction-summary-badge" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary-subtle); padding:6px 14px; border-radius:20px; font-weight:700; color:var(--primary-color);">
+                <i class="fa-solid fa-star" style="color:#f59e0b;"></i>
+                <span id="rep-avg-stars-badge">5.0 / 5.0</span>
+              </div>
+            </div>
+            <div id="rep-patient-reviews-list" class="patient-reviews-list">
               <!-- Injected via JS -->
             </div>
           </div>
@@ -775,9 +771,6 @@
                 <div class="dentist-onduty-badge" id="prof-duty-badge" onclick="toggleDentistSelfDuty()" style="cursor: pointer;" title="Click to toggle your duty status (On Duty vs Out)">
                   <span class="onduty-pulse" id="prof-duty-pulse"></span>
                   <span id="prof-duty-text">On Duty &bull; Clinical Practitioner</span>
-                </div>
-                <div id="prof-branch-badge" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 12px; border-radius: 20px; margin-top: 6px;">
-                  <i class="fa-solid fa-location-dot"></i> <span id="prof-branch-text">Talisay Branch</span>
                 </div>
               </div>
 
@@ -830,8 +823,8 @@
                 <div class="meta-item">
                   <div class="meta-icon-box"><i class="fa-solid fa-hospital"></i></div>
                   <div class="meta-text-wrap">
-                    <small>Assigned Practice Clinic</small>
-                    <strong>Fano Dental Clinic — Main Branch</strong>
+                    <small>Practice Clinic</small>
+                    <strong>Fano Dental Clinic — City of Naga, Cebu</strong>
                   </div>
                 </div>
               </div>
@@ -895,6 +888,244 @@
           </div>
         </section>
 
+        <!-- ==================== 12. SETTINGS TAB ==================== -->
+        <section id="tab-settings" class="tab-panel" hidden>
+          <div class="settings-tab-layout">
+
+            <!-- Card 1: Operatory & Practice Defaults -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-icon">
+                  <i class="fa-solid fa-tooth"></i>
+                </div>
+                <div>
+                  <h3 class="settings-card-title">Operatory &amp; Clinical Practice</h3>
+                  <p>Set default dental chair and consultation parameters.</p>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <label class="field">
+                  <span>Default Operatory Chair</span>
+                  <select id="setting-chair" class="input">
+                    <option value="Dental Chair 1">Dental Chair 1 — Operatory A (Main)</option>
+                    <option value="Dental Chair 2">Dental Chair 2 — Operatory B (Hygiene)</option>
+                    <option value="Dental Chair 3">Dental Chair 3 — Operatory C (Surgery)</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Default Visit Slot Duration</span>
+                  <select id="setting-duration" class="input">
+                    <option value="15">15 Minutes — Quick Checkup / Dressing</option>
+                    <option value="30" selected>30 Minutes — Standard Consultation / Prophylaxis</option>
+                    <option value="45">45 Minutes — Composite Restoration / Fillings</option>
+                    <option value="60">60 Minutes — Complex Extraction / Root Canal</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Dental Charting Numbering System</span>
+                  <select id="setting-charting-system" class="input">
+                    <option value="FDI" selected>FDI World Dental Federation (11-48 / 51-85)</option>
+                    <option value="Universal">Universal Numbering System (ADA 1-32 / A-T)</option>
+                    <option value="Palmer">Palmer Notation Method</option>
+                  </select>
+                </label>
+
+                <label class="field" style="grid-column: 1 / -1;">
+                  <span>Default Odontogram Dentition</span>
+                  <select id="setting-default-chart" class="input">
+                    <option value="adult" selected>Adult Permanent Dentition (32 Teeth)</option>
+                    <option value="pediatric">Pediatric Primary Dentition (20 Milk Teeth)</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="settings-toggle-row">
+                <div class="settings-toggle-info">
+                  <h5>Auto-Advance Next Patient</h5>
+                  <p>When current chair treatment is completed, automatically suggest calling the next waiting patient.</p>
+                </div>
+                <label class="settings-switch">
+                  <input type="checkbox" id="setting-auto-advance" checked>
+                  <span class="settings-slider"></span>
+                </label>
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; margin-top: 8px;">
+                <button type="button" class="btn btn-primary" onclick="saveClinicalPreferences(this)">
+                  <i class="fa-solid fa-floppy-disk"></i> Save Operatory Defaults
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 2: Notifications & Audio Chimes -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background: rgba(245, 158, 11, 0.12); color: #d97706; border-color: rgba(245, 158, 11, 0.2);">
+                  <i class="fa-solid fa-bell"></i>
+                </div>
+                <div>
+                  <h3 class="settings-card-title">Live Queue &amp; Alert Preferences</h3>
+                  <p>Manage audible cues, emergency flashes, and appointment notifications.</p>
+                </div>
+              </div>
+
+              <div class="settings-toggle-row">
+                <div class="settings-toggle-info">
+                  <h5>Queue Arrival Sound Chime</h5>
+                  <p>Play a soft melodic chime whenever a patient arrives at reception or is assigned to your chair.</p>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <button type="button" class="btn btn-ghost small" onclick="playQueueChime()" title="Test chime playback">
+                    <i class="fa-solid fa-volume-high"></i> Test
+                  </button>
+                  <label class="settings-switch">
+                    <input type="checkbox" id="setting-queue-chime" checked>
+                    <span class="settings-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="settings-toggle-row">
+                <div class="settings-toggle-info">
+                  <h5>Urgent / Emergency Case Flash</h5>
+                  <p>Display an animated high-priority indicator for acute trauma, severe bleeding, or abscess emergencies.</p>
+                </div>
+                <label class="settings-switch">
+                  <input type="checkbox" id="setting-urgent-flash" checked>
+                  <span class="settings-slider"></span>
+                </label>
+              </div>
+
+              <div class="settings-toggle-row">
+                <div class="settings-toggle-info">
+                  <h5>Daily Morning Schedule Email</h5>
+                  <p>Receive your scheduled appointments digest daily at 8:00 AM via email.</p>
+                </div>
+                <label class="settings-switch">
+                  <input type="checkbox" id="setting-morning-digest" checked>
+                  <span class="settings-slider"></span>
+                </label>
+              </div>
+
+              <div class="settings-toggle-row">
+                <div class="settings-toggle-info">
+                  <h5>Patient Reschedule / Cancellation Alerts</h5>
+                  <p>Receive immediate alerts if a scheduled patient cancels or reschedules on the appointment day.</p>
+                </div>
+                <label class="settings-switch">
+                  <input type="checkbox" id="setting-cancellation-alert" checked>
+                  <span class="settings-slider"></span>
+                </label>
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; margin-top: 8px;">
+                <button type="button" class="btn btn-primary" onclick="saveAlertPreferences(this)">
+                  <i class="fa-solid fa-floppy-disk"></i> Save Alert Preferences
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 3: Prescription & Documentation Defaults -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background: rgba(16, 185, 129, 0.12); color: #059669; border-color: rgba(16, 185, 129, 0.2);">
+                  <i class="fa-solid fa-prescription-bottle-medical"></i>
+                </div>
+                <div>
+                  <h3 class="settings-card-title">Prescription &amp; Rx Defaults</h3>
+                  <p>Customize clinical print headers and standard post-operative advice.</p>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <label class="field">
+                  <span>Official Rx Header Letterhead</span>
+                  <input type="text" id="setting-rx-header" class="input" value="Fano Dental Clinic — Licensed Dental Surgeon">
+                </label>
+
+                <label class="field">
+                  <span>Doctor Board Credentials / Subtitle</span>
+                  <input type="text" id="setting-rx-sub" class="input" value="PRC Board Lic. No. 0089421 • PTR No. 9841203">
+                </label>
+
+                <label class="field" style="grid-column: 1 / -1;">
+                  <span>Standard Post-Operative Advice</span>
+                  <textarea id="setting-rx-postop" class="input textarea" rows="3" placeholder="Default post-procedure recommendations...">Bite firmly on gauze pad for 45 minutes. Avoid smoking, straws, or spitting for 24 hours. Take prescribed analgesics with meals. Contact clinic for prolonged bleeding.</textarea>
+                </label>
+              </div>
+
+              <div class="settings-toggle-row">
+                <div class="settings-toggle-info">
+                  <h5>Digital Verification Seal on Rx</h5>
+                  <p>Append cryptographic QR validation badge and doctor digital seal to printed prescription slips.</p>
+                </div>
+                <label class="settings-switch">
+                  <input type="checkbox" id="setting-digital-seal" checked>
+                  <span class="settings-slider"></span>
+                </label>
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; margin-top: 8px;">
+                <button type="button" class="btn btn-primary" onclick="savePrescriptionSettings(this)">
+                  <i class="fa-solid fa-floppy-disk"></i> Save Rx Defaults
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 4: Account Security & Password -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background: rgba(59, 130, 246, 0.12); color: #2563eb; border-color: rgba(59, 130, 246, 0.2);">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                  <h3 class="settings-card-title">Security &amp; Password</h3>
+                  <p>Update doctor account credentials and verify authentication status.</p>
+                </div>
+              </div>
+
+              <form id="dentist-password-form" onsubmit="handleDentistChangePassword(event)">
+                <div class="form-grid">
+                  <label class="field" style="grid-column: 1 / -1;">
+                    <span>Current Password <strong style="color:#ef4444;">*</strong></span>
+                    <input type="password" id="dentist-curr-pass" class="input" required placeholder="Enter your current password">
+                  </label>
+
+                  <label class="field">
+                    <span>New Password <strong style="color:#ef4444;">*</strong></span>
+                    <input type="password" id="dentist-new-pass" class="input" required minlength="8" placeholder="At least 8 characters">
+                  </label>
+
+                  <label class="field">
+                    <span>Confirm New Password <strong style="color:#ef4444;">*</strong></span>
+                    <input type="password" id="dentist-confirm-pass" class="input" required minlength="8" placeholder="Re-enter new password">
+                  </label>
+                </div>
+
+                <div style="margin: 14px 0 18px 0; padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: space-between;">
+                  <div>
+                    <span style="font-size: 0.84rem; font-weight: 700; color: #1e293b; display: block;">Two-Factor Authentication (2FA)</span>
+                    <span class="muted small">Email &amp; SMS OTP active on login</span>
+                  </div>
+                  <span class="settings-badge-pill" style="background:#d1fae5; color:#065f46;">
+                    <i class="fa-solid fa-circle-check"></i> Active
+                  </span>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end;">
+                  <button type="submit" id="btn-dentist-update-pass" class="btn btn-primary">
+                    <i class="fa-solid fa-key"></i> Update Password
+                  </button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        </section>
+
       </div>
     </main>
   </div>
@@ -920,9 +1151,9 @@
       <div class="taskbar-icon"><i class="fa-solid fa-tooth"></i></div>
       <span class="taskbar-label">Charting</span>
     </button>
-    <button type="button" class="taskbar-item" data-tab="treatments" onclick="switchTab('treatments')">
-      <div class="taskbar-icon"><i class="fa-solid fa-stethoscope"></i></div>
-      <span class="taskbar-label">Treatments</span>
+    <button type="button" class="taskbar-item" data-tab="patients" onclick="switchTab('patients')">
+      <div class="taskbar-icon"><i class="fa-solid fa-hospital-user"></i></div>
+      <span class="taskbar-label">Patients</span>
     </button>
   </nav>
 
@@ -938,8 +1169,8 @@
   <script src="../js/components/calendar.js?v=20260911_calendar_fix"></script>
   <script src="../js/components/patientRecords.js"></script>
   <script src="../js/components/clinicalWorkspace.js"></script>
-  <script src="../js/components/treatmentPlans.js?v=20260912_friendly_v1"></script>
-  <script src="../js/dentist-dashboard.js?v=20260911_calendar_fix"></script>
+
+  <script src="../js/dentist-dashboard.js?v=20261011_settings_v1"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>
 </html>

@@ -14,7 +14,8 @@ const {
   updateUserStatus, 
   deleteUser,
   socialLogin,
-  getOAuthUrl
+  getOAuthUrl,
+  changePassword
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/auth');
 const { validateRegister, validateLogin, validateSendOTP, validateVerifyOTP, validateForgotPassword, validateVerifyResetOTP, validateResetPassword } = require('../middleware/validate');
@@ -27,6 +28,7 @@ router.post('/forgot-password', validateForgotPassword, forgotPassword);
 router.post('/verify-reset-otp', validateVerifyResetOTP, verifyResetOTP);
 router.post('/reset-password', validateResetPassword, resetPassword);
 router.get('/profile', protect, getUserProfile);
+router.put('/change-password', protect, changePassword);
 
 // Social / OAuth Authentication Routes
 router.post('/social-login', socialLogin);

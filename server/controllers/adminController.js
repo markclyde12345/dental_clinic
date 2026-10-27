@@ -5,6 +5,7 @@ const supabase = require('../config/db');
 const seedUsers = require('../utils/seeder');
 const sendEmail = require('../utils/emailService');
 const sendSMS = require('../utils/smsService');
+const totpService = require('../utils/totpService');
 
 // Use 
 // /tmp for cross-platform compatibility (works on Vercel Linux + local Windows via env override)
@@ -12,70 +13,7 @@ const DATA_DIR = process.env.DATA_DIR || '/tmp/dental_clinic_backups';
 const INVENTORY_FILE = path.join(DATA_DIR, 'inventory.json');
 const STAFF_FILE = path.join(DATA_DIR, 'staff_schedules.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
-const BRANCHES_DATA_PATH = path.join(__dirname, '../data/branches.json');
 const MFA_SETTINGS_PATH = path.join(__dirname, '../data/mfa_settings.json');
-
-const defaultBranches = [
-  {
-    id: 'branch-main',
-    key: 'Main Branch',
-    name: 'Main Branch (Naga)',
-    location: 'Balirong Highway, City of Naga, Cebu',
-    contactNumber: '0917-123-4567',
-    operatingHours: 'Mon–Sat 8:00 AM – 6:00 PM',
-    lat: 10.2098,
-    lng: 123.7580,
-    isMain: true,
-    createdAt: '2026-01-01T00:00:00.000Z'
-  },
-  {
-    id: 'branch-minglanilla',
-    key: 'Minglanilla',
-    name: 'Minglanilla Branch',
-    location: 'Poblacion Ward II, Minglanilla, Cebu',
-    contactNumber: '0918-234-5678',
-    operatingHours: 'Mon–Sun 8:30 AM – 6:30 PM',
-    lat: 10.2450,
-    lng: 123.7960,
-    isMain: false,
-    createdAt: '2026-01-01T00:00:00.000Z'
-  },
-  {
-    id: 'branch-talisay',
-    key: 'Talisay',
-    name: 'Talisay Branch',
-    location: 'Tabunok / Bulacao, Talisay City, Cebu',
-    contactNumber: '0919-345-6789',
-    operatingHours: 'Mon–Sat 9:00 AM – 5:00 PM',
-    lat: 10.2600,
-    lng: 123.8340,
-    isMain: false,
-    createdAt: '2026-01-01T00:00:00.000Z'
-  }
-];
-
-function getStoredBranches() {
-  try {
-    if (fs.existsSync(BRANCHES_DATA_PATH)) {
-      const content = fs.readFileSync(BRANCHES_DATA_PATH, 'utf8');
-      const parsed = JSON.parse(content);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch (err) {
-    console.warn('[Admin] Failed to read branches.json:', err.message);
-  }
-  return [...defaultBranches];
-}
-
-function saveStoredBranches(branches) {
-  try {
-    const dir = path.dirname(BRANCHES_DATA_PATH);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(BRANCHES_DATA_PATH, JSON.stringify(branches, null, 2), 'utf8');
-  } catch (err) {
-    console.warn('[Admin] Failed to save branches.json:', err.message);
-  }
-}
 
 // Only enable local file backups when running on your own machine.
 // Vercel's serverless filesystem is temporary and doesn't support this.
@@ -366,76 +304,6 @@ const getDetailedStats = async (req, res) => {
       if (Array.isArray(expData)) expenses = expData;
     } catch (_) {}
 
-    // ─── Multi-Branch Analytics Compilation ─────────────────────────────────
-    const branchesList = getStoredBranches();
-    const branchAnalytics = {};
-
-    branchesList.forEach(b => {
-      branchAnalytics[b.key] = {
-        id: b.id,
-        key: b.key,
-        name: b.name,
-        location: b.location,
-        contactNumber: b.contactNumber || '',
-        operatingHours: b.operatingHours || '',
-        lat: b.lat,
-        lng: b.lng,
-        isMain: !!b.isMain,
-        totalAppointments: 0,
-        completedAppointments: 0,
-        pendingAppointments: 0,
-        cancelledAppointments: 0,
-        todayAppointments: 0,
-        totalRevenue: 0,
-        paidRevenue: 0,
-        unpaidRevenue: 0
-      };
-    });
-
-    const extractBranchKey = (notes, branchField) => {
-      const n = (notes || '').toLowerCase();
-      const bf = (branchField || '').toLowerCase();
-
-      for (const b of branchesList) {
-        const bk = b.key.toLowerCase();
-        const bn = b.name.toLowerCase();
-        if (bf && (bf === bk || bf.includes(bk) || bf === bn || bf.includes(bn))) {
-          return b.key;
-        }
-        if (n && (n.includes(bk) || n.includes(bn))) {
-          return b.key;
-        }
-      }
-      return 'Main Branch';
-    };
-
-    (appointments || []).forEach(a => {
-      const bKey = extractBranchKey(a.notes, a.branch);
-      if (branchAnalytics[bKey]) {
-        branchAnalytics[bKey].totalAppointments++;
-        const s = (a.status || '').toLowerCase();
-        if (s === 'completed') branchAnalytics[bKey].completedAppointments++;
-        else if (s === 'cancelled') branchAnalytics[bKey].cancelledAppointments++;
-        else branchAnalytics[bKey].pendingAppointments++;
-
-        if (a.appointment_date && a.appointment_date.startsWith(todayStr)) {
-          branchAnalytics[bKey].todayAppointments++;
-        }
-      }
-    });
-
-    (invoices || []).forEach(inv => {
-      const bKey = extractBranchKey(inv.appointment?.notes || inv.notes, inv.branch || inv.appointment?.branch);
-      if (branchAnalytics[bKey]) {
-        const amt = parseFloat(inv.amount || inv.total_amount || 0);
-        const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
-        const paid = isPaid ? amt : (parseFloat(inv.paid_amount) || 0);
-        branchAnalytics[bKey].totalRevenue += amt;
-        branchAnalytics[bKey].paidRevenue += paid;
-        branchAnalytics[bKey].unpaidRevenue += Math.max(0, amt - paid);
-      }
-    });
-
     // ─── Compile Today's stats ───────────────────────────────────────────────
     const todayAppts = appointments.filter(a => {
       if (!a.appointment_date) return false;
@@ -524,8 +392,6 @@ const getDetailedStats = async (req, res) => {
         revenueMonth
       },
       alerts,
-      branchAnalytics,
-      branches: branchesList,
       invoices: invoices || [],
       allAppointments: appointments || [],
       inventory: inventory || [],
@@ -733,10 +599,10 @@ const getStaffSchedules = async (req, res) => {
           if (!schedules.length) {
             schedules = fileContent;
           } else {
-            // Merge branch and availability from file if missing in db
+            // Merge availability from file if missing in db
             schedules = schedules.map(s => {
               const match = fileContent.find(f => f.id === s.id || (f.name && s.name && f.name.toLowerCase() === s.name.toLowerCase()));
-              return match ? { ...match, ...s, branch: s.branch || match.branch || 'Main Branch (Naga)', availability: s.availability || match.availability } : s;
+              return match ? { ...match, ...s, availability: s.availability || match.availability } : s;
             });
           }
         }
@@ -755,7 +621,7 @@ const getStaffSchedules = async (req, res) => {
 // @access  Private (Admin)
 const addStaffSchedule = async (req, res) => {
   try {
-    const { name, role, shift, days, contact, availability, email, branch } = req.body;
+    const { name, role, shift, days, contact, availability, email } = req.body;
 
     // Check if staff schedule with same name already exists case-insensitively
     const { data: existing } = await supabase
@@ -775,8 +641,7 @@ const addStaffSchedule = async (req, res) => {
       shift,
       days,
       contact,
-      availability: availability || 'On Duty',
-      branch: branch || 'Main Branch (Naga)'
+      availability: availability || 'On Duty'
     };
 
     let newSched = null;
@@ -812,7 +677,7 @@ const addStaffSchedule = async (req, res) => {
 const updateStaffSchedule = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, role, shift, days, contact, availability, branch } = req.body;
+    const { name, role, shift, days, contact, availability } = req.body;
 
     const updateData = {};
     if (name !== undefined) updateData.name = name;
@@ -821,7 +686,6 @@ const updateStaffSchedule = async (req, res) => {
     if (days !== undefined) updateData.days = days;
     if (contact !== undefined) updateData.contact = contact;
     if (availability !== undefined) updateData.availability = availability;
-    if (branch !== undefined) updateData.branch = branch;
 
     let updatedSched = null;
     try {
@@ -990,97 +854,6 @@ const triggerDatabaseBackup = async (req, res) => {
   }
 };
 
-// @desc    Get all clinic branches
-// @route   GET /api/admin/branches
-// @access  Private (Admin, Receptionist, Dentist, Accounting)
-const getBranches = async (req, res) => {
-  try {
-    const branches = getStoredBranches();
-    res.json(branches);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// @desc    Add a new clinic branch
-// @route   POST /api/admin/branches
-// @access  Private (Admin)
-const addBranch = async (req, res) => {
-  try {
-    const { name, location, contactNumber, operatingHours, lat, lng } = req.body;
-    if (!name || !name.trim()) {
-      return res.status(400).json({ message: 'Branch name is required.' });
-    }
-
-    const cleanName = name.trim();
-    const cleanLocation = (location || '').trim() || 'Cebu, Philippines';
-    const branches = getStoredBranches();
-
-    // Check duplicate
-    const exists = branches.some(b => 
-      b.name.toLowerCase() === cleanName.toLowerCase() || 
-      b.key.toLowerCase() === cleanName.toLowerCase() ||
-      b.key.toLowerCase() === cleanName.replace(/branch$/i, '').trim().toLowerCase()
-    );
-    if (exists) {
-      return res.status(409).json({ message: `A branch named "${cleanName}" already exists.` });
-    }
-
-    const id = 'branch-' + Date.now();
-    const key = cleanName.replace(/\s*branch$/i, '').trim();
-
-    const newBranch = {
-      id,
-      key,
-      name: cleanName.toLowerCase().includes('branch') ? cleanName : `${cleanName} Branch`,
-      location: cleanLocation,
-      contactNumber: (contactNumber || '').trim(),
-      operatingHours: (operatingHours || 'Mon–Sat 8:00 AM – 5:00 PM').trim(),
-      lat: parseFloat(lat) || 10.2098,
-      lng: parseFloat(lng) || 123.7580,
-      isMain: false,
-      createdAt: new Date().toISOString()
-    };
-
-    branches.push(newBranch);
-    saveStoredBranches(branches);
-
-    recordServerLog('SUCCESS', 'BRANCHES', `New clinic branch added: "${newBranch.name}" (${newBranch.location})`);
-
-    res.status(201).json(newBranch);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// @desc    Delete a clinic branch
-// @route   DELETE /api/admin/branches/:id
-// @access  Private (Admin)
-const deleteBranch = async (req, res) => {
-  try {
-    const { id } = req.params;
-    let branches = getStoredBranches();
-    const target = branches.find(b => b.id === id || b.key === id);
-
-    if (!target) {
-      return res.status(404).json({ message: 'Branch not found.' });
-    }
-
-    if (target.isMain || target.key === 'Main Branch') {
-      return res.status(400).json({ message: 'Cannot delete the primary Main Branch.' });
-    }
-
-    branches = branches.filter(b => b.id !== id && b.key !== id);
-    saveStoredBranches(branches);
-
-    recordServerLog('INFO', 'BRANCHES', `Clinic branch deleted: "${target.name}"`);
-
-    res.json({ message: `Branch "${target.name}" has been successfully removed.`, branches });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
 // ─── Admin Multi-Factor Authentication (MFA) Handlers ───────────────────────
 const defaultMfaConfig = {
   mfaEnabled: false,
@@ -1118,10 +891,14 @@ function saveStoredMfaConfig(config) {
 const getMfaConfig = async (req, res) => {
   try {
     const config = getStoredMfaConfig();
+    const adminEmail = req.user?.email || 'admin@fanoclinic.com';
+    const totpStatus = totpService.getTotpStatus(adminEmail);
     res.json({
       ...config,
-      adminEmail: req.user?.email || 'admin@fanoclinic.com',
-      adminPhone: req.user?.contact_number || '+63 917 123 4567'
+      adminEmail,
+      adminPhone: req.user?.contact_number || '+63 917 123 4567',
+      totpEnabled: totpStatus.enabled,
+      totpStatus
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -1137,7 +914,7 @@ const updateMfaConfig = async (req, res) => {
     const config = getStoredMfaConfig();
 
     if (typeof mfaEnabled === 'boolean') config.mfaEnabled = mfaEnabled;
-    if (['email', 'sms', 'both'].includes(preferredChannel)) config.preferredChannel = preferredChannel;
+    if (['email', 'totp'].includes(preferredChannel)) config.preferredChannel = preferredChannel;
     if (typeof allowTrustDevice === 'boolean') config.allowTrustDevice = allowTrustDevice;
     config.updatedAt = new Date().toISOString();
 
@@ -1165,34 +942,23 @@ const sendTestMfa = async (req, res) => {
   try {
     const config = getStoredMfaConfig();
     const adminEmail = req.user?.email || 'admin@fanoclinic.com';
-    const adminPhone = req.user?.contact_number;
     const testOtp = String(Math.floor(100000 + Math.random() * 900000));
 
     console.log(`\n🔐 [DEV ADMIN MFA TEST OTP] Test Code for ${adminEmail} is: ${testOtp}\n`);
 
-    const channel = req.body.channel || config.preferredChannel || 'email';
-
-    if (channel === 'sms' || channel === 'both') {
-      if (adminPhone) {
-        await sendSMS(adminPhone, `Fano Dental Admin Security: Your test MFA code is ${testOtp}.`).catch(() => {});
-      }
-    }
-
-    if (channel === 'email' || channel === 'both') {
-      const emailHtml = `
-        <div style="font-family: Arial, sans-serif; padding: 20px; background: #f8fafc;">
-          <div style="max-width: 500px; margin: auto; background: white; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0;">
-            <h2 style="color: #0b3c4d; margin-top: 0;">🛡️ Admin MFA Test Verification</h2>
-            <p style="color: #475569; font-size: 14px;">This is a test notification verifying your Multi-Factor Authentication channel delivery.</p>
-            <div style="background: #eff6ff; padding: 16px; text-align: center; border-radius: 8px; font-size: 28px; font-weight: 700; letter-spacing: 6px; color: #1e40af; margin: 20px 0;">
-              ${testOtp}
-            </div>
-            <p style="color: #64748b; font-size: 12px;">Fano Dental Clinic Management System &bull; Admin Security Suite</p>
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; background: #f8fafc;">
+        <div style="max-width: 500px; margin: auto; background: white; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0;">
+          <h2 style="color: #0b3c4d; margin-top: 0;">🛡️ Admin MFA Test Verification</h2>
+          <p style="color: #475569; font-size: 14px;">This is a test notification verifying your Multi-Factor Authentication channel delivery.</p>
+          <div style="background: #eff6ff; padding: 16px; text-align: center; border-radius: 8px; font-size: 28px; font-weight: 700; letter-spacing: 6px; color: #1e40af; margin: 20px 0;">
+            ${testOtp}
           </div>
+          <p style="color: #64748b; font-size: 12px;">Fano Dental Clinic Management System &bull; Admin Security Suite</p>
         </div>
-      `;
-      await sendEmail(adminEmail, `Admin Security Test Code: ${testOtp} — Fano Dental Clinic`, emailHtml, `Your Admin MFA test code is: ${testOtp}`).catch(() => {});
-    }
+      </div>
+    `;
+    await sendEmail(adminEmail, `Admin Security Test Code: ${testOtp} — Fano Dental Clinic`, emailHtml, `Your Admin MFA test code is: ${testOtp}`).catch(() => {});
 
     recordServerLog('INFO', 'SECURITY', `Admin test MFA code dispatched to ${adminEmail} via ${channel}`);
 
@@ -1227,6 +993,139 @@ const revokeMfaDevices = async (req, res) => {
   }
 };
 
+// ─── Admin TOTP (Authenticator App) Handlers ──────────────────────────────
+// @desc    Initiate TOTP setup (generates secret & QR code data URI)
+// @route   POST /api/admin/totp/setup
+// @access  Private (Admin)
+const setupTotp = async (req, res) => {
+  try {
+    const user = req.user || { email: 'admin@fanoclinic.com', name: 'Admin' };
+    const setup = await totpService.generateTotpSetup(user);
+
+    recordServerLog('INFO', 'SECURITY', `Admin (${user.name || user.email}) initiated Authenticator App (TOTP) pairing.`);
+
+    res.json({
+      success: true,
+      message: 'Scan the QR code with Google Authenticator or Microsoft Authenticator, then enter the 6-digit confirmation code.',
+      ...setup
+    });
+  } catch (err) {
+    console.error('[Admin TOTP Setup Error]', err);
+    res.status(500).json({ message: err.message || 'Failed to initiate TOTP setup.' });
+  }
+};
+
+// @desc    Verify initial TOTP passcode & activate TOTP with backup codes
+// @route   POST /api/admin/totp/verify-setup
+// @access  Private (Admin)
+const verifyTotpSetup = async (req, res) => {
+  try {
+    const user = req.user || { email: 'admin@fanoclinic.com', name: 'Admin' };
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: '6-digit authenticator passcode is required.' });
+    }
+
+    const result = totpService.verifyAndEnableTotp(user, token);
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    // Automatically enable MFA policy and set preferred channel to TOTP
+    const config = getStoredMfaConfig();
+    config.mfaEnabled = true;
+    config.preferredChannel = 'totp';
+    config.updatedAt = new Date().toISOString();
+    saveStoredMfaConfig(config);
+
+    recordServerLog(
+      'SUCCESS',
+      'SECURITY',
+      `Admin (${user.name || user.email}) successfully activated TOTP Authenticator App 2FA and generated emergency backup codes.`
+    );
+
+    res.json({
+      success: true,
+      message: 'Authenticator App (TOTP) 2FA is now ACTIVE. Please securely save your backup recovery codes.',
+      backupCodes: result.backupCodes,
+      config
+    });
+  } catch (err) {
+    console.error('[Admin TOTP Verify Error]', err);
+    res.status(500).json({ message: err.message || 'Failed to verify TOTP setup.' });
+  }
+};
+
+// @desc    Disable TOTP Authenticator for Admin
+// @route   POST /api/admin/totp/disable
+// @access  Private (Admin)
+const disableTotp = async (req, res) => {
+  try {
+    const user = req.user || { email: 'admin@fanoclinic.com', name: 'Admin' };
+    totpService.disableTotp(user);
+
+    // If preferredChannel was totp, switch it back to email
+    const config = getStoredMfaConfig();
+    if (config.preferredChannel === 'totp') {
+      config.preferredChannel = 'email';
+      config.updatedAt = new Date().toISOString();
+      saveStoredMfaConfig(config);
+    }
+
+    recordServerLog(
+      'WARNING',
+      'SECURITY',
+      `Admin (${user.name || user.email}) disabled TOTP Authenticator App 2FA.`
+    );
+
+    res.json({
+      success: true,
+      message: 'Authenticator App (TOTP) has been disabled. Login will fall back to standard MFA policy.',
+      config
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @desc    Get current TOTP status & remaining backup codes count
+// @route   GET /api/admin/totp/status
+// @access  Private (Admin)
+const getTotpStatus = async (req, res) => {
+  try {
+    const user = req.user || { email: 'admin@fanoclinic.com' };
+    const status = totpService.getTotpStatus(user);
+    res.json(status);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @desc    Regenerate emergency backup recovery codes
+// @route   POST /api/admin/totp/regenerate-backup-codes
+// @access  Private (Admin)
+const regenerateBackupCodes = async (req, res) => {
+  try {
+    const user = req.user || { email: 'admin@fanoclinic.com', name: 'Admin' };
+    const result = totpService.regenerateBackupCodes(user);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    recordServerLog(
+      'WARNING',
+      'SECURITY',
+      `Admin (${user.name || user.email}) regenerated emergency backup recovery codes.`
+    );
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = { 
   getAdminStats, 
   getAdminAnalytics, 
@@ -1246,12 +1145,15 @@ module.exports = {
   recordServerLog,
   getDatabaseStatus,
   triggerDatabaseBackup,
-  getBranches,
-  addBranch,
-  deleteBranch,
   getMfaConfig,
   updateMfaConfig,
   sendTestMfa,
   revokeMfaDevices,
-  getStoredMfaConfig
+  getStoredMfaConfig,
+  setupTotp,
+  verifyTotpSetup,
+  disableTotp,
+  getTotpStatus,
+  regenerateBackupCodes
 };
+

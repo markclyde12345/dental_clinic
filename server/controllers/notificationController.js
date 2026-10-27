@@ -329,8 +329,6 @@ const getUserNotifications = async (req, res) => {
         (pendingAppts || []).forEach(a => {
           const patientName = a.patient?.name || 'Patient';
           const treatmentName = a.treatment?.name || 'Dental Consultation';
-          const branchMatch = (a.notes || '').match(/\[Branch:\s*([^\]]+)\]/i) || (a.notes || '').match(/\[Location:\s*([^\]]+)\]/i);
-          const branchName = branchMatch ? branchMatch[1].trim() : '';
           const d = new Date(a.appointment_date);
           const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Date';
 
@@ -339,7 +337,7 @@ const getUserNotifications = async (req, res) => {
             entity_id: a.id,
             category: 'operations',
             title: 'New Booking Request',
-            message: `${patientName} booked ${treatmentName}${branchName ? ' (' + branchName + ')' : ''} for ${dateStr}. Review and confirm.`,
+            message: `${patientName} booked ${treatmentName} for ${dateStr}. Review and confirm.`,
             type: 'info',
             icon: 'calendar-plus',
             time: a.created_at || new Date().toISOString(),
@@ -347,7 +345,6 @@ const getUserNotifications = async (req, res) => {
               type: 'switch_tab',
               tab: 'appointments',
               filterStatus: 'Pending',
-              filterBranch: branchName,
               entityId: a.id
             }
           });
@@ -368,8 +365,6 @@ const getUserNotifications = async (req, res) => {
         (cancelledAppts || []).forEach(a => {
           const patientName = a.patient?.name || 'Patient';
           const treatmentName = a.treatment?.name || 'Appointment';
-          const branchMatch = (a.notes || '').match(/\[Branch:\s*([^\]]+)\]/i) || (a.notes || '').match(/\[Location:\s*([^\]]+)\]/i);
-          const branchName = branchMatch ? branchMatch[1].trim() : '';
           const d = new Date(a.appointment_date);
           const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Date';
 
@@ -378,7 +373,7 @@ const getUserNotifications = async (req, res) => {
             entity_id: a.id,
             category: 'operations',
             title: 'Appointment Cancelled',
-            message: `${patientName} cancelled ${treatmentName}${branchName ? ' at ' + branchName : ''} for ${dateStr}. Slot reopened.`,
+            message: `${patientName} cancelled ${treatmentName} for ${dateStr}. Slot reopened.`,
             type: 'danger',
             icon: 'calendar-x',
             time: a.created_at || new Date().toISOString(),
@@ -386,7 +381,6 @@ const getUserNotifications = async (req, res) => {
               type: 'switch_tab',
               tab: 'appointments',
               filterStatus: 'Cancelled',
-              filterBranch: branchName,
               entityId: a.id
             }
           });
@@ -482,7 +476,7 @@ const getUserNotifications = async (req, res) => {
           id: 'admin-system-status',
           category: 'system',
           title: 'Clinic Operations System Healthy',
-          message: 'Multi-branch synchronization, database connection, and audit logging pipelines are operating normally.',
+          message: 'Clinic data synchronization, database connection, and audit logging pipelines are operating normally.',
           type: 'success',
           icon: 'shield-check',
           time: new Date().toISOString()

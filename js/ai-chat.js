@@ -17,7 +17,7 @@
     support: [
       'How do I book an appointment?',
       'What dental services do you offer?',
-      'Check clinic branch locations',
+      'Where is the clinic located?',
       'Doctor schedules & office hours'
     ],
     dental: [
@@ -29,7 +29,7 @@
   };
 
   const WELCOME_MSGS = {
-    support: 'Hello! I\'m your **Fano AI Assistant** 🤖\n\nI can help you with:\n• **Booking appointments & rescheduling**\n• **Clinic services, fees & branches**\n• **Account & login assistance**\n• **Checking dentist schedules**\n\nHow can I help you today?',
+    support: 'Hello! I\'m your **Fano AI Assistant** 🤖\n\nI can help you with:\n• **Booking appointments & rescheduling**\n• **Clinic services, fees & location**\n• **Account & login assistance**\n• **Checking dentist schedules**\n\nHow can I help you today?',
     dental: 'Hi! I\'m **Denti** 🦷, your dental symptom helper.\n\nDescribe what you are feeling in your teeth, gums, or jaw (e.g. sharp pain, swelling, bleeding) and I will help you assess potential causes. Remember, always visit our clinic for a proper in-person examination!'
   };
 

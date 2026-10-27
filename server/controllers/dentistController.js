@@ -50,12 +50,26 @@ const getDashboardStats = async (req, res) => {
     const in7Days = new Date(); in7Days.setDate(in7Days.getDate() + 7);
     const monthStartDate = new Date(monthStart);
 
+    // Active patient currently in chair across the clinic
+    const inProgress = allAppts.find(a => a.status === 'In Progress') || null;
+
+    // Active waiting patients (Checked in clinic lounge, or pending/confirmed for today/queue)
+    const activeWaiting = allAppts.filter(a => a.id !== inProgress?.id && ['Checked In', 'Pending', 'Confirmed'].includes(a.status));
+
     const todayAppts = allAppts.filter(a => {
+      if (a.status === 'Cancelled') return false;
+      // Always include currently active patient in chair or waiting in clinic
+      if (a.status === 'In Progress' || a.status === 'Checked In') return true;
       const d = new Date(a.appointment_date);
-      return d >= todayStart && d <= todayEnd && a.status !== 'Cancelled';
+      return d >= todayStart && d <= todayEnd;
     });
 
-    const waitingAppts = allAppts.filter(a => a.status === 'Pending' || a.status === 'Confirmed');
+    // Ensure currently active in-progress patient is at the top of todaysSchedule if not already there
+    if (inProgress && !todayAppts.some(a => a.id === inProgress.id)) {
+      todayAppts.unshift(inProgress);
+    }
+
+    const waitingAppts = activeWaiting;
 
     const completedToday = allAppts.filter(a => {
       const d = new Date(a.appointment_date);
@@ -72,11 +86,8 @@ const getDashboardStats = async (req, res) => {
       return d >= monthStartDate && a.status === 'Completed';
     });
 
-    // Determine current patient (In Progress), next patient (Pending/Confirmed), and waiting list
-    const inProgress = todayAppts.find(a => a.status === 'In Progress') || null;
-    const pendingToday = todayAppts.filter(a => a.status === 'Pending' || a.status === 'Confirmed');
-    const nextPatient = pendingToday.length > 0 ? pendingToday[0] : null;
-    const waitingList = pendingToday.slice(nextPatient ? 1 : 0);
+    const nextPatient = activeWaiting.length > 0 ? activeWaiting[0] : null;
+    const waitingList = activeWaiting.slice(nextPatient ? 1 : 0);
 
     res.json({
       todayAppointments: todayAppts.length,
@@ -163,6 +174,20 @@ const getPatientQueue = async (req, res) => {
 // @access Private (Dentist)
 const callNextPatient = async (req, res) => {
   try {
+    // Check if a patient is already in treatment in the chair
+    const { data: activeAppts } = await supabase
+      .from('appointments')
+      .select('id, patient:patient_id(name)')
+      .eq('status', 'In Progress')
+      .limit(1);
+
+    if (activeAppts && activeAppts.length > 0) {
+      const activeName = activeAppts[0].patient?.name || 'A patient';
+      return res.status(400).json({
+        message: `${activeName} is currently in treatment. Please complete their treatment before calling the next patient.`
+      });
+    }
+
     const { data: queue, error } = await supabase
       .from('appointments')
       .select('id, status')
@@ -637,11 +662,28 @@ const getDentistReports = async (req, res) => {
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
 
+    // Compute real patient satisfaction from actual patient reviews
+    const allReviews = getStore('patient_reviews.json', []);
+    let patientSatisfaction = 'N/A';
+    let averageStars = 0;
+    const reviewCount = allReviews.length;
+
+    if (allReviews.length > 0) {
+      const sumStars = allReviews.reduce((sum, r) => sum + (Number(r.rating) || 5), 0);
+      const rawAvg = sumStars / allReviews.length;
+      averageStars = parseFloat(rawAvg.toFixed(1));
+      const scorePct = ((rawAvg / 5) * 100).toFixed(1);
+      patientSatisfaction = `${scorePct}%`;
+    }
+
     res.json({
       totalPatientsTreated: totalCompleted,
       totalAppointmentsBooked: totalScheduled,
       completionRate: totalScheduled > 0 ? Math.round((totalCompleted / totalScheduled) * 100) : 100,
-      patientSatisfaction: '98.5%',
+      patientSatisfaction,
+      averageStars,
+      reviewCount,
+      recentReviews: allReviews.slice(0, 10),
       topTreatments,
       monthlyBreakdown: [
         { month: 'Jan', count: 28 },

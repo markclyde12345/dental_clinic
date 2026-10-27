@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dental Clinic System Flowchart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --accent: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .title-area h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    button {
+      background: #334155;
+      color: #fff;
+      border: 1px solid #475569;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #475569;
+      border-color: #64748b;
+    }
+
+    button.primary {
+      background: #0284c7;
+      border-color: #38bdf8;
+    }
+
+    button.primary:hover {
+      background: #0369a1;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .canvas-container {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      overflow-x: auto;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .legend-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .legend-card h3 {
+      font-size: 0.95rem;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-card ul {
+      list-style: none;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .legend-card li strong {
+      color: #e2e8f0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+      }
+      header, .actions, .legend-grid {
+        display: none !important;
+      }
+      .canvas-container {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="title-area">
+      <h1>🦷 Dental Clinic System Architecture Flowchart <span class="badge">Standard ISO 5807</span></h1>
+    </div>
+    <div class="actions">
+      <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+      <button class="primary" onclick="zoomIn()">🔍 Zoom (+)</button>
+      <button onclick="zoomReset()">↺ Reset</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="canvas-container" id="canvas">
+      <pre class="mermaid">
+flowchart TD
+    %% Global Nodes and Styles
+    classDef startStop fill:#f1f5f9,stroke:#0f172a,stroke-width:2px,rx:20,ry:20,color:#0f172a,font-weight:600;
+    classDef process fill:#ffffff,stroke:#1e293b,stroke-width:1.5px,color:#0f172a,font-weight:500;
+    classDef decision fill:#ffffff,stroke:#1e293b,stroke-width:1.5px,color:#0f172a,font-weight:600;
+    classDef database fill:#f8fafc,stroke:#0f172a,stroke-width:2px,color:#0f172a,font-weight:700;
+    classDef connector fill:#ffffff,stroke:#0f172a,stroke-width:1.5px,color:#0f172a,font-weight:700;
+    classDef badge fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a,font-weight:700;
+
+    %% ----------------- TOP LEVEL & AUTH -----------------
+    StartNode(["START"]):::startStop
+    LandingPage["Landing Page"]:::process
+    HaveAccount{"Have an Account?"}:::decision
+    Register["Register"]:::process
+    RegConnector["[ 1 ]"]:::badge
+    DB[("DATABASE\n(PostgreSQL / Supabase)")]:::database
+    ConnDB1["[ 1 ]"]:::badge
+    ConnDB2["[ 2 ]"]:::badge
+    ConnDB3["[ 3 ]"]:::badge
+
+    ConnDB1 --> DB
+    ConnDB2 --> DB
+    ConnDB3 --> DB
+
+    StartNode --> LandingPage
+    LandingPage --> HaveAccount
+    HaveAccount -- No --> Register
+    Register --> RegConnector
+
+    HaveAccount -- Yes --> LoginPage["Login page"]:::process
+    K1_Login(("( K1 )")):::connector -. Loopback .-> LoginPage
+
+    %% ----------------- 4 LOGIN BRANCHES -----------------
+    LoginPage --> AdminLogin["Admin log in"]:::process
+    LoginPage --> PatientLogin["Patients log in"]:::process
+    LoginPage --> DentistLogin["Dentist log in"]:::process
+    LoginPage --> StaffLogin["Staff log in"]:::process
+
+    %% ================= BRANCH 1: ADMIN =================
+    AdminLogin --> IsAdminValid{"is credentials\nvalid?"}:::decision
+    IsAdminValid -- No --> K1_Admin(("( K1 )")):::connector
+    IsAdminValid -- Yes --> AdminDash["Admin Dashboard"]:::process
+    AdminDashBadge["[ AA ]"]:::badge
+    AdminDash --- AdminDashBadge
+
+    AdminDash --> M_Users["/ Manage Users /"]:::process
+    AdminDash --> M_Appt["/ Manage Appointment /"]:::process
+    AdminDash --> M_Staff["/ Manage Staff /"]:::process
+    AdminDash --> M_Dentist["/ Manage Dentist /"]:::process
+    AdminDash --> M_Inv["/ Manage Inventory /"]:::process
+    AdminDash --> M_Bill["/ Billing & Payment /"]:::process
+    AdminDash --> M_Rep["/ Reports & Analytics /"]:::process
+    AdminDash --> M_Logout["Logout"]:::process
+
+    M_Users --> BadgeA["[ A ]"]:::badge
+    M_Appt --> BadgeB["[ B ]"]:::badge
+    M_Staff --> BadgeC["[ C ]"]:::badge
+    M_Dentist --> BadgeD["[ D ]"]:::badge
+    M_Inv --> BadgeE["[ E ]"]:::badge
+    M_Bill --> BadgeF["[ F ]"]:::badge
+    M_Rep --> BadgeG["[ G ]"]:::badge
+    M_Logout --> BadgeH["[ H ]"]:::badge
+
+    %% ================= BRANCH 2: PATIENTS =================
+    PatientLogin --> IsPatientValid{"is credentials\nvalid?"}:::decision
+    IsPatientValid -- No --> K1_Patient(("( K1 )")):::connector
+    IsPatientValid -- Yes --> TwoFactor{"Two-factor\nauthentication"}:::decision
+    TwoFactor -- No --> K1_2FA(("( K1 )")):::connector
+    TwoFactor -- Yes --> SendOTP["Send OTP"]:::process
+    SendOTP --> EnterOTP["Enter OTP"]:::process
+    K2_Enter(("( K2 )")):::connector -. Loopback .-> EnterOTP
+
+    EnterOTP --> IsOTPValid{"Is OTP\nvalid?"}:::decision
+    IsOTPValid -- No --> K2_Invalid(("( K2 )")):::connector
+    IsOTPValid -- Yes --> PatientDash["Patient Dashboard"]:::process
+    PatientDash --> BadgeI["[ I ]"]:::badge
+
+    %% ================= BRANCH 3: DENTIST =================
+    DentistLogin --> IsDentistValid{"is credentials\nvalid?"}:::decision
+    IsDentistValid -- No --> K1_Dentist(("( K1 )")):::connector
+    IsDentistValid -- Yes --> DentistDash["Dentist Dashboard"]:::process
+    DentistDashBadge["[ BB ]"]:::badge
+    DentistDash --- DentistDashBadge
+
+    DentistDash --> D_Sched["/ View Schedule /"]:::process
+    DentistDash --> D_Presc["/ Manage Prescriptions /"]:::process
+    DentistDash --> D_Analytics["/ View Analytics /"]:::process
+    DentistDash --> D_Logout["Logout"]:::process
+
+    D_Sched --> BadgeN["[ N ]"]:::badge
+    D_Presc --> BadgeO["[ O ]"]:::badge
+    D_Analytics --> BadgeP["[ P ]"]:::badge
+    D_Logout --> BadgeH2["[ H ]"]:::badge
+
+    %% ================= BRANCH 4: STAFF =================
+    StaffLogin --> IsStaffValid{"is credentials\nvalid?"}:::decision
+    IsStaffValid -- No --> K1_Staff(("( K1 )")):::connector
+    IsStaffValid -- Yes --> StaffDash["Staff Dashboard"]:::process
+    StaffDashBadge["[ CC ]"]:::badge
+    StaffDash --- StaffDashBadge
+
+    StaffDash --> S_Appt["/ Manage Appointment /"]:::process
+    StaffDash --> S_Pay["/ Manage Payments & Bills /"]:::process
+    StaffDash --> S_Inv["/ Manage Inventory /"]:::process
+    StaffDash --> S_Logout["Logout"]:::process
+
+    S_Appt --> BadgeQ["[ Q ]"]:::badge
+    S_Pay --> BadgeR["[ R ]"]:::badge
+    S_Inv --> BadgeS["[ S ]"]:::badge
+    S_Logout --> BadgeH3["[ H ]"]:::badge
+      </pre>
+    </div>
+
+    <div class="legend-grid">
+      <div class="legend-card">
+        <h3>🔘 Flowchart Symbols</h3>
+        <ul>
+          <li><strong>Oval:</strong> Terminator (Start / Stop)</li>
+          <li><strong>Rectangle:</strong> System Page or Process</li>
+          <li><strong>Diamond:</strong> Conditional Decision Branch</li>
+          <li><strong>Slanted /:</strong> Module Input / Output Operations</li>
+          <li><strong>Cylinder:</strong> Centralized Database (Supabase)</li>
+        </ul>
+      </div>
+
+      <div class="legend-card">
+        <h3>🔁 On-Page Reference Connectors</h3>
+        <ul>
+          <li><strong>( K1 ):</strong> Returns to <em>Login Page</em> on authentication failure.</li>
+          <li><strong>( K2 ):</strong> Returns to <em>Enter OTP</em> on invalid one-time passcode.</li>
+        </ul>
+      </div>
+
+      <div class="legend-card">
+        <h3>🏷️ Dashboard & Submodule Reference Badges</h3>
+        <ul>
+          <li><strong>[AA], [BB], [CC]:</strong> Admin, Dentist, & Staff Dashboards</li>
+          <li><strong>[A] to [G]:</strong> Admin Management Submodules</li>
+          <li><strong>[I]:</strong> Patient Portal (Appointments, History, QR)</li>
+          <li><strong>[N] to [P]:</strong> Clinical / Dentist Submodules</li>
+          <li><strong>[Q] to [S]:</strong> Frontdesk Staff & Reception Submodules</li>
+          <li><strong>[H]:</strong> Unified System Logout & Session Destroy</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'neutral',
+      flowchart: {
+        useMaxWidth: false,
+        htmlLabels: true,
+        curve: 'basis'
+      }
+    });
+
+    let currentScale = 1;
+    function zoomIn() {
+      currentScale += 0.15;
+      const el = document.querySelector('.mermaid svg');
+      if (el) el.style.transform = `scale(${currentScale})`;
+    }
+    function zoomReset() {
+      currentScale = 1;
+      const el = document.querySelector('.mermaid svg');
+      if (el) el.style.transform = 'scale(1)';
+    }
+  </script>
+</body>
+</html>

@@ -78,7 +78,7 @@ const validateSendOTP = [
 
   body('channel')
     .optional()
-    .isIn(['email', 'sms']).withMessage('Channel must be "email" or "sms".'),
+    .isIn(['email']).withMessage('Channel must be "email".'),
 
   runValidation,
 ];
@@ -93,9 +93,15 @@ const validateVerifyOTP = [
 
   body('otpCode')
     .trim()
-    .notEmpty().withMessage('OTP code is required.')
-    .isLength({ min: 6, max: 6 }).withMessage('OTP must be exactly 6 digits.')
-    .isNumeric().withMessage('OTP must contain only digits.'),
+    .notEmpty().withMessage('Passcode or recovery code is required.')
+    .custom((val) => {
+      const clean = String(val || '').replace(/[\s-]/g, '');
+      // Standard OTP (6 digits) or 8-character backup recovery code (hex)
+      if (/^\d{6}$/.test(clean) || /^[A-Za-z0-9]{8}$/.test(clean)) {
+        return true;
+      }
+      throw new Error('Please enter a valid 6-digit verification code or 8-character backup code.');
+    }),
 
   runValidation,
 ];

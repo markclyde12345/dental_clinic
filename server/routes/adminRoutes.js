@@ -18,13 +18,15 @@ const {
   clearSystemLogs,
   getDatabaseStatus,
   triggerDatabaseBackup,
-  getBranches, 
-  addBranch, 
-  deleteBranch,
   getMfaConfig,
   updateMfaConfig,
   sendTestMfa,
-  revokeMfaDevices
+  revokeMfaDevices,
+  setupTotp,
+  verifyTotpSetup,
+  disableTotp,
+  getTotpStatus,
+  regenerateBackupCodes
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -40,6 +42,13 @@ router.route('/mfa-config')
 
 router.post('/mfa-test', protect, authorize('Admin'), sendTestMfa);
 router.post('/mfa-revoke-devices', protect, authorize('Admin'), revokeMfaDevices);
+
+// Admin TOTP (Authenticator App) Routes
+router.post('/totp/setup', protect, authorize('Admin'), setupTotp);
+router.post('/totp/verify-setup', protect, authorize('Admin'), verifyTotpSetup);
+router.post('/totp/disable', protect, authorize('Admin'), disableTotp);
+router.get('/totp/status', protect, authorize('Admin'), getTotpStatus);
+router.post('/totp/regenerate-backup-codes', protect, authorize('Admin'), regenerateBackupCodes);
 
 // Database Health & Backup routes
 router.get('/database-status', protect, authorize('Admin'), getDatabaseStatus);
@@ -68,13 +77,5 @@ router.route('/staff-schedules')
 router.route('/staff-schedules/:id')
   .put(protect, authorize('Admin', 'Receptionist', 'Dentist'), updateStaffSchedule)
   .delete(protect, authorize('Admin'), deleteStaffSchedule);
-
-// Branch management routes
-router.route('/branches')
-  .get(protect, authorize('Admin', 'Receptionist', 'Dentist', 'Accounting'), getBranches)
-  .post(protect, authorize('Admin'), addBranch);
-
-router.route('/branches/:id')
-  .delete(protect, authorize('Admin'), deleteBranch);
 
 module.exports = router;

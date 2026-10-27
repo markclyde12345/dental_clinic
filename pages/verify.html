@@ -37,10 +37,9 @@
         We sent a 6-digit code to your email.<br>Enter it below to verify your account. Code is valid for 30 days.
       </p>
 
-      <!-- Channel tabs -->
-      <div class="verify-tabs" id="verify-tabs">
-        <button class="verify-tab active" id="tab-email" onclick="switchChannel('email')">📧 Email</button>
-        <button class="verify-tab" id="tab-sms" onclick="switchChannel('sms')">📱 SMS</button>
+      <!-- Verification Channel -->
+      <div class="verify-tabs" id="verify-tabs" style="display: none;">
+        <button class="verify-tab active" id="tab-email">📧 Email</button>
       </div>
 
       <!-- Send status -->
@@ -74,7 +73,7 @@
       </form>
 
       <!-- Resend & back -->
-      <div class="verify-footer">
+      <div class="verify-footer" id="verify-footer-resend">
         Didn't receive a code?
         <button class="resend-btn" id="resend-btn" onclick="resendOTP()">Resend</button>
         <span id="resend-timer" style="display:none;">
@@ -87,6 +86,6 @@
     </div>
   </div>
 
-  <script src="../js/verify.js?v=20260911_admin_mfa"></script>
+  <script src="../js/verify.js?v=20261005_standard_verify_v1"></script>
 </body>
 </html>

@@ -64,9 +64,7 @@ let currentAdminBranch = 'all';
 let onDeleteConfirmCallback = null;
 let adminClinicBranches = [];
 const defaultClinicBranches = [
-  { id: 'branch-main', key: 'Main Branch', name: 'Main Branch (Naga)', location: 'Balirong Highway, City of Naga', contactNumber: '+63 917 555 0101', operatingHours: 'Mon–Sat 8:00 AM – 5:00 PM', isMain: true, lat: 10.2098, lng: 123.7580 },
-  { id: 'branch-minglanilla', key: 'Minglanilla', name: 'Minglanilla Branch', location: 'Poblacion Ward II, Minglanilla', contactNumber: '+63 917 555 0102', operatingHours: 'Mon–Sat 8:30 AM – 5:00 PM', isMain: false, lat: 10.2444, lng: 123.7972 },
-  { id: 'branch-talisay', key: 'Talisay', name: 'Talisay Branch', location: 'Tabunok / Bulacao, Talisay City', contactNumber: '+63 917 555 0103', operatingHours: 'Mon–Sat 9:00 AM – 5:00 PM', isMain: false, lat: 10.2600, lng: 123.8340 }
+  { id: 'branch-main', key: 'Main Branch', name: 'Fano Dental Clinic', location: 'Balirong Highway, City of Naga, Cebu', contactNumber: '+63 917 555 0101', operatingHours: 'Mon–Sat 8:00 AM – 5:00 PM', isMain: true, lat: 10.2098, lng: 123.7580 }
 ];
 
 const defaultAdmin = {
@@ -389,176 +387,47 @@ function setupTabs() {
 // currentAdminBranch is declared at top of file
 
 function getAppointmentBranch(a) {
-  if (!a) return 'Main Branch, Fano Dental';
-  if (a.branch) return a.branch;
-  const notesStr = a.notes || '';
-  const branchMatch = notesStr.match(/\[Branch:\s*([^\]]+)\]/i);
-  if (branchMatch) return branchMatch[1].trim();
-  const locMatch = notesStr.match(/\[Location:\s*([^\]]+)\]/i);
-  if (locMatch) return locMatch[1].trim();
-  return 'Main Branch, Fano Dental';
+  return 'Balirong Highway, City of Naga, Cebu';
 }
 
 function isMatchingOtherBranch(b) {
-  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
-  return branches.some(br => {
-    if (br.isMain || br.key === 'Main Branch') return false;
-    const bk = br.key.toLowerCase();
-    const bn = (br.name || '').toLowerCase();
-    return b.includes(bk) || (bn && b.includes(bn));
-  });
+  return false;
 }
 
 function doesAppointmentMatchBranch(a, targetBranch) {
-  if (!targetBranch || targetBranch === 'all') return true;
-  const b = getAppointmentBranch(a).toLowerCase();
-  const t = targetBranch.toLowerCase();
-
-  if (t === 'main branch' || t === 'main' || t.includes('main') || t.includes('naga')) {
-    if (b.includes('main') || b.includes('naga') || b.includes('balirong')) return true;
-    return !isMatchingOtherBranch(b);
-  }
-
-  if (b.includes(t)) return true;
-  const matchedBranch = (adminClinicBranches || []).find(br => br.key.toLowerCase() === t || br.name.toLowerCase() === t);
-  if (matchedBranch) {
-    return b.includes(matchedBranch.key.toLowerCase()) || b.includes(matchedBranch.name.toLowerCase());
-  }
-  return false;
+  return true;
 }
 
 function getInvoiceBranch(inv) {
-  if (!inv) return 'Main Branch, Fano Dental';
-  if (inv.branch) return inv.branch;
-  if (inv.appointment) {
-    return getAppointmentBranch(inv.appointment);
-  }
-  const notesStr = inv.notes || '';
-  const branchMatch = notesStr.match(/\[Branch:\s*([^\]]+)\]/i) || notesStr.match(/\[Location:\s*([^\]]+)\]/i);
-  if (branchMatch) return branchMatch[1].trim();
-  return 'Main Branch, Fano Dental';
+  return 'Balirong Highway, City of Naga, Cebu';
 }
 
 function doesInvoiceMatchBranch(inv, targetBranch) {
-  if (!targetBranch || targetBranch === 'all') return true;
-  const b = getInvoiceBranch(inv).toLowerCase();
-  const t = targetBranch.toLowerCase();
-
-  if (t === 'main branch' || t === 'main' || t.includes('main') || t.includes('naga')) {
-    if (b.includes('main') || b.includes('naga') || b.includes('balirong')) return true;
-    return !isMatchingOtherBranch(b);
-  }
-
-  if (b.includes(t)) return true;
-  const matchedBranch = (adminClinicBranches || []).find(br => br.key.toLowerCase() === t || br.name.toLowerCase() === t);
-  if (matchedBranch) {
-    return b.includes(matchedBranch.key.toLowerCase()) || b.includes(matchedBranch.name.toLowerCase());
-  }
-  return false;
+  return true;
 }
 
 function renderAppointmentBranchBadge(a) {
-  const rawLocation = getAppointmentBranch(a);
-  const locLower = String(rawLocation || '').toLowerCase();
-
-  let branchKey = 'main';
-  let branchName = 'Main Branch (Naga)';
-  let branchSub = 'Balirong Highway';
-
-  // Check against loaded branches first
-  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
-  const matchedBranch = branches.find(br => {
-    const bk = br.key.toLowerCase();
-    const bn = (br.name || '').toLowerCase();
-    return locLower.includes(bk) || (bn && locLower.includes(bn));
-  });
-
-  if (matchedBranch) {
-    if (matchedBranch.isMain || matchedBranch.key === 'Main Branch') {
-      branchKey = 'main';
-      branchName = matchedBranch.name || 'Main Branch (Naga)';
-      branchSub = matchedBranch.location || 'Balirong Highway';
-    } else if (matchedBranch.key === 'Minglanilla') {
-      branchKey = 'minglanilla';
-      branchName = matchedBranch.name || 'Minglanilla Branch';
-      branchSub = matchedBranch.location || 'Poblacion Ward II';
-    } else if (matchedBranch.key === 'Talisay') {
-      branchKey = 'talisay';
-      branchName = matchedBranch.name || 'Talisay Branch';
-      branchSub = matchedBranch.location || 'Tabunok / Bulacao';
-    } else {
-      branchKey = 'other';
-      branchName = matchedBranch.name;
-      branchSub = matchedBranch.location || '';
-    }
-  } else if (locLower.includes('minglanilla')) {
-    branchKey = 'minglanilla';
-    branchName = 'Minglanilla Branch';
-    branchSub = 'Poblacion Ward II';
-  } else if (locLower.includes('talisay') || locLower.includes('tabunok')) {
-    branchKey = 'talisay';
-    branchName = 'Talisay Branch';
-    branchSub = 'Tabunok / Bulacao';
-  } else if (locLower.includes('main') || locLower.includes('naga') || locLower.includes('balirong')) {
-    branchKey = 'main';
-    branchName = 'Main Branch (Naga)';
-    branchSub = 'Balirong Highway';
-  } else if (rawLocation && rawLocation !== 'Main Branch, Fano Dental') {
-    branchKey = 'other';
-    branchName = rawLocation.replace(/^Fano Dental Clinic\s*[—–-]\s*/i, '').trim() || 'Fano Clinic';
-    const parenMatch = branchName.match(/^(.*?)\s*\((.*?)\)$/);
-    if (parenMatch) {
-      branchName = parenMatch[1].trim();
-      branchSub = parenMatch[2].trim();
-    } else {
-      branchSub = '';
-    }
-  }
-
-  const tooltip = escapeHTML(rawLocation || branchName);
-
   return `
-    <div class="branch-location-badge branch-badge-${branchKey}" title="${tooltip}">
-      <div class="blb-header">
-        <span class="blb-dot"></span>
-        <span class="blb-title">${escapeHTML(branchName)}</span>
-      </div>
-      ${branchSub ? `<span class="blb-sub" title="${escapeHTML(branchSub)}">${escapeHTML(branchSub)}</span>` : ''}
+    <div class="branch-location-badge branch-badge-main" title="Fano Dental Clinic — Balirong Highway, City of Naga, Cebu">
+      <span class="blb-dot"></span>
+      <span class="blb-title">Fano Dental Clinic</span>
+      <span class="blb-sub">Naga City</span>
     </div>
   `;
 }
 
-window.toggleSidebarBranches = function(e) {
-  if (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  const toggle = document.getElementById('sb-branches-toggle');
-  const subnav = document.getElementById('sb-branches-subnav');
-  if (!toggle || !subnav) return;
-
-  const isOpen = toggle.classList.toggle('open');
-  subnav.classList.toggle('collapsed', !isOpen);
-  toggle.setAttribute('aria-expanded', String(isOpen));
-  try {
-    localStorage.setItem('admin_sidebar_branches_open', String(isOpen));
-  } catch (_) {}
-};
+window.toggleSidebarBranches = function(e) {};
 
 window.selectAdminMainClinicAppointments = function(e) {
-  if (e) {
-    e.preventDefault();
-  }
-  selectAdminBranch('Main Branch');
+  if (e) e.preventDefault();
+  activateTab('appointments');
+  filterAndRenderAppointments();
 };
 
 let cachedBranchAnalytics = null;
 
 window.getBranchDisplayName = function(bk) {
-  if (!bk || bk === 'all') return 'All Branches (Consolidated)';
-  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
-  const found = branches.find(b => b.key.toLowerCase() === bk.toLowerCase() || b.name.toLowerCase() === bk.toLowerCase());
-  return found ? found.name : bk;
+  return 'Fano Dental Clinic (Naga)';
 };
 
 window.selectAdminAnalyticsBranch = function(branchId, e) {
@@ -566,18 +435,9 @@ window.selectAdminAnalyticsBranch = function(branchId, e) {
     e.preventDefault();
     e.stopPropagation();
   }
-  currentAdminBranch = branchId || 'all';
-
-  // Highlight active sidebar subnav item
-  document.querySelectorAll('#sb-branches-subnav .sb-subnav-item').forEach(item => {
-    item.classList.toggle('active', item.getAttribute('data-branch') === currentAdminBranch);
-  });
-
-  renderDashboardAnalytics(currentAdminBranch);
-  renderBranchComparisonMatrix(cachedBranchAnalytics);
+  currentAdminBranch = 'all';
+  renderDashboardAnalytics('all');
   filterAndRenderAppointments();
-
-  showToast(`Branch Analytics Scoped: ${getBranchDisplayName(currentAdminBranch)}`, 'info');
 };
 
 window.selectAdminBranch = function(branchId, e) {
@@ -585,214 +445,41 @@ window.selectAdminBranch = function(branchId, e) {
     e.preventDefault();
     e.stopPropagation();
   }
-  currentAdminBranch = branchId || 'Main Branch';
-
-  // Ensure branches toggle is open
-  const toggle = document.getElementById('sb-branches-toggle');
-  const subnav = document.getElementById('sb-branches-subnav');
-  if (toggle) toggle.classList.add('open');
-  if (subnav) subnav.classList.remove('collapsed');
-
-  // Highlight active subnav item
-  document.querySelectorAll('#sb-branches-subnav .sb-subnav-item').forEach(item => {
-    const b = item.getAttribute('data-branch');
-    if (b === currentAdminBranch) {
-      item.classList.add('active');
-    } else {
-      item.classList.remove('active');
-    }
-  });
-
-  // Highlight main Appointments nav tab if Main Branch is active
-  const apptNavTab = document.getElementById('sb-nav-appointments') || document.querySelector('.sb-nav-item[data-tab="appointments"]');
-  if (apptNavTab) {
-    apptNavTab.classList.toggle('active', currentAdminBranch === 'Main Branch');
-  }
-
-  // If user is currently on the Overview / Dashboard tab, update the branch analytics!
-  const overviewPane = document.getElementById('tab-overview');
-  if (overviewPane && overviewPane.classList.contains('active')) {
-    renderDashboardAnalytics(currentAdminBranch);
-    renderBranchComparisonMatrix(cachedBranchAnalytics);
-    filterAndRenderAppointments();
-  } else {
-    // Switch to Appointments tab
-    window._skipBranchReset = true;
-    activateTab('appointments');
-    window._skipBranchReset = false;
-    filterAndRenderAppointments();
-    renderDashboardAnalytics(currentAdminBranch);
-  }
+  currentAdminBranch = 'all';
+  activateTab('appointments');
+  filterAndRenderAppointments();
 };
 
 async function loadAdminBranches() {
-  try {
-    const res = await fetch(`${ADMIN_API}/branches`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        adminClinicBranches = data;
-      } else {
-        adminClinicBranches = [...defaultClinicBranches];
-      }
-    } else {
-      adminClinicBranches = [...defaultClinicBranches];
-    }
-  } catch (err) {
-    console.warn('[Admin] Failed to fetch branches, using defaults:', err);
-    adminClinicBranches = [...defaultClinicBranches];
-  }
-
-  renderSidebarBranches();
-  renderBranchPills();
-  renderBranchComparisonMatrix(cachedBranchAnalytics);
-  renderBranchesList();
+  adminClinicBranches = [...defaultClinicBranches];
   populateBranchDropdowns();
   updateSidebarBranchBadges();
 }
 window.loadAdminBranches = loadAdminBranches;
 
-function renderSidebarBranches() {
-  const container = document.getElementById('sb-branches-subnav');
-  if (!container) return;
-
-  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
-
-  const branchItemsHtml = branches.map(b => {
-    const slug = b.key.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const badgeId = (b.key === 'Main Branch') ? 'branch-badge-main' : `branch-badge-${slug}`;
-    const isActive = currentAdminBranch === b.key;
-
-    return `
-      <a href="#" class="sb-subnav-item ${isActive ? 'active' : ''}" data-branch="${escapeHTML(b.key)}" onclick="selectAdminBranch('${escapeHTML(b.key)}', event)">
-        <span class="sb-subnav-bullet"></span>
-        <span class="sb-subnav-text">${escapeHTML(b.name)}</span>
-        <span class="sb-subnav-badge" id="${badgeId}">0</span>
-      </a>
-    `;
-  }).join('');
-
-  const isAllActive = currentAdminBranch === 'all';
-  const allBranchesHtml = `
-    <a href="#" class="sb-subnav-item ${isAllActive ? 'active' : ''}" data-branch="all" onclick="selectAdminBranch('all', event)">
-      <span class="sb-subnav-bullet"></span>
-      <span class="sb-subnav-text">All Branches</span>
-      <span class="sb-subnav-badge" id="branch-badge-all">0</span>
-    </a>
-  `;
-
-  const addBranchBtnHtml = `
-    <a href="#" class="sb-subnav-item sb-subnav-add-branch" onclick="openAddBranchModal(event)" style="color: #0284c7; font-weight: 600; padding-top: 8px; border-top: 1px dashed rgba(2,132,199,0.2); margin-top: 4px;">
-      <span class="sb-subnav-bullet" style="background: #0284c7;"></span>
-      <span class="sb-subnav-text" style="color: #0284c7;"><i class="ti ti-plus" style="font-size: 11px;"></i> Add New Branch</span>
-    </a>
-  `;
-
-  container.innerHTML = branchItemsHtml + allBranchesHtml + addBranchBtnHtml;
-  updateSidebarBranchBadges();
-}
+function renderSidebarBranches() {}
 window.renderSidebarBranches = renderSidebarBranches;
 
-function renderBranchPills() {
-  const container = document.getElementById('branch-analytics-pills');
-  if (!container) return;
-
-  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
-  const isAllActive = currentAdminBranch === 'all';
-
-  let html = `
-    <button type="button" class="branch-pill-btn ${isAllActive ? 'active' : ''}" data-branch="all" onclick="selectAdminAnalyticsBranch('all', event)" title="View consolidated metrics across all clinic locations">
-      <span class="pill-dot"></span>
-      <span>All Branches</span>
-      <span class="branch-pill-badge" id="pill-badge-all">0</span>
-    </button>
-  `;
-
-  branches.forEach(b => {
-    const slug = b.key.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const badgeId = (b.key === 'Main Branch') ? 'pill-badge-main' : `pill-badge-${slug}`;
-    const isActive = currentAdminBranch === b.key;
-
-    html += `
-      <button type="button" class="branch-pill-btn ${isActive ? 'active' : ''}" data-branch="${escapeHTML(b.key)}" onclick="selectAdminAnalyticsBranch('${escapeHTML(b.key)}', event)" title="Filter analytics to ${escapeHTML(b.name)}">
-        <span class="pill-dot"></span>
-        <span>${escapeHTML(b.name)}</span>
-        <span class="branch-pill-badge" id="${badgeId}">0</span>
-      </button>
-    `;
-  });
-
-  html += `
-    <button type="button" class="branch-pill-btn" onclick="openAddBranchModal(event)" style="border: 1px dashed #0284c7; background: #f0f9ff; color: #0284c7;" title="Register a new clinic branch">
-      <i class="ti ti-plus" style="font-size: 12px; margin-right: 4px;"></i>
-      <span>Add Branch</span>
-    </button>
-  `;
-
-  container.innerHTML = html;
-  updateSidebarBranchBadges();
-}
+function renderBranchPills() {}
 window.renderBranchPills = renderBranchPills;
 
 function populateBranchDropdowns() {
-  const editLocationSelect = document.getElementById('edit-appt-location');
-  if (editLocationSelect) {
-    const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
-    const currentVal = editLocationSelect.value;
-    editLocationSelect.innerHTML = branches.map(b => `<option value="${escapeHTML(b.name)}">${escapeHTML(b.name)}</option>`).join('');
-    if (currentVal && branches.some(b => b.name === currentVal)) {
-      editLocationSelect.value = currentVal;
-    }
+  const editLocation = document.getElementById('edit-appt-location');
+  if (editLocation && editLocation.tagName === 'INPUT') {
+    editLocation.value = 'Balirong Highway, City of Naga, Cebu';
   }
 }
 window.populateBranchDropdowns = populateBranchDropdowns;
 
 function updateSidebarBranchBadges() {
-  const appts = allAppointments || [];
-  const analytics = cachedBranchAnalytics || {};
-
-  let totalCount = appts.length;
-  if (totalCount === 0 && Object.keys(analytics).length > 0) {
-    totalCount = Object.values(analytics).reduce((sum, item) => sum + (item.totalAppointments || 0), 0);
-  }
-
-  const badgeAll = document.getElementById('branch-badge-all');
-  const pillAll = document.getElementById('pill-badge-all');
-  if (badgeAll) badgeAll.textContent = totalCount;
-  if (pillAll) pillAll.textContent = totalCount;
-
-  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
-
-  branches.forEach(b => {
-    const slug = b.key.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const ba = analytics[b.key] || analytics[b.name] || analytics[b.id];
-    let count = appts.filter(a => doesAppointmentMatchBranch(a, b.key)).length;
-    if (count === 0 && ba && ba.totalAppointments !== undefined) {
-      count = ba.totalAppointments;
-    }
-
-    if (b.key === 'Main Branch') {
-      const badgeMainSidebar = document.getElementById('main-clinic-sidebar-badge');
-      if (badgeMainSidebar) {
-        badgeMainSidebar.textContent = count;
-        badgeMainSidebar.setAttribute('data-count', String(count));
-      }
-    }
-
-    const badgeEl = (b.key === 'Main Branch') 
-      ? (document.getElementById('branch-badge-main') || document.getElementById(`branch-badge-${slug}`))
-      : document.getElementById(`branch-badge-${slug}`);
-    if (badgeEl) badgeEl.textContent = count;
-
-    const pillEl = (b.key === 'Main Branch')
-      ? (document.getElementById('pill-badge-main') || document.getElementById(`pill-badge-${slug}`))
-      : document.getElementById(`pill-badge-${slug}`);
-    if (pillEl) pillEl.textContent = count;
-  });
+  const count = (allAppointments || []).length;
+  const mainBadge = document.getElementById('main-clinic-sidebar-badge');
+  if (mainBadge) mainBadge.textContent = count;
 }
 window.updateSidebarBranchBadges = updateSidebarBranchBadges;
+
+function renderBranchComparisonMatrix(branchAnalytics) {}
+window.renderBranchComparisonMatrix = renderBranchComparisonMatrix;
 
 function renderDashboardAnalytics(branchId = currentAdminBranch) {
   const branch = branchId || 'all';
@@ -1010,123 +697,10 @@ function renderBranchComparisonMatrix(branchAnalytics) {
   }).join('');
 }
 
-window.openAddBranchModal = function(e) {
-  if (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  const modal = document.getElementById('modal-add-branch');
-  if (modal) {
-    modal.style.display = 'flex';
-    document.getElementById('modal-branch-name')?.focus();
-  }
-};
-
-window.closeAddBranchModal = function() {
-  const modal = document.getElementById('modal-add-branch');
-  if (modal) {
-    modal.style.display = 'none';
-    const form = document.getElementById('modal-add-branch-form');
-    if (form) form.reset();
-  }
-};
-
-window.submitAddBranch = async function(e) {
-  if (e) e.preventDefault();
-  const nameInput = document.getElementById('modal-branch-name');
-  const locInput = document.getElementById('modal-branch-location');
-  const phoneInput = document.getElementById('modal-branch-contact');
-  const hoursInput = document.getElementById('modal-branch-hours');
-  const latInput = document.getElementById('modal-branch-lat');
-  const lngInput = document.getElementById('modal-branch-lng');
-
-  const name = nameInput?.value.trim();
-  const location = locInput?.value.trim();
-  const contactNumber = phoneInput?.value.trim() || '';
-  const operatingHours = hoursInput?.value.trim() || 'Mon–Sat 8:00 AM – 5:00 PM';
-  const lat = parseFloat(latInput?.value) || 10.2098;
-  const lng = parseFloat(lngInput?.value) || 123.7580;
-
-  if (!name || !location) {
-    showToast('Branch name and location are required.', 'error');
-    return;
-  }
-
-  const submitBtn = document.getElementById('btn-submit-add-branch');
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="ti ti-loader"></i> Saving...';
-  }
-
-  try {
-    const res = await fetch(`${ADMIN_API}/branches`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ name, location, contactNumber, operatingHours, lat, lng })
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      showToast(data.message || 'Failed to add branch.', 'error');
-      return;
-    }
-
-    showToast(`Branch "${data.name}" added and pinned to map!`, 'success');
-    closeAddBranchModal();
-    await loadAdminBranches();
-    loadStats();
-    selectAdminBranch(data.key);
-    if (typeof updateAdminMapMarkers === 'function') {
-      updateAdminMapMarkers();
-    }
-    if (typeof zoomToBranchPin === 'function' && data.lat && data.lng) {
-      setTimeout(() => {
-        zoomToBranchPin(data.lat, data.lng, data.name);
-      }, 300);
-    }
-  } catch (err) {
-    showToast('Network error while creating branch.', 'error');
-  } finally {
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="ti ti-plus"></i> Save Branch';
-    }
-  }
-};
-
-window.deleteCustomBranch = async function(id, name, e) {
-  if (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-
-  const confirmed = window.confirm(`Are you sure you want to delete branch "${name}"? This action cannot be undone.`);
-  if (!confirmed) return;
-
-  try {
-    const res = await fetch(`${ADMIN_API}/branches/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      showToast(data.message || 'Failed to delete branch.', 'error');
-      return;
-    }
-
-    showToast(data.message || `Branch "${name}" deleted.`, 'success');
-    if (currentAdminBranch === id || currentAdminBranch === name || currentAdminBranch.toLowerCase() === name.toLowerCase()) {
-      currentAdminBranch = 'all';
-    }
-    await loadAdminBranches();
-    loadStats();
-  } catch (err) {
-    showToast('Network error while deleting branch.', 'error');
-  }
-};
+window.openAddBranchModal = function() {};
+window.closeAddBranchModal = function() {};
+window.submitAddBranch = async function(e) { if (e) e.preventDefault(); };
+window.deleteCustomBranch = async function() {};
 
 // ─── 1. Load Home Overview Stats ──────────────────────────────────────────────
 let currentRevenuePeriod = '12months';
@@ -1201,12 +775,8 @@ async function loadStats() {
       }
     } catch (_) {}
 
-    if (Array.isArray(data.branches) && data.branches.length > 0) {
-      adminClinicBranches = data.branches;
-      renderSidebarBranches();
-      renderBranchPills();
-      populateBranchDropdowns();
-    }
+    adminClinicBranches = [...defaultClinicBranches];
+    populateBranchDropdowns();
 
     updateSidebarBranchBadges();
     loadAdminNotifications();
@@ -2683,7 +2253,7 @@ function filterAndRenderAppointments() {
   const displayName = branchDisplayNames[branchVal] || branchVal;
 
   if (heading) {
-    heading.textContent = `Appointments Agenda — ${displayName}`;
+    heading.textContent = `Appointments Agenda — Fano Dental Clinic (Naga)`;
   }
 
   if (banner) {
@@ -2696,7 +2266,7 @@ function filterAndRenderAppointments() {
   if (!tbody) return;
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="padding: 28px 16px; text-align: center; color: #888;">No matching appointments found for the selected branch or filters.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="padding: 28px 16px; text-align: center; color: #888;">No matching appointments found for the current search or filters.</td></tr>';
     return;
   }
 
@@ -5202,7 +4772,7 @@ window.switchSettingsSection = function(sectionId, element) {
 };
 
 window.loadMfaSettings = async function() {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = getAuthToken() || localStorage.getItem('token') || sessionStorage.getItem('token');
   const enforceInput = document.getElementById('set-admin-mfa-enforce');
   const channelSelect = document.getElementById('set-admin-mfa-channel');
   const trustDeviceInput = document.getElementById('set-admin-mfa-trust-device');
@@ -5210,7 +4780,7 @@ window.loadMfaSettings = async function() {
   const lastSavedTime = document.getElementById('mfa-last-saved-time');
 
   try {
-    const res = await fetch('/api/admin/mfa-config', {
+    const res = await fetch(`${ADMIN_API}/mfa-config`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.ok) {
@@ -5233,6 +4803,52 @@ window.loadMfaSettings = async function() {
         const d = new Date(data.updatedAt);
         lastSavedTime.textContent = `Synced: ${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
       }
+
+      // Update TOTP UI Elements
+      const totpCard = document.getElementById('totp-setup-card');
+      const totpBadge = document.getElementById('totp-badge-status');
+      const totpDesc = document.getElementById('totp-status-desc');
+      const btnSetupText = document.getElementById('btn-setup-totp-text');
+      const btnViewBackup = document.getElementById('btn-view-backup-codes');
+      const btnDisable = document.getElementById('btn-disable-totp');
+      const backupCountSpan = document.getElementById('backup-codes-remaining-count');
+
+      if (data.totpEnabled) {
+        if (totpCard) {
+          totpCard.style.background = '#f0fdf4';
+          totpCard.style.borderColor = '#86efac';
+        }
+        if (totpBadge) {
+          totpBadge.style.background = '#dcfce7';
+          totpBadge.style.color = '#15803d';
+          totpBadge.textContent = 'Active & Protected';
+        }
+        if (totpDesc) {
+          totpDesc.innerHTML = 'Your Administrator account is paired with an Authenticator app (TOTP). Industry-standard 2FA is active.';
+        }
+        if (btnSetupText) btnSetupText.textContent = 'Re-pair Authenticator';
+        if (btnViewBackup) {
+          btnViewBackup.style.display = 'inline-flex';
+          if (backupCountSpan) backupCountSpan.textContent = data.totpStatus?.remainingBackupCodes ?? 8;
+        }
+        if (btnDisable) btnDisable.style.display = 'inline-flex';
+      } else {
+        if (totpCard) {
+          totpCard.style.background = '#f8fafc';
+          totpCard.style.borderColor = '#e2e8f0';
+        }
+        if (totpBadge) {
+          totpBadge.style.background = '#f1f5f9';
+          totpBadge.style.color = '#64748b';
+          totpBadge.textContent = 'Not Configured';
+        }
+        if (totpDesc) {
+          totpDesc.innerHTML = 'Pairs your account with Google Authenticator, Microsoft Authenticator, or Authy using time-based codes (RFC 6238).';
+        }
+        if (btnSetupText) btnSetupText.textContent = 'Pair Authenticator';
+        if (btnViewBackup) btnViewBackup.style.display = 'none';
+        if (btnDisable) btnDisable.style.display = 'none';
+      }
     }
   } catch (err) {
     console.warn('[Admin MFA Settings Load Warning]', err);
@@ -5240,7 +4856,7 @@ window.loadMfaSettings = async function() {
 };
 
 window.saveMfaSettings = async function(customMsg) {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = getAuthToken() || localStorage.getItem('token') || sessionStorage.getItem('token');
   const enforceInput = document.getElementById('set-admin-mfa-enforce');
   const channelSelect = document.getElementById('set-admin-mfa-channel');
   const trustDeviceInput = document.getElementById('set-admin-mfa-trust-device');
@@ -5252,7 +4868,7 @@ window.saveMfaSettings = async function(customMsg) {
   const allowTrustDevice = trustDeviceInput ? trustDeviceInput.checked : true;
 
   try {
-    const res = await fetch('/api/admin/mfa-config', {
+    const res = await fetch(`${ADMIN_API}/mfa-config`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -5284,7 +4900,7 @@ window.saveMfaSettings = async function(customMsg) {
 };
 
 window.testAdminMfaDelivery = async function() {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = getAuthToken() || localStorage.getItem('token') || sessionStorage.getItem('token');
   const channelSelect = document.getElementById('set-admin-mfa-channel');
   const channel = channelSelect ? channelSelect.value : 'email';
   const btn = document.getElementById('btn-test-admin-mfa');
@@ -5295,7 +4911,7 @@ window.testAdminMfaDelivery = async function() {
   }
 
   try {
-    const res = await fetch('/api/admin/mfa-test', {
+    const res = await fetch(`${ADMIN_API}/mfa-test`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -5325,7 +4941,7 @@ window.revokeAllAdminMfaDevices = async function() {
     return;
   }
 
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = getAuthToken() || localStorage.getItem('token') || sessionStorage.getItem('token');
   const btn = document.getElementById('btn-revoke-all-mfa-devices');
 
   if (btn) {
@@ -5334,7 +4950,7 @@ window.revokeAllAdminMfaDevices = async function() {
   }
 
   try {
-    const res = await fetch('/api/admin/mfa-revoke-devices', {
+    const res = await fetch(`${ADMIN_API}/mfa-revoke-devices`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -5355,6 +4971,278 @@ window.revokeAllAdminMfaDevices = async function() {
       btn.innerHTML = '<i class="ti ti-device-mobile-off" style="font-size: 16px;"></i> Revoke All Trusted Devices';
     }
   }
+};
+
+// ─── Admin TOTP Modal & Action Controllers ──────────────────────────────────
+window.latestAdminBackupCodes = [];
+window.currentTotpSecretRaw = '';
+
+window.openTotpSetupModal = async function() {
+  const token = getAuthToken() || localStorage.getItem('token') || sessionStorage.getItem('token');
+  const modal = document.getElementById('admin-totp-setup-modal');
+  const stepSetup = document.getElementById('totp-step-setup');
+  const stepBackup = document.getElementById('totp-step-backup-codes');
+  const qrImg = document.getElementById('totp-setup-qrcode-img');
+  const secretKeyEl = document.getElementById('totp-setup-secret-key');
+  const tokenInput = document.getElementById('totp-confirm-token-input');
+  const errorDiv = document.getElementById('totp-setup-error');
+
+  if (errorDiv) errorDiv.style.display = 'none';
+  if (tokenInput) tokenInput.value = '';
+
+  try {
+    const res = await fetch(`${ADMIN_API}/totp/setup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      window.currentTotpSecretRaw = data.secret;
+      if (qrImg) qrImg.src = data.qrCode;
+      if (secretKeyEl) secretKeyEl.textContent = data.formattedSecret || data.secret;
+
+      if (stepSetup) stepSetup.style.display = 'flex';
+      if (stepBackup) stepBackup.style.display = 'none';
+      if (modal) modal.style.display = 'flex';
+      if (tokenInput) setTimeout(() => tokenInput.focus(), 150);
+    } else {
+      showToast(data.message || 'Failed to initiate authenticator setup.', 'error');
+    }
+  } catch (err) {
+    showToast('Network error initiating TOTP setup.', 'error');
+  }
+};
+
+window.closeTotpSetupModal = function() {
+  const modal = document.getElementById('admin-totp-setup-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.submitTotpVerification = async function() {
+  const token = getAuthToken() || localStorage.getItem('token') || sessionStorage.getItem('token');
+  const tokenInput = document.getElementById('totp-confirm-token-input');
+  const errorDiv = document.getElementById('totp-setup-error');
+  const submitBtn = document.getElementById('btn-submit-totp-verify');
+  const stepSetup = document.getElementById('totp-step-setup');
+  const stepBackup = document.getElementById('totp-step-backup-codes');
+  const codesGrid = document.getElementById('totp-backup-codes-grid');
+
+  if (errorDiv) errorDiv.style.display = 'none';
+  const code = (tokenInput?.value || '').replace(/\D/g, '').trim();
+
+  if (code.length !== 6) {
+    if (errorDiv) {
+      errorDiv.textContent = 'Please enter the 6-digit passcode displayed in your app.';
+      errorDiv.style.display = 'block';
+    }
+    return;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Verifying…';
+  }
+
+  try {
+    const res = await fetch(`${ADMIN_API}/totp/verify-setup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ token: code })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      window.latestAdminBackupCodes = data.backupCodes || [];
+
+      // Render backup codes in grid
+      if (codesGrid && Array.isArray(data.backupCodes)) {
+        codesGrid.innerHTML = data.backupCodes.map(c => `
+          <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; letter-spacing:2px;">
+            ${c}
+          </div>
+        `).join('');
+      }
+
+      if (stepSetup) stepSetup.style.display = 'none';
+      if (stepBackup) stepBackup.style.display = 'flex';
+
+      showToast('Authenticator App (TOTP) successfully activated!', 'success');
+      logConsoleEvent('[SECURITY] Admin TOTP 2FA successfully activated.');
+      loadMfaSettings();
+    } else {
+      if (errorDiv) {
+        errorDiv.textContent = data.message || 'Invalid code. Check device time and try again.';
+        errorDiv.style.display = 'block';
+      }
+    }
+  } catch (err) {
+    if (errorDiv) {
+      errorDiv.textContent = 'Network error verifying authenticator code.';
+      errorDiv.style.display = 'block';
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Verify & Activate 2FA';
+    }
+  }
+};
+
+window.finishTotpSetup = function() {
+  closeTotpSetupModal();
+  loadMfaSettings();
+};
+
+window.disableAdminTotp = async function() {
+  if (!confirm('Are you sure you want to disable Authenticator App (TOTP) 2FA? This will lower security on Administrator sign-ins.')) {
+    return;
+  }
+
+  const token = getAuthToken() || localStorage.getItem('token') || sessionStorage.getItem('token');
+  try {
+    const res = await fetch(`${ADMIN_API}/totp/disable`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast('Authenticator App (TOTP) disabled.', 'info');
+      logConsoleEvent('[SECURITY] Admin Authenticator App 2FA disabled.');
+      loadMfaSettings();
+    } else {
+      showToast(data.message || 'Failed to disable TOTP.', 'error');
+    }
+  } catch (err) {
+    showToast('Error communicating with server.', 'error');
+  }
+};
+
+window.openBackupCodesModal = async function() {
+  const token = getAuthToken() || localStorage.getItem('token') || sessionStorage.getItem('token');
+  const countEl = document.getElementById('modal-remaining-codes-count');
+  const modal = document.getElementById('admin-backup-codes-modal');
+
+  try {
+    const res = await fetch(`${ADMIN_API}/totp/status`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (countEl) countEl.textContent = data.remainingBackupCodes ?? 0;
+      if (modal) modal.style.display = 'flex';
+    }
+  } catch (err) {
+    showToast('Failed to load backup codes status.', 'error');
+  }
+};
+
+window.closeBackupCodesModal = function() {
+  const modal = document.getElementById('admin-backup-codes-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.regenerateBackupCodesAction = async function() {
+  if (!confirm('Are you sure you want to generate a new set of backup codes? All previous codes will immediately stop working.')) {
+    return;
+  }
+
+  const token = getAuthToken() || localStorage.getItem('token') || sessionStorage.getItem('token');
+  try {
+    const res = await fetch(`${ADMIN_API}/totp/regenerate-backup-codes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      window.latestAdminBackupCodes = data.backupCodes || [];
+      closeBackupCodesModal();
+
+      // Show setup modal on step 3 with new codes
+      const modal = document.getElementById('admin-totp-setup-modal');
+      const stepSetup = document.getElementById('totp-step-setup');
+      const stepBackup = document.getElementById('totp-step-backup-codes');
+      const codesGrid = document.getElementById('totp-backup-codes-grid');
+
+      if (codesGrid && Array.isArray(data.backupCodes)) {
+        codesGrid.innerHTML = data.backupCodes.map(c => `
+          <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; letter-spacing:2px;">
+            ${c}
+          </div>
+        `).join('');
+      }
+
+      if (stepSetup) stepSetup.style.display = 'none';
+      if (stepBackup) stepBackup.style.display = 'flex';
+      if (modal) modal.style.display = 'flex';
+
+      showToast('New backup recovery codes generated!', 'success');
+      loadMfaSettings();
+    } else {
+      showToast(data.message || 'Failed to regenerate backup codes.', 'error');
+    }
+  } catch (err) {
+    showToast('Network error regenerating backup codes.', 'error');
+  }
+};
+
+window.copySecretKeyToClipboard = function() {
+  const secret = window.currentTotpSecretRaw || (document.getElementById('totp-setup-secret-key')?.textContent || '').replace(/\s+/g, '');
+  if (!secret) return;
+  navigator.clipboard.writeText(secret).then(() => {
+    showToast('Secret key copied to clipboard!', 'success');
+  }).catch(() => {
+    showToast('Could not copy to clipboard.', 'error');
+  });
+};
+
+window.copyBackupCodesToClipboard = function() {
+  if (!window.latestAdminBackupCodes || !window.latestAdminBackupCodes.length) {
+    showToast('No active backup codes to copy.', 'error');
+    return;
+  }
+  const text = "FANO DENTAL CLINIC — ADMIN EMERGENCY BACKUP RECOVERY CODES\nEach code can only be used once.\n\n" +
+    window.latestAdminBackupCodes.join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('8 backup recovery codes copied to clipboard!', 'success');
+  }).catch(() => {
+    showToast('Could not copy to clipboard.', 'error');
+  });
+};
+
+window.downloadBackupCodes = function() {
+  if (!window.latestAdminBackupCodes || !window.latestAdminBackupCodes.length) {
+    showToast('No active backup codes to download.', 'error');
+    return;
+  }
+  const content = "FANO DENTAL CLINIC — ADMIN EMERGENCY BACKUP RECOVERY CODES\n" +
+    "Generated: " + new Date().toISOString() + "\n" +
+    "Each code can only be used once for Admin sign-in.\n\n" +
+    window.latestAdminBackupCodes.map((c, i) => `${i + 1}. ${c}`).join('\n') + "\n";
+
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fano_admin_backup_codes_${new Date().toISOString().slice(0, 10)}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup codes downloaded as .txt', 'success');
 };
 
 window.loadSettings = function() {
@@ -5433,22 +5321,14 @@ if (twilioForm) {
   });
 }
 
-// ─── Branches Management with Leaflet Interactive Map Pinning ─────────────────
+// ─── Single Clinic Location with Leaflet Interactive Map Pinning ─────────────────
 let adminMap = null;
-let adminNewMarker = null;
 let adminBranchMarkers = [];
 
-// Custom clinic pin marker creator
-function createClinicPin(branch, isSelected = false) {
-  const isMain = branch.isMain || branch.key === 'Main Branch';
-  const bgColor = isSelected 
-    ? 'linear-gradient(135deg, #f59e0b, #d97706)' 
-    : (isMain ? 'linear-gradient(135deg, #0b3c4d, #0284c7)' : 'linear-gradient(135deg, #0284c7, #0369a1)');
-  const borderColor = isSelected ? '#ffffff' : (isMain ? '#38bdf8' : '#ffffff');
-  const iconSymbol = isMain ? '🏥' : '🦷';
-  const size = isSelected ? 38 : (isMain ? 34 : 30);
+function createClinicPin(branch, isSelected = true) {
+  const size = 36;
   const anchor = Math.round(size / 2);
-  const label = escapeHTML(branch.key || branch.name || 'Branch');
+  const label = 'Fano Dental Clinic';
 
   return L.divIcon({
     className: 'admin-branch-marker',
@@ -5457,18 +5337,17 @@ function createClinicPin(branch, isSelected = false) {
         <div style="
           width:${size}px; 
           height:${size}px; 
-          background:${bgColor}; 
+          background:linear-gradient(135deg, #0b3c4d, #0284c7); 
           border-radius:50% 50% 50% 0; 
           transform:rotate(-45deg); 
-          border:2.5px solid ${borderColor}; 
+          border:2.5px solid #38bdf8; 
           box-shadow:0 4px 14px rgba(11,60,77,0.35); 
           display:flex; 
           align-items:center; 
           justify-content:center;
-          transition:transform 0.2s ease;
         ">
-          <span style="transform:rotate(45deg); font-size:${size > 32 ? '16px' : '13px'}; color:white; line-height:1;">
-            ${iconSymbol}
+          <span style="transform:rotate(45deg); font-size:15px; color:white; line-height:1;">
+            🏥
           </span>
         </div>
         <div style="
@@ -5498,389 +5377,55 @@ function createClinicPin(branch, isSelected = false) {
   });
 }
 
-// Marker for placing a new branch
-function createNewPin() {
-  return L.divIcon({
-    className: 'admin-new-branch-marker',
-    html: `
-      <div style="position:relative; width:38px; height:38px;">
-        <div style="
-          position:absolute;
-          top:-6px;
-          left:-6px;
-          width:50px;
-          height:50px;
-          border-radius:50%;
-          background:rgba(239, 68, 68, 0.25);
-          animation:pulsePin 1.5s infinite;
-          pointer-events:none;
-        "></div>
-        <div style="
-          width:38px; 
-          height:38px; 
-          background:linear-gradient(135deg, #ef4444, #dc2626); 
-          border-radius:50% 50% 50% 0; 
-          transform:rotate(-45deg); 
-          border:3px solid #ffffff; 
-          box-shadow:0 6px 18px rgba(239,68,68,0.5); 
-          display:flex; 
-          align-items:center; 
-          justify-content:center;
-        ">
-          <span style="transform:rotate(45deg); font-size:17px; color:white; line-height:1;">
-            📍
-          </span>
-        </div>
-        <div style="
-          position:absolute; 
-          top:-22px; 
-          left:50%; 
-          transform:translateX(-50%); 
-          background:#ef4444; 
-          color:#ffffff; 
-          font-family:'Plus Jakarta Sans',sans-serif;
-          font-size:10px; 
-          font-weight:700; 
-          padding:2px 8px; 
-          border-radius:6px; 
-          white-space:nowrap; 
-          box-shadow:0 2px 8px rgba(0,0,0,0.25);
-        ">
-          New Pin
-        </div>
-      </div>
-    `,
-    iconSize: [38, 38],
-    iconAnchor: [19, 38]
-  });
-}
-
-// Reverse Geocoding helper using OpenStreetMap Nominatim
-async function fetchReverseGeocode(lat, lng) {
-  const addrInput = document.getElementById('branch-input-address');
-  if (!addrInput) return;
-  try {
-    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
-      headers: { 'Accept-Language': 'en' }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.display_name && !addrInput.value.trim()) {
-        addrInput.value = data.display_name;
-      }
-    }
-  } catch (_) {}
-}
-
 window.initAdminBranchMap = function() {
   const mapContainer = document.getElementById('admin-branch-map');
   if (!mapContainer || typeof L === 'undefined') return;
 
+  const lat = 10.2098;
+  const lng = 123.7580;
+
   if (!adminMap) {
-    adminMap = L.map('admin-branch-map').setView([10.2450, 123.7960], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
+    adminMap = L.map('admin-branch-map').setView([lat, lng], 14);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_49xg_1_ea6e2bbc9eb40a1fa32d14c8', {
+      maxZoom: 20,
+      subdomains: 'abcd',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     }).addTo(adminMap);
 
-    // Map click handler: place new pin marker & auto-fill inputs
-    adminMap.on('click', function(e) {
-      const lat = parseFloat(e.latlng.lat.toFixed(5));
-      const lng = parseFloat(e.latlng.lng.toFixed(5));
+    const marker = L.marker([lat, lng], {
+      icon: createClinicPin({ isMain: true }),
+      title: 'Fano Dental Clinic'
+    }).addTo(adminMap);
 
-      const latInput = document.getElementById('branch-input-lat');
-      const lngInput = document.getElementById('branch-input-lng');
-      if (latInput) latInput.value = lat;
-      if (lngInput) lngInput.value = lng;
-
-      if (adminNewMarker) {
-        adminNewMarker.setLatLng(e.latlng);
-      } else {
-        adminNewMarker = L.marker(e.latlng, {
-          icon: createNewPin(),
-          draggable: true,
-          zIndexOffset: 1000
-        }).addTo(adminMap);
-
-        adminNewMarker.on('dragend', function(event) {
-          const pos = event.target.getLatLng();
-          const dLat = parseFloat(pos.lat.toFixed(5));
-          const dLng = parseFloat(pos.lng.toFixed(5));
-          if (latInput) latInput.value = dLat;
-          if (lngInput) lngInput.value = dLng;
-          fetchReverseGeocode(dLat, dLng);
-        });
-      }
-
-      adminNewMarker.bindPopup(`
-        <div style="font-family:'Plus Jakarta Sans',sans-serif; text-align:center; min-width:160px; padding:4px;">
-          <strong style="color:#ef4444; font-size:13px; display:block; margin-bottom:2px;">📍 New Branch Pin</strong>
-          <span style="color:#64748b; font-size:11px; display:block; margin-bottom:6px;">(${lat}, ${lng})</span>
-          <span style="font-size:10px; color:#0284c7; background:#e0f2fe; padding:2px 8px; border-radius:10px; font-weight:600;">Drag or click map to move</span>
+    marker.bindPopup(`
+      <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:210px; padding:2px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:4px;">
+          <strong style="color:#0b3c4d; font-size:13px;">Fano Dental Clinic</strong>
+          <span style="font-size:9px; background:#e0f2fe; color:#0284c7; padding:1px 6px; border-radius:8px; font-weight:700;">Headquarters</span>
         </div>
-      `).openPopup();
+        <p style="color:#475569; font-size:11px; margin:0 0 6px 0; line-height:1.4;">📍 Balirong Highway, City of Naga, Cebu</p>
+        <div style="font-size:10.5px; color:#64748b;">
+          <div>📞 +63 917 555 0101</div>
+          <div>🕒 Mon–Sat 8:00 AM – 5:00 PM</div>
+        </div>
+      </div>
+    `).openPopup();
 
-      showToast(`Branch pin placed at (${lat}, ${lng})`, 'info');
-      fetchReverseGeocode(lat, lng);
-    });
-
-    // Listen to manual latitude/longitude input edits to reposition the pin
-    const latInput = document.getElementById('branch-input-lat');
-    const lngInput = document.getElementById('branch-input-lng');
-    const onManualCoordInput = () => {
-      const lat = parseFloat(latInput?.value);
-      const lng = parseFloat(lngInput?.value);
-      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-        const latLng = [lat, lng];
-        if (adminNewMarker) {
-          adminNewMarker.setLatLng(latLng);
-        } else {
-          adminNewMarker = L.marker(latLng, { icon: createNewPin(), draggable: true, zIndexOffset: 1000 }).addTo(adminMap);
-        }
-        adminMap.panTo(latLng);
-      }
-    };
-    if (latInput) latInput.addEventListener('input', onManualCoordInput);
-    if (lngInput) lngInput.addEventListener('input', onManualCoordInput);
-
+    adminBranchMarkers = [marker];
   } else {
-    setTimeout(() => { 
-      adminMap.invalidateSize(); 
-      updateAdminMapMarkers();
+    setTimeout(() => {
+      adminMap.invalidateSize();
+      adminMap.setView([lat, lng], 14);
     }, 200);
   }
-
-  updateAdminMapMarkers();
 };
 
-function updateAdminMapMarkers() {
-  if (!adminMap || typeof L === 'undefined') return;
-
-  // Clear existing branch markers
-  adminBranchMarkers.forEach(m => adminMap.removeLayer(m));
-  adminBranchMarkers = [];
-
-  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
-
-  const bounds = [];
-  branches.forEach(b => {
-    if (b.lat && b.lng) {
-      const isSelected = (currentAdminBranch === b.key || currentAdminBranch === b.name);
-      const marker = L.marker([b.lat, b.lng], {
-        icon: createClinicPin(b, isSelected),
-        title: b.name,
-        zIndexOffset: isSelected ? 500 : 100
-      }).addTo(adminMap);
-
-      const isMain = b.isMain || b.key === 'Main Branch';
-      const popupContent = `
-        <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:210px; padding:2px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:4px;">
-            <strong style="color:#0b3c4d; font-size:13px;">${escapeHTML(b.name)}</strong>
-            ${isMain ? '<span style="font-size:9px; background:#e0f2fe; color:#0284c7; padding:1px 6px; border-radius:8px; font-weight:700;">HQ</span>' : ''}
-          </div>
-          <p style="color:#475569; font-size:11px; margin:0 0 6px 0; line-height:1.4;">📍 ${escapeHTML(b.location || 'Clinic Branch')}</p>
-          <div style="font-size:10.5px; color:#64748b; margin-bottom:8px;">
-            ${b.contactNumber ? `<div>📞 ${escapeHTML(b.contactNumber)}</div>` : ''}
-            ${b.operatingHours ? `<div>🕒 ${escapeHTML(b.operatingHours)}</div>` : ''}
-          </div>
-          <div style="display:flex; gap:6px; border-top:1px solid #e2e8f0; padding-top:6px;">
-            <button type="button" onclick="selectAdminBranch('${escapeHTML(b.key)}'); showToast('Selected branch: ${escapeHTML(b.name)}', 'info');" style="flex:1; background:#0284c7; color:white; border:none; border-radius:6px; padding:5px 8px; font-size:10.5px; font-weight:600; cursor:pointer;">
-              Select Branch
-            </button>
-            <button type="button" onclick="zoomToBranchPin(${b.lat}, ${b.lng}, '${escapeHTML(b.name)}');" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; border-radius:6px; padding:5px 8px; font-size:10.5px; font-weight:600; cursor:pointer;">
-              Zoom
-            </button>
-          </div>
-        </div>
-      `;
-
-      marker.bindPopup(popupContent);
-      marker.branchData = b;
-      adminBranchMarkers.push(marker);
-      bounds.push([b.lat, b.lng]);
-    }
-  });
-
-  if (bounds.length > 0 && !adminNewMarker) {
-    adminMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
-  }
-}
-window.updateAdminMapMarkers = updateAdminMapMarkers;
-
-window.zoomToBranchPin = function(lat, lng, name) {
-  if (!adminMap) return;
-  adminMap.flyTo([lat, lng], 15, { duration: 0.8 });
-  const targetMarker = adminBranchMarkers.find(m => {
-    const p = m.getLatLng();
-    return Math.abs(p.lat - lat) < 0.0005 && Math.abs(p.lng - lng) < 0.0005;
-  });
-  if (targetMarker) {
-    setTimeout(() => targetMarker.openPopup(), 400);
-  }
-  const mapEl = document.getElementById('admin-branch-map');
-  if (mapEl) {
-    mapEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
+window.updateAdminMapMarkers = function() {};
+window.zoomToBranchPin = function(lat, lng) {
+  if (adminMap) adminMap.flyTo([lat || 10.2098, lng || 123.7580], 15);
 };
-
-window.renderBranchesList = function() {
-  const listContainer = document.getElementById('settings-branches-list');
-  if (!listContainer) return;
-
-  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
-
-  if (branches.length === 0) {
-    listContainer.innerHTML = '<span style="font-size:0.85rem; color:#888; font-style:italic;">No branches configured.</span>';
-  } else {
-    listContainer.innerHTML = branches.map((b, idx) => {
-      const name = b.name;
-      const addr = b.location || '';
-      const phone = b.contactNumber || '';
-      const hours = b.operatingHours || '';
-      const lat = b.lat || '';
-      const lng = b.lng || '';
-      const isSelected = (currentAdminBranch === b.key || currentAdminBranch === b.name);
-      const canDelete = !b.isMain && b.key !== 'Main Branch';
-
-      return `
-        <div class="branch-list-card ${isSelected ? 'selected' : ''}" onclick="zoomToBranchPin(${lat}, ${lng}, '${escapeHTML(name)}')">
-          <div style="flex: 1; min-width: 0;">
-            <div style="font-weight: 700; color: var(--secondary-color); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <span style="font-size: 0.95rem;">${escapeHTML(name)}</span>
-              ${b.isMain ? '<span style="font-size: 0.7rem; font-weight: 700; background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 12px;">Headquarters</span>' : ''}
-              <span style="font-size: 0.68rem; font-weight: 700; background: #ecfdf5; color: #059669; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px;">
-                <span style="width: 5px; height: 5px; border-radius: 50%; background: #10b981;"></span> Map Pin Active
-              </span>
-            </div>
-            ${addr ? `<div style="font-size: 0.8rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 4px;"><i class="ti ti-map-pin" style="color: #0284c7;"></i> ${escapeHTML(addr)}</div>` : ''}
-            <div style="display: flex; gap: 14px; margin-top: 4px; font-size: 0.76rem; color: #64748b; flex-wrap: wrap;">
-              ${phone ? `<span>📞 ${escapeHTML(phone)}</span>` : ''}
-              ${hours ? `<span>🕒 ${escapeHTML(hours)}</span>` : ''}
-              ${lat && lng ? `<span>🌐 Lat: ${lat}, Lng: ${lng}</span>` : ''}
-            </div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px; margin-left: 12px;">
-            <button type="button" class="admin-btn-action" style="padding: 6px 12px; font-size: 0.78rem;" onclick="event.stopPropagation(); zoomToBranchPin(${lat}, ${lng}, '${escapeHTML(name)}')">
-              <i class="ti ti-crosshair" style="font-size: 13px;"></i> Pin
-            </button>
-            ${canDelete ? `
-              <button type="button" class="admin-btn-action btn-danger" style="padding: 6px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); deleteCustomBranch('${escapeHTML(b.id || b.key)}', '${escapeHTML(name)}', event)">Delete</button>
-            ` : '<span style="font-size: 0.74rem; color: #94a3b8; font-weight: 600; padding: 4px 8px;">Default</span>'}
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  populateBranchDropdowns();
-
-  // Initialize/refresh map markers
-  setTimeout(() => {
-    initAdminBranchMap();
-  }, 100);
-};
-
-window.deleteBranch = function(idx) {
-  const branches = (adminClinicBranches && adminClinicBranches.length > 0) ? adminClinicBranches : defaultClinicBranches;
-  const target = branches[idx];
-  if (target) {
-    deleteCustomBranch(target.id || target.key, target.name);
-  }
-};
-
-const addBranchForm = document.getElementById('add-branch-form');
-if (addBranchForm) {
-  addBranchForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const nameInput = document.getElementById('branch-input-name');
-    const addrInput = document.getElementById('branch-input-address');
-    const phoneInput = document.getElementById('branch-input-phone');
-    const hoursInput = document.getElementById('branch-input-hours');
-    const latInput = document.getElementById('branch-input-lat');
-    const lngInput = document.getElementById('branch-input-lng');
-
-    const name = nameInput?.value.trim();
-    const location = addrInput?.value.trim() || '';
-    const contactNumber = phoneInput?.value.trim() || '';
-    const operatingHours = hoursInput?.value.trim() || 'Mon–Sat 8:00 AM – 5:00 PM';
-    
-    // Read from lat/lng inputs or fallback to map pin coordinates
-    let lat = parseFloat(latInput?.value);
-    let lng = parseFloat(lngInput?.value);
-
-    if ((isNaN(lat) || isNaN(lng)) && adminNewMarker) {
-      const pos = adminNewMarker.getLatLng();
-      lat = parseFloat(pos.lat.toFixed(5));
-      lng = parseFloat(pos.lng.toFixed(5));
-    }
-
-    if (isNaN(lat) || isNaN(lng)) {
-      lat = 10.2098;
-      lng = 123.7580;
-    }
-
-    if (!name) {
-      showToast('Branch name is required', 'error');
-      return;
-    }
-
-    const submitBtn = addBranchForm.querySelector('button[type="submit"]');
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Adding...';
-    }
-
-    try {
-      const res = await fetch(`${ADMIN_API}/branches`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ name, location, contactNumber, operatingHours, lat, lng })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        showToast(data.message || 'Failed to add branch', 'error');
-        return;
-      }
-
-      showToast(`Branch "${data.name}" added and pinned to map!`, 'success');
-      nameInput.value = '';
-      if (addrInput) addrInput.value = '';
-      if (phoneInput) phoneInput.value = '';
-      if (hoursInput) hoursInput.value = 'Mon–Sat 8:00 AM – 5:00 PM';
-      if (latInput) latInput.value = '';
-      if (lngInput) lngInput.value = '';
-
-      if (adminNewMarker && adminMap) {
-        adminMap.removeLayer(adminNewMarker);
-        adminNewMarker = null;
-      }
-
-      await loadAdminBranches();
-      loadStats();
-
-      // Zoom to new branch pin on the map
-      setTimeout(() => {
-        zoomToBranchPin(data.lat, data.lng, data.name);
-      }, 300);
-
-      // Also select the new branch in the sidebar
-      if (typeof selectAdminBranch === 'function') {
-        selectAdminBranch(data.key);
-      }
-    } catch (err) {
-      showToast('Failed to create branch.', 'error');
-    } finally {
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="ti ti-plus"></i> Add Branch';
-      }
-    }
-  });
-}
+window.renderBranchesList = function() {};
+window.deleteBranch = function() {};
 
 // Treatments & Services management
 window.loadSettingsTreatments = function() {
@@ -6059,6 +5604,32 @@ if (btnTestAdminMfa) {
 const btnRevokeAllMfaDevices = document.getElementById('btn-revoke-all-mfa-devices');
 if (btnRevokeAllMfaDevices) {
   btnRevokeAllMfaDevices.addEventListener('click', revokeAllAdminMfaDevices);
+}
+
+// Attach TOTP button listeners
+const btnSetupTotp = document.getElementById('btn-setup-totp');
+if (btnSetupTotp) {
+  btnSetupTotp.addEventListener('click', openTotpSetupModal);
+}
+
+const btnViewBackupCodes = document.getElementById('btn-view-backup-codes');
+if (btnViewBackupCodes) {
+  btnViewBackupCodes.addEventListener('click', openBackupCodesModal);
+}
+
+const btnDisableTotp = document.getElementById('btn-disable-totp');
+if (btnDisableTotp) {
+  btnDisableTotp.addEventListener('click', disableAdminTotp);
+}
+
+const inputTotpConfirmToken = document.getElementById('totp-confirm-token-input');
+if (inputTotpConfirmToken) {
+  inputTotpConfirmToken.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitTotpVerification();
+    }
+  });
 }
 
 // Backup & reset
@@ -6675,7 +6246,7 @@ function generateLocalAdminAlerts() {
     id: 'local-admin-system-health',
     category: 'system',
     title: 'Clinic Operations System Healthy',
-    message: 'Multi-branch synchronization, database connection, and audit logging pipelines are operating normally.',
+    message: 'Clinic data synchronization, database connection, and audit logging pipelines are operating normally.',
     type: 'success',
     icon: 'shield-check',
     time: new Date().toISOString()

@@ -682,6 +682,17 @@ body {
 .bg-teal { background: #ccfbf1; color: #0d9488; }
 .bg-purple { background: var(--purple-light); color: var(--purple-color); }
 
+/* Tabler Icon glyph aliases for dental & waiting lounge */
+.ti-tooth:before {
+  content: "\f025" !important;
+}
+.ti-tooth-off:before {
+  content: "\f026" !important;
+}
+.ti-user-clock:before {
+  content: "\ef9e" !important;
+}
+
 .metric-value {
   font-size: 2.1rem;
   font-weight: 800;
@@ -1202,41 +1213,6 @@ body {
   transform: translateX(20px);
 }
 
-/* Dentist Branch Assignment Dropdown */
-.dentist-branch-row {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dentist-branch-row label {
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.dentist-branch-select {
-  width: 100%;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: #ffffff;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--dark-color);
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.dentist-branch-select:focus {
-  border-color: var(--primary-color);
-}
 
 /* ═════════════════════ MODALS ═════════════════════ */
 .modal-overlay {

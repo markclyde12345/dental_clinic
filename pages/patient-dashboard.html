@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Patient Dashboard — Fano Dental Clinic</title>
   <meta name="description" content="Manage your dental appointments, records, and billing at Fano Dental Clinic.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260921_billing_card_v1">
+  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260912_minimal_v2">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="../css/ai-chat.css">
 </head>
@@ -352,7 +352,7 @@
       </section>
 
       <!-- ══════════ BOOK APPOINTMENT SECTION ══════════ -->
-      <section id="appointments-section" class="content-section"> 
+      <section id="appointments-section" class="content-section">
         <div class="section-header">
           <div>
             <h1 class="section-title">Book Appointment</h1>
@@ -542,7 +542,7 @@
                 <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
                   <div style="font-size: 0.82rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
                     <i class="ti ti-map-pin" style="font-size: 15px;"></i>
-                    4. Dental Concern, Insurance &amp; Branch Locator
+                    4. Dental Concern, Insurance &amp; Clinic Location
                   </div>
 
                   <div class="form-grid-2" style="gap: 14px; margin-bottom: 14px;">
@@ -601,16 +601,16 @@
                     </label>
                   </div>
 
-                  <!-- Nearest Branch Recommendation Banner -->
+                  <!-- Clinic Location Banner -->
                   <div class="nearest-branch-banner" id="nearest-branch-banner" style="margin-bottom: 14px;">
                     <div class="nb-icon"><i class="ti ti-map-pin" style="font-size: 22px;"></i>
                     </div>
                     <div class="nb-info">
                       <div class="nb-header">
-                        <span class="nb-badge">Nearest Branch to You</span>
-                        <span class="nb-distance" id="nearest-branch-dist">Calculating...</span>
+                        <span class="nb-badge">Clinic Location</span>
+                        <span class="nb-distance" id="nearest-branch-dist">Calculating distance...</span>
                       </div>
-                      <h4 class="nb-title" id="nearest-branch-name">Fano Dental Clinic — Main Branch (Balirong)</h4>
+                      <h4 class="nb-title" id="nearest-branch-name">Fano Dental Clinic</h4>
                       <p class="nb-address" id="nearest-branch-addr">Balirong Highway, City of Naga, Cebu</p>
                     </div>
                   </div>
@@ -618,19 +618,17 @@
                   <!-- Interactive Map -->
                   <div class="map-section-wrap" style="margin-bottom: 16px;">
                     <div class="map-header-row" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                      <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">Interactive Clinic Map &amp; Routes</span>
+                      <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">Clinic Map &amp; Navigation</span>
                       <span style="font-size: 0.76rem; color: var(--text-muted);">Blue pin = You • Red pin = Fano Clinic</span>
                     </div>
                     <div id="clinic-map-container" class="clinic-map-container"></div>
                   </div>
 
-                  <!-- Branch Selection Grid -->
                   <div style="margin-bottom: 16px;">
-                    <label class="form-label" style="margin-bottom: 10px;">Select Clinic Branch</label>
                     <div class="branches-picker-grid" id="branches-picker-grid">
-                      <!-- Dynamically populated branch cards with distances -->
+                      <!-- Single clinic card -->
                     </div>
-                    <input type="hidden" id="wizard-selected-branch" value="Fano Dental Clinic — Main Branch (Balirong)">
+                    <input type="hidden" id="wizard-selected-branch" value="Fano Dental Clinic (Balirong Highway, City of Naga, Cebu)">
                   </div>
 
                   <div>
@@ -648,13 +646,13 @@
                   <span id="dentist-branch-match-count" style="font-size: 0.76rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 10px; border-radius: 12px;">Doctors Available</span>
                 </div>
 
-                <!-- Active Branch Indicator -->
+                <!-- Clinic Location Badge -->
                 <div id="dentist-branch-filter-notice" style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-base); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; margin-bottom: 14px;">
                   <div style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--text-secondary);">
                     <i class="ti ti-map-pin" style="color: var(--accent); font-size: 1.05rem;"></i>
-                    <span>Assigned Clinic Branch: <strong id="dentist-active-branch-name" style="color: var(--text-primary);">Main Branch</strong></span>
+                    <span>Clinic Location: <strong style="color: var(--text-primary);">Balirong Highway, City of Naga, Cebu</strong></span>
                   </div>
-                  <span style="font-size: 0.74rem; color: var(--text-muted);">Filtered by your branch selection</span>
+                  <span style="font-size: 0.74rem; color: var(--text-muted);"><i class="ti ti-clock"></i> Mon–Sat 8:00 AM – 6:00 PM</span>
                 </div>
 
                 <div class="dentists-grid" id="dentists-picker-grid">
@@ -776,8 +774,8 @@
                       <span id="summary-fee-amount" style="font-weight: 800; color: #059669; font-size: 1.08rem;">₱0.00</span>
                     </div>
                     <div style="grid-column: 1 / -1;">
-                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Assigned Clinic Branch</strong>
-                      <span id="summary-branch" style="font-weight: 700; color: var(--text-primary); font-size: 1.02rem;">Main Branch, Fano Dental Clinic</span>
+                      <strong style="color: var(--accent); display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"> Clinic Location</strong>
+                      <span id="summary-branch" style="font-weight: 700; color: var(--text-primary); font-size: 1.02rem;">Balirong Highway, City of Naga, Cebu</span>
                     </div>
                   </div>
 
@@ -886,7 +884,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
             <div style="display: flex; gap: 10px; align-items: center; flex: 1; min-width: 260px;">
               <div class="search-input-wrap" style="position: relative; flex: 1; max-width: 520px;">
-                <input type="text" id="history-search-input" onkeyup="filterPatientHistory()" placeholder="Search by treatment, dentist, or branch..." style="width: 100%; height: 42px; padding: 0 14px 0 38px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.86rem; box-sizing: border-box;">
+                <input type="text" id="history-search-input" onkeyup="filterPatientHistory()" placeholder="Search by treatment, dentist, or notes..." style="width: 100%; height: 42px; padding: 0 14px 0 38px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.86rem; box-sizing: border-box;">
                 <i class="ti ti-search" style="font-size: 15px; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
               </div>
             </div>
@@ -900,14 +898,13 @@
               </select>
             </div>
           </div>
-
           <div class="table-wrapper">
             <table class="data-table" style="width: 100%;">
               <thead>
                 <tr>
                   <th>Visit Date &amp; Time</th>
                   <th>Dental Treatment</th>
-                  <th>Attending Dentist &amp; Branch</th>
+                  <th>Attending Dentist</th>
                   <th>Chief Concern &amp; Alerts</th>
                   <th>Treatment Fee</th>
                   <th>Visit Status</th>
@@ -1575,7 +1572,7 @@
           <div class="modal-service-icon">🦷</div>
           <div>
             <h4 id="modal-appt-service" class="modal-service-title">Dental Consultation</h4>
-            <p id="modal-appt-dentist-branch" class="modal-service-meta">Assigned Dentist • Main Branch</p>
+            <p id="modal-appt-dentist-branch" class="modal-service-meta">Assigned Dentist</p>
           </div>
         </div>
 
@@ -1794,8 +1791,6 @@
         </div>
       </div>
     </div>
-  </div>
-
   <!-- ══════════ CHANGE PASSWORD MODAL ══════════ -->
   <div class="modal-overlay" id="modal-change-password" onclick="if(event.target === this) closeChangePasswordModal()">
     <div class="modal-card" style="max-width: 440px;">
@@ -1889,11 +1884,11 @@
         </div>
         <div class="faq-item" style="border: 1px solid var(--border-light); border-radius: 12px; padding: 14px; background: var(--bg-base);">
           <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">🦷 Where can I view my treatment history &amp; notes?</strong>
-          <p style="margin: 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">Navigate to "My Records" to view your historical treatments, assigned dentists, and branch notes.</p>
+          <p style="margin: 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">Navigate to "My Records" to view your historical treatments, assigned dentists, and visit notes.</p>
         </div>
         <div class="faq-item" style="border: 1px solid var(--border-light); border-radius: 12px; padding: 14px; background: var(--bg-base);">
-          <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">📍 What are the clinic hours?</strong>
-          <p style="margin: 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">Main Balirong: Mon–Sat 8:00 AM – 6:00 PM. Minglanilla: Mon–Sun 8:30 AM – 6:30 PM. Emergency dental assistance is available on-call.</p>
+          <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">📍 What are the clinic hours &amp; location?</strong>
+          <p style="margin: 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">Mon–Sat 8:00 AM – 6:00 PM at Balirong Highway, City of Naga, Cebu. Emergency dental assistance is available on-call.</p>
         </div>
       </div>
       <div class="modal-actions-footer" style="padding: 14px 24px;">
@@ -1984,39 +1979,38 @@
   <nav class="mobile-bottom-taskbar" id="patient-bottom-taskbar" aria-label="Mobile navigation bar">
     <button type="button" class="taskbar-item active" data-section="overview" onclick="switchSection('overview')">
       <div class="taskbar-icon">
-        <i class="ti ti-home"></i>
+        <i class="ti ti-home" style="font-size: 22px;"></i>
       </div>
       <span class="taskbar-label">Home</span>
     </button>
     <button type="button" class="taskbar-item" data-section="appointments" onclick="switchSection('appointments')">
       <div class="taskbar-icon">
-        <i class="ti ti-calendar"></i>
+        <i class="ti ti-calendar" style="font-size: 22px;"></i>
       </div>
-      <span class="taskbar-label">Book Appt</span>
+      <span class="taskbar-label">Appointment</span>
     </button>
     <button type="button" class="taskbar-item" data-section="billing" onclick="switchSection('billing')">
       <div class="taskbar-icon">
-        <i class="ti ti-credit-card"></i>
+        <i class="ti ti-credit-card" style="font-size: 22px;"></i>
       </div>
       <span class="taskbar-label">Payment</span>
     </button>
-    <button type="button" class="taskbar-item" data-section="notifications" onclick="event.stopPropagation(); switchSection('notifications', event)">
+    <button type="button" class="taskbar-item" data-section="chats" onclick="switchSection('chats')">
       <div class="taskbar-icon">
-        <i class="ti ti-bell"></i>
-        <span class="taskbar-badge" id="patient-taskbar-notif-count" style="display: none;">0</span>
+        <i class="ti ti-message-circle" style="font-size: 22px;"></i>
       </div>
-      <span class="taskbar-label">Notifications</span>
+      <span class="taskbar-label">Chats</span>
     </button>
     <button type="button" class="taskbar-item" data-section="profile" onclick="switchSection('profile')">
       <div class="taskbar-icon">
-        <i class="ti ti-user-circle"></i>
+        <i class="ti ti-user-circle" style="font-size: 22px;"></i>
       </div>
       <span class="taskbar-label">Profile</span>
     </button>
   </nav>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/patient-dashboard.js?v=20260921_billing_card_v1"></script>
+  <script src="../js/patient-dashboard.js?v=20261005_carto_key_v1"></script>
   <script src="../js/ai-chat.js"></script>
   <script src="../js/offline-monitor.js"></script>
 </body>

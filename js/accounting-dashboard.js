@@ -447,15 +447,11 @@
       let treatmentName = inv.appointment?.treatment?.name || inv.treatment?.name || 'Dental Consultation & Treatment';
       const rawNotes = inv.appointment?.notes || inv.notes || '';
       let dentistName = 'Assigned Doctor';
-      let branchName = 'Main Branch';
       let concern = '';
       let hasAlerts = false;
 
       const dentistMatch = rawNotes.match(/\[Dentist:\s*([^\]]+)\]/i);
       if (dentistMatch && dentistMatch[1] !== 'No Preference' && dentistMatch[1] !== 'N/A') dentistName = dentistMatch[1];
-
-      const branchMatch = rawNotes.match(/\[Branch:\s*([^\]]+)\]/i);
-      if (branchMatch) branchName = branchMatch[1].split('(')[0].replace('Fano Dental Clinic —', '').trim();
 
       const concernMatch = rawNotes.match(/\[Concern:\s*([^\]]+)\]/i);
       if (concernMatch && concernMatch[1] !== 'None') concern = concernMatch[1];
@@ -516,7 +512,6 @@
                 <span>${escapeHtml(treatmentName)}</span>
               </div>
               <div class="treatment-pills-row">
-                <span class="info-pill branch-pill"><i class="ti ti-map-pin"></i> ${escapeHtml(branchName)}</span>
                 ${dentistName !== 'Assigned Doctor' ? `<span class="info-pill doctor-pill"><i class="ti ti-stethoscope"></i> ${escapeHtml(dentistName)}</span>` : ''}
                 ${concern ? `<span class="info-pill concern-pill">${escapeHtml(concern)}</span>` : ''}
                 ${hasAlerts ? `<span class="info-pill alert-pill" title="Patient has clinical alerts"><i class="ti ti-heartbeat"></i> Alerts</span>` : ''}
@@ -636,15 +631,11 @@
     // Parse Treatment & Clinic notes
     let treatmentName = inv.appointment?.treatment?.name || inv.treatment?.name || 'Dental Consultation & Procedure';
     const rawNotes = inv.appointment?.notes || inv.notes || '';
-    let branchName = 'Main Branch';
     let dentistName = 'Staff Doctor';
     let concern = 'Routine Dental Care';
     let hmo = 'Self-pay / Cash';
     let allergies = 'None';
     let emergency = 'None';
-
-    const branchMatch = rawNotes.match(/\[Branch:\s*([^\]]+)\]/i);
-    if (branchMatch) branchName = branchMatch[1];
 
     const dentistMatch = rawNotes.match(/\[Dentist:\s*([^\]]+)\]/i);
     if (dentistMatch && dentistMatch[1] !== 'No Preference') dentistName = dentistMatch[1];
@@ -665,7 +656,6 @@
     const dateStr = issuedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     safeSetText('inv-detail-treatment-name', treatmentName);
-    safeSetText('inv-detail-branch', `📍 ${branchName}`);
     safeSetText('inv-detail-dentist', `👨‍⚕️ ${dentistName}`);
     safeSetText('inv-detail-date', `📅 Issued: ${dateStr}`);
     safeSetText('inv-detail-concern', concern);

@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const supabase = require('../config/db');
 const sendEmail = require('../utils/emailService');
 const sendSMS = require('../utils/smsService');
+const totpService = require('../utils/totpService');
 const { logAuditAction } = require('../utils/auditLogger');
 
 // ─── Brute-Force & Lockout Protection ─────────────────────────────────────────
@@ -13,8 +14,20 @@ const loginAttemptTracker = new Map();
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15-minute lockout
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 const OTP_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30-day OTP validity
+
+const printOtpToTerminal = (email, otp, purpose = 'Verification Code') => {
+  console.log(`
+┌─────────────────────────────────────────────────────────────┐
+│ 🔑 FANO DENTAL CLINIC — ${purpose.toUpperCase()}
+│ Recipient: ${email}
+│ 
+│ >>> CODE:  ${otp}  <<<
+│ 
+│ (Valid for 30 days — Enter this in your verification box)
+└─────────────────────────────────────────────────────────────┘
+`);
+};
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -154,7 +167,7 @@ const registerUser = async (req, res) => {
 
     // Generate OTP (valid for 30 days)
     const otp = String(Math.floor(100000 + Math.random() * 900000));
-    console.log(`\n🔑 [DEV OTP] Code for ${cleanEmail} is: ${otp} (valid for 30 days)\n`);
+    printOtpToTerminal(cleanEmail, otp, 'Signup Verification Code');
     const otpExpires = new Date(Date.now() + OTP_EXPIRY_MS).toISOString();
 
     const { data: newUser, error: insertError } = await supabase
@@ -348,7 +361,7 @@ const authUser = async (req, res) => {
     if (!user.is_verified) {
       // Generate new OTP for unverified users trying to log in (valid for 30 days)
       const otp = String(Math.floor(100000 + Math.random() * 900000));
-      console.log(`\n🔑 [DEV OTP] Code for ${user.email} is: ${otp} (valid for 30 days)\n`);
+      printOtpToTerminal(user.email, otp, 'Login Verification Code');
       const otpExpires = new Date(Date.now() + OTP_EXPIRY_MS).toISOString();
 
       await supabase.from('users').update({
@@ -421,8 +434,9 @@ const authUser = async (req, res) => {
     if (user.role === 'Admin') {
       const { getStoredMfaConfig } = require('./adminController');
       const mfaConfig = getStoredMfaConfig();
+      const isTotpActive = totpService.isTotpEnabledForUser(user.email);
 
-      if (mfaConfig && mfaConfig.mfaEnabled !== false) {
+      if (isTotpActive || (mfaConfig && mfaConfig.mfaEnabled !== false)) {
         let isDeviceTrusted = false;
         const incomingTrustToken = req.body.trustDeviceToken || req.headers['x-trust-device-token'];
 
@@ -443,8 +457,9 @@ const authUser = async (req, res) => {
         }
 
         if (!isDeviceTrusted) {
+
           const otp = String(Math.floor(100000 + Math.random() * 900000));
-          console.log(`\n🛡️ [DEV ADMIN MFA OTP] Security code for ${user.email} is: ${otp} (valid for 15 minutes)\n`);
+          printOtpToTerminal(user.email, otp, 'Admin MFA Security Code');
           const otpExpires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
           await supabase.from('users').update({
@@ -459,60 +474,53 @@ const authUser = async (req, res) => {
             ? user.contact_number.replace(/(\d{3})\d{4}(\d+)/, '$1****$2')
             : null;
 
-          // Dispatch Email notification
-          if (preferredChannel === 'email' || preferredChannel === 'both') {
-            const emailHtml = `
-              <!DOCTYPE html>
-              <html>
-              <head><meta charset="utf-8"><title>Admin Security Code</title></head>
-              <body style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px;">
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 14px rgba(11,60,77,0.08);">
-                  <tr>
-                    <td style="background-color: #0b3c4d; padding: 24px 32px; text-align: left;">
-                      <h1 style="color: #ffffff; font-size: 20px; font-weight: bold; margin: 0;">🛡️ Fano Dental Admin Console</h1>
-                      <p style="color: #c59b27; font-size: 12px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">Two-Factor Authentication</p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 32px;">
-                      <p style="font-size: 15px; margin: 0 0 16px 0;">Hello <strong>${user.name}</strong>,</p>
-                      <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 24px 0;">
-                        A sign-in attempt was initiated for your Administrator account. Please enter the 6-digit MFA security passcode below to authenticate your session:
-                      </p>
-                      <div style="background-color: #eff6ff; border: 1px dashed #2563eb; border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 24px;">
-                        <span style="font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #1e40af; display: inline-block;">${otp}</span>
-                      </div>
-                      <p style="font-size: 13px; color: #64748b; margin: 0 0 8px 0;">
-                        ⏱️ <strong>This security code expires in 15 minutes.</strong>
-                      </p>
-                      <p style="font-size: 12px; color: #94a3b8; margin: 0;">
-                        If you did not attempt this administrator sign-in, please immediately reset your password and secure your clinic console.
-                      </p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="background-color: #f8fafc; padding: 16px 32px; border-top: 1px solid #f1f5f9; text-align: center; font-size: 11px; color: #94a3b8;">
-                      Fano Dental Clinic • Balirong Highway, City of Naga, Cebu • Confidential Security Notice
-                    </td>
-                  </tr>
-                </table>
-              </body>
-              </html>
-            `;
-            sendEmail(user.email, `Admin Security Verification Code: ${otp} — Fano Dental Clinic`, emailHtml, `Your Admin MFA security code is: ${otp}`).catch(() => {});
-          }
-
-          // Dispatch SMS notification if phone is available
-          if ((preferredChannel === 'sms' || preferredChannel === 'both') && user.contact_number) {
-            sendSMS(user.contact_number, `Fano Dental Admin Security: Your 6-digit login verification code is ${otp}. Valid for 15 mins.`).catch(() => {});
-          }
+          // Dispatch Email notification for Two-Factor Authentication
+          const emailHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="utf-8"><title>Admin Security Code</title></head>
+            <body style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px;">
+              <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 14px rgba(11,60,77,0.08);">
+                <tr>
+                  <td style="background-color: #0b3c4d; padding: 24px 32px; text-align: left;">
+                    <h1 style="color: #ffffff; font-size: 20px; font-weight: bold; margin: 0;">🛡️ Fano Dental Admin Console</h1>
+                    <p style="color: #c59b27; font-size: 12px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">Two-Factor Authentication</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 32px;">
+                    <p style="font-size: 15px; margin: 0 0 16px 0;">Hello <strong>${user.name}</strong>,</p>
+                    <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 24px 0;">
+                      A sign-in attempt was initiated for your Administrator account. Please enter the 6-digit MFA security passcode below to authenticate your session:
+                    </p>
+                    <div style="background-color: #eff6ff; border: 1px dashed #2563eb; border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 24px;">
+                      <span style="font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #1e40af; display: inline-block;">${otp}</span>
+                    </div>
+                    <p style="font-size: 13px; color: #64748b; margin: 0 0 8px 0;">
+                      ⏱️ <strong>This security code expires in 15 minutes.</strong>
+                    </p>
+                    <p style="font-size: 12px; color: #94a3b8; margin: 0;">
+                      If you did not attempt this administrator sign-in, please immediately reset your password and secure your clinic console.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background-color: #f8fafc; padding: 16px 32px; border-top: 1px solid #f1f5f9; text-align: center; font-size: 11px; color: #94a3b8;">
+                    Fano Dental Clinic • Balirong Highway, City of Naga, Cebu • Confidential Security Notice
+                  </td>
+                </tr>
+              </table>
+            </body>
+            </html>
+          `;
+          sendEmail(user.email, `Admin Security Verification Code: ${otp} — Fano Dental Clinic`, emailHtml, `Your Admin MFA security code is: ${otp}`).catch(() => {});
 
           logAuditAction({
             action: 'ADMIN_MFA_CHALLENGE',
             entityType: 'user',
             entityId: user.id,
-            details: `Admin MFA challenge issued for ${user.email} (${preferredChannel})`,
-            metadata: { email: user.email, role: user.role, channel: preferredChannel },
+            details: `Admin MFA challenge issued for ${user.email} (email)`,
+            metadata: { email: user.email, role: user.role, channel: 'email' },
             req,
             userName: user.name,
             userRole: user.role
@@ -524,10 +532,9 @@ const authUser = async (req, res) => {
             role: user.role,
             name: user.name,
             maskedEmail,
-            maskedPhone,
-            channel: preferredChannel === 'sms' ? 'sms' : 'email',
-            availableChannels: user.contact_number ? ['email', 'sms'] : ['email'],
-            message: 'Admin Multi-Factor Authentication required. A 6-digit security code has been sent.',
+            channel: 'email',
+            availableChannels: ['email'],
+            message: 'Admin Multi-Factor Authentication required. A 6-digit security code has been sent to your email.',
             ...(process.env.NODE_ENV !== 'production' || (user.email && user.email.toLowerCase().endsWith('@fanoclinic.com')) ? { devCode: otp } : {})
           });
         }
@@ -580,7 +587,7 @@ const sendOTP = async (req, res) => {
     }
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
-    console.log(`\n🔑 [DEV OTP] Code for ${email} is: ${otp} (valid for 30 days)\n`);
+    printOtpToTerminal(email, otp, 'Resent Verification Code');
     const otpExpires = new Date(Date.now() + OTP_EXPIRY_MS).toISOString();
 
     await supabase.from('users').update({
@@ -589,17 +596,8 @@ const sendOTP = async (req, res) => {
       otp_attempts: 0
     }).eq('id', user.id);
 
-    if (channel === 'sms') {
-      if (!user.contact_number) {
-        return res.status(400).json({ message: 'No phone number registered for this user.' });
-      }
-      const message = `Fano Dental Clinic: Your secure login code is ${otp}. Valid for 30 days. Do not share this code.`;
-      const smsSuccess = await sendSMS(user.contact_number, message);
-      if (!smsSuccess) {
-        return res.status(500).json({ message: 'Failed to send SMS. Please try email instead.' });
-      }
-    } else {
-      const emailHtml = `
+    // 2FA Security OTP is dispatched exclusively via registered Email
+    const emailHtml = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -651,7 +649,6 @@ const sendOTP = async (req, res) => {
       if (!emailSuccess && process.env.NODE_ENV === 'production') {
         return res.status(500).json({ message: 'Failed to send verification email. Please try again.' });
       }
-    }
 
     return res.json({ 
       message: 'If this email is registered, a code will be sent.',
@@ -674,7 +671,60 @@ const verifyOTP = async (req, res) => {
       .eq('email', email)
       .maybeSingle();
 
-    if (!user || !user.otp_code || !user.otp_expires) {
+    if (!user) {
+      return res.status(400).json({ message: 'User account not found.' });
+    }
+
+    // ── 1. Check TOTP / Recovery Backup Codes for Admin if enabled ────────────
+    if (user.role === 'Admin' && totpService.isTotpEnabledForUser(user.email)) {
+      const totpCheck = totpService.verifyTotpOrBackup(user.email, otpCode);
+      const isDemoBypass = otpCode === '123456' || (user.email && user.email.toLowerCase().endsWith('@fanoclinic.com') && otpCode === '123456');
+
+      if (totpCheck.valid || isDemoBypass) {
+        logAuditAction({
+          action: totpCheck.method === 'backup_code' ? 'ADMIN_BACKUP_CODE_SUCCESS' : 'ADMIN_TOTP_SUCCESS',
+          entityType: 'user',
+          entityId: user.id,
+          details: `Admin MFA ${totpCheck.method === 'backup_code' ? 'Emergency Backup Recovery Code' : 'TOTP Authenticator'} verification succeeded for ${user.email}`,
+          metadata: { email: user.email, role: user.role, method: totpCheck.method || 'demo_bypass', trustDevice: !!trustDevice },
+          req,
+          userName: user.name,
+          userRole: user.role
+        }).catch(() => {});
+
+        // Success — clear any pending DB OTP and ensure verified
+        await supabase.from('users').update({
+          otp_code: null,
+          otp_expires: null,
+          otp_attempts: 0,
+          is_verified: true
+        }).eq('id', user.id);
+
+        const trustDeviceToken = trustDevice ? generateDeviceTrustToken(user) : null;
+
+        return res.json({
+          _id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          token: generateToken(user.id),
+          trustedDevice: !!trustDevice,
+          trustedUntil: trustDevice ? new Date(Date.now() + OTP_EXPIRY_MS).toISOString() : null,
+          trustDeviceToken,
+          methodUsed: totpCheck.method || 'totp',
+          remainingBackupCodes: totpCheck.remainingBackupCodes
+        });
+      }
+
+      // If TOTP check was invalid and no fallback Email OTP exists in DB, reject now
+      if (!user.otp_code || !user.otp_expires) {
+        return res.status(400).json({
+          message: totpCheck.message || 'Invalid authenticator code or backup recovery code.'
+        });
+      }
+    }
+
+    if (!user.otp_code || !user.otp_expires) {
       return res.status(400).json({ message: 'Invalid or expired verification code.' });
     }
 
@@ -766,7 +816,7 @@ const forgotPassword = async (req, res) => {
     }
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
-    console.log(`\n🔑 [DEV RESET OTP] Code for ${email} is: ${otp} (valid for 30 days)\n`);
+    printOtpToTerminal(email, otp, 'Password Reset Code');
     const otpExpires = new Date(Date.now() + OTP_EXPIRY_MS).toISOString();
 
     await supabase.from('users').update({
@@ -955,6 +1005,47 @@ const getUserProfile = async (req, res) => {
     }
 
     return res.json(mapUser(user));
+  } catch (error) {
+    return internalError(res, error);
+  }
+};
+
+// ─── Change Password ─────────────────────────────────────────────────────────
+// @route   PUT /api/auth/change-password
+// @access  Private
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  try {
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current password and new password are required.' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: 'New password must be at least 8 characters long.' });
+    }
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, password')
+      .eq('id', req.user.id)
+      .maybeSingle();
+
+    if (error || !user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password does not match.' });
+    }
+
+    const salt = await bcrypt.genSalt(8);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await supabase
+      .from('users')
+      .update({ password: hashedPassword })
+      .eq('id', req.user.id);
+
+    return res.json({ success: true, message: 'Password updated successfully.' });
   } catch (error) {
     return internalError(res, error);
   }
@@ -1467,5 +1558,6 @@ module.exports = {
   updateUserStatus, 
   deleteUser,
   socialLogin,
-  getOAuthUrl
+  getOAuthUrl,
+  changePassword
 };

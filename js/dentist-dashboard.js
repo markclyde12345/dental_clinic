@@ -12,6 +12,7 @@ let selectedToothId = null;
 let activePatientChart = { teeth: {}, notes: '', summary: '' };
 let chairTimerInterval = null;
 let chairTimerSeconds = 0;
+let activeChairApptId = null;
 
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
@@ -114,7 +115,6 @@ function setupUserProfile(user) {
 }
 
 let currentDentistDutyStatus = 'On Duty';
-let currentDentistBranch = 'Main Branch (Naga)';
 
 async function loadDentistDutyStatus(userObj) {
   const targetUser = userObj || currentUser;
@@ -130,7 +130,6 @@ async function loadDentistDutyStatus(userObj) {
       );
       if (match) {
         currentDentistDutyStatus = match.availability || 'On Duty';
-        currentDentistBranch = match.branch || 'Main Branch (Naga)';
         updateDentistDutyUI();
       }
     }
@@ -140,7 +139,6 @@ async function loadDentistDutyStatus(userObj) {
 function updateDentistDutyUI() {
   const dutyTextEl = document.getElementById('prof-duty-text');
   const dutyPulseEl = document.getElementById('prof-duty-pulse');
-  const branchTextEl = document.getElementById('prof-branch-text');
   const dutyBadgeEl = document.getElementById('prof-duty-badge');
   const sidebarDutyEl = document.getElementById('dentist-sidebar-duty');
 
@@ -156,11 +154,8 @@ function updateDentistDutyUI() {
     dutyBadgeEl.style.background = isOn ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)';
     dutyBadgeEl.style.color = isOn ? '#059669' : '#dc2626';
   }
-  if (branchTextEl) {
-    branchTextEl.textContent = currentDentistBranch;
-  }
   if (sidebarDutyEl) {
-    sidebarDutyEl.innerHTML = `${isOn ? 'On Duty' : 'Off Duty'} &bull; ${currentDentistBranch.replace(/branch$/i, '').trim()}`;
+    sidebarDutyEl.innerHTML = isOn ? 'On Duty' : 'Off Duty';
   }
 }
 
@@ -173,7 +168,6 @@ async function toggleDentistSelfDuty() {
     const dentistId = (currentUser && (currentUser.id || currentUser._id)) || 'self';
     await api.put(`/dentists/${dentistId}/duty`, {
       availability: newStatus,
-      branch: currentDentistBranch,
       name: currentUser?.name || 'Dentist'
     });
     alert(`Your duty status has been updated to: ${newStatus}`);
@@ -226,7 +220,7 @@ function setupTabs() {
     if (hash) switchTab(hash);
   });
 
-  const validTabs = ['overview', 'schedule', 'queue', 'patients', 'chart', 'treatments', 'prescriptions', 'followups', 'calendar', 'reports', 'profile'];
+  const validTabs = ['overview', 'schedule', 'queue', 'patients', 'chart', 'prescriptions', 'followups', 'calendar', 'reports', 'profile', 'settings'];
   const hashTab = (window.location.hash || '').replace('#', '').trim();
   const savedTab = localStorage.getItem('dentist_active_tab');
   const initialTab = validTabs.includes(hashTab) ? hashTab : (validTabs.includes(savedTab) ? savedTab : 'overview');
@@ -237,8 +231,11 @@ function setupTabs() {
 
 function switchTab(tabName) {
   if (!tabName) return;
+  // Normalize settings casing
+  if (tabName.toLowerCase() === 'settings') tabName = 'settings';
+
   const menuLinks = document.querySelectorAll('.sidebar-menu a');
-  menuLinks.forEach(l => l.classList.toggle('active', l.getAttribute('data-tab') === tabName));
+  menuLinks.forEach(l => l.classList.toggle('active', l.getAttribute('data-tab') === tabName || (tabName === 'settings' && l.getAttribute('data-tab')?.toLowerCase() === 'settings')));
 
   const taskbarItems = document.querySelectorAll('.mobile-bottom-taskbar .taskbar-item');
   taskbarItems.forEach(item => item.classList.toggle('active', item.getAttribute('data-tab') === tabName));
@@ -267,12 +264,12 @@ function switchTab(tabName) {
     queue: { title: 'Live Patient Queue & Chair', sub: 'Front desk queue arrivals and real-time dental chair occupancy', breadcrumb: 'Patient Queue' },
     patients: { title: 'Patient Electronic Records', sub: 'Search patient database, clinical chart histories, and notes', breadcrumb: 'Patient Records' },
     chart: { title: 'Interactive Dental Charting', sub: 'Interactive adult & pediatric odontogram and procedure mapping', breadcrumb: 'Dental Chart' },
-    treatments: { title: 'Treatment Plans & Procedures', sub: 'Manage ongoing treatment plans, clinical notes, and diagnosis', breadcrumb: 'Treatments' },
     prescriptions: { title: 'Prescriptions Management (Rx)', sub: 'Issue medical prescriptions, dosages, and patient medication advice', breadcrumb: 'Prescriptions (Rx)' },
     followups: { title: 'Post-Op Follow-Up Management', sub: 'Track post-operative recovery reminders and follow-up calls', breadcrumb: 'Follow-Ups' },
     calendar: { title: 'Clinical Appointments Calendar', sub: 'Monthly and weekly clinical schedule and doctor availability', breadcrumb: 'Calendar' },
     reports: { title: 'Clinical Reports & Statistics', sub: 'Dentist performance analytics, treated cases, and productivity', breadcrumb: 'Reports' },
-    profile: { title: 'Dentist Professional Profile', sub: 'Doctor credentials, clinical specialty, and contact details', breadcrumb: 'Profile' }
+    profile: { title: 'Dentist Professional Profile', sub: 'Doctor credentials, clinical specialty, and contact details', breadcrumb: 'Profile' },
+    settings: { title: 'Clinical & Account Settings', sub: 'Configure clinical operatory defaults, schedule preferences, audio/visual alerts, and account security', breadcrumb: 'Settings' }
   };
 
   const currentTab = tabConfig[tabName] || { title: 'Dentist Portal', sub: 'Clinical management dashboard', breadcrumb: tabName };
@@ -290,11 +287,11 @@ function switchTab(tabName) {
   else if (tabName === 'queue') loadQueueView();
   else if (tabName === 'patients') loadPatientsView();
   else if (tabName === 'chart') initDentalChartTab();
-  else if (tabName === 'treatments') loadTreatmentPlansView();
   else if (tabName === 'prescriptions') loadPrescriptionsView();
   else if (tabName === 'followups') loadFollowUpsView();
   else if (tabName === 'calendar') loadCalendarTab();
   else if (tabName === 'reports') loadReportsView();
+  else if (tabName === 'settings') loadDentistSettings();
 }
 window.switchTab = switchTab;
 
@@ -325,6 +322,11 @@ async function loadOverview() {
     if (stats.queue) {
       activeQueue = stats.queue;
       renderQueueWidget(stats.queue);
+      if (stats.queue.current) {
+        startChairTimer(stats.queue.current.id, stats.queue.current.updated_at || stats.queue.current.created_at);
+      } else {
+        stopChairTimer();
+      }
     }
   } catch (err) {
     console.error('Error loading overview:', err);
@@ -378,11 +380,16 @@ function renderQueueWidget(queue) {
       const t = queue.current.treatment || {};
       chairContent.innerHTML = `
         <div class="active-chair-patient">
-          <div>
-            <h4>${esc(p.name || 'Patient')}</h4>
-            <p>${esc(t.name || 'Consultation')} • Contact: ${esc(p.contact_number || 'N/A')}</p>
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <h4 style="margin:0;">${esc(p.name || 'Patient')}</h4>
+              <span class="chair-timer-badge" style="font-family:monospace; font-weight:700; color:#0b3c4d; background:#e0f2fe; padding:3px 8px; border-radius:6px; font-size:0.85rem; display:inline-flex; align-items:center; gap:5px;">
+                <i class="fa-regular fa-clock"></i> <span id="overview-timer-display">00:00:00</span>
+              </span>
+            </div>
+            <p style="margin:0;">${esc(t.name || 'Consultation')} • Contact: ${esc(p.contact_number || 'N/A')}</p>
           </div>
-          <button class="btn btn-success small" onclick="completeCurrentPatient('${queue.current.id}')">
+          <button class="btn btn-success small" style="margin-left:12px; white-space:nowrap;" onclick="completeCurrentPatient('${queue.current.id}', this)">
             <i class="fa-solid fa-check"></i> Complete
           </button>
         </div>
@@ -515,6 +522,7 @@ function applyScheduleFilters() {
 async function loadQueueView() {
   try {
     const qData = await api.getDentistQueue();
+    activeQueue = qData || { current: null, next: null, waiting: [] };
     const activeChair = document.getElementById('queue-detailed-chair');
     const tbody = document.getElementById('queue-detailed-tbody');
 
@@ -535,14 +543,14 @@ async function loadQueueView() {
                 <button class="btn btn-primary small" onclick="openClinicalWorkspace('${qData.current.id}')">
                   <i class="fa-solid fa-stethoscope"></i> Clinical Notes & Rx
                 </button>
-                <button class="btn btn-success small" onclick="completeCurrentPatient('${qData.current.id}')">
+                <button class="btn btn-success small" onclick="completeCurrentPatient('${qData.current.id}', this)">
                   <i class="fa-solid fa-circle-check"></i> Complete Treatment
                 </button>
               </div>
             </div>
           </div>
         `;
-        startChairTimer();
+        startChairTimer(qData.current.id, qData.current.updated_at || qData.current.created_at);
       } else {
         activeChair.innerHTML = `
           <div style="text-align:center; padding:30px; background:#f8fafc; border-radius:14px; border:1px dashed var(--border-color);">
@@ -589,23 +597,66 @@ async function loadQueueView() {
   }
 }
 
-function startChairTimer() {
-  if (chairTimerInterval) clearInterval(chairTimerInterval);
-  chairTimerSeconds = 0;
-  chairTimerInterval = setInterval(() => {
-    chairTimerSeconds++;
-    const h = String(Math.floor(chairTimerSeconds / 3600)).padStart(2, '0');
-    const m = String(Math.floor((chairTimerSeconds % 3600) / 60)).padStart(2, '0');
-    const s = String(chairTimerSeconds % 60).padStart(2, '0');
-    const el = document.getElementById('timer-display');
-    if (el) el.textContent = `${h}:${m}:${s}`;
-  }, 1000);
+function formatElapsedTimer(seconds) {
+  const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+  const s = String(seconds % 60).padStart(2, '0');
+  return `${h}:${m}:${s}`;
 }
 
-function stopChairTimer() {
+function updateAllTimerDisplays(timeString) {
+  const queueTimerEl = document.getElementById('timer-display');
+  if (queueTimerEl) queueTimerEl.textContent = timeString;
+
+  const overviewTimerEl = document.getElementById('overview-timer-display');
+  if (overviewTimerEl) overviewTimerEl.textContent = timeString;
+}
+
+function startChairTimer(apptId, serverCreatedAt) {
+  if (apptId) activeChairApptId = apptId;
+  const targetId = activeChairApptId || apptId;
+  if (!targetId) return;
+
+  const storageKey = 'dentist_chair_start_' + targetId;
+  let startTime = parseInt(localStorage.getItem(storageKey), 10);
+
+  // If not in localStorage, use appointment created_at / updated_at or Date.now()
+  if (!startTime || isNaN(startTime)) {
+    const fallbackTime = serverCreatedAt ? new Date(serverCreatedAt).getTime() : Date.now();
+    startTime = (fallbackTime && fallbackTime <= Date.now()) ? fallbackTime : Date.now();
+    try {
+      localStorage.setItem(storageKey, startTime.toString());
+    } catch (_) {}
+  }
+
+  // Clear any existing timer interval
   if (chairTimerInterval) clearInterval(chairTimerInterval);
-  const el = document.getElementById('timer-display');
-  if (el) el.textContent = '00:00:00';
+
+  const calcAndRender = () => {
+    const elapsedSec = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+    chairTimerSeconds = elapsedSec;
+    const timeStr = formatElapsedTimer(elapsedSec);
+    updateAllTimerDisplays(timeStr);
+  };
+
+  calcAndRender();
+  chairTimerInterval = setInterval(calcAndRender, 1000);
+}
+
+function stopChairTimer(apptId) {
+  if (chairTimerInterval) {
+    clearInterval(chairTimerInterval);
+    chairTimerInterval = null;
+  }
+  const idToClear = apptId || activeChairApptId;
+  if (idToClear) {
+    try {
+      localStorage.removeItem('dentist_chair_start_' + idToClear);
+    } catch (_) {}
+  }
+  activeChairApptId = null;
+  chairTimerSeconds = 0;
+  updateAllTimerDisplays('00:00:00');
 }
 
 async function triggerCallNext() {
@@ -613,8 +664,8 @@ async function triggerCallNext() {
     const res = await api.callNextQueue();
     if (res.success) {
       alert(`Next patient called: ${res.appointment.patient ? res.appointment.patient.name : 'Patient'}`);
-      loadOverview();
-      loadQueueView();
+      await loadOverview();
+      await loadQueueView();
     }
   } catch (err) {
     alert(err.message);
@@ -624,25 +675,41 @@ window.triggerCallNext = triggerCallNext;
 
 async function startAppointmentById(id) {
   try {
+    if (activeQueue && activeQueue.current) {
+      const curName = activeQueue.current.patient?.name || 'A patient';
+      if (!confirm(`${curName} is currently in treatment in the chair. Do you want to complete their treatment and call this patient to the chair?`)) {
+        return;
+      }
+      await api.put(`/appointments/${activeQueue.current.id}`, { status: 'Completed' });
+    }
     await api.put(`/appointments/${id}`, { status: 'In Progress' });
-    loadOverview();
-    loadQueueView();
+    await loadOverview();
+    await loadQueueView();
   } catch (err) {
     alert(err.message);
   }
 }
 window.startAppointmentById = startAppointmentById;
 
-async function completeCurrentPatient(id) {
+async function completeCurrentPatient(id, btn) {
   if (!confirm('Mark this treatment as completed? An invoice will be generated automatically.')) return;
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Completing...';
+  }
   try {
     await api.put(`/appointments/${id}`, { status: 'Completed' });
-    stopChairTimer();
+    stopChairTimer(id);
     alert('Treatment marked as Completed.');
-    loadOverview();
-    loadQueueView();
+    await loadOverview();
+    await loadQueueView();
   } catch (err) {
     alert(err.message);
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
   }
 }
 window.completeCurrentPatient = completeCurrentPatient;
@@ -1111,15 +1178,9 @@ function openDentalChartForPatient(patientId) {
 }
 window.openDentalChartForPatient = openDentalChartForPatient;
 
-// ─── 6. TREATMENT PLANS MODULE ──────────────────────────────────
-async function loadTreatmentPlansView() {
-  TreatmentPlans.init({ listRoot: document.getElementById('plan-list') });
-  TreatmentPlans.load();
-}
-
-function openCreatePlanModal() {
-  TreatmentPlans.openCreate();
-}
+// ─── 6. TREATMENT PLANS (REMOVED) ───────────────────────────────
+async function loadTreatmentPlansView() {}
+function openCreatePlanModal() {}
 window.openCreatePlanModal = openCreatePlanModal;
 
 // ─── 7. PRESCRIPTIONS MANAGEMENT MODULE ─────────────────────────
@@ -1449,7 +1510,26 @@ async function loadReportsView() {
     const rep = await api.getDentistReports();
     setVal('rep-total-treated', rep.totalPatientsTreated || 0);
     setVal('rep-completion-rate', (rep.completionRate || 100) + '%');
-    setVal('rep-satisfaction', rep.patientSatisfaction || '98.5%');
+    
+    // Real Patient Satisfaction Score (calculated purely from real patient reviews)
+    const count = rep.reviewCount || 0;
+    const avg = rep.averageStars || 0;
+    const satisfactionScore = count > 0 ? (rep.patientSatisfaction || '100%') : '--';
+    setVal('rep-satisfaction', satisfactionScore);
+
+    const subEl = document.getElementById('rep-satisfaction-sub');
+    const badgeStarsEl = document.getElementById('rep-avg-stars-badge');
+
+    if (subEl) {
+      subEl.textContent = count > 0 
+        ? `${avg} ★ / 5.0 (${count} verified review${count > 1 ? 's' : ''})`
+        : 'Awaiting patient ratings (0 reviews)';
+    }
+    if (badgeStarsEl) {
+      badgeStarsEl.textContent = count > 0
+        ? `${avg} ★ / 5.0 (${count} review${count !== 1 ? 's' : ''})`
+        : '0 verified reviews';
+    }
 
     // Top treatments
     const topEl = document.getElementById('rep-top-treatments');
@@ -1486,6 +1566,44 @@ async function loadReportsView() {
           </div>
         `;
       }).join('');
+    }
+
+    // Recent Patient Feedback & Reviews List
+    const reviewsEl = document.getElementById('rep-patient-reviews-list');
+    if (reviewsEl) {
+      const revList = rep.recentReviews || [];
+      if (!revList.length) {
+        reviewsEl.innerHTML = `<div class="muted small" style="padding:24px; text-align:center;">No patient reviews submitted yet. Completed patients can rate their visit from their patient portal.</div>`;
+      } else {
+        reviewsEl.innerHTML = revList.map(r => {
+          const stars = '★'.repeat(r.rating || 5) + '☆'.repeat(5 - (r.rating || 5));
+          const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+          const tagsHtml = (r.tags || []).map(t => `<span class="settings-badge-pill" style="background:#e0f2fe; color:#0369a1; font-size:0.72rem; padding:2px 8px;">${esc(t)}</span>`).join(' ');
+          const initial = (r.patient_name || 'Patient').charAt(0).toUpperCase();
+
+          return `
+            <div style="padding: 16px 0; border-bottom: 1px solid #f1f5f9; display:flex; gap:14px; align-items:flex-start;">
+              <div style="width:38px; height:38px; border-radius:50%; background:var(--primary-subtle); color:var(--primary-color); font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                ${initial}
+              </div>
+              <div style="flex:1;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                  <div>
+                    <strong style="color:var(--dark-color); font-size:0.92rem;">${esc(r.patient_name || 'Verified Patient')}</strong>
+                    <span class="muted small" style="margin-left:6px;">• ${esc(r.treatment_name || 'Treatment')}</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="color:#f59e0b; font-size:0.95rem; letter-spacing:1px;">${stars}</span>
+                    <span class="muted small">${dateStr}</span>
+                  </div>
+                </div>
+                ${r.comment ? `<p style="margin:6px 0 8px 0; font-size:0.86rem; color:#334155; line-height:1.45;">"${esc(r.comment)}"</p>` : ''}
+                ${tagsHtml ? `<div style="display:flex; gap:6px; flex-wrap:wrap;">${tagsHtml}</div>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
     }
   } catch (err) {
     console.error('Reports load error:', err);
@@ -1726,3 +1844,212 @@ function logout() {
   window.location.replace('login.html');
 }
 window.logout = logout;
+
+// ─── 12. SETTINGS MODULE ─────────────────────────────────────────
+function loadDentistSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('fano_dentist_settings') || '{}');
+    
+    // Clinical defaults
+    if (s.chair && document.getElementById('setting-chair')) {
+      document.getElementById('setting-chair').value = s.chair;
+    }
+    if (s.duration && document.getElementById('setting-duration')) {
+      document.getElementById('setting-duration').value = s.duration;
+    }
+    if (s.chartingSystem && document.getElementById('setting-charting-system')) {
+      document.getElementById('setting-charting-system').value = s.chartingSystem;
+    }
+    if (s.defaultChart && document.getElementById('setting-default-chart')) {
+      document.getElementById('setting-default-chart').value = s.defaultChart;
+    }
+    if (document.getElementById('setting-auto-advance')) {
+      document.getElementById('setting-auto-advance').checked = s.autoAdvance !== false;
+    }
+
+    // Alerts
+    if (document.getElementById('setting-queue-chime')) {
+      document.getElementById('setting-queue-chime').checked = s.queueChime !== false;
+    }
+    if (document.getElementById('setting-urgent-flash')) {
+      document.getElementById('setting-urgent-flash').checked = s.urgentFlash !== false;
+    }
+    if (document.getElementById('setting-morning-digest')) {
+      document.getElementById('setting-morning-digest').checked = s.morningDigest !== false;
+    }
+    if (document.getElementById('setting-cancellation-alert')) {
+      document.getElementById('setting-cancellation-alert').checked = s.cancellationAlert !== false;
+    }
+
+    // Rx defaults
+    if (s.rxHeader && document.getElementById('setting-rx-header')) {
+      document.getElementById('setting-rx-header').value = s.rxHeader;
+    }
+    if (s.rxSub && document.getElementById('setting-rx-sub')) {
+      document.getElementById('setting-rx-sub').value = s.rxSub;
+    }
+    if (s.rxPostop && document.getElementById('setting-rx-postop')) {
+      document.getElementById('setting-rx-postop').value = s.rxPostop;
+    }
+    if (document.getElementById('setting-digital-seal')) {
+      document.getElementById('setting-digital-seal').checked = s.digitalSeal !== false;
+    }
+  } catch (err) {
+    console.error('Error loading dentist settings:', err);
+  }
+}
+window.loadDentistSettings = loadDentistSettings;
+
+function getDentistSettings() {
+  try {
+    return JSON.parse(localStorage.getItem('fano_dentist_settings') || '{}');
+  } catch (_) {
+    return {};
+  }
+}
+
+function saveClinicalPreferences(btn) {
+  const current = getDentistSettings();
+  const chair = document.getElementById('setting-chair')?.value;
+  const duration = document.getElementById('setting-duration')?.value;
+  const chartingSystem = document.getElementById('setting-charting-system')?.value;
+  const defaultChart = document.getElementById('setting-default-chart')?.value;
+  const autoAdvance = document.getElementById('setting-auto-advance')?.checked;
+
+  const updated = {
+    ...current,
+    chair, duration, chartingSystem, defaultChart, autoAdvance
+  };
+  delete updated.branch;
+  localStorage.setItem('fano_dentist_settings', JSON.stringify(updated));
+
+  showButtonFeedback(btn, 'Operatory Defaults Saved!');
+}
+window.saveClinicalPreferences = saveClinicalPreferences;
+
+function saveAlertPreferences(btn) {
+  const current = getDentistSettings();
+  const queueChime = document.getElementById('setting-queue-chime')?.checked;
+  const urgentFlash = document.getElementById('setting-urgent-flash')?.checked;
+  const morningDigest = document.getElementById('setting-morning-digest')?.checked;
+  const cancellationAlert = document.getElementById('setting-cancellation-alert')?.checked;
+
+  const updated = {
+    ...current,
+    queueChime, urgentFlash, morningDigest, cancellationAlert
+  };
+  localStorage.setItem('fano_dentist_settings', JSON.stringify(updated));
+  showButtonFeedback(btn, 'Alert Preferences Saved!');
+}
+window.saveAlertPreferences = saveAlertPreferences;
+
+function playQueueChime() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    const now = ctx.currentTime;
+    // Tone 1: 587.33 Hz (D5)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(587.33, now);
+    gain1.gain.setValueAtTime(0, now);
+    gain1.gain.linearRampToValueAtTime(0.2, now + 0.05);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.5);
+
+    // Tone 2: 880 Hz (A5)
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(880, now + 0.15);
+    gain2.gain.setValueAtTime(0, now + 0.15);
+    gain2.gain.linearRampToValueAtTime(0.22, now + 0.2);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(now + 0.15);
+    osc2.stop(now + 0.75);
+  } catch (e) {
+    console.warn('Audio chime unavailable:', e);
+  }
+}
+window.playQueueChime = playQueueChime;
+
+function savePrescriptionSettings(btn) {
+  const current = getDentistSettings();
+  const rxHeader = document.getElementById('setting-rx-header')?.value;
+  const rxSub = document.getElementById('setting-rx-sub')?.value;
+  const rxPostop = document.getElementById('setting-rx-postop')?.value;
+  const digitalSeal = document.getElementById('setting-digital-seal')?.checked;
+
+  const updated = {
+    ...current,
+    rxHeader, rxSub, rxPostop, digitalSeal
+  };
+  localStorage.setItem('fano_dentist_settings', JSON.stringify(updated));
+  showButtonFeedback(btn, 'Rx Defaults Saved!');
+}
+window.savePrescriptionSettings = savePrescriptionSettings;
+
+async function handleDentistChangePassword(e) {
+  e.preventDefault();
+  const currentPassword = document.getElementById('dentist-curr-pass')?.value;
+  const newPassword = document.getElementById('dentist-new-pass')?.value;
+  const confirmPassword = document.getElementById('dentist-confirm-pass')?.value;
+  const submitBtn = document.getElementById('btn-dentist-update-pass');
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    alert('Please fill out all password fields.');
+    return;
+  }
+  if (newPassword.length < 8) {
+    alert('New password must be at least 8 characters long.');
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    alert('New password and confirmation do not match.');
+    return;
+  }
+
+  const origHtml = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+  }
+
+  try {
+    const res = await api.changePassword({ currentPassword, newPassword });
+    alert(res.message || 'Password changed successfully!');
+    document.getElementById('dentist-password-form')?.reset();
+  } catch (err) {
+    alert(err.message || 'Failed to update password. Please check your current password.');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origHtml;
+    }
+  }
+}
+window.handleDentistChangePassword = handleDentistChangePassword;
+
+function showButtonFeedback(btn, message) {
+  if (!btn) {
+    alert(message);
+    return;
+  }
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = `<i class="fa-solid fa-check"></i> ${message}`;
+  btn.classList.add('btn-success');
+  btn.classList.remove('btn-primary');
+  setTimeout(() => {
+    btn.innerHTML = originalHtml;
+    btn.classList.remove('btn-success');
+    btn.classList.add('btn-primary');
+  }, 2200);
+}

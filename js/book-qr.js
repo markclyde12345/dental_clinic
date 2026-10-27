@@ -18,33 +18,11 @@ let selectedPayment = 'cash';
 let occupiedSlots = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-  initBranchParam();
   initDefaultsAndDates();
   initCardPickers();
   checkExistingSession();
   loadLiveTreatments();
 });
-
-/* ── 1. Branch URL Parameter Detection ── */
-function initBranchParam() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const branchParam = urlParams.get('branch');
-  const branchSelect = document.getElementById('clinic-branch');
-  const branchPill = document.getElementById('active-branch-name');
-
-  if (branchParam && branchSelect) {
-    const options = Array.from(branchSelect.options);
-    const matched = options.find(o => o.value.toLowerCase().includes(branchParam.toLowerCase()));
-    if (matched) {
-      branchSelect.value = matched.value;
-      if (branchPill) branchPill.textContent = matched.value;
-    }
-  }
-
-  branchSelect?.addEventListener('change', () => {
-    if (branchPill) branchPill.textContent = branchSelect.value;
-  });
-}
 
 /* ── 2. Date Constraints & Default Slots ── */
 function initDefaultsAndDates() {
@@ -285,17 +263,14 @@ function goToStep(step) {
 /* ── 8. Summary Review Generator ── */
 function populateSummary() {
   const name = document.getElementById('patient-name')?.value.trim() || '—';
-  const branch = document.getElementById('clinic-branch')?.value || 'Makati Main Clinic';
   const dateVal = document.getElementById('appointment-date')?.value || '';
 
   const summaryName = document.getElementById('summary-patient-name');
-  const summaryBranch = document.getElementById('summary-branch');
   const summaryService = document.getElementById('summary-service');
   const summaryDoctor = document.getElementById('summary-doctor');
   const summaryDateTime = document.getElementById('summary-datetime');
 
   if (summaryName) summaryName.textContent = name;
-  if (summaryBranch) summaryBranch.textContent = branch;
   if (summaryService) summaryService.textContent = `${selectedService.name} (₱${Number(selectedService.price).toLocaleString()})`;
   if (summaryDoctor) summaryDoctor.textContent = selectedDentist;
 
@@ -331,7 +306,6 @@ async function submitQrBooking() {
     const name = document.getElementById('patient-name').value.trim();
     const phone = document.getElementById('patient-phone').value.trim();
     const email = document.getElementById('patient-email').value.trim();
-    const branch = document.getElementById('clinic-branch').value;
     const dateVal = document.getElementById('appointment-date').value;
     const notes = document.getElementById('patient-notes')?.value.trim() || '';
 
@@ -346,7 +320,6 @@ async function submitQrBooking() {
       name,
       contact_number: phone,
       email,
-      branch,
       dentist_name: selectedDentist,
       treatment_id: selectedService.id || null,
       treatment_name: selectedService.name,
@@ -389,7 +362,6 @@ function renderConfirmationPass(apiResult, formData) {
 
   safeText('pass-ref-code', refCode);
   safeText('pass-patient-name', formData.name);
-  safeText('pass-branch', formData.branch);
   safeText('pass-service', selectedService.name);
   safeText('pass-dentist', selectedDentist);
   safeText('pass-datetime', `${formData.appointment_date.split('T')[0]} @ ${selectedTime}`);
@@ -403,7 +375,6 @@ function renderConfirmationPass(apiResult, formData) {
       ref: refCode,
       name: formData.name,
       phone: formData.contact_number,
-      branch: formData.branch,
       treatment: selectedService.name,
       dentist: selectedDentist,
       time: selectedTime,

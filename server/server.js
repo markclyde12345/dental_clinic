@@ -172,14 +172,12 @@ app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/send-otp', authLimiter);
 app.use('/api/auth/verify-otp', authLimiter);
 
-// ─── Dentists Roster with Branch Assignment & Duty Status ─────────────────────
+// ─── Dentists Roster with Duty Status ─────────────────────────────────────────
 // @route   GET /api/dentists
 // @access  Public / Authenticated
 app.get('/api/dentists', async (req, res) => {
   try {
-    const branchFilter = (req.query.branch || '').trim().toLowerCase();
-
-    // Read staff schedules for branch and availability info
+    // Read staff schedules for availability info
     let schedules = [];
     const staffFilePath = path.join(__dirname, 'data', 'staff_schedules.json');
     if (fs.existsSync(staffFilePath)) {
@@ -210,7 +208,6 @@ app.get('/api/dentists', async (req, res) => {
         name: s.name,
         email: s.email || '',
         contact_number: s.contact || '',
-        branch: s.branch || 'Main Branch (Naga)',
         availability: s.availability || 'On Duty',
         shift: s.shift || '09:00 AM - 05:00 PM',
         days: s.days || 'Mon - Sat',
@@ -236,7 +233,6 @@ app.get('/api/dentists', async (req, res) => {
           name: d.name,
           email: d.email || '',
           contact_number: d.contact_number || '',
-          branch: 'Main Branch (Naga)',
           availability: d.is_active ? 'On Duty' : 'Off Duty',
           shift: '09:00 AM - 05:00 PM',
           days: 'Mon - Fri',
@@ -245,16 +241,7 @@ app.get('/api/dentists', async (req, res) => {
       }
     });
 
-    let result = Array.from(dentistMap.values());
-
-    // Filter by branch if query provided (e.g. branch=Talisay or branch=Minglanilla)
-    if (branchFilter) {
-      const cleanBranchQuery = branchFilter.replace(/fano\s*dental\s*clinic\s*[—–-]?/i, '').replace(/branch$/i, '').trim();
-      result = result.filter(d => {
-        const b = (d.branch || '').toLowerCase();
-        return b.includes(cleanBranchQuery) || cleanBranchQuery.includes(b.replace(/branch$/i, '').trim());
-      });
-    }
+    const result = Array.from(dentistMap.values());
 
     res.json(result);
   } catch (err) {
@@ -262,13 +249,13 @@ app.get('/api/dentists', async (req, res) => {
   }
 });
 
-// @desc    Update dentist duty status (On Duty vs Off Duty / Out) & Branch
+// @desc    Update dentist duty status (On Duty vs Off Duty / Out)
 // @route   PUT /api/dentists/:id/duty
 // @access  Private (Admin, Receptionist, Dentist)
 app.put('/api/dentists/:id/duty', async (req, res) => {
   try {
     const { id } = req.params;
-    const { availability, branch, name } = req.body;
+    const { availability, name } = req.body;
     const staffFilePath = path.join(__dirname, 'data', 'staff_schedules.json');
 
     let updatedDentist = null;
@@ -279,7 +266,6 @@ app.put('/api/dentists/:id/duty', async (req, res) => {
         const found = schedules.find(s => s.id === id || (name && s.name && s.name.toLowerCase().trim() === name.toLowerCase().trim()));
         if (found) {
           if (availability !== undefined) found.availability = availability;
-          if (branch !== undefined) found.branch = branch;
           fs.writeFileSync(staffFilePath, JSON.stringify(schedules, null, 2), 'utf8');
           updatedDentist = found;
         } else if (name) {
@@ -291,8 +277,7 @@ app.put('/api/dentists/:id/duty', async (req, res) => {
             contact: req.body.contact_number || '',
             shift: req.body.shift || '09:00 AM - 05:00 PM',
             days: 'Mon - Sat',
-            availability: availability || 'On Duty',
-            branch: branch || 'Main Branch (Naga)'
+            availability: availability || 'On Duty'
           };
           schedules.push(newEntry);
           fs.writeFileSync(staffFilePath, JSON.stringify(schedules, null, 2), 'utf8');
@@ -307,14 +292,13 @@ app.put('/api/dentists/:id/duty', async (req, res) => {
     try {
       const updatePayload = {};
       if (availability !== undefined) updatePayload.availability = availability;
-      if (branch !== undefined) updatePayload.branch = branch;
       await supabase.from('staff_schedules').update(updatePayload).eq('id', id);
     } catch (_) {}
 
     res.json({
       success: true,
       message: 'Dentist duty updated successfully',
-      dentist: updatedDentist || { id, availability, branch }
+      dentist: updatedDentist || { id, availability }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
