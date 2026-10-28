@@ -9,13 +9,12 @@
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <style>
     :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --border: #334155;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --primary: #38bdf8;
-      --accent: #10b981;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #0f172a;
     }
 
     * {
@@ -34,31 +33,31 @@
     }
 
     header {
-      background: rgba(30, 41, 59, 0.9);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 1.1rem 2rem;
+      background: #ffffff;
+      border-bottom: 1.5px solid var(--border);
+      padding: 1.1rem 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .title-area h1 {
       font-size: 1.25rem;
       font-weight: 800;
-      color: #fff;
+      color: #0f172a;
       display: flex;
       align-items: center;
       gap: 0.6rem;
     }
 
     .badge {
-      background: rgba(56, 189, 248, 0.15);
-      color: var(--primary);
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
       font-size: 0.75rem;
       padding: 0.2rem 0.6rem;
       border-radius: 9999px;
@@ -71,9 +70,9 @@
     }
 
     button {
-      background: #334155;
-      color: #fff;
-      border: 1px solid #475569;
+      background: #ffffff;
+      color: #0f172a;
+      border: 1.5px solid #cbd5e1;
       padding: 0.5rem 1rem;
       border-radius: 8px;
       font-size: 0.85rem;
@@ -82,26 +81,27 @@
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
     }
 
     button:hover {
-      background: #475569;
-      border-color: #64748b;
+      background: #f1f5f9;
+      border-color: #94a3b8;
     }
 
     button.primary {
-      background: #0284c7;
-      border-color: #38bdf8;
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
     }
 
     button.primary:hover {
-      background: #0369a1;
+      background: #1e293b;
     }
 
     main {
       flex: 1;
-      padding: 2rem;
+      padding: 2.5rem;
       max-width: 1500px;
       margin: 0 auto;
       width: 100%;
@@ -109,10 +109,10 @@
 
     .canvas-container {
       background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--border);
-      padding: 2.5rem 1.5rem;
+      border-radius: 14px;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+      border: 1.5px solid var(--border);
+      padding: 3rem 2rem;
       overflow-x: auto;
       margin-bottom: 2rem;
       display: flex;
@@ -127,36 +127,37 @@
 
     .legend-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
       margin-top: 1rem;
     }
 
     .legend-card {
       background: var(--card-bg);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: 12px;
-      padding: 1.25rem 1.4rem;
+      padding: 1.4rem;
     }
 
     .legend-card h3 {
-      font-size: 0.95rem;
-      color: var(--primary);
-      margin-bottom: 0.75rem;
+      font-size: 0.98rem;
+      color: #0f172a;
+      margin-bottom: 0.85rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      font-weight: 700;
     }
 
     .legend-card ul {
       list-style: none;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      line-height: 1.6;
+      font-size: 0.86rem;
+      color: #475569;
+      line-height: 1.65;
     }
 
     .legend-card li strong {
-      color: #e2e8f0;
+      color: #0f172a;
       font-family: 'JetBrains Mono', monospace;
     }
 
@@ -180,7 +181,7 @@
 
   <header>
     <div class="title-area">
-      <h1>🦷 Fano Dental Clinic Management System — Complete Architecture Flowchart <span class="badge">5-Role RBAC</span></h1>
+      <h1>🦷 Dental Clinic System Flowchart <span class="badge">Specification Match</span></h1>
     </div>
     <div class="actions">
       <button onclick="window.print()">🖨️ Print / Save as PDF</button>
@@ -193,172 +194,151 @@
     <div class="canvas-container" id="canvas">
       <pre class="mermaid">
 flowchart TD
-    %% Global Nodes and Styles
-    classDef startStop fill:#f1f5f9,stroke:#0f172a,stroke-width:2px,rx:20,ry:20,color:#0f172a,font-weight:700;
-    classDef process fill:#ffffff,stroke:#1e293b,stroke-width:1.5px,color:#0f172a,font-weight:600;
-    classDef decision fill:#ffffff,stroke:#0284c7,stroke-width:2px,color:#0f172a,font-weight:700;
-    classDef database fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#14532d,font-weight:700;
-    classDef connector fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#92400e,font-weight:700;
-    classDef badge fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a,font-weight:700;
-    classDef aiNode fill:#faf5ff,stroke:#9333ea,stroke-width:1.5px,color:#581c87,font-weight:600;
+    %% ------------------- MONOCHROME VISIO SPEC STYLES -------------------
+    classDef default fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000,font-family:'Plus Jakarta Sans',Arial,sans-serif;
+    classDef startStop fill:#ffffff,stroke:#000000,stroke-width:1.5px,rx:22,ry:22,color:#000000,font-weight:600;
+    classDef process fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    classDef iobox fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    classDef decision fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000,font-weight:600;
+    classDef database fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000,font-weight:700;
+    classDef connector fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000,font-weight:700;
+    classDef badge fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000,font-weight:700;
 
-    %% ----------------- ENTRY & CHANNELS -----------------
+    %% ------------------- TOP LEVEL & REGISTRATION -------------------
     StartNode(["START"]):::startStop
-    LandingPage["Public Landing Page\n(landing-page.html)"]:::process
-    QRScan["QR Code Walk-in Scan\n(book-qr.html)"]:::process
-
-    StartNode --> LandingPage
-    StartNode --> QRScan
-    QRScan --> LandingPage
-
+    LandingPage["Landing Page"]:::process
     HaveAccount{"Have an Account?"}:::decision
-    LandingPage --> HaveAccount
+    Register["Register"]:::process
+    Badge1_Reg["[ 1 ]"]:::badge
 
-    %% Registration
-    HaveAccount -- "No" --> Register["Patient Registration\n(signup.html)"]:::process
-    RegDB["[ 1 ]"]:::badge
-    Register --> RegDB
-
-    %% Database
-    DB[("CENTRAL DATABASE\n(PostgreSQL / Supabase)")]:::database
-    ConnDB1["[ 1 ] Auth & Profiles"]:::badge
-    ConnDB2["[ 2 ] Clinical & Appts"]:::badge
-    ConnDB3["[ 3 ] Billing & Accounting"]:::badge
+    %% Database Cluster
+    DB[("DATABASE")]:::database
+    ConnDB1["[ 1 ]"]:::badge
+    ConnDB2["[ 2 ]"]:::badge
+    ConnDB3["[ 3 ]"]:::badge
 
     ConnDB1 --> DB
     ConnDB2 --> DB
     ConnDB3 --> DB
-    RegDB -. Save .-> ConnDB1
 
-    %% Login Entry
-    HaveAccount -- "Yes" --> LoginPage["Universal Login Page\n(login.html)"]:::process
-    K1_Login(("( K1 )")):::connector -. "Auth Fail Loopback" .-> LoginPage
+    StartNode --> LandingPage
+    LandingPage --> HaveAccount
+    HaveAccount -- "No" --> Register
+    Register --> Badge1_Reg
 
-    %% Login Methods
-    LoginPage --> AuthChoice{"Authentication\nMethod"}:::decision
-    AuthChoice -- "Google OAuth" --> OAuthFlow["OAuth Callback\n(oauth-callback.html)"]:::process
-    AuthChoice -- "Password Reset" --> ForgotPass["Password Recovery\n(forgot-password.html)"]:::process
-    ForgotPass -. "Reset Complete" .-> LoginPage
-    AuthChoice -- "Email & Password" --> VerifyCreds{"Validate\nCredentials?"}:::decision
+    HaveAccount -- "Yes" --> LoginPage["Login page"]:::process
+    K1_Login(("( K1 )")):::connector -.-> LoginPage
 
-    OAuthFlow --> VerifyCreds
+    %% ------------------- 4 AUTHENTICATION BRANCHES -------------------
+    LoginPage --> AdminLogin["Admin log in"]:::process
+    LoginPage --> PatientLogin["Patients log in"]:::process
+    LoginPage --> DentistLogin["Dentist log in"]:::process
+    LoginPage --> StaffLogin["Staff log in"]:::process
 
-    %% ----------------- 5 ROLE-BASED ACCESS CONTROL (RBAC) -----------------
-    VerifyCreds -- "Invalid" --> K1_Fail(("( K1 )")):::connector
-
-    VerifyCreds -- "Valid" --> RoleCheck{"Check User Role\n(JWT Payload)"}:::decision
-
-    RoleCheck -- "Role: Admin" --> AdminDash["Admin Dashboard\n(admin-dashboard.html)"]:::process
-    RoleCheck -- "Role: Patient" --> TwoFactor{"Two-Factor 2FA\nEnabled?"}:::decision
-    RoleCheck -- "Role: Dentist" --> DentistDash["Dentist Dashboard\n(dentist-dashboard.html)"]:::process
-    RoleCheck -- "Role: Receptionist" --> ReceptionDash["Receptionist Dashboard\n(receptionist-dashboard.html)"]:::process
-    RoleCheck -- "Role: Accounting" --> AccountDash["Accounting Dashboard\n(accounting-dashboard.html)"]:::process
-
-    %% ================= 1. ADMIN DASHBOARD [ AA ] =================
+    %% =================== 1. ADMIN BRANCH ===================
+    AdminLogin --> IsAdminValid{"is credentials\nvalid?"}:::decision
+    IsAdminValid -- "No" --> K1_Admin(("( K1 )")):::connector
+    IsAdminValid -- "Yes" --> AdminDash["Admin Dashboard"]:::process
     AdminDashBadge["[ AA ]"]:::badge
     AdminDash --- AdminDashBadge
-    AdminDash --> Adm1["Manage Users & Roles"]:::process
-    AdminDash --> Adm2["Manage Appointments Agenda"]:::process
-    AdminDash --> Adm3["Manage Staff & Dentists"]:::process
-    AdminDash --> Adm4["Manage Dental Inventory"]:::process
-    AdminDash --> Adm5["Billing, Payments & Invoices"]:::process
-    AdminDash --> Adm6["Audit Logs & Security"]:::process
-    AdminDash --> Adm7["System Reports & Analytics"]:::process
-    AdminDash --> AdmLogout["Logout"]:::process
-    AdmLogout --> LogoutBadge1["[ H ]"]:::badge
 
-    %% ================= 2. PATIENT DASHBOARD [ I ] =================
-    TwoFactor -- "Yes" --> SendOTP["Send OTP Code\n(SMS / TOTP Authenticator)"]:::process
-    SendOTP --> EnterOTP["Verify OTP Page\n(verify.html)"]:::process
-    K2_OTP(("( K2 )")):::connector -. "OTP Retry" .-> EnterOTP
-    EnterOTP --> IsOTPValid{"Is OTP Valid?"}:::decision
-    IsOTPValid -- "No" --> K2_Fail(("( K2 )")):::connector
-    IsOTPValid -- "Yes" --> PatientDash["Patient Dashboard\n(patient-dashboard.html)"]:::process
-    TwoFactor -- "No" --> PatientDash
+    AdminDash --> M_Users[/"Manage Users"/]:::iobox
+    AdminDash --> M_Appt[/"Manage Appointment"/]:::iobox
+    AdminDash --> M_Staff[/"Manage Staff"/]:::iobox
+    AdminDash --> M_Dentist[/"Manage Dentist"/]:::iobox
+    AdminDash --> M_Inv[/"Manage Inventory"/]:::iobox
+    AdminDash --> M_Bill[/"Billing & Payment"/]:::iobox
+    AdminDash --> M_Rep[/"Reports & Analytics"/]:::iobox
+    AdminDash --> M_Logout["Logout"]:::process
 
-    PatientDashBadge["[ I ]"]:::badge
-    PatientDash --- PatientDashBadge
-    PatientDash --> Pat1["Book New Appointment"]:::process
-    PatientDash --> Pat2["Appointment History & Schedule"]:::process
-    PatientDash --> Pat3["Prescriptions & Dental Records"]:::process
-    PatientDash --> Pat4["Invoices & Payment Receipts"]:::process
-    PatientDash --> Pat5["Settings & Security (2FA, Profile)"]:::process
-    PatientDash --> Pat6["AI Dental Assistant Widget"]:::aiNode
-    PatientDash --> PatLogout["Logout"]:::process
-    PatLogout --> LogoutBadge2["[ H ]"]:::badge
+    M_Users --> BadgeA["[ A ]"]:::badge
+    M_Appt --> BadgeB["[ B ]"]:::badge
+    M_Staff --> BadgeC["[ C ]"]:::badge
+    M_Dentist --> BadgeD["[ D ]"]:::badge
+    M_Inv --> BadgeE["[ E ]"]:::badge
+    M_Bill --> BadgeF["[ F ]"]:::badge
+    M_Rep --> BadgeG["[ G ]"]:::badge
+    M_Logout --> BadgeH_Admin["[ H ]"]:::badge
 
-    %% ================= 3. DENTIST DASHBOARD [ BB ] =================
+    %% =================== 2. PATIENTS BRANCH (2FA / OTP) ===================
+    PatientLogin --> IsPatientValid{"is credentials\nvalid?"}:::decision
+    IsPatientValid -- "No" --> K1_Patient(("( K1 )")):::connector
+    IsPatientValid -- "Yes" --> TwoFactor{"Two-factor\nauthentication"}:::decision
+    TwoFactor -- "No" --> K1_2FA(("( K1 )")):::connector
+    TwoFactor -- "Yes" --> SendOTP["Send OTP"]:::process
+    SendOTP --> EnterOTP["Enter OTP"]:::process
+    K2_Enter(("( K2 )")):::connector -.-> EnterOTP
+
+    EnterOTP --> IsOTPValid{"Is OTP\nvalid?"}:::decision
+    IsOTPValid -- "No" --> K2_Invalid(("( K2 )")):::connector
+    IsOTPValid -- "Yes" --> PatientDash["Patient Dashboard"]:::process
+    PatientDash --> BadgeI["[ I ]"]:::badge
+
+    %% =================== 3. DENTIST BRANCH ===================
+    DentistLogin --> IsDentistValid{"is credentials\nvalid?"}:::decision
+    IsDentistValid -- "No" --> K1_Dentist(("( K1 )")):::connector
+    IsDentistValid -- "Yes" --> DentistDash["Dentist Dashboard"]:::process
     DentistDashBadge["[ BB ]"]:::badge
     DentistDash --- DentistDashBadge
-    DentistDash --> Dent1["Today's Patient Schedule"]:::process
-    DentistDash --> Dent2["Dental Charting (Odontogram)"]:::process
-    DentistDash --> Dent3["Prescription Management"]:::process
-    DentistDash --> Dent4["Clinical Notes & Treatment Plans"]:::process
-    DentistDash --> Dent5["Patient Medical Alerts & Allergies"]:::process
-    DentistDash --> DentLogout["Logout"]:::process
-    DentLogout --> LogoutBadge3["[ H ]"]:::badge
 
-    %% ================= 4. RECEPTIONIST DASHBOARD [ CC ] =================
-    ReceptDashBadge["[ CC ]"]:::badge
-    ReceptionDash --- ReceptDashBadge
-    ReceptionDash --> Rec1["Walk-in Queue & Chair Check-in"]:::process
-    ReceptionDash --> Rec2["Appointment Booking & Reschedule"]:::process
-    ReceptionDash --> Rec3["Patient Registration & Records"]:::process
-    ReceptionDash --> Rec4["Collect Payments & Issue Receipts"]:::process
-    ReceptionDash --> Rec5["Daily Clinic Summary"]:::process
-    ReceptionDash --> RecLogout["Logout"]:::process
-    RecLogout --> LogoutBadge4["[ H ]"]:::badge
+    DentistDash --> D_Sched[/"View Schedule"/]:::iobox
+    DentistDash --> D_Presc[/"Manage Prescriptions"/]:::iobox
+    DentistDash --> D_Analytics[/"View Analytics"/]:::iobox
+    DentistDash --> D_Logout["Logout"]:::process
 
-    %% ================= 5. ACCOUNTING DASHBOARD [ DD ] =================
-    AccountDashBadge["[ DD ]"]:::badge
-    AccountDash --- AccountDashBadge
-    AccountDash --> Acc1["Financial Ledgers & Journals"]:::process
-    AccountDash --> Acc2["Expense Tracking & Payroll"]:::process
-    AccountDash --> Acc3["HMO & Insurance Claims"]:::process
-    AccountDash --> Acc4["Accounts Receivable & Invoicing"]:::process
-    AccountDash --> Acc5["Income & Revenue Analytics"]:::process
-    AccountDash --> AccLogout["Logout"]:::process
-    AccLogout --> LogoutBadge5["[ H ]"]:::badge
+    D_Sched --> BadgeN["[ N ]"]:::badge
+    D_Presc --> BadgeO["[ O ]"]:::badge
+    D_Analytics --> BadgeP["[ P ]"]:::badge
+    D_Logout --> BadgeH_Dentist["[ H ]"]:::badge
 
-    %% Universal Termination
-    LogoutTerm(["END SESSION / DESTROY TOKEN"]):::startStop
-    LogoutBadge1 --> LogoutTerm
-    LogoutBadge2 --> LogoutTerm
-    LogoutBadge3 --> LogoutTerm
-    LogoutBadge4 --> LogoutTerm
-    LogoutBadge5 --> LogoutTerm
+    %% =================== 4. STAFF BRANCH ===================
+    StaffLogin --> IsStaffValid{"is credentials\nvalid?"}:::decision
+    IsStaffValid -- "No" --> K1_Staff(("( K1 )")):::connector
+    IsStaffValid -- "Yes" --> StaffDash["Staff Dashboard"]:::process
+    StaffDashBadge["[ CC ]"]:::badge
+    StaffDash --- StaffDashBadge
+
+    StaffDash --> S_Appt[/"Manage Appointment"/]:::iobox
+    StaffDash --> S_Pay[/"Manage Payments & Bills"/]:::iobox
+    StaffDash --> S_Inv[/"Manage Inventory"/]:::iobox
+    StaffDash --> S_Logout["Logout"]:::process
+
+    S_Appt --> BadgeQ["[ Q ]"]:::badge
+    S_Pay --> BadgeR["[ R ]"]:::badge
+    S_Inv --> BadgeS["[ S ]"]:::badge
+    S_Logout --> BadgeH_Staff["[ H ]"]:::badge
       </pre>
     </div>
 
     <div class="legend-grid">
       <div class="legend-card">
-        <h3>🔘 Flowchart Symbols</h3>
+        <h3>🔘 Flowchart Shapes & Notation</h3>
         <ul>
-          <li><strong>Oval:</strong> Terminator (System Start / Session Destroy)</li>
-          <li><strong>Rectangle:</strong> Web Page or Application Module</li>
-          <li><strong>Diamond:</strong> Role Check or Conditional Decision Branch</li>
-          <li><strong>Purple Border:</strong> AI Dental Assistant Subsystem</li>
-          <li><strong>Green Cylinder:</strong> Centralized Database (PostgreSQL / Supabase)</li>
+          <li><strong>Oval:</strong> Terminator (System Start)</li>
+          <li><strong>Rectangle:</strong> Process / System Web Page</li>
+          <li><strong>Diamond:</strong> Decision Gateway (Yes / No)</li>
+          <li><strong>Slanted Box:</strong> Submodule Input / Output Operations</li>
+          <li><strong>Cylinder:</strong> Central Database (Supabase / PostgreSQL)</li>
         </ul>
       </div>
 
       <div class="legend-card">
-        <h3>🔁 On-Page Reference Connectors</h3>
+        <h3>🔁 On-Page Loopback Connectors</h3>
         <ul>
-          <li><strong>( K1 ):</strong> Returns to <em>Universal Login Page</em> upon invalid credentials.</li>
-          <li><strong>( K2 ):</strong> Returns to <em>Verify OTP</em> upon incorrect two-factor code.</li>
+          <li><strong>( K1 ):</strong> Circular connector looping back to <em>Login page</em> on failed validation.</li>
+          <li><strong>( K2 ):</strong> Circular connector looping back to <em>Enter OTP</em> on invalid one-time code.</li>
         </ul>
       </div>
 
       <div class="legend-card">
-        <h3>🏷️ Role Dashboard Badges</h3>
+        <h3>🏷️ Off-Page Connectors & Badges</h3>
         <ul>
-          <li><strong>[AA]:</strong> Administrator Portal (System management, RBAC, Inventory)</li>
-          <li><strong>[I]:</strong> Patient Portal (Appointments, Prescriptions, 2FA Settings, AI Chat)</li>
-          <li><strong>[BB]:</strong> Dentist Clinical Portal (Odontogram charting, Treatment plans)</li>
-          <li><strong>[CC]:</strong> Receptionist Portal (Queue management, Cashier, Registration)</li>
-          <li><strong>[DD]:</strong> Accounting Portal (Ledgers, HMO claims, Expenses, Invoicing)</li>
-          <li><strong>[H]:</strong> Unified Logout & Token Invalidation</li>
+          <li><strong>[ 1, 2, 3 ]:</strong> Data streams directly persisting to the central Database.</li>
+          <li><strong>[ AA, BB, CC, I ]:</strong> Role Dashboard portals (Admin, Dentist, Staff, Patient).</li>
+          <li><strong>[ A ] - [ G ]:</strong> Admin Management Submodules.</li>
+          <li><strong>[ N ] - [ P ]:</strong> Dentist Clinical Submodules.</li>
+          <li><strong>[ Q ] - [ S ]:</strong> Frontdesk Staff Submodules.</li>
+          <li><strong>[ H ]:</strong> Universal Logout Action.</li>
         </ul>
       </div>
     </div>
@@ -371,7 +351,7 @@ flowchart TD
       flowchart: {
         useMaxWidth: false,
         htmlLabels: true,
-        curve: 'basis'
+        curve: 'linear'
       }
     });
 

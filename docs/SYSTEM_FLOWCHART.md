@@ -1,206 +1,175 @@
-# 🦷 Fano Dental Clinic Management System — Complete Architecture Flowchart
+# 🦷 Dental Clinic System Flowchart (Exact Specification)
 
-This document provides the standard system architecture flowchart accurately mapped to the **5-role system implementation** of the **Fano Dental Clinic Management System**.
+This flowchart follows the exact visual structure, symbols, and connectors from your specification diagram, precisely mapped to the codebase of our **Fano Dental Clinic Website**.
 
 ---
 
-## 1. System Flowchart Diagram
+## 1. System Flowchart (Mermaid)
 
 ```mermaid
 flowchart TD
-    %% ------------------- STYLES -------------------
-    classDef startStop fill:#f1f5f9,stroke:#0f172a,stroke-width:2px,rx:20,ry:20,color:#0f172a,font-weight:700;
-    classDef process fill:#ffffff,stroke:#1e293b,stroke-width:1.5px,color:#0f172a,font-weight:600;
-    classDef decision fill:#ffffff,stroke:#0284c7,stroke-width:2px,color:#0f172a,font-weight:700;
-    classDef database fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#14532d,font-weight:700;
-    classDef connector fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#92400e,font-weight:700;
-    classDef badge fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a,font-weight:700;
-    classDef aiNode fill:#faf5ff,stroke:#9333ea,stroke-width:1.5px,color:#581c87,font-weight:600;
+    %% ------------------- MONOCHROME VISIO SPEC STYLES -------------------
+    classDef default fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000,font-family:'Plus Jakarta Sans',Arial,sans-serif;
+    classDef startStop fill:#ffffff,stroke:#000000,stroke-width:1.5px,rx:22,ry:22,color:#000000,font-weight:600;
+    classDef process fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    classDef iobox fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    classDef decision fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000,font-weight:600;
+    classDef database fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000,font-weight:700;
+    classDef connector fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000,font-weight:700;
+    classDef badge fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000,font-weight:700;
 
-    %% ------------------- MULTI-CHANNEL ENTRY -------------------
+    %% ------------------- TOP LEVEL & REGISTRATION -------------------
     StartNode(["START"]):::startStop
-    LandingPage["Public Landing Page\n(landing-page.html)"]:::process
-    QRScan["QR Walk-in Scan\n(book-qr.html)"]:::process
-
-    StartNode --> LandingPage
-    StartNode --> QRScan
-    QRScan --> LandingPage
-
+    LandingPage["Landing Page"]:::process
     HaveAccount{"Have an Account?"}:::decision
-    LandingPage --> HaveAccount
+    Register["Register"]:::process
+    Badge1_Reg["[ 1 ]"]:::badge
 
-    %% Registration
-    HaveAccount -- "No" --> Register["Patient Registration\n(signup.html)"]:::process
-    RegDB["[ 1 ]"]:::badge
-    Register --> RegDB
-
-    %% Database
-    DB[("CENTRAL DATABASE\n(PostgreSQL / Supabase)")]:::database
-    ConnDB1["[ 1 ] Auth & Profiles"]:::badge
-    ConnDB2["[ 2 ] Clinical & Appts"]:::badge
-    ConnDB3["[ 3 ] Billing & Accounting"]:::badge
+    %% Database Cluster
+    DB[("DATABASE")]:::database
+    ConnDB1["[ 1 ]"]:::badge
+    ConnDB2["[ 2 ]"]:::badge
+    ConnDB3["[ 3 ]"]:::badge
 
     ConnDB1 --> DB
     ConnDB2 --> DB
     ConnDB3 --> DB
-    RegDB -. Save .-> ConnDB1
 
-    %% Login Entry
-    HaveAccount -- "Yes" --> LoginPage["Universal Login Page\n(login.html)"]:::process
-    K1_Login(("( K1 )")):::connector -. "Auth Fail Retry" .-> LoginPage
+    StartNode --> LandingPage
+    LandingPage --> HaveAccount
+    HaveAccount -- "No" --> Register
+    Register --> Badge1_Reg
 
-    %% Authentication Methods
-    LoginPage --> AuthChoice{"Authentication\nMethod"}:::decision
-    AuthChoice -- "Google OAuth" --> OAuthFlow["OAuth Callback\n(oauth-callback.html)"]:::process
-    AuthChoice -- "Password Reset" --> ForgotPass["Password Recovery\n(forgot-password.html)"]:::process
-    ForgotPass -. "Reset Complete" .-> LoginPage
-    AuthChoice -- "Email & Password" --> VerifyCreds{"Validate\nCredentials?"}:::decision
+    HaveAccount -- "Yes" --> LoginPage["Login page"]:::process
+    K1_Login(("( K1 )")):::connector -.-> LoginPage
 
-    OAuthFlow --> VerifyCreds
+    %% ------------------- 4 AUTHENTICATION BRANCHES -------------------
+    LoginPage --> AdminLogin["Admin log in"]:::process
+    LoginPage --> PatientLogin["Patients log in"]:::process
+    LoginPage --> DentistLogin["Dentist log in"]:::process
+    LoginPage --> StaffLogin["Staff log in"]:::process
 
-    %% ------------------- 5 ROLE-BASED ACCESS CONTROL (RBAC) -------------------
-    VerifyCreds -- "Invalid" --> K1_Fail(("( K1 )")):::connector
-
-    VerifyCreds -- "Valid" --> RoleCheck{"Check User Role\n(JWT Payload)"}:::decision
-
-    RoleCheck -- "Role: Admin" --> AdminDash["Admin Dashboard\n(admin-dashboard.html)"]:::process
-    RoleCheck -- "Role: Patient" --> TwoFactor{"Two-Factor 2FA\nEnabled?"}:::decision
-    RoleCheck -- "Role: Dentist" --> DentistDash["Dentist Dashboard\n(dentist-dashboard.html)"]:::process
-    RoleCheck -- "Role: Receptionist" --> ReceptionDash["Receptionist Dashboard\n(receptionist-dashboard.html)"]:::process
-    RoleCheck -- "Role: Accounting" --> AccountDash["Accounting Dashboard\n(accounting-dashboard.html)"]:::process
-
-    %% ================= 1. ADMIN DASHBOARD [ AA ] =================
+    %% =================== 1. ADMIN BRANCH ===================
+    AdminLogin --> IsAdminValid{"is credentials\nvalid?"}:::decision
+    IsAdminValid -- "No" --> K1_Admin(("( K1 )")):::connector
+    IsAdminValid -- "Yes" --> AdminDash["Admin Dashboard"]:::process
     AdminDashBadge["[ AA ]"]:::badge
     AdminDash --- AdminDashBadge
-    AdminDash --> Adm1["Manage Users & Roles"]:::process
-    AdminDash --> Adm2["Manage Appointments Agenda"]:::process
-    AdminDash --> Adm3["Manage Staff & Dentists"]:::process
-    AdminDash --> Adm4["Manage Dental Inventory"]:::process
-    AdminDash --> Adm5["Billing, Payments & Invoices"]:::process
-    AdminDash --> Adm6["Audit Logs & Security"]:::process
-    AdminDash --> Adm7["System Reports & Analytics"]:::process
-    AdminDash --> AdmLogout["Logout"]:::process
-    AdmLogout --> LogoutBadge1["[ H ]"]:::badge
 
-    %% ================= 2. PATIENT DASHBOARD [ I ] =================
-    TwoFactor -- "Yes" --> SendOTP["Send OTP Code\n(SMS / TOTP Authenticator)"]:::process
-    SendOTP --> EnterOTP["Verify OTP Page\n(verify.html)"]:::process
-    K2_OTP(("( K2 )")):::connector -. "OTP Retry" .-> EnterOTP
-    EnterOTP --> IsOTPValid{"Is OTP Valid?"}:::decision
-    IsOTPValid -- "No" --> K2_Fail(("( K2 )")):::connector
-    IsOTPValid -- "Yes" --> PatientDash["Patient Dashboard\n(patient-dashboard.html)"]:::process
-    TwoFactor -- "No" --> PatientDash
+    AdminDash --> M_Users[/"Manage Users"/]:::iobox
+    AdminDash --> M_Appt[/"Manage Appointment"/]:::iobox
+    AdminDash --> M_Staff[/"Manage Staff"/]:::iobox
+    AdminDash --> M_Dentist[/"Manage Dentist"/]:::iobox
+    AdminDash --> M_Inv[/"Manage Inventory"/]:::iobox
+    AdminDash --> M_Bill[/"Billing & Payment"/]:::iobox
+    AdminDash --> M_Rep[/"Reports & Analytics"/]:::iobox
+    AdminDash --> M_Logout["Logout"]:::process
 
-    PatientDashBadge["[ I ]"]:::badge
-    PatientDash --- PatientDashBadge
-    PatientDash --> Pat1["Book New Appointment"]:::process
-    PatientDash --> Pat2["Appointment History & Schedule"]:::process
-    PatientDash --> Pat3["Prescriptions & Dental Records"]:::process
-    PatientDash --> Pat4["Invoices & Payment Receipts"]:::process
-    PatientDash --> Pat5["Settings & Security (2FA, Profile)"]:::process
-    PatientDash --> Pat6["AI Dental Assistant Widget"]:::aiNode
-    PatientDash --> PatLogout["Logout"]:::process
-    PatLogout --> LogoutBadge2["[ H ]"]:::badge
+    M_Users --> BadgeA["[ A ]"]:::badge
+    M_Appt --> BadgeB["[ B ]"]:::badge
+    M_Staff --> BadgeC["[ C ]"]:::badge
+    M_Dentist --> BadgeD["[ D ]"]:::badge
+    M_Inv --> BadgeE["[ E ]"]:::badge
+    M_Bill --> BadgeF["[ F ]"]:::badge
+    M_Rep --> BadgeG["[ G ]"]:::badge
+    M_Logout --> BadgeH_Admin["[ H ]"]:::badge
 
-    %% ================= 3. DENTIST DASHBOARD [ BB ] =================
+    %% =================== 2. PATIENTS BRANCH (2FA / OTP) ===================
+    PatientLogin --> IsPatientValid{"is credentials\nvalid?"}:::decision
+    IsPatientValid -- "No" --> K1_Patient(("( K1 )")):::connector
+    IsPatientValid -- "Yes" --> TwoFactor{"Two-factor\nauthentication"}:::decision
+    TwoFactor -- "No" --> K1_2FA(("( K1 )")):::connector
+    TwoFactor -- "Yes" --> SendOTP["Send OTP"]:::process
+    SendOTP --> EnterOTP["Enter OTP"]:::process
+    K2_Enter(("( K2 )")):::connector -.-> EnterOTP
+
+    EnterOTP --> IsOTPValid{"Is OTP\nvalid?"}:::decision
+    IsOTPValid -- "No" --> K2_Invalid(("( K2 )")):::connector
+    IsOTPValid -- "Yes" --> PatientDash["Patient Dashboard"]:::process
+    PatientDash --> BadgeI["[ I ]"]:::badge
+
+    %% =================== 3. DENTIST BRANCH ===================
+    DentistLogin --> IsDentistValid{"is credentials\nvalid?"}:::decision
+    IsDentistValid -- "No" --> K1_Dentist(("( K1 )")):::connector
+    IsDentistValid -- "Yes" --> DentistDash["Dentist Dashboard"]:::process
     DentistDashBadge["[ BB ]"]:::badge
     DentistDash --- DentistDashBadge
-    DentistDash --> Dent1["Today's Patient Schedule"]:::process
-    DentistDash --> Dent2["Dental Charting (Odontogram)"]:::process
-    DentistDash --> Dent3["Prescription Management"]:::process
-    DentistDash --> Dent4["Clinical Notes & Treatment Plans"]:::process
-    DentistDash --> Dent5["Patient Medical Alerts & Allergies"]:::process
-    DentistDash --> DentLogout["Logout"]:::process
-    DentLogout --> LogoutBadge3["[ H ]"]:::badge
 
-    %% ================= 4. RECEPTIONIST DASHBOARD [ CC ] =================
-    ReceptDashBadge["[ CC ]"]:::badge
-    ReceptionDash --- ReceptDashBadge
-    ReceptionDash --> Rec1["Walk-in Queue & Chair Check-in"]:::process
-    ReceptionDash --> Rec2["Appointment Booking & Reschedule"]:::process
-    ReceptionDash --> Rec3["Patient Registration & Records"]:::process
-    ReceptionDash --> Rec4["Collect Payments & Issue Receipts"]:::process
-    ReceptionDash --> Rec5["Daily Clinic Summary"]:::process
-    ReceptionDash --> RecLogout["Logout"]:::process
-    RecLogout --> LogoutBadge4["[ H ]"]:::badge
+    DentistDash --> D_Sched[/"View Schedule"/]:::iobox
+    DentistDash --> D_Presc[/"Manage Prescriptions"/]:::iobox
+    DentistDash --> D_Analytics[/"View Analytics"/]:::iobox
+    DentistDash --> D_Logout["Logout"]:::process
 
-    %% ================= 5. ACCOUNTING DASHBOARD [ DD ] =================
-    AccountDashBadge["[ DD ]"]:::badge
-    AccountDash --- AccountDashBadge
-    AccountDash --> Acc1["Financial Ledgers & Journals"]:::process
-    AccountDash --> Acc2["Expense Tracking & Payroll"]:::process
-    AccountDash --> Acc3["HMO & Insurance Claims"]:::process
-    AccountDash --> Acc4["Accounts Receivable & Invoicing"]:::process
-    AccountDash --> Acc5["Income & Revenue Analytics"]:::process
-    AccountDash --> AccLogout["Logout"]:::process
-    AccLogout --> LogoutBadge5["[ H ]"]:::badge
+    D_Sched --> BadgeN["[ N ]"]:::badge
+    D_Presc --> BadgeO["[ O ]"]:::badge
+    D_Analytics --> BadgeP["[ P ]"]:::badge
+    D_Logout --> BadgeH_Dentist["[ H ]"]:::badge
 
-    %% Universal Termination
-    LogoutTerm(["END SESSION / DESTROY TOKEN"]):::startStop
-    LogoutBadge1 --> LogoutTerm
-    LogoutBadge2 --> LogoutTerm
-    LogoutBadge3 --> LogoutTerm
-    LogoutBadge4 --> LogoutTerm
-    LogoutBadge5 --> LogoutTerm
+    %% =================== 4. STAFF BRANCH ===================
+    StaffLogin --> IsStaffValid{"is credentials\nvalid?"}:::decision
+    IsStaffValid -- "No" --> K1_Staff(("( K1 )")):::connector
+    IsStaffValid -- "Yes" --> StaffDash["Staff Dashboard"]:::process
+    StaffDashBadge["[ CC ]"]:::badge
+    StaffDash --- StaffDashBadge
+
+    StaffDash --> S_Appt[/"Manage Appointment"/]:::iobox
+    StaffDash --> S_Pay[/"Manage Payments & Bills"/]:::iobox
+    StaffDash --> S_Inv[/"Manage Inventory"/]:::iobox
+    StaffDash --> S_Logout["Logout"]:::process
+
+    S_Appt --> BadgeQ["[ Q ]"]:::badge
+    S_Pay --> BadgeR["[ R ]"]:::badge
+    S_Inv --> BadgeS["[ S ]"]:::badge
+    S_Logout --> BadgeH_Staff["[ H ]"]:::badge
 ```
 
 ---
 
-## 2. Connectors & Symbol Reference Table
+## 2. Website Mapping Reference Table
 
-| Symbol / Badge | ANSI/ISO Meaning | System Function / Target Destination | Codebase Implementation |
-| :---: | :--- | :--- | :--- |
-| **`START`** | Terminator | System entry point | [landing-page.html](file:///c:/Dental/Dental_Clinic_Website/pages/landing-page.html) & [book-qr.html](file:///c:/Dental/Dental_Clinic_Website/pages/book-qr.html) |
-| **`[ 1 ]`** | Off-Page Connector | User accounts & profile data stream | [signup.html](file:///c:/Dental/Dental_Clinic_Website/pages/signup.html) & `/api/auth/register` |
-| **`[ 2 ]`** | Off-Page Connector | Clinical records (Appointments, Dental Chart, Notes) | [server.js](file:///c:/Dental/Dental_Clinic_Website/server/server.js) & Supabase Tables |
-| **`[ 3 ]`** | Off-Page Connector | Financial & Inventory transactional ledgers | `/api/invoices`, `/api/payments`, `/api/expenses` |
-| **`( K1 )`** | Circular On-Page Connector | Authentication Failure Loopback &rarr; redirects to `login.html` | [login.html](file:///c:/Dental/Dental_Clinic_Website/pages/login.html) & [auth.js](file:///c:/Dental/Dental_Clinic_Website/js/auth.js) |
-| **`( K2 )`** | Circular On-Page Connector | OTP Verification Failure Loopback &rarr; re-prompts `verify.html` | [verify.html](file:///c:/Dental/Dental_Clinic_Website/pages/verify.html) & [totpService.js](file:///c:/Dental/Dental_Clinic_Website/server/utils/totpService.js) |
-| **`[ AA ]`** | Primary Portal Node | Administrator Management Portal | [admin-dashboard.html](file:///c:/Dental/Dental_Clinic_Website/pages/admin-dashboard.html) |
-| **`[ BB ]`** | Primary Portal Node | Dentist / Doctor Clinical Portal | [dentist-dashboard.html](file:///c:/Dental/Dental_Clinic_Website/pages/dentist-dashboard.html) |
-| **`[ CC ]`** | Primary Portal Node | Frontdesk / Receptionist Portal | [receptionist-dashboard.html](file:///c:/Dental/Dental_Clinic_Website/pages/receptionist-dashboard.html) |
-| **`[ DD ]`** | Primary Portal Node | Accounting & Finance Portal | [accounting-dashboard.html](file:///c:/Dental/Dental_Clinic_Website/pages/accounting-dashboard.html) |
-| **`[ I ]`** | Primary Portal Node | Patient Self-Service Portal | [patient-dashboard.html](file:///c:/Dental/Dental_Clinic_Website/pages/patient-dashboard.html) |
-| **`[ H ]`** | Termination Node | Universal Logout action & session destruction | `auth.logout()` & JWT invalidation |
+Every node in your flowchart corresponds directly to an active file, page, or service in our website:
+
+| Diagram Step | Flowchart Shape | Website Implementation & Route | Role / Functionality in Code |
+| :--- | :---: | :--- | :--- |
+| **`START`** | Oval | [pages/landing-page.html](file:///c:/Dental/Dental_Clinic_Website/pages/landing-page.html) | System initial entry point |
+| **`Landing Page`** | Rectangle | [pages/landing-page.html](file:///c:/Dental/Dental_Clinic_Website/pages/landing-page.html) | Public website & clinic information |
+| **`Have an Account?`** | Diamond | Decision: "Sign In" vs "Register" | Routing decision |
+| **`Register`** | Rectangle | [pages/signup.html](file:///c:/Dental/Dental_Clinic_Website/pages/signup.html) | Patient registration form |
+| **`Login page`** | Rectangle | [pages/login.html](file:///c:/Dental/Dental_Clinic_Website/pages/login.html) | Universal multi-role authentication page |
+| **`DATABASE`** | Cylinder | PostgreSQL / Supabase Cloud Database | Central data repository |
+| **`[ 1 ]`** | Off-Page | `POST /api/auth/register` & `users` table | User identity & profile stream |
+| **`[ 2 ]`** | Off-Page | `/api/appointments`, `/api/clinical-notes` | Medical & clinical history stream |
+| **`[ 3 ]`** | Off-Page | `/api/invoices`, `/api/payments`, `/api/inventory` | Financial & supply ledger stream |
+| **`( K1 )`** | Circle | Error modal in `js/auth.js` | Loops back to `login.html` on failed login |
+| **`Two-factor auth`** | Diamond | Check `is_2fa_enabled` in user profile | Triggers TOTP / SMS verification |
+| **`Send OTP`** | Rectangle | `server/utils/totpService.js` | Generates RFC 6238 time-based OTP |
+| **`Enter OTP`** | Rectangle | [pages/verify.html](file:///c:/Dental/Dental_Clinic_Website/pages/verify.html) | OTP verification input screen |
+| **`( K2 )`** | Circle | Error message in `verify.html` | Loops back on invalid OTP code |
+| **`Patient Dashboard` `[ I ]`** | Rectangle | [pages/patient-dashboard.html](file:///c:/Dental/Dental_Clinic_Website/pages/patient-dashboard.html) | Patient self-service appointments & records |
+| **`Admin Dashboard` `[ AA ]`** | Rectangle | [pages/admin-dashboard.html](file:///c:/Dental/Dental_Clinic_Website/pages/admin-dashboard.html) | Master clinic administration portal |
+| **`Dentist Dashboard` `[ BB ]`** | Rectangle | [pages/dentist-dashboard.html](file:///c:/Dental/Dental_Clinic_Website/pages/dentist-dashboard.html) | Doctor schedule, charting & prescriptions |
+| **`Staff Dashboard` `[ CC ]`** | Rectangle | [pages/receptionist-dashboard.html](file:///c:/Dental/Dental_Clinic_Website/pages/receptionist-dashboard.html) | Frontdesk receptionist & queue management |
+| **`Logout` `[ H ]`** | Rectangle | Universal `auth.logout()` | Clears JWT session token and returns to login |
 
 ---
 
-## 3. Submodule Directory Mapping
+## 3. Submodule Badges Reference
 
-### 👑 Admin Modules (`[ AA ]`)
-- **Manage Users & Roles:** User permissions, active account toggle, password reset triggers.
-- **Manage Appointments Agenda:** Approve, reschedule, cancel, or filter pending consultations across branches.
-- **Manage Staff & Dentists:** Doctor assignments, specialties, employee credentials.
-- **Manage Dental Inventory:** Stock replenishment, expiration date tracking, minimum quantity alerts.
-- **Billing, Payments & Invoices:** Global transaction oversight, receipt audits.
-- **Audit Logs & Security:** Real-time system activity logs, IP tracking, security events.
-- **Reports & Analytics:** Clinic performance metrics, patient retention, and revenue charts.
+### 👑 Admin Submodules (`[ AA ]`)
+- **`[ A ]` Manage Users:** User permissions, active account toggle, password resets.
+- **`[ B ]` Manage Appointment:** Master agenda table, approve, reschedule, cancel.
+- **`[ C ]` Manage Staff:** Receptionist & clinical assistant profiles.
+- **`[ D ]` Manage Dentist:** Doctor assignments, dental specialties, schedules.
+- **`[ E ]` Manage Inventory:** Stock quantities, replenishment alerts, expiration dates.
+- **`[ F ]` Billing & Payment:** Transactions, invoice auditing, revenue collection.
+- **`[ G ]` Reports & Analytics:** Clinic performance metrics and financial reports.
 
-### 👤 Patient Portal (`[ I ]`)
-- **Book New Appointment:** Select branch, dentist, treatment type, and time slot.
-- **Appointment History & Schedule:** View upcoming appointments, cancel/reschedule.
-- **Prescriptions & Dental Records:** Access verified digital prescriptions and diagnostic history.
-- **Invoices & Payment Receipts:** View billing breakdown and download official payment receipts.
-- **Settings & Security:** Configure Mobile 2FA (TOTP/SMS), update emergency contacts, allergies, and profile.
-- **AI Dental Assistant:** 24/7 intelligent interactive chatbot for oral health guidance and clinic FAQs.
+### 🩺 Dentist Submodules (`[ BB ]`)
+- **`[ N ]` View Schedule:** Daily patient consultation and procedure agenda.
+- **`[ O ]` Manage Prescriptions:** Digital Rx prescription generation.
+- **`[ P ]` View Analytics:** Completed dental procedures and clinical metrics.
 
-### 🩺 Dentist Clinical Modules (`[ BB ]`)
-- **Today's Patient Schedule:** Queue of scheduled consultations and procedures.
-- **Dental Charting (Odontogram):** Interactive 32-tooth odontogram recording cavities, fillings, crowns, and extractions.
-- **Prescription Management:** Generate digital Rx with dosage, frequency, and instructions.
-- **Clinical Notes & Treatment Plans:** Multi-stage dental treatment planning and doctor notes.
-- **Medical Alerts & Allergies:** Immediate visual banners for critical patient allergies (e.g., Penicillin, Latex).
-
-### 📋 Receptionist / Frontdesk Modules (`[ CC ]`)
-- **Walk-in Queue & Chair Check-in:** Live patient waiting list, queue priority, and chair assignments.
-- **Appointment Booking & Reschedule:** Frontdesk appointment entry and dentist calendar management.
-- **Patient Registration & Records:** New patient intake, dental history verification.
-- **Collect Payments & Issue Receipts:** Point-of-Sale cash/card/Gcash payment collection and print receipts.
-- **Daily Clinic Summary:** End-of-day patient attendance and clinic metrics.
-
-### 💳 Accounting & Finance Modules (`[ DD ]`)
-- **Financial Ledgers & Journals:** General ledgers, debit/credit entries, balance tracking.
-- **Expense Tracking & Payroll:** Clinic operating costs, supplier purchases, and staff compensation.
-- **HMO & Insurance Claims:** Provider claims, pre-authorization statuses, and reimbursement tracking.
-- **Accounts Receivable & Invoicing:** Outstanding patient balances, payment reminders.
-- **Income & Revenue Analytics:** Monthly and annual profit/loss, treatment profitability reports.
+### 📋 Staff Submodules (`[ CC ]`)
+- **`[ Q ]` Manage Appointment:** Walk-in check-in, queue status, chair booking.
+- **`[ R ]` Manage Payments & Bills:** Point-of-Sale cash/card/Gcash payment collection.
+- **`[ S ]` Manage Inventory:** Supply usage and daily stock counts.
