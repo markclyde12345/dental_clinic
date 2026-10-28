@@ -1221,15 +1221,16 @@ body.dark-theme [style*="border-right"] {
 }
 
 .table-action-group {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 5px;
+  flex-wrap: nowrap;
 }
 
 .btn-action-btn {
-  padding: 6px 12px;
-  font-size: 0.78rem;
+  padding: 5px 8px;
+  font-size: 0.74rem;
   font-weight: 600;
   border-radius: 6px;
   border: 1px solid #dcdfe6;
@@ -1238,9 +1239,11 @@ body.dark-theme [style*="border-right"] {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   transition: all 0.2s ease;
   width: auto;
+  white-space: nowrap;
+  line-height: 1.25;
 }
 
 .btn-action-btn.btn-edit {
@@ -5291,6 +5294,32 @@ body.dark-theme #modal-admin-service-details #admin-detail-price {
 body.dark-theme #modal-admin-service-details #admin-detail-duration {
   color: #f8fafc !important;
 }
+
+/* ── Appointments Agenda Compact Fit Styles ── */
+#appointments-agenda-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+#appointments-agenda-table th {
+  padding: 10px 10px !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+#appointments-agenda-table td {
+  padding: 10px 10px !important;
+  font-size: 0.82rem;
+}
+
+#appointments-agenda-table .btn-action-btn {
+  padding: 5px 8px !important;
+  font-size: 0.74rem !important;
+  gap: 3px !important;
+}
+
 
 
 

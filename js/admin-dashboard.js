@@ -408,10 +408,9 @@ function doesInvoiceMatchBranch(inv, targetBranch) {
 
 function renderAppointmentBranchBadge(a) {
   return `
-    <div class="branch-location-badge branch-badge-main" title="Fano Dental Clinic — Balirong Highway, City of Naga, Cebu">
+    <div class="branch-location-badge branch-badge-main" title="Fano Dental Clinic — Balirong Highway, City of Naga, Cebu" style="display: inline-flex; flex-direction: row; align-items: center; gap: 5px; padding: 3px 8px; white-space: nowrap;">
       <span class="blb-dot"></span>
-      <span class="blb-title">Fano Dental Clinic</span>
-      <span class="blb-sub">Naga City</span>
+      <span class="blb-title" style="font-size: 0.76rem; font-weight: 700;">Naga City</span>
     </div>
   `;
 }
@@ -2274,7 +2273,6 @@ function filterAndRenderAppointments() {
     const d = new Date(a.appointment_date);
     const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    const dateStr = `${date} at ${time}`;
 
     const pName = a.patient ? (a.patient.name || `${a.patient.first_name || ''} ${a.patient.last_name || ''}`.trim() || 'Unknown Patient') : 'Unknown Patient';
     const email = a.patient ? (a.patient.email || 'No Email') : 'No Email';
@@ -2288,34 +2286,43 @@ function filterAndRenderAppointments() {
     const isLocked = status === 'Completed' || status === 'Cancelled';
 
     const statusSelectHtml = isLocked
-      ? `<span class="status-badge-select status-${statusLower}" style="display: inline-block; cursor: default;" title="Status locked (${escapeHTML(status)})">${status === 'Completed' ? 'Completed' : 'Cancelled'}</span>`
+      ? `<span class="status-badge-select status-${statusLower}" style="display: inline-block; cursor: default; white-space: nowrap; padding: 4px 8px; font-size: 0.76rem;" title="Status locked (${escapeHTML(status)})">${status === 'Completed' ? 'Completed' : 'Cancelled'}</span>`
       : `
-        <select class="status-badge-select status-${statusLower}" onchange="updateApptStatus('${a.id}', this.value)">
+        <select class="status-badge-select status-${statusLower}" style="white-space: nowrap; padding: 4px 6px; font-size: 0.76rem;" onchange="updateApptStatus('${a.id}', this.value)">
           <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
           <option value="Approved" ${status === 'Approved' ? 'selected' : ''}>Approved</option>
           <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>Completed</option>
-          <option value="Cancelled" ${status === 'Cancelled' ? 'selected' : ''}> Cancelled</option>
+          <option value="Cancelled" ${status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
         </select>
       `;
 
     const actionButtonsHtml = `
       <div class="table-action-group">
-        <button type="button" class="btn-action-btn btn-edit" onclick="event.preventDefault(); openEditApptModal('${a.id}')">✏️ Edit</button>
-        <button type="button" class="btn-action-btn btn-delete" onclick="event.preventDefault(); deleteAppt('${a.id}')">🗑️ Delete</button>
+        <button type="button" class="btn-action-btn btn-edit" title="Edit Appointment" onclick="event.preventDefault(); openEditApptModal('${a.id}')">✏️ Edit</button>
+        <button type="button" class="btn-action-btn btn-delete" title="Delete Appointment" onclick="event.preventDefault(); deleteAppt('${a.id}')">🗑️ Delete</button>
       </div>
     `;
 
     return `
       <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color);">
-        <td style="padding: 14px 16px; font-weight: 500;">${escapeHTML(pName)}</td>
-        <td style="padding: 14px 16px;">${escapeHTML(email)}</td>
-        <td style="padding: 14px 16px;">${escapeHTML(contact)}</td>
-        <td style="padding: 14px 16px;">${escapeHTML(dateStr)}</td>
-        <td style="padding: 12px 16px; vertical-align: middle;">
+        <td style="padding: 10px 10px; font-weight: 600; white-space: nowrap;">
+          <div style="max-width: 145px; overflow: hidden; text-overflow: ellipsis;" title="${escapeHTML(pName)}">${escapeHTML(pName)}</div>
+        </td>
+        <td style="padding: 10px 10px; color: #475569;">
+          <div style="max-width: 165px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(email)}">${escapeHTML(email)}</div>
+        </td>
+        <td style="padding: 10px 10px; white-space: nowrap; font-variant-numeric: tabular-nums;">${escapeHTML(contact)}</td>
+        <td style="padding: 10px 10px; white-space: nowrap;">
+          <div style="line-height: 1.25;">
+            <div style="font-weight: 600; color: #1e293b; font-size: 0.81rem;">${escapeHTML(date)}</div>
+            <div style="font-size: 0.73rem; color: #64748b;">${escapeHTML(time)}</div>
+          </div>
+        </td>
+        <td style="padding: 10px 10px; vertical-align: middle; white-space: nowrap;">
           ${renderAppointmentBranchBadge(a)}
         </td>
-        <td style="padding: 14px 16px;">${statusSelectHtml}</td>
-        <td style="padding: 14px 16px; text-align: right;">${actionButtonsHtml}</td>
+        <td style="padding: 10px 10px; white-space: nowrap;">${statusSelectHtml}</td>
+        <td style="padding: 10px 10px; text-align: right; white-space: nowrap;">${actionButtonsHtml}</td>
       </tr>
     `;
   }).join('');
