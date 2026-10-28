@@ -28,7 +28,6 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { inHTMLData } = require('xss-filters');
 const hpp = require('hpp');
 
 // ─── Initialize Supabase and run seeder ───────────────────────────────────────
@@ -144,15 +143,26 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// ─── Security: Sanitize inputs against XSS (Express 5 & Vercel Safe) ─────────
+// ─── Security: Sanitize inputs against XSS (Zero-dependency, Express 5 & Vercel Safe) ──
+const sanitizeString = (str) => {
+  if (typeof str !== 'string') return str;
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+};
+
 const sanitizeData = (data) => {
-  if (typeof data === 'string') return inHTMLData(data).trim();
+  if (typeof data === 'string') return sanitizeString(data).trim();
+  if (Array.isArray(data)) return data.map(sanitizeData);
   if (data && typeof data === 'object') {
-    try {
-      return JSON.parse(inHTMLData(JSON.stringify(data)).trim());
-    } catch (_) {
-      return data;
+    const cleaned = {};
+    for (const [k, v] of Object.entries(data)) {
+      cleaned[k] = sanitizeData(v);
     }
+    return cleaned;
   }
   return data;
 };
@@ -167,7 +177,7 @@ app.use((req, res, next) => {
         req.params = sanitizeData(req.params);
       } catch (_) {
         for (const k of Object.keys(req.params)) {
-          if (typeof req.params[k] === 'string') req.params[k] = inHTMLData(req.params[k]).trim();
+          if (typeof req.params[k] === 'string') req.params[k] = sanitizeString(req.params[k]).trim();
         }
       }
     }
@@ -177,7 +187,7 @@ app.use((req, res, next) => {
       } catch (_) {
         for (const k of Object.keys(req.query)) {
           if (typeof req.query[k] === 'string') {
-            try { req.query[k] = inHTMLData(req.query[k]).trim(); } catch (_) {}
+            try { req.query[k] = sanitizeString(req.query[k]).trim(); } catch (_) {}
           }
         }
       }
