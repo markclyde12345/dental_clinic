@@ -247,40 +247,28 @@ function setupSettings() {
 // ─── Settings Categories Metadata ────────────────────────────
 const OS_SETTINGS_META = {
   privacy: {
-    title: 'Security & privacy',
-    desc: 'Protect your patient credentials, two-factor authentication, and active sessions.',
-    badgeClass: 'os-badge-blue',
-    iconHtml: '<i class="ti ti-shield" style="font-size: 22px;"></i>'
+    title: 'Security & Privacy',
+    desc: 'Protect your credentials, two-factor authentication, and active sessions.'
   },
   safety: {
-    title: 'Safety & emergency',
-    desc: 'Emergency contact information, medical precautions, and allergy alerts.',
-    badgeClass: 'os-badge-red',
-    iconHtml: '<span style="font-weight:900; font-size: 13px; letter-spacing: -0.5px; text-transform: lowercase;">sos</span>'
+    title: 'Safety & Emergency',
+    desc: 'Emergency contact information, medical precautions, and allergy alerts.'
   },
   notifications: {
     title: 'Notifications',
-    desc: 'Appointment SMS reminders, email confirmations, and clinic advisories.',
-    badgeClass: 'os-badge-emerald',
-    iconHtml: '<i class="ti ti-bell" style="font-size: 22px;"></i>'
+    desc: 'Appointment SMS reminders, email confirmations, and clinic updates.'
   },
   account: {
-    title: 'Users & accounts',
-    desc: 'Official patient registration, identity details, and login history.',
-    badgeClass: 'os-badge-user',
-    iconHtml: '<i class="ti ti-user" style="font-size: 22px;"></i>'
+    title: 'Account & Profile',
+    desc: 'Official patient registration, identity details, and login history.'
   },
   support: {
-    title: 'Help & feedback',
-    desc: 'Patient guides, FAQs, direct clinic telephone desk, and issue reporting.',
-    badgeClass: 'os-badge-help',
-    iconHtml: '<i class="ti ti-help" style="font-size: 22px;"></i>'
+    title: 'Help & Support',
+    desc: 'Patient guides, FAQs, direct clinic telephone desk, and assistance.'
   },
   danger: {
-    title: 'Account deactivation',
-    desc: 'Temporarily suspend portal credentials while preserving medical records.',
-    badgeClass: 'os-badge-danger',
-    iconHtml: '<i class="ti ti-alert-triangle" style="font-size: 22px;"></i>'
+    title: 'Account Deactivation',
+    desc: 'Temporarily suspend portal credentials while preserving medical records.'
   }
 };
 
@@ -294,17 +282,11 @@ function openOsSettingsCategory(catId) {
     btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
   });
 
-  // 2. Set Title, Desc, and Icon in the right pane header
+  // 2. Set Title and Desc in the right pane header
   const titleEl = document.getElementById('os-detail-head-title');
   const descEl = document.getElementById('os-detail-head-desc');
-  const badgeEl = document.getElementById('os-detail-head-badge');
-
   if (titleEl) titleEl.textContent = meta.title;
   if (descEl) descEl.textContent = meta.desc;
-  if (badgeEl) {
-    badgeEl.className = 'os-badge ' + meta.badgeClass;
-    badgeEl.innerHTML = meta.iconHtml;
-  }
 
   // 3. Switch sub-panel with smooth transition
   document.querySelectorAll('.os-sub-panel').forEach(p => {
