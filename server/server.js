@@ -28,7 +28,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const xssClean = require('xss-clean');
+const { inHTMLData } = require('xss-filters');
 const hpp = require('hpp');
 
 // ─── Initialize Supabase and run seeder ───────────────────────────────────────
@@ -51,18 +51,22 @@ app.set('trust proxy', 1);
 
 // ─── Express 5 Compatibility Workaround ──────────────────────────────────────
 app.use((req, res, next) => {
-  Object.defineProperty(req, 'query', {
-    value: { ...req.query },
-    writable: true,
-    configurable: true,
-    enumerable: true,
-  });
-  Object.defineProperty(req, 'params', {
-    value: { ...req.params },
-    writable: true,
-    configurable: true,
-    enumerable: true,
-  });
+  try {
+    Object.defineProperty(req, 'query', {
+      value: { ...req.query },
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+  } catch (_) {}
+  try {
+    Object.defineProperty(req, 'params', {
+      value: { ...req.params },
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+  } catch (_) {}
   next();
 });
 
@@ -140,8 +144,49 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// ─── Security: Sanitize inputs against XSS ───────────────────────────────────
-app.use(xssClean());
+// ─── Security: Sanitize inputs against XSS (Express 5 & Vercel Safe) ─────────
+const sanitizeData = (data) => {
+  if (typeof data === 'string') return inHTMLData(data).trim();
+  if (data && typeof data === 'object') {
+    try {
+      return JSON.parse(inHTMLData(JSON.stringify(data)).trim());
+    } catch (_) {
+      return data;
+    }
+  }
+  return data;
+};
+
+app.use((req, res, next) => {
+  try {
+    if (req.body && typeof req.body === 'object') {
+      req.body = sanitizeData(req.body);
+    }
+    if (req.params && typeof req.params === 'object') {
+      try {
+        req.params = sanitizeData(req.params);
+      } catch (_) {
+        for (const k of Object.keys(req.params)) {
+          if (typeof req.params[k] === 'string') req.params[k] = inHTMLData(req.params[k]).trim();
+        }
+      }
+    }
+    if (req.query && typeof req.query === 'object') {
+      try {
+        req.query = sanitizeData(req.query);
+      } catch (_) {
+        for (const k of Object.keys(req.query)) {
+          if (typeof req.query[k] === 'string') {
+            try { req.query[k] = inHTMLData(req.query[k]).trim(); } catch (_) {}
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[XSS Sanitizer Warning]', err.message);
+  }
+  next();
+});
 
 // ─── Security: Prevent HTTP Parameter Pollution ───────────────────────────────
 app.use(hpp());
