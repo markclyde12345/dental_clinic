@@ -285,13 +285,16 @@ const OS_SETTINGS_META = {
 };
 
 function openOsSettingsCategory(catId) {
-  const menuEl = document.getElementById('os-settings-menu');
-  const detailEl = document.getElementById('os-settings-detail');
-  if (!menuEl || !detailEl) return;
-
   const meta = OS_SETTINGS_META[catId] || OS_SETTINGS_META.privacy;
 
-  // Set Title & Desc & Icon
+  // 1. Highlight the active left-sidebar item
+  document.querySelectorAll('.os-nav-item').forEach(btn => {
+    const isTarget = btn.getAttribute('data-cat') === catId;
+    btn.classList.toggle('active', isTarget);
+    btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+  });
+
+  // 2. Set Title, Desc, and Icon in the right pane header
   const titleEl = document.getElementById('os-detail-head-title');
   const descEl = document.getElementById('os-detail-head-desc');
   const badgeEl = document.getElementById('os-detail-head-badge');
@@ -303,7 +306,7 @@ function openOsSettingsCategory(catId) {
     badgeEl.innerHTML = meta.iconHtml;
   }
 
-  // Activate matching sub-panel
+  // 3. Switch sub-panel with smooth transition
   document.querySelectorAll('.os-sub-panel').forEach(p => {
     p.classList.remove('active');
     p.style.display = 'none';
@@ -313,50 +316,37 @@ function openOsSettingsCategory(catId) {
     targetSub.classList.add('active');
     targetSub.style.display = 'block';
   }
-
-  // Toggle views
-  menuEl.style.display = 'none';
-  detailEl.style.display = 'block';
-  detailEl.classList.add('active');
-
-  // Scroll smoothly to top of settings section
-  document.getElementById('settings-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function closeOsSettingsCategory() {
-  const menuEl = document.getElementById('os-settings-menu');
-  const detailEl = document.getElementById('os-settings-detail');
-  if (!menuEl || !detailEl) return;
-
-  detailEl.classList.remove('active');
-  detailEl.style.display = 'none';
-  menuEl.style.display = 'block';
-  document.getElementById('settings-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  openOsSettingsCategory('privacy');
 }
 
 function filterOsSettings(query) {
   const q = (query || '').trim().toLowerCase();
-  const items = document.querySelectorAll('.os-list-item');
-  const groups = document.querySelectorAll('.os-card-group');
+  const items = document.querySelectorAll('.os-nav-item');
+  const sectionTitles = document.querySelectorAll('.os-nav-section-title');
 
   if (!q) {
     items.forEach(el => { el.style.display = 'flex'; });
-    groups.forEach(g => { g.style.display = 'block'; });
+    sectionTitles.forEach(t => { t.style.display = 'block'; });
     return;
   }
 
+  let firstMatch = null;
   items.forEach(el => {
     const hay = ((el.getAttribute('data-os-item') || '') + ' ' + (el.textContent || '')).toLowerCase();
     const match = hay.includes(q);
     el.style.display = match ? 'flex' : 'none';
+    if (match && !firstMatch) firstMatch = el;
   });
 
-  // Hide empty groups
-  groups.forEach(g => {
-    const itemsInGroup = Array.from(g.querySelectorAll('.os-list-item'));
-    const anyVisible = itemsInGroup.some(item => item.style.display !== 'none');
-    g.style.display = anyVisible ? 'block' : 'none';
-  });
+  sectionTitles.forEach(t => { t.style.display = 'none'; });
+
+  if (firstMatch) {
+    const cat = firstMatch.getAttribute('data-cat');
+    if (cat) openOsSettingsCategory(cat);
+  }
 }
 
 // Immediately expose functions globally

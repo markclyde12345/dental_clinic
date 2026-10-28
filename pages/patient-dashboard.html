@@ -1208,129 +1208,119 @@
       <!-- ══════════ SETTINGS SECTION (MOBILE OS REDESIGN) ══════════ -->
       <section id="settings-section" class="content-section">
 
-        <!-- Outer White Shell Canvas (Wide to fit the tab) -->
+        <!-- Outer Shell Canvas (Modern Two-Column Layout) -->
         <div class="os-settings-shell">
 
-          <!-- ═════ VIEW 1: MASTER OS SETTINGS MENU ═════ -->
-          <div id="os-settings-menu">
-            <!-- Header Title & Subtitle -->
-            <h1 class="os-settings-title">Settings</h1>
-            <p class="os-settings-subtitle">Manage your patient security, notifications, profile credentials, and clinic support.</p>
-
-            <!-- Search Bar -->
-            <div class="os-search-wrap"><i class="ti ti-search" style="font-size: 18px; color: #94a3b8;"></i>
-              <input type="text" class="os-search-input" id="os-settings-search" placeholder="Search settings..." oninput="filterOsSettings(this.value)" onkeyup="filterOsSettings(this.value)" onchange="filterOsSettings(this.value)">
+          <!-- ═════ SETTINGS TOP HEADER ═════ -->
+          <div class="os-settings-top-header">
+            <div>
+              <h1 class="os-settings-title">Account &amp; System Settings</h1>
+              <p class="os-settings-subtitle">Manage your patient security, notifications, profile credentials, and clinic support.</p>
             </div>
-
-            <!-- ─── CARD GROUP 1: SECURITY, SAFETY, NOTIFICATIONS & ACCOUNT ─── -->
-            <div class="os-card-group" data-os-group="security">
-              <!-- Security & privacy -->
-              <div class="os-list-item" id="os-item-privacy" data-cat="privacy" role="button" tabindex="0" onclick="openOsSettingsCategory('privacy')" data-os-item="security privacy 2fa password authentication devices sessions">
-                <div class="os-badge os-badge-blue"><i class="ti ti-shield" style="font-size: 22px;"></i>
-                </div>
-                <div class="os-item-content">
-                  <div class="os-item-title">Security &amp; privacy</div>
-                  <div class="os-item-desc">Two-factor auth, password, active sessions</div>
-                </div>
-                <div class="os-item-trailing">
-                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
-                </div>
-              </div>
-
-              <!-- Safety & emergency -->
-              <div class="os-list-item" id="os-item-safety" data-cat="safety" role="button" tabindex="0" onclick="openOsSettingsCategory('safety')" data-os-item="safety emergency contacts allergies medical alert precautions">
-                <div class="os-badge os-badge-red">
-                  <span style="font-weight:900; font-size: 14px; letter-spacing: -0.5px; text-transform: lowercase;">sos</span>
-                </div>
-                <div class="os-item-content">
-                  <div class="os-item-title">Safety &amp; emergency</div>
-                  <div class="os-item-desc">Emergency contacts, medical &amp; allergy alerts</div>
-                </div>
-                <div class="os-item-trailing">
-                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
-                </div>
-              </div>
-
-              <!-- Notifications -->
-              <div class="os-list-item" id="os-item-notifications" data-cat="notifications" role="button" tabindex="0" onclick="openOsSettingsCategory('notifications')" data-os-item="notifications alerts sms email viber reminders appointments">
-                <div class="os-badge os-badge-emerald"><i class="ti ti-bell" style="font-size: 22px;"></i>
-                </div>
-                <div class="os-item-content">
-                  <div class="os-item-title">Notifications</div>
-                  <div class="os-item-desc">Appointment SMS reminders, email confirmations &amp; clinic notices</div>
-                </div>
-                <div class="os-item-trailing">
-                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
-                </div>
-              </div>
-
-              <!-- Users & accounts -->
-              <div class="os-list-item" id="os-item-account" data-cat="account" role="button" tabindex="0" onclick="openOsSettingsCategory('account')" data-os-item="users accounts profile patient name email phone id">
-                <div class="os-badge os-badge-user"><i class="ti ti-user" style="font-size: 22px;"></i>
-                </div>
-                <div class="os-item-content">
-                  <div class="os-item-title">Users &amp; accounts</div>
-                  <div class="os-item-desc">Patient registration, credentials, login history</div>
-                </div>
-                <div class="os-item-trailing">
-                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
-                </div>
-              </div>
-            </div>
-
-            <!-- ─── CARD GROUP 2: SUPPORT & DANGER ZONE ─── -->
-            <div class="os-card-group" data-os-group="support">
-              <!-- Help & feedback -->
-              <div class="os-list-item" id="os-item-support" data-cat="support" role="button" tabindex="0" onclick="openOsSettingsCategory('support')" data-os-item="help feedback support hotline faqs contact bug guides">
-                <div class="os-badge os-badge-help"><i class="ti ti-help" style="font-size: 22px;"></i>
-                </div>
-                <div class="os-item-content">
-                  <div class="os-item-title">Help &amp; feedback</div>
-                  <div class="os-item-desc">Patient guides, FAQs, contact clinic &amp; bug reporting</div>
-                </div>
-                <div class="os-item-trailing">
-                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
-                </div>
-              </div>
-
-              <!-- Account deactivation -->
-              <div class="os-list-item" id="os-item-danger" data-cat="danger" role="button" tabindex="0" onclick="openOsSettingsCategory('danger')" data-os-item="danger deactivate delete disable account">
-                <div class="os-badge os-badge-danger"><i class="ti ti-alert-triangle" style="font-size: 22px;"></i>
-                </div>
-                <div class="os-item-content">
-                  <div class="os-item-title" style="color: #dc2626;">Account deactivation</div>
-                  <div class="os-item-desc">Temporarily suspend portal login access</div>
-                </div>
-                <div class="os-item-trailing">
-                  <span class="os-chevron"><i class="ti ti-chevron-right" style="font-size: 18px;"></i></span>
-                </div>
-              </div>
-            </div>
-
+            <button type="button" class="os-save-btn" id="save-settings-btn" title="Save your updated settings">
+              <i class="ti ti-check" style="font-size: 16px;"></i>
+              <span>Save Preferences</span>
+            </button>
           </div>
-          <!-- ═════ END VIEW 1: MASTER OS SETTINGS MENU ═════ -->
 
-          <!-- ═════ VIEW 2: DRILL-DOWN SUB-PANEL ═════ -->
-          <div id="os-settings-detail" class="os-settings-detail">
+          <!-- ═════ TWO-COLUMN SETTINGS WORKSPACE ═════ -->
+          <div class="os-settings-layout">
 
-            <!-- Back Nav Bar -->
-            <div class="os-detail-topbar">
-              <button type="button" class="os-back-btn" id="os-back-to-menu-btn" onclick="closeOsSettingsCategory()"><i class="ti ti-chevron-left" style="font-size: 18px;"></i>
-                <span>Settings</span>
-              </button>
-            </div>
-
-            <!-- Detail Header -->
-            <div class="os-detail-head">
-              <div class="os-badge" id="os-detail-head-badge">🛡️</div>
-              <div>
-                <h2 class="os-detail-head-title" id="os-detail-head-title">Security &amp; privacy</h2>
-                <p class="os-detail-head-desc" id="os-detail-head-desc">Protect your patient credentials &amp; login access.</p>
+            <!-- ─── LEFT SIDEBAR: CATEGORY NAVIGATION ─── -->
+            <aside class="os-settings-sidebar">
+              <!-- Search Bar with cleanly aligned icon -->
+              <div class="os-search-wrap">
+                <i class="ti ti-search os-search-icon"></i>
+                <input type="text" class="os-search-input" id="os-settings-search" placeholder="Search settings..." oninput="filterOsSettings(this.value)">
               </div>
-            </div>
 
-            <!-- SUB-PANEL: SECURITY & PRIVACY -->
-            <div class="os-sub-panel" id="os-sub-privacy">
+              <div class="os-nav-section-title">Security &amp; Health</div>
+              <div class="os-nav-list" role="tablist">
+                <!-- Security & privacy -->
+                <button type="button" class="os-nav-item active" id="os-item-privacy" data-cat="privacy" role="tab" aria-selected="true" onclick="openOsSettingsCategory('privacy')" data-os-item="security privacy 2fa password authentication devices sessions">
+                  <div class="os-nav-badge os-badge-blue">
+                    <i class="ti ti-shield"></i>
+                  </div>
+                  <div class="os-nav-text">
+                    <div class="os-nav-title">Security &amp; privacy</div>
+                    <div class="os-nav-desc">Two-factor auth, password, sessions</div>
+                  </div>
+                </button>
+
+                <!-- Safety & emergency -->
+                <button type="button" class="os-nav-item" id="os-item-safety" data-cat="safety" role="tab" aria-selected="false" onclick="openOsSettingsCategory('safety')" data-os-item="safety emergency contacts allergies medical alert precautions">
+                  <div class="os-nav-badge os-badge-red">
+                    <i class="ti ti-alert-circle"></i>
+                  </div>
+                  <div class="os-nav-text">
+                    <div class="os-nav-title">Safety &amp; emergency</div>
+                    <div class="os-nav-desc">Emergency contacts &amp; allergy alerts</div>
+                  </div>
+                </button>
+
+                <!-- Notifications -->
+                <button type="button" class="os-nav-item" id="os-item-notifications" data-cat="notifications" role="tab" aria-selected="false" onclick="openOsSettingsCategory('notifications')" data-os-item="notifications alerts sms email viber reminders appointments">
+                  <div class="os-nav-badge os-badge-emerald">
+                    <i class="ti ti-bell"></i>
+                  </div>
+                  <div class="os-nav-text">
+                    <div class="os-nav-title">Notifications</div>
+                    <div class="os-nav-desc">SMS &amp; email reminder alerts</div>
+                  </div>
+                </button>
+
+                <div class="os-nav-section-title" style="margin-top: 14px;">Account &amp; Support</div>
+
+                <!-- Users & accounts -->
+                <button type="button" class="os-nav-item" id="os-item-account" data-cat="account" role="tab" aria-selected="false" onclick="openOsSettingsCategory('account')" data-os-item="users accounts profile patient name email phone id">
+                  <div class="os-nav-badge os-badge-user">
+                    <i class="ti ti-user"></i>
+                  </div>
+                  <div class="os-nav-text">
+                    <div class="os-nav-title">Users &amp; accounts</div>
+                    <div class="os-nav-desc">Patient registration &amp; profile info</div>
+                  </div>
+                </button>
+
+                <!-- Help & feedback -->
+                <button type="button" class="os-nav-item" id="os-item-support" data-cat="support" role="tab" aria-selected="false" onclick="openOsSettingsCategory('support')" data-os-item="help feedback support hotline faqs contact bug guides">
+                  <div class="os-nav-badge os-badge-help">
+                    <i class="ti ti-help"></i>
+                  </div>
+                  <div class="os-nav-text">
+                    <div class="os-nav-title">Help &amp; feedback</div>
+                    <div class="os-nav-desc">Patient guides, FAQs &amp; clinic desk</div>
+                  </div>
+                </button>
+
+                <!-- Account deactivation -->
+                <button type="button" class="os-nav-item os-nav-danger" id="os-item-danger" data-cat="danger" role="tab" aria-selected="false" onclick="openOsSettingsCategory('danger')" data-os-item="danger deactivate delete disable account">
+                  <div class="os-nav-badge os-badge-danger">
+                    <i class="ti ti-alert-triangle"></i>
+                  </div>
+                  <div class="os-nav-text">
+                    <div class="os-nav-title" style="color: #dc2626;">Account deactivation</div>
+                    <div class="os-nav-desc">Suspend portal login access</div>
+                  </div>
+                </button>
+              </div>
+            </aside>
+
+            <!-- ─── RIGHT MAIN PANE: ACTIVE SETTINGS PANEL ─── -->
+            <main class="os-settings-main">
+              <!-- Detail Header Banner -->
+              <div class="os-detail-head">
+                <div class="os-badge os-badge-blue" id="os-detail-head-badge"><i class="ti ti-shield" style="font-size: 22px;"></i></div>
+                <div>
+                  <h2 class="os-detail-head-title" id="os-detail-head-title">Security &amp; privacy</h2>
+                  <p class="os-detail-head-desc" id="os-detail-head-desc">Protect your patient credentials &amp; login access.</p>
+                </div>
+              </div>
+
+              <!-- Panels Wrapper -->
+              <div class="os-panels-container">
+                <!-- SUB-PANEL: SECURITY & PRIVACY -->
+                <div class="os-sub-panel active" id="os-sub-privacy" style="display: block;">
               <div class="os-detail-card">
                 <h3>Two-Factor Authentication (2FA)</h3>
                 <p>Require an SMS verification OTP whenever logging into your patient dashboard.</p>
@@ -1538,16 +1528,14 @@
               </div>
             </div>
 
-            <!-- Save All Changes Button Bar -->
-            <div class="os-save-bar">
-              <button class="os-save-btn" id="save-settings-btn">
-                <i class="ti ti-check" style="font-size: 16px;"></i>
-                <span>Save All Settings</span>
-              </button>
-            </div>
+              </div>
+              <!-- ═════ END os-panels-container ═════ -->
+
+            </main>
+            <!-- ═════ END os-settings-main ═════ -->
 
           </div>
-          <!-- ═════ END VIEW 2: DRILL-DOWN SUB-PANEL ═════ -->
+          <!-- ═════ END os-settings-layout ═════ -->
 
         </div>
       </section>
