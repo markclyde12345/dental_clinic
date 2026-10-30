@@ -1537,27 +1537,28 @@ const socialLogin = async (req, res) => {
 // @route   GET /api/auth/oauth/:provider
 // @access  Public
 const getOAuthUrl = async (req, res) => {
-  const { provider } = req.params;
-  const { redirect_to } = req.query;
+  const prov = (req.params.provider || 'facebook').toLowerCase();
+  const redirectTo = req.query.redirect_to || `${req.protocol}://${req.get('host')}/pages/oauth-callback.html`;
+  const supabaseAuthUrl = `https://cusxuaugwkjjqbjesksg.supabase.co/auth/v1/authorize?provider=${encodeURIComponent(prov)}&redirect_to=${encodeURIComponent(redirectTo)}`;
 
   try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: provider || 'facebook',
-      options: {
-        redirectTo: redirect_to || `${req.protocol}://${req.get('host')}/pages/oauth-callback.html`
+    if (prov === 'facebook') {
+      // Fetch Supabase's 302 redirect to Facebook so we preserve Supabase's signed state & whitelisted redirect_uri,
+      // then replace scope=email with scope=public_profile so Facebook never fails with "Invalid Scopes: email"
+      const sbRes = await fetch(supabaseAuthUrl, { redirect: 'manual' });
+      const fbLocation = sbRes.headers.get('location');
+      if (fbLocation) {
+        const cleanFbUrl = fbLocation
+          .replace(/([?&])scope=[^&]*/i, '$1scope=public_profile');
+        return res.redirect(302, cleanFbUrl);
       }
-    });
-
-    if (error || !data?.url) {
-      return res.status(400).json({ message: error?.message || 'Failed to generate OAuth URL.' });
     }
 
-    return res.json({ url: data.url, provider });
+    return res.redirect(302, supabaseAuthUrl);
   } catch (error) {
-    return internalError(res, error);
+    return res.redirect(302, supabaseAuthUrl);
   }
 };
-
 module.exports = { 
   registerUser, 
   authUser, 

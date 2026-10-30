@@ -393,7 +393,7 @@ function handleSocialAuth(provider) {
   const prov = (provider || 'Facebook').toLowerCase();
 
   // Dynamic callback URL based on current page location
-  // e.g. https://dental-clinic-lac-three.vercel.app/pages/oauth-callback.html
+  // e.g. https://dental-clinic-bxfb.vercel.app/pages/oauth-callback.html
   const currentPath = window.location.pathname;
   const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/'));
   const callbackUrl = `${window.location.origin}${currentDir}/oauth-callback.html`;
@@ -402,11 +402,15 @@ function handleSocialAuth(provider) {
   showSuccess(`Connecting to ${provider}… Redirecting to secure login.`);
 
   if (prov === 'facebook') {
-    // Direct Facebook Implicit OAuth with scope=public_profile (avoids Supabase forcing Invalid Scopes: email)
-    const FB_CLIENT_ID = '1393974649380899';
-    const fbAuthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FB_CLIENT_ID}&redirect_uri=${encodeURIComponent(callbackUrl)}&response_type=token&scope=public_profile`;
+    // Route through backend OAuth endpoint which gets Supabase's signed Facebook state
+    // and rewrites scope=email -> scope=public_profile (avoiding both 'URL Blocked' and 'Invalid Scopes: email')
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const backendOrigin = (isLocal && window.location.port !== '5000' && window.location.port !== '')
+      ? `${window.location.protocol}//${window.location.hostname}:5000`
+      : '';
+    const fbBounceUrl = `${backendOrigin}/api/auth/oauth/facebook?redirect_to=${encodeURIComponent(callbackUrl)}`;
     setTimeout(() => {
-      window.location.href = fbAuthUrl;
+      window.location.href = fbBounceUrl;
     }, 400);
     return;
   }
