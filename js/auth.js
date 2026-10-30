@@ -393,14 +393,25 @@ function handleSocialAuth(provider) {
   const prov = (provider || 'Facebook').toLowerCase();
 
   // Dynamic callback URL based on current page location
-  // e.g. http://127.0.0.1:5500/Dental_Clinic_Website/pages/oauth-callback.html
+  // e.g. https://dental-clinic-lac-three.vercel.app/pages/oauth-callback.html
   const currentPath = window.location.pathname;
   const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/'));
   const callbackUrl = `${window.location.origin}${currentDir}/oauth-callback.html`;
 
+  localStorage.setItem('oauth_provider', prov);
   showSuccess(`Connecting to ${provider}… Redirecting to secure login.`);
 
-  // Supabase project authorize endpoint
+  if (prov === 'facebook') {
+    // Direct Facebook Implicit OAuth with scope=public_profile (avoids Supabase forcing Invalid Scopes: email)
+    const FB_CLIENT_ID = '1393974649380899';
+    const fbAuthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FB_CLIENT_ID}&redirect_uri=${encodeURIComponent(callbackUrl)}&response_type=token&scope=public_profile`;
+    setTimeout(() => {
+      window.location.href = fbAuthUrl;
+    }, 400);
+    return;
+  }
+
+  // Supabase project authorize endpoint for Google
   const SUPABASE_PROJECT_URL = 'https://cusxuaugwkjjqbjesksg.supabase.co';
   const authorizeUrl = `${SUPABASE_PROJECT_URL}/auth/v1/authorize?provider=${prov}&redirect_to=${encodeURIComponent(callbackUrl)}`;
 

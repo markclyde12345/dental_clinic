@@ -2,14 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=pages/landing-page.html" />
   <title>Fano Dental Clinic</title>
   <script>
-    window.location.replace("pages/landing-page.html");
+    (function () {
+      var hash = window.location.hash || '';
+      var search = window.location.search || '';
+      if (hash.indexOf('access_token=') !== -1 || hash.indexOf('error=') !== -1 || search.indexOf('code=') !== -1) {
+        window.location.replace('pages/oauth-callback.html' + search + hash);
+      } else {
+        window.location.replace('pages/landing-page.html' + search + hash);
+      }
+    })();
   </script>
 </head>
 <body>
   <p>Redirecting to <a href="pages/landing-page.html">Dashboard</a>...</p>
 </body>
-</html> 
+</html>
 

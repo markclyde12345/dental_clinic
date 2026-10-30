@@ -1389,10 +1389,30 @@ const socialLogin = async (req, res) => {
     let sbUser = null;
 
     if (access_token) {
-      // Verify token with Supabase Auth
+      // 1) Verify token with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.getUser(access_token);
       if (!authError && authData?.user) {
         sbUser = authData.user;
+      } else {
+        // 2) Fallback: Verify direct Facebook Graph API access token
+        try {
+          const fbUrl = 'https://graph.facebook.com/me?fields=id,name,first_name,last_name,email&access_token=' + encodeURIComponent(access_token);
+          const fbRes = await fetch(fbUrl);
+          const fbData = await fbRes.json();
+          if (fbRes.ok && fbData && fbData.id) {
+            sbUser = {
+              id: fbData.id,
+              email: fbData.email || ('fb_' + fbData.id + '@facebook.com'),
+              user_metadata: {
+                full_name: fbData.name || ((fbData.first_name || '') + ' ' + (fbData.last_name || '')).trim() || 'Facebook User',
+                name: fbData.name,
+                provider_id: fbData.id
+              }
+            };
+          }
+        } catch (fbErr) {
+          console.error('[Facebook Graph Verify Error]', fbErr.message);
+        }
       }
     } else if (code) {
       // Exchange PKCE code for session with Supabase Auth
@@ -1406,16 +1426,10 @@ const socialLogin = async (req, res) => {
       return res.status(401).json({ message: 'Invalid or expired social authentication credentials.' });
     }
 
-    const email = (sbUser.email || '').trim().toLowerCase();
-
-    if (!email) {
-      return res.status(400).json({ 
-        message: 'Could not retrieve email from social account. Please ensure email permissions are granted.' 
-      });
-    }
-
-    // Extract user profile metadata from Facebook / provider
+    // Extract user profile metadata from Facebook / Google / provider
     const meta = sbUser.user_metadata || {};
+    const providerId = meta.provider_id || meta.sub || sbUser.id || Date.now();
+    const email = (sbUser.email || meta.email || ('fb_' + providerId + '@facebook.com')).trim().toLowerCase();
     const fullName = meta.full_name || meta.name || email.split('@')[0];
     const nameParts = fullName.trim().split(/\s+/);
     const firstName = nameParts[0] || 'Patient';

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fano Dental Clinic – System Flowchart</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #eef0f3; color: #000; }
+  .toolbar { position: sticky; top: 0; z-index: 10; display: flex; gap: 8px; align-items: center;
+             padding: 10px 20px; background: #fff; border-bottom: 1px solid #ccc; }
+  .toolbar h1 { font-size: 16px; margin: 0 auto 0 0; }
+  .toolbar button { font: inherit; font-size: 13px; padding: 6px 12px; border: 1px solid #000; background: #fff; cursor: pointer; }
+  .toolbar button:hover { background: #000; color: #fff; }
+  .toolbar button.active { background: #000; color: #fff; }
+  .sheet { background: #fff; margin: 20px auto; width: max-content; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+  .legend { background: #fff; margin: 0 auto 40px; max-width: 1700px; padding: 20px 30px; box-shadow: 0 2px 10px rgba(0,0,0,.12); font-size: 13px; }
+  .legend h2 { font-size: 15px; margin: 0 0 10px; }
+  .legend table { border-collapse: collapse; width: 100%; margin-bottom: 18px; }
+  .legend th, .legend td { border: 1px solid #999; padding: 5px 8px; text-align: left; vertical-align: top; }
+  .legend th { background: #f2f2f2; }
+  .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media print {
+    .toolbar, .legend { display: none; }
+    body { background: #fff; }
+    .sheet { box-shadow: none; margin: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <h1>Fano Dental Clinic – System Flowchart (Exact Sidebar Menus &amp; Actions per Role)</h1>
+  <button id="btn-4col" class="active" onclick="renderChart('4col')">4-Branch Layout (Admin, Patient, Dentist, Staff)</button>
+  <button id="btn-5col" onclick="renderChart('5col')">5-Branch Layout (Separates Receptionist &amp; Accounting)</button>
+  <button onclick="downloadSVG()">Download SVG</button>
+  <button onclick="downloadPNG()">Download PNG</button>
+  <button onclick="window.print()">Print</button>
+</div>
+
+<div class="sheet"><svg id="chart" xmlns="http://www.w3.org/2000/svg"></svg></div>
+
+<div class="legend">
+  <h2>What Each User Sees &amp; Can Do After Login (Mapped to Sidebar Menus)</h2>
+  <div class="cols">
+    <table>
+      <tr><th>Admin Portal (<code>[ AA ]</code>)</th><th>Patient Portal (<code>[ I ]</code>)</th></tr>
+      <tr>
+        <td>
+          <b>File:</b> <code>pages/admin-dashboard.html</code><br>
+          • <b>[ A ] Dashboard Overview:</b> View KPIs (Patients Seen, No-Shows, Today/MTD Revenue) &amp; Charts<br>
+          • <b>[ B ] Appointments:</b> Approve, Reschedule, Complete, or Cancel clinic appointments<br>
+          • <b>[ C ] Patients:</b> View &amp; manage Patient Directory records<br>
+          • <b>[ D ] Visits History:</b> Browse completed clinical visit logs<br>
+          • <b>[ E ] Staff / Dentists:</b> Manage clinical staff, dentists &amp; shift schedules<br>
+          • <b>[ F ] Services &amp; Treatments:</b> Add/edit dental procedures &amp; pricing<br>
+          • <b>[ G ] Billing &amp; Payments:</b> Audit invoices, settle payments &amp; track revenue<br>
+          • <b>[ J ] Inventory:</b> Track dental supplies, stock counts &amp; low-stock alerts<br>
+          • <b>[ K ] Manage Users:</b> Activate/deactivate accounts &amp; role permissions<br>
+          • <b>[ L ] System Logs:</b> Inspect security &amp; operational audit trail<br>
+          • <b>[ M ] Settings:</b> Configure clinic branches, map pins &amp; MFA security
+        </td>
+        <td>
+          <b>File:</b> <code>pages/patient-dashboard.html</code><br>
+          • <b>[ I1 ] Dashboard Overview:</b> View Next Appointment, Total Visits, Unpaid Balance &amp; Health Status<br>
+          • <b>[ I2 ] Clinic Services:</b> Browse dental treatments, durations &amp; prices<br>
+          • <b>[ I3 ] Book Appointment:</b> 3-Step Smart Booking Wizard (Date/Time, Dentist, Branch Map)<br>
+          • <b>[ I4 ] My Records:</b> View dental treatment history, prescriptions &amp; clinical notes<br>
+          • <b>[ I5 ] Billing &amp; Invoices:</b> View invoices, receipts &amp; outstanding balances<br>
+          • <b>[ I6 ] Financial Summary:</b> Track total payments &amp; billing breakdown<br>
+          • <b>[ I7 ] AI Chatbot &amp; Messages:</b> Use Denti Symptom Checker &amp; clinic chat<br>
+          • <b>[ I8 ] My Profile:</b> Update personal info, phone &amp; emergency contact<br>
+          • <b>[ I9 ] Settings:</b> Manage password, privacy, notifications &amp; 2FA
+        </td>
+      </tr>
+    </table>
+    <table>
+      <tr><th>Dentist Portal (<code>[ BB ]</code>)</th><th>Staff Portal: Receptionist &amp; Accounting (<code>[ CC ]</code> / <code>[ DD ]</code>)</th></tr>
+      <tr>
+        <td>
+          <b>File:</b> <code>pages/dentist-dashboard.html</code><br>
+          • <b>[ N ] Dashboard Overview:</b> View Today's Appointments, Waiting Count &amp; Quick Actions<br>
+          • <b>[ O ] Today's Schedule:</b> View daily assigned patient consultation slots<br>
+          • <b>[ P ] Patient Queue:</b> Call next waiting patient into procedure chair<br>
+          • <b>[ Q ] Patient Records:</b> Review patient medical history, allergies &amp; past visits<br>
+          • <b>[ R ] Dental Charting:</b> Interactive odontogram tooth chart &amp; treatment plans<br>
+          • <b>[ S ] Prescriptions (Rx):</b> Create &amp; issue digital prescriptions for patients<br>
+          • <b>[ T ] Follow-Ups:</b> Schedule &amp; track post-treatment recall visits<br>
+          • <b>[ U ] Clinical Calendar:</b> Monthly/weekly procedure schedule view<br>
+          • <b>[ V ] Reports &amp; Stats:</b> View completed procedures &amp; clinical performance<br>
+          • <b>[ W ] Dentist Profile &amp; Settings:</b> Manage doctor bio, specialty &amp; preferences
+        </td>
+        <td>
+          <b>Receptionist:</b> <code>pages/receptionist-dashboard.html</code><br>
+          • <b>[ X1 ] Front Desk Overview:</b> View Today's Appts, Waiting Lounge, In Procedure &amp; Alerts<br>
+          • <b>[ X2 ] Appointments:</b> Book walk-in appointments, approve &amp; reschedule<br>
+          • <b>[ X3 ] Patient Queue:</b> Check-in arriving patients &amp; assign to dentist chair<br>
+          • <b>[ X4 ] Patient Directory:</b> Look up &amp; register walk-in patient profiles<br>
+          • <b>[ X5 ] Dentists on Duty:</b> Check live doctor availability &amp; shift status<br>
+          • <b>[ X6 ] Check-Out &amp; Billing:</b> Collect front-desk payments &amp; report low stock<br><br>
+          <b>Accounting:</b> <code>pages/accounting-dashboard.html</code><br>
+          • <b>[ Y1 ] Financial Overview:</b> View Total Billed, Collected, Outstanding &amp; HMO metrics<br>
+          • <b>[ Y2 ] Invoices Ledger:</b> Generate &amp; manage patient billing invoices<br>
+          • <b>[ Y3 ] Payments &amp; Collections:</b> Record Cash, GCash/Maya &amp; Card settlements<br>
+          • <b>[ Y4 ] HMO &amp; Insurance:</b> Process corporate insurance &amp; HMO claims<br>
+          • <b>[ Y5 ] Expenses &amp; Inventory Costs:</b> Log clinic overhead bills &amp; supply costs<br>
+          • <b>[ Y6 ] Financial Reports &amp; Settings:</b> Export revenue statements &amp; tax settings
+        </td>
+      </tr>
+    </table>
+    <table>
+      <tr><th>Global Connectors</th><th>System Meaning</th></tr>
+      <tr><td><b>( K1 )</b></td><td>Invalid login credentials → loops back to <code>Login page</code></td></tr>
+      <tr><td><b>( K2 )</b></td><td>Invalid OTP code → loops back to <code>Enter OTP</code> on <code>verify.html</code></td></tr>
+      <tr><td><b>[ 1 ]</b></td><td>Saves registered user account to <code>DATABASE</code> (<code>users</code> table)</td></tr>
+      <tr><td><b>[ 2 ]</b></td><td>Reads/writes Appointments, Queue, Dental Charts &amp; Prescriptions in <code>DATABASE</code></td></tr>
+      <tr><td><b>[ 3 ]</b></td><td>Reads/writes Billing, Invoices, Payments, HMO, Inventory &amp; Logs in <code>DATABASE</code></td></tr>
+      <tr><td><b>[ H ]</b></td><td><b>Log Out</b> → clears session token &amp; returns user to <code>Landing Page</code></td></tr>
+    </table>
+  </div>
+</div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('chart');
+let currentMode = '4col';
+let W = 1540, H = 1920;
+
+function renderChart(mode) {
+  currentMode = mode;
+  document.getElementById('btn-4col').classList.toggle('active', mode === '4col');
+  document.getElementById('btn-5col').classList.toggle('active', mode === '5col');
+
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  W = mode === '4col' ? 1540 : 1840;
+  H = mode === '4col' ? 1860 : 1860;
+  svg.setAttribute('width', W);
+  svg.setAttribute('height', H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('font-family', 'Arial, Helvetica, sans-serif');
+
+  function el(tag, attrs, parent = svg) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    parent.appendChild(e);
+    return e;
+  }
+  const STROKE = { stroke: '#000', 'stroke-width': 1.3, fill: '#fff' };
+
+  const defs = el('defs', {});
+  const mk = el('marker', { id: 'arr', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6.5, markerHeight: 6.5, orient: 'auto-start-reverse' }, defs);
+  el('path', { d: 'M0,0 L10,5 L0,10 z', fill: '#000' }, mk);
+  el('rect', { x: 0, y: 0, width: W, height: H, fill: '#fff' });
+
+  const edges = el('g', {});
+  const shapes = el('g', {});
+
+  function text(x, y, str, size = 11, weight = 'normal') {
+    const lines = str.split('\n');
+    const t = el('text', {
+      x,
+      y: y - ((lines.length - 1) * size * 0.58),
+      'text-anchor': 'middle',
+      'dominant-baseline': 'middle',
+      'font-size': size,
+      'font-weight': weight
+    }, shapes);
+    lines.forEach((ln, i) => {
+      const s = el('tspan', { x, dy: i === 0 ? 0 : size * 1.18 }, t);
+      s.textContent = ln;
+    });
+  }
+
+  function oval(x, y, label, w = 104, h = 42) {
+    el('ellipse', { cx: x, cy: y, rx: w / 2, ry: h / 2, ...STROKE }, shapes);
+    text(x, y, label, 11.5);
+  }
+  function rect(x, y, label, w = 152, h = 42, bold = false) {
+    el('rect', { x: x - w / 2, y: y - h / 2, width: w, height: h, ...STROKE }, shapes);
+    text(x, y, label, 11, bold ? 'bold' : 'normal');
+  }
+  function diamond(x, y, label, w = 160, h = 82) {
+    el('polygon', { points: `${x},${y - h / 2} ${x + w / 2},${y} ${x},${y + h / 2} ${x - w / 2},${y}`, ...STROKE }, shapes);
+    text(x, y, label, 10.5);
+  }
+  function para(x, y, label, w = 156, h = 36) {
+    const s = 11;
+    el('polygon', { points: `${x - w / 2 + s},${y - h / 2} ${x + w / 2},${y - h / 2} ${x + w / 2 - s},${y + h / 2} ${x - w / 2},${y + h / 2}`, ...STROKE }, shapes);
+    text(x, y, label, 10.2);
+  }
+  function circle(x, y, label, r = 18) {
+    el('circle', { cx: x, cy: y, r, ...STROKE }, shapes);
+    text(x, y, label, 10.5, 'bold');
+  }
+  function offpage(x, y, label, w = 42, h = 42) {
+    el('polygon', { points: `${x - w / 2},${y - h / 2} ${x + w / 2},${y - h / 2} ${x + w / 2},${y + h / 6} ${x},${y + h / 2} ${x - w / 2},${y + h / 6}`, ...STROKE }, shapes);
+    text(x, y - 3, label, 10.5, 'bold');
+  }
+  function cylinder(x, y, label, w = 220, h = 96) {
+    const rx = w / 2, ry = 14, top = y - h / 2, bot = y + h / 2;
+    el('path', { d: `M${x - rx},${top} A${rx},${ry} 0 0 0 ${x + rx},${top} L${x + rx},${bot} A${rx},${ry} 0 0 1 ${x - rx},${bot} Z`, ...STROKE }, shapes);
+    el('path', { d: `M${x - rx},${top} A${rx},${ry} 0 0 1 ${x + rx},${top}`, ...STROKE, fill: 'none' }, shapes);
+    text(x, y + 6, label, 15);
+  }
+  function line(pts, arrow = true, label = null, lpos = null) {
+    el('polyline', {
+      points: pts.map(p => p.join(',')).join(' '),
+      fill: 'none',
+      stroke: '#000',
+      'stroke-width': 1.2,
+      ...(arrow ? { 'marker-end': 'url(#arr)' } : {})
+    }, edges);
+    if (label) {
+      const [lx, ly] = lpos || pts[0];
+      const t = el('text', { x: lx, y: ly, 'font-size': 10, 'text-anchor': 'middle' }, shapes);
+      t.textContent = label;
+    }
+  }
+
+  // Draws Dashboard box + left vertical spine + parallelogram for every menu item the user sees after login + Logout rectangle at bottom
+  function drawDashboardModules(x, y, label, badge, modules, gap = 52) {
+    rect(x, y, label, 152, 42, true);
+    if (badge) {
+      line([[x + 76, y], [x + 104, y]]);
+      offpage(x + 126, y, badge, 42, 42);
+    }
+    const spineX = x - 96;
+    let yy = y + 62;
+    line([[x - 76, y], [spineX, y]], false);
+    const last = y + 62 + (modules.length) * gap;
+    line([[spineX, y], [spineX, last]], false);
+    modules.forEach(([name, code]) => {
+      line([[spineX, yy], [x - 74, yy]]);
+      para(x, yy, name, 152, 34);
+      line([[x + 76, yy], [x + 104, yy]]);
+      offpage(x + 126, yy, code, 42, 38);
+      yy += gap;
+    });
+    line([[spineX, yy], [x - 76, yy]]);
+    rect(x, yy, 'Logout', 152, 34);
+    line([[x + 76, yy], [x + 104, yy]]);
+    offpage(x + 126, yy, 'H', 42, 38);
+  }
+
+  // Exact sidebar menus seen by each user role once logged in:
+  const ADMIN_MODULES = [
+    ['Dashboard Overview', 'A'],
+    ['Manage Appointments', 'B'],
+    ['Patients Directory', 'C'],
+    ['Visits History', 'D'],
+    ['Staff & Dentists', 'E'],
+    ['Services & Treatments', 'F'],
+    ['Billing & Payments', 'G'],
+    ['Manage Inventory', 'J'],
+    ['Manage Users', 'K'],
+    ['System Audit Logs', 'L'],
+    ['Clinic Settings', 'M'],
+  ];
+
+  const PATIENT_MODULES = [
+    ['Dashboard Overview', 'I1'],
+    ['Clinic Services', 'I2'],
+    ['Book Appointment', 'I3'],
+    ['My Dental Records', 'I4'],
+    ['Billing & Invoices', 'I5'],
+    ['Financial Summary', 'I6'],
+    ['AI Assistant & Chat', 'I7'],
+    ['My Profile', 'I8'],
+    ['Account Settings', 'I9'],
+  ];
+
+  const DENTIST_MODULES = [
+    ['Dashboard Overview', 'N'],
+    ["Today's Schedule", 'O'],
+    ['Patient Queue', 'P'],
+    ['Patient Records', 'Q'],
+    ['Dental Charting', 'R'],
+    ['Manage Prescriptions', 'S'],
+    ['Follow-Ups', 'T'],
+    ['Clinical Calendar', 'U'],
+    ['Reports & Analytics', 'V'],
+    ['Profile & Settings', 'W'],
+  ];
+
+  const STAFF_COMBINED_MODULES = [
+    ['Front Desk & Finance\nOverview', 'X1'],
+    ['Manage Appointments', 'Q'],
+    ['Patient Queue &\nCheck-In', 'Q1'],
+    ['Patient Directory', 'Q2'],
+    ['Dentists on Duty', 'Q3'],
+    ['Check-Out & Billing', 'R'],
+    ['Invoices & Payments', 'R1'],
+    ['HMO & Insurance', 'R2'],
+    ['Expenses & Inventory', 'S'],
+    ['Financial Reports', 'S1'],
+    ['Audit Trail & Settings', 'S2'],
+  ];
+
+  const RECEPTIONIST_MODULES = [
+    ['Front Desk Overview', 'X1'],
+    ['Manage Appointments', 'X2'],
+    ['Patient Queue', 'X3'],
+    ['Patient Directory', 'X4'],
+    ['Dentists on Duty', 'X5'],
+    ['Check-Out & Billing', 'X6'],
+    ['Report Low Stock', 'X7'],
+    ['Activity Audit Trail', 'X8'],
+  ];
+
+  const ACCOUNTING_MODULES = [
+    ['Financial Overview', 'Y1'],
+    ['Invoices Ledger', 'Y2'],
+    ['Payments & Collections', 'Y3'],
+    ['HMO & Insurance', 'Y4'],
+    ['Expenses & Bills', 'Y5'],
+    ['Inventory Costs', 'Y6'],
+    ['Financial Reports', 'Y7'],
+    ['Financial Settings', 'Y8'],
+  ];
+
+  if (mode === '4col') {
+    const COLS = [195, 575, 945, 1315];
+    const CX = COLS[1];
+
+    oval(CX, 44, 'start');
+    line([[CX, 65], [CX, 104]]);
+    rect(CX, 126, 'Landing Page', 140, 44);
+    line([[CX, 148], [CX, 178]]);
+    diamond(CX, 220, 'Have an Account?', 164, 84);
+
+    // Register branch
+    line([[CX - 82, 220], [448, 220]]);
+    rect(378, 220, 'Register', 140, 44);
+    line([[308, 220], [248, 220]]);
+    offpage(225, 220, '1', 42, 42);
+
+    // Database cluster
+    const DBX = 1075, DBY = 195;
+    cylinder(DBX, DBY, 'DATABASE', 230, 96);
+    offpage(DBX - 185, 130, '1', 42, 42);
+    line([[DBX - 185, 151], [DBX - 185, 185], [DBX - 117, 185]]);
+    offpage(DBX - 50, 90, '2', 42, 42);
+    line([[DBX - 50, 111], [DBX - 50, 156]]);
+    offpage(DBX + 55, 90, '3', 42, 42);
+    line([[DBX + 55, 111], [DBX + 55, 156]]);
+
+    // Login page with K1
+    line([[CX, 262], [CX, 308]]);
+    circle(CX + 86, 282, 'K1', 18);
+    line([[CX + 68, 282], [CX + 26, 282], [CX + 26, 308]]);
+    rect(CX, 330, 'Login page', 140, 44);
+
+    // 4-branch lines from Login page
+    line([[CX - 70, 330], [COLS[0], 330], [COLS[0], 418]]);
+    line([[CX, 352], [COLS[1], 418]]);
+    line([[CX + 70, 338], [COLS[2], 338], [COLS[2], 418]]);
+    line([[CX + 70, 322], [COLS[3], 322], [COLS[3], 418]]);
+
+    // 1. Admin
+    const X0 = COLS[0];
+    rect(X0, 440, 'Admin log in', 140, 44);
+    line([[X0, 462], [X0, 500]]);
+    diamond(X0, 542, 'Is credentials valid?', 166, 84);
+    line([[X0 - 83, 542], [X0 - 118, 542]]);
+    circle(X0 - 138, 542, 'K1', 18);
+    line([[X0, 584], [X0, 628]]);
+    drawDashboardModules(X0, 650, 'Admin Dashboard', 'AA', ADMIN_MODULES, 52);
+
+    // 2. Patients (with 2FA / OTP + full Patient Dashboard menu list)
+    const X1 = COLS[1];
+    rect(X1, 440, 'Patients log in', 140, 44);
+    line([[X1, 462], [X1, 500]]);
+    diamond(X1, 542, 'Is credentials valid?', 166, 84);
+    line([[X1 - 83, 542], [X1 - 118, 542]]);
+    circle(X1 - 138, 542, 'K1', 18);
+
+    line([[X1, 584], [X1, 618]]);
+    diamond(X1, 660, 'Two-factor authentication', 174, 84);
+    line([[X1 - 87, 660], [X1 - 118, 660]]);
+    circle(X1 - 138, 660, 'K1', 18);
+
+    line([[X1, 702], [X1, 748]]);
+    rect(X1, 770, 'Send OTP', 140, 44);
+    line([[X1, 792], [X1, 846]]);
+    circle(X1 + 88, 818, 'K2', 18);
+    line([[X1 + 70, 818], [X1 + 26, 818], [X1 + 26, 846]]);
+    rect(X1, 868, 'Enter OTP', 140, 44);
+    line([[X1, 890], [X1, 926]]);
+    diamond(X1, 968, 'Is OTP valid?', 160, 82);
+    line([[X1 - 80, 968], [X1 - 118, 968]]);
+    circle(X1 - 138, 968, 'K2', 18);
+
+    line([[X1, 1009], [X1, 1050]]);
+    drawDashboardModules(X1, 1072, 'Patient Dashboard', 'I', PATIENT_MODULES, 52);
+
+    // 3. Dentist
+    const X2 = COLS[2];
+    rect(X2, 440, 'Dentist log in', 140, 44);
+    line([[X2, 462], [X2, 500]]);
+    diamond(X2, 542, 'Is credentials valid?', 166, 84);
+    line([[X2 - 83, 542], [X2 - 118, 542]]);
+    circle(X2 - 138, 542, 'K1', 18);
+    line([[X2, 584], [X2, 628]]);
+    drawDashboardModules(X2, 650, 'Dentist Dashboard', 'BB', DENTIST_MODULES, 52);
+
+    // 4. Staff
+    const X3 = COLS[3];
+    rect(X3, 440, 'Staff log in', 140, 44);
+    line([[X3, 462], [X3, 500]]);
+    diamond(X3, 542, 'Is credentials valid?', 166, 84);
+    line([[X3 - 83, 542], [X3 - 118, 542]]);
+    circle(X3 - 138, 542, 'K1', 18);
+    line([[X3, 584], [X3, 628]]);
+    drawDashboardModules(X3, 650, 'Staff Dashboard', 'CC', STAFF_COMBINED_MODULES, 52);
+
+  } else {
+    // 5-Branch Layout showing all 5 portals with their exact sidebar menus
+    const COLS = [185, 535, 885, 1235, 1585];
+    const CX = COLS[2];
+
+    oval(CX, 44, 'start');
+    line([[CX, 65], [CX, 104]]);
+    rect(CX, 126, 'Landing Page', 140, 44);
+    line([[CX, 148], [CX, 178]]);
+    diamond(CX, 220, 'Have an Account?', 164, 84);
+
+    line([[CX - 82, 220], [748, 220]]);
+    rect(678, 220, 'Register', 140, 44);
+    line([[608, 220], [548, 220]]);
+    offpage(525, 220, '1', 42, 42);
+
+    const DBX = 1450, DBY = 195;
+    cylinder(DBX, DBY, 'DATABASE', 230, 96);
+    offpage(DBX - 185, 130, '1', 42, 42);
+    line([[DBX - 185, 151], [DBX - 185, 185], [DBX - 117, 185]]);
+    offpage(DBX - 50, 90, '2', 42, 42);
+    line([[DBX - 50, 111], [DBX - 50, 156]]);
+    offpage(DBX + 55, 90, '3', 42, 42);
+    line([[DBX + 55, 111], [DBX + 55, 156]]);
+
+    line([[CX, 262], [CX, 308]]);
+    circle(CX + 86, 282, 'K1', 18);
+    line([[CX + 68, 282], [CX + 26, 282], [CX + 26, 308]]);
+    rect(CX, 330, 'Login page', 140, 44);
+
+    line([[CX, 352], [CX, 380]], false);
+    line([[COLS[0], 380], [COLS[4], 380]], false);
+    COLS.forEach(x => line([[x, 380], [x, 418]]));
+
+    function drawStandardBranch(x, loginLabel, dashLabel, badge, modules) {
+      rect(x, 440, loginLabel, 148, 44);
+      line([[x, 462], [x, 500]]);
+      diamond(x, 542, 'Is credentials valid?', 166, 84);
+      line([[x - 83, 542], [x - 118, 542]]);
+      circle(x - 138, 542, 'K1', 18);
+      line([[x, 584], [x, 628]]);
+      drawDashboardModules(x, 650, dashLabel, badge, modules, 52);
+    }
+
+    // 1. Admin
+    drawStandardBranch(COLS[0], 'Admin log in', 'Admin Dashboard', 'AA', ADMIN_MODULES);
+
+    // 2. Patient
+    const X1 = COLS[1];
+    rect(X1, 440, 'Patients log in', 148, 44);
+    line([[X1, 462], [X1, 500]]);
+    diamond(X1, 542, 'Is credentials valid?', 166, 84);
+    line([[X1 - 83, 542], [X1 - 118, 542]]);
+    circle(X1 - 138, 542, 'K1', 18);
+    line([[X1, 584], [X1, 618]]);
+    diamond(X1, 660, 'Two-factor authentication', 174, 84);
+    line([[X1 - 87, 660], [X1 - 118, 660]]);
+    circle(X1 - 138, 660, 'K1', 18);
+    line([[X1, 702], [X1, 748]]);
+    rect(X1, 770, 'Send OTP', 140, 44);
+    line([[X1, 792], [X1, 846]]);
+    circle(X1 + 88, 818, 'K2', 18);
+    line([[X1 + 70, 818], [X1 + 26, 818], [X1 + 26, 846]]);
+    rect(X1, 868, 'Enter OTP', 140, 44);
+    line([[X1, 890], [X1, 926]]);
+    diamond(X1, 968, 'Is OTP valid?', 160, 82);
+    line([[X1 - 80, 968], [X1 - 118, 968]]);
+    circle(X1 - 138, 968, 'K2', 18);
+    line([[X1, 1009], [X1, 1050]]);
+    drawDashboardModules(X1, 1072, 'Patient Dashboard', 'I', PATIENT_MODULES, 52);
+
+    // 3. Dentist
+    drawStandardBranch(COLS[2], 'Dentist log in', 'Dentist Dashboard', 'BB', DENTIST_MODULES);
+
+    // 4. Receptionist
+    drawStandardBranch(COLS[3], 'Receptionist log in', 'Receptionist Dashboard', 'CC', RECEPTIONIST_MODULES);
+
+    // 5. Accounting
+    drawStandardBranch(COLS[4], 'Accounting log in', 'Accounting Dashboard', 'DD', ACCOUNTING_MODULES);
+  }
+}
+
+renderChart('4col');
+
+function svgString() { return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(svg); }
+function save(url, name) { const a = document.createElement('a'); a.href = url; a.download = name; a.click(); }
+function downloadSVG() { save(URL.createObjectURL(new Blob([svgString()], { type: 'image/svg+xml' })), `fano-system-flowchart-${currentMode}.svg`); }
+function downloadPNG() {
+  const img = new Image(), scale = 2;
+  img.onload = () => {
+    const c = document.createElement('canvas'); c.width = W * scale; c.height = H * scale;
+    const ctx = c.getContext('2d'); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0);
+    save(c.toDataURL('image/png'), `fano-system-flowchart-${currentMode}.png`);
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString());
+}
+</script>
+</body>
+</html>

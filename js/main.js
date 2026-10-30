@@ -3,6 +3,16 @@
  * File: js/main.js
  */
 
+/* ===== OAUTH HASH / CODE FORWARDER ===== */
+(function () {
+  var hash = window.location.hash || '';
+  var search = window.location.search || '';
+  if (hash.indexOf('access_token=') !== -1 || hash.indexOf('error_description=') !== -1 || search.indexOf('code=') !== -1) {
+    var target = window.location.pathname.indexOf('/pages/') !== -1 ? 'oauth-callback.html' : '/pages/oauth-callback.html';
+    window.location.replace(target + search + hash);
+  }
+})();
+
 /* ===== LOADER ===== */
 window.addEventListener('load', () => {
   setTimeout(() => {

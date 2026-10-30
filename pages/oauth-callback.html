@@ -128,10 +128,10 @@
 
   <div class="callback-card">
     <div class="logo-badge" id="card-icon">
-      <i class="ti ti-brand-facebook"></i>
+      <i class="ti ti-shield-lock"></i>
     </div>
     <div class="spinner" id="loading-spinner"></div>
-    <h2 class="status-title" id="status-title">Signing you in with Facebook...</h2>
+    <h2 class="status-title" id="status-title">Signing you in...</h2>
     <p class="status-desc" id="status-desc">
       Please wait while we verify your social credentials and connect your clinic account.
     </p>
@@ -148,6 +148,15 @@
       const iconEl = document.getElementById('card-icon');
       const errorBox = document.getElementById('error-box');
       const btnReturn = document.getElementById('btn-return');
+      const activeProvider = (localStorage.getItem('oauth_provider') || 'google').toLowerCase();
+      const providerLabel = activeProvider === 'facebook' ? 'Facebook' : 'Google';
+
+      if (iconEl) {
+        iconEl.innerHTML = activeProvider === 'facebook'
+          ? '<i class="ti ti-brand-facebook"></i>'
+          : '<i class="ti ti-brand-google"></i>';
+      }
+      titleEl.textContent = `Signing you in with ${providerLabel}...`;
 
       function showError(msg) {
         if (spinner) spinner.style.display = 'none';
@@ -157,7 +166,7 @@
           iconEl.innerHTML = '<i class="ti ti-alert-circle"></i>';
         }
         titleEl.textContent = 'Authentication Failed';
-        descEl.textContent = 'We were unable to complete sign in with Facebook.';
+        descEl.textContent = `We were unable to complete sign in with ${providerLabel}.`;
         errorBox.textContent = msg;
         errorBox.style.display = 'block';
         btnReturn.style.display = 'inline-block';
@@ -206,7 +215,7 @@
           body: JSON.stringify({
             access_token: accessToken,
             code: code,
-            provider: 'facebook'
+            provider: activeProvider
           })
         });
 
@@ -216,9 +225,15 @@
           throw new Error(data.message || 'Failed to authenticate social account with clinic server.');
         }
 
-        // 5. Store session in localStorage
+        // 5. Store session in localStorage & sessionStorage (matching auth.js)
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+        const expiry = Date.now() + thirtyDaysMs;
         localStorage.setItem('token', data.token);
         localStorage.setItem('userInfo', JSON.stringify(data));
+        localStorage.setItem('sessionExpiry', expiry.toString());
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('userInfo', JSON.stringify(data));
+        sessionStorage.setItem('sessionExpiry', expiry.toString());
 
         titleEl.textContent = 'Success! Redirecting...';
         descEl.textContent = `Welcome back, ${data.name || data.firstName || 'Patient'}! Directing you to your portal...`;
