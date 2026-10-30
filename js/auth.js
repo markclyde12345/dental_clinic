@@ -376,6 +376,26 @@ function initSocialAuth() {
   const googleBtns = document.querySelectorAll('#google-auth-btn');
   const fbBtns     = document.querySelectorAll('#facebook-auth-btn');
 
+  // Preload Facebook JS SDK so FB.login popup opens cleanly without needing Supabase's email setting
+  if (!document.getElementById('facebook-jssdk')) {
+    window.fbAsyncInit = function() {
+      if (window.FB) {
+        window.FB.init({
+          appId      : '1393974649380899',
+          cookie     : true,
+          xfbml      : false,
+          version    : 'v19.0'
+        });
+      }
+    };
+    const js = document.createElement('script');
+    js.id = 'facebook-jssdk';
+    js.src = 'https://connect.facebook.net/en_US/sdk.js';
+    js.async = true;
+    js.defer = true;
+    document.head.appendChild(js);
+  }
+
   googleBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       handleSocialAuth('Google');
@@ -399,11 +419,23 @@ function handleSocialAuth(provider) {
   const callbackUrl = `${window.location.origin}${currentDir}/oauth-callback.html`;
 
   localStorage.setItem('oauth_provider', prov);
-  showSuccess(`Connecting to ${provider}… Redirecting to secure login.`);
 
   if (prov === 'facebook') {
-    // Route through backend OAuth endpoint which gets Supabase's signed Facebook state
-    // and rewrites scope=email -> scope=public_profile (avoiding both 'URL Blocked' and 'Invalid Scopes: email')
+    if (window.FB) {
+      showSuccess('Connecting to Facebook… Please confirm in the Facebook window.');
+      window.FB.login(function(response) {
+        if (response && response.authResponse && response.authResponse.accessToken) {
+          const fbToken = response.authResponse.accessToken;
+          window.location.href = `${callbackUrl}#access_token=${encodeURIComponent(fbToken)}&provider=facebook`;
+        } else {
+          showError('Facebook sign-in was cancelled or did not complete.');
+        }
+      }, { scope: 'public_profile' });
+      return;
+    }
+
+    // Fallback if FB SDK is still loading or blocked by browser tracker blocker
+    showSuccess('Connecting to Facebook… Redirecting to secure login.');
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const backendOrigin = (isLocal && window.location.port !== '5000' && window.location.port !== '')
       ? `${window.location.protocol}//${window.location.hostname}:5000`
@@ -414,6 +446,8 @@ function handleSocialAuth(provider) {
     }, 400);
     return;
   }
+
+  showSuccess(`Connecting to ${provider}… Redirecting to secure login.`);
 
   // Supabase project authorize endpoint for Google
   const SUPABASE_PROJECT_URL = 'https://cusxuaugwkjjqbjesksg.supabase.co';
