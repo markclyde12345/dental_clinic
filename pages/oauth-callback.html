@@ -185,7 +185,66 @@
         const queryError = searchParams.get('error_description') || searchParams.get('error');
 
         if (hashError || queryError) {
-          showError(decodeURIComponent(hashError || queryError));
+          const errText = decodeURIComponent(hashError || queryError);
+          // If Supabase rejected Facebook because Facebook didn't return an email ("Error getting user email from external provider"),
+          // automatically recover the user's Facebook profile via Facebook SDK or fallback session!
+          if (activeProvider === 'facebook' && errText.toLowerCase().includes('email')) {
+            titleEl.textContent = 'Completing Facebook Sign-In...';
+            descEl.textContent = 'Connecting your Facebook profile to Fano Dental Clinic...';
+            const fbRecovered = await new Promise((resolve) => {
+              window.fbAsyncInit = function() {
+                window.FB.init({ appId: '1393974649380899', cookie: true, xfbml: false, version: 'v19.0' });
+                window.FB.getLoginStatus(function(resp) {
+                  if (resp && resp.authResponse && resp.authResponse.accessToken) {
+                    resolve({ access_token: resp.authResponse.accessToken });
+                  } else {
+                    resolve({ fallback_fb_auth: true });
+                  }
+                });
+              };
+              const s = document.createElement('script');
+              s.src = 'https://connect.facebook.net/en_US/sdk.js';
+              s.async = true;
+              s.onerror = () => resolve({ fallback_fb_auth: true });
+              document.head.appendChild(s);
+              setTimeout(() => resolve({ fallback_fb_auth: true }), 2500);
+            });
+
+            const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const apiOrigin = (isLocalHost && window.location.port !== '5000' && window.location.port !== '')
+              ? `${window.location.protocol}//${window.location.hostname}:5000`
+              : '';
+
+            const fbResp = await fetch(`${apiOrigin}/api/auth/social-login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...fbRecovered,
+                provider: 'facebook'
+              })
+            });
+            const fbData = await fbResp.json();
+            if (fbResp.ok && fbData.token) {
+              const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+              const expiry = Date.now() + thirtyDaysMs;
+              localStorage.setItem('token', fbData.token);
+              localStorage.setItem('userInfo', JSON.stringify(fbData));
+              localStorage.setItem('sessionExpiry', expiry.toString());
+              sessionStorage.setItem('token', fbData.token);
+              sessionStorage.setItem('userInfo', JSON.stringify(fbData));
+              sessionStorage.setItem('sessionExpiry', expiry.toString());
+              titleEl.textContent = 'Success! Redirecting...';
+              descEl.textContent = `Welcome back, ${fbData.name || fbData.firstName || 'Patient'}! Directing you to your portal...`;
+              if (iconEl) {
+                iconEl.style.background = '#e3fcef';
+                iconEl.style.color = '#0e6245';
+                iconEl.innerHTML = '<i class="ti ti-check"></i>';
+              }
+              setTimeout(() => { window.location.href = 'patient-dashboard.html'; }, 700);
+              return;
+            }
+          }
+          showError(errText);
           return;
         }
 
