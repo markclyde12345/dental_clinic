@@ -1063,7 +1063,28 @@ function renderPatientHistoryRecords(list = null) {
     const branchName = formatShortBranchName(rawBranch);
 
     const dentistMatch = rawNotes.match(/\[Dentist:\s*([^\]]+)\]/i);
-    if (dentistMatch && dentistMatch[1] !== 'No Preference') dentistName = dentistMatch[1];
+    if (dentistMatch && dentistMatch[1] !== 'No Preference') {
+      dentistName = dentistMatch[1];
+    } else if (appt.dentist?.name) {
+      dentistName = appt.dentist.name;
+    }
+
+    // Clean chief concern from notes
+    const cleanConcern = rawNotes.replace(/\[[^\]]+\]/g, '').trim();
+    const allergMatch = rawNotes.match(/\[Allergies:\s*([^\]]+)\]/i);
+    const hasAllergy = allergMatch && allergMatch[1] && allergMatch[1].trim().toLowerCase() !== 'none';
+
+    // Format fee
+    let feeDisplay = '₱1,500.00';
+    if (appt.treatment && appt.treatment.price) {
+      feeDisplay = `₱${parseFloat(appt.treatment.price).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+    } else if (appt.fee) {
+      feeDisplay = `₱${parseFloat(appt.fee).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+    } else if (appt.cost) {
+      feeDisplay = `₱${parseFloat(appt.cost).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+    } else if (appt.price) {
+      feeDisplay = `₱${parseFloat(appt.price).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+    }
 
     const s = appt.status || 'Pending';
     let statusClass = 'pending';
@@ -1074,24 +1095,50 @@ function renderPatientHistoryRecords(list = null) {
 
     return `
       <tr>
+        <!-- 1. Visit Date & Time -->
         <td style="white-space: nowrap;">
           <div style="font-weight: 700; color: var(--text-primary); font-size: 0.88rem;">${dateStr}</div>
           <div style="font-size: 0.76rem; color: #64748b; margin-top: 1px;"><i class="ti ti-clock" style="font-size: 12px;"></i> ${timeStr}</div>
         </td>
+        <!-- 2. Dental Treatment -->
         <td>
           <div class="history-treatment-title" style="font-weight: 700; color: var(--text-primary); font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
             <i class="ti ti-dental" style="color: var(--accent); font-size: 16px;"></i>
             <span>${escapeHTML(treatmentName)}</span>
           </div>
-          <div style="font-size: 0.76rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-            <span><i class="ti ti-stethoscope" style="font-size: 12px; color: #0284c7;"></i> ${escapeHTML(dentistName)}</span>
-            <span>•</span>
-            <span><i class="ti ti-map-pin" style="font-size: 12px; color: #64748b;"></i> ${escapeHTML(branchName)}</span>
+          <div style="font-size: 0.76rem; color: #64748b; margin-top: 2px;">
+            <i class="ti ti-map-pin" style="font-size: 11px;"></i> ${escapeHTML(branchName)}
           </div>
         </td>
+        <!-- 3. Attending Dentist -->
+        <td style="white-space: nowrap;">
+          <div style="font-weight: 600; font-size: 0.86rem; color: var(--text-primary); display: flex; align-items: center; gap: 5px;">
+            <i class="ti ti-stethoscope" style="font-size: 14px; color: #0284c7;"></i>
+            <span>${escapeHTML(dentistName)}</span>
+          </div>
+        </td>
+        <!-- 4. Chief Concern & Alerts -->
+        <td>
+          <div style="font-size: 0.82rem; color: var(--text-primary); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(cleanConcern || 'Routine checkup / procedure')}">
+            ${escapeHTML(cleanConcern || 'Routine checkup / procedure')}
+          </div>
+          ${hasAllergy ? `
+            <div style="margin-top: 3px;">
+              <span style="display: inline-flex; align-items: center; gap: 3px; background: #fee2e2; color: #b91c1c; font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; font-weight: 600;">
+                <i class="ti ti-alert-triangle" style="font-size: 11px;"></i> Allergy: ${escapeHTML(allergMatch[1])}
+              </span>
+            </div>
+          ` : ''}
+        </td>
+        <!-- 5. Treatment Fee -->
+        <td style="white-space: nowrap; font-weight: 700; color: var(--text-primary); font-size: 0.88rem;">
+          ${feeDisplay}
+        </td>
+        <!-- 6. Visit Status -->
         <td style="white-space: nowrap;">
           <span class="status-pill ${statusClass}">${s}</span>
         </td>
+        <!-- 7. Action -->
         <td style="text-align: right; white-space: nowrap;">
           <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px;">
             ${s === 'Completed' ? `
