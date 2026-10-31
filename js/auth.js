@@ -376,26 +376,6 @@ function initSocialAuth() {
   const googleBtns = document.querySelectorAll('#google-auth-btn');
   const fbBtns     = document.querySelectorAll('#facebook-auth-btn');
 
-  // Preload Facebook JS SDK so FB.login popup opens cleanly without needing Supabase's email setting
-  if (!document.getElementById('facebook-jssdk')) {
-    window.fbAsyncInit = function() {
-      if (window.FB) {
-        window.FB.init({
-          appId      : '1393974649380899',
-          cookie     : true,
-          xfbml      : false,
-          version    : 'v19.0'
-        });
-      }
-    };
-    const js = document.createElement('script');
-    js.id = 'facebook-jssdk';
-    js.src = 'https://connect.facebook.net/en_US/sdk.js';
-    js.async = true;
-    js.defer = true;
-    document.head.appendChild(js);
-  }
-
   googleBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       handleSocialAuth('Google');
@@ -413,7 +393,7 @@ function handleSocialAuth(provider) {
   const prov = (provider || 'Facebook').toLowerCase();
 
   // Dynamic callback URL based on current page location
-  // e.g. https://dental-clinic-bxfb.vercel.app/pages/oauth-callback.html
+  // e.g. https://dental-clinic-lac-three.vercel.app/pages/oauth-callback.html
   const currentPath = window.location.pathname;
   const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/'));
   const callbackUrl = `${window.location.origin}${currentDir}/oauth-callback.html`;
@@ -421,20 +401,6 @@ function handleSocialAuth(provider) {
   localStorage.setItem('oauth_provider', prov);
 
   if (prov === 'facebook') {
-    if (window.FB) {
-      showSuccess('Connecting to Facebook… Please confirm in the Facebook window.');
-      window.FB.login(function(response) {
-        if (response && response.authResponse && response.authResponse.accessToken) {
-          const fbToken = response.authResponse.accessToken;
-          window.location.href = `${callbackUrl}#access_token=${encodeURIComponent(fbToken)}&provider=facebook`;
-        } else {
-          showError('Facebook sign-in was cancelled or did not complete.');
-        }
-      }, { scope: 'public_profile' });
-      return;
-    }
-
-    // Fallback if FB SDK is still loading or blocked by browser tracker blocker
     showSuccess('Connecting to Facebook… Redirecting to secure login.');
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const backendOrigin = (isLocal && window.location.port !== '5000' && window.location.port !== '')

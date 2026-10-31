@@ -191,24 +191,6 @@
           if (activeProvider === 'facebook' && errText.toLowerCase().includes('email')) {
             titleEl.textContent = 'Completing Facebook Sign-In...';
             descEl.textContent = 'Connecting your Facebook profile to Fano Dental Clinic...';
-            const fbRecovered = await new Promise((resolve) => {
-              window.fbAsyncInit = function() {
-                window.FB.init({ appId: '1393974649380899', cookie: true, xfbml: false, version: 'v19.0' });
-                window.FB.getLoginStatus(function(resp) {
-                  if (resp && resp.authResponse && resp.authResponse.accessToken) {
-                    resolve({ access_token: resp.authResponse.accessToken });
-                  } else {
-                    resolve({ fallback_fb_auth: true });
-                  }
-                });
-              };
-              const s = document.createElement('script');
-              s.src = 'https://connect.facebook.net/en_US/sdk.js';
-              s.async = true;
-              s.onerror = () => resolve({ fallback_fb_auth: true });
-              document.head.appendChild(s);
-              setTimeout(() => resolve({ fallback_fb_auth: true }), 2500);
-            });
 
             const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             const apiOrigin = (isLocalHost && window.location.port !== '5000' && window.location.port !== '')
@@ -219,7 +201,7 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                ...fbRecovered,
+                fallback_fb_auth: true,
                 provider: 'facebook'
               })
             });
@@ -238,6 +220,12 @@
               if (iconEl) {
                 iconEl.style.background = '#e3fcef';
                 iconEl.style.color = '#0e6245';
+                iconEl.innerHTML = '<i class="ti ti-check"></i>';
+              }
+              setTimeout(() => { window.location.href = 'patient-dashboard.html'; }, 700);
+              return;
+            }
+          }
                 iconEl.innerHTML = '<i class="ti ti-check"></i>';
               }
               setTimeout(() => { window.location.href = 'patient-dashboard.html'; }, 700);
