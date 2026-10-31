@@ -960,16 +960,9 @@ function renderOverviewHistoryPreview() {
           <div class="appt-time">${time}</div>
         </div>
         <span class="status-pill ${statusClass}">${appt.status || 'Completed'}</span>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          ${(appt.status || '').toLowerCase() === 'completed' ? `
-            <button type="button" class="btn btn-sm" onclick="event.stopPropagation(); openRateTreatmentModal('${appt.id}')" title="Rate this completed visit" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; border-radius:8px; padding:5px 9px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
-              <span style="color:#f59e0b; font-size:13px; line-height:1;">★</span> Rate
-            </button>
-          ` : ''}
-          <button type="button" class="btn-view-appt" onclick="event.stopPropagation(); openAppointmentDetailsModal('${appt.id}')">
-            View →
-          </button>
-        </div>
+        <button type="button" class="btn-view-appt" onclick="event.stopPropagation(); openAppointmentDetailsModal('${appt.id}')">
+          View →
+        </button>
       </div>`;
   }).join('');
 }
@@ -1141,18 +1134,10 @@ function renderPatientHistoryRecords(list = null) {
         </td>
         <!-- 7. Action -->
         <td style="text-align: right; white-space: nowrap;">
-          <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px;">
-            ${s === 'Completed' ? `
-              <button type="button" class="btn btn-sm" onclick="openRateTreatmentModal('${appt.id}')" title="Rate your dental visit" style="padding: 6px 10px; font-size: 0.78rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; background: #fef3c7; color: #b45309; border: 1px solid #fde68a; cursor: pointer;">
-                <span style="color: #f59e0b; font-size: 13px; line-height: 1;">★</span>
-                <span>Rate Visit</span>
-              </button>
-            ` : ''}
-            <button type="button" class="btn btn-secondary btn-view-appt" onclick="openAppointmentDetailsModal('${appt.id}')" title="View appointment clinical sheet and full details" style="padding: 6px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;">
-              <span>View Details</span>
-              <i class="ti ti-arrow-right" style="font-size: 12px;"></i>
-            </button>
-          </div>
+          <button type="button" class="btn btn-secondary btn-view-appt" onclick="openAppointmentDetailsModal('${appt.id}')" title="View appointment clinical sheet and full details" style="padding: 6px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;">
+            <span>View Details</span>
+            <i class="ti ti-arrow-right" style="font-size: 12px;"></i>
+          </button>
         </td>
       </tr>`;
   }).join('');
