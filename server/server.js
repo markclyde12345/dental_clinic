@@ -515,13 +515,10 @@ app.get('/', (req, res) => {
 
 // ─── Global Error Handler ─────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  const status = err.status || 500;
-  const message = process.env.NODE_ENV === 'production'
-    ? 'An internal server error occurred.'
-    : err.message;
-  res.status(status).json({ message });
+  const status = err.status || err.statusCode || 500;
+  console.error('[GLOBAL ERROR]', err.message, err.stack);
+  res.status(status).json({ message: err.message || 'An internal server error occurred.' });
 });
-
 const PORT = process.env.PORT || 5000;
 
 if (require.main === module) {
