@@ -1467,7 +1467,10 @@ const socialLogin = async (req, res) => {
     let userRecord = existingUser;
 
     if (!existingUser) {
-      // Create new Patient account
+      // Create new Patient account (generate random hashed password to satisfy NOT NULL constraint)
+      const oauthSalt = await bcrypt.genSalt(10);
+      const oauthPasswordHash = await bcrypt.hash(`oauth_${providerId}_${Date.now()}`, oauthSalt);
+
       const { data: newUser, error: insertError } = await supabase
         .from('users')
         .insert([{
@@ -1475,6 +1478,7 @@ const socialLogin = async (req, res) => {
           first_name: firstName,
           last_name: lastName,
           email,
+          password: oauthPasswordHash,
           role: 'Patient',
           is_active: true,
           is_verified: true,
@@ -1482,7 +1486,6 @@ const socialLogin = async (req, res) => {
         }])
         .select()
         .single();
-
       if (insertError) throw insertError;
       userRecord = newUser;
 
