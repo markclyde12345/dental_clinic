@@ -1229,13 +1229,13 @@
             <!-- ─── LEFT SIDEBAR: SIMPLE CATEGORY LIST ─── -->
             <nav class="os-settings-sidebar" role="tablist">
               <!-- Security & privacy -->
-              <button type="button" class="os-nav-item active" id="os-item-privacy" data-cat="privacy" role="tab" aria-selected="true" onclick="openOsSettingsCategory('privacy')">
+              <button type="button" class="os-nav-item" id="os-item-privacy" data-cat="privacy" role="tab" aria-selected="false" onclick="openOsSettingsCategory('privacy')">
                 <i class="ti ti-shield os-nav-icon"></i>
                 <span class="os-nav-title">Security &amp; Privacy</span>
               </button>
 
-              <!-- Safety & emergency -->
-              <button type="button" class="os-nav-item" id="os-item-safety" data-cat="safety" role="tab" aria-selected="false" onclick="openOsSettingsCategory('safety')">
+              <!-- Safety & emergency (Selected) -->
+              <button type="button" class="os-nav-item active" id="os-item-safety" data-cat="safety" role="tab" aria-selected="true" onclick="openOsSettingsCategory('safety')">
                 <i class="ti ti-alert-circle os-nav-icon"></i>
                 <span class="os-nav-title">Safety &amp; Emergency</span>
               </button>
@@ -1273,15 +1273,15 @@
               <div class="os-detail-head">
                 <div class="os-badge" id="os-detail-head-badge" style="display: none;"></div>
                 <div>
-                  <h2 class="os-detail-head-title" id="os-detail-head-title">Security &amp; Privacy</h2>
-                  <p class="os-detail-head-desc" id="os-detail-head-desc">Protect your patient credentials &amp; login access.</p>
+                  <h2 class="os-detail-head-title" id="os-detail-head-title">Safety &amp; Emergency</h2>
+                  <p class="os-detail-head-desc" id="os-detail-head-desc">Emergency contact information, medical precautions, and allergy alerts.</p>
                 </div>
               </div>
 
               <!-- Panels Wrapper -->
               <div class="os-panels-container">
                 <!-- SUB-PANEL: SECURITY & PRIVACY -->
-                <div class="os-sub-panel active" id="os-sub-privacy" style="display: block;">
+                <div class="os-sub-panel" id="os-sub-privacy" style="display: none;">
                   <div class="os-detail-card">
                     <h3>Two-Factor Authentication (2FA)</h3>
                     <p>Require an SMS verification OTP whenever logging into your patient dashboard.</p>
@@ -1316,41 +1316,93 @@
                   </div>
                 </div>
 
-                <!-- SUB-PANEL: SAFETY & EMERGENCY -->
-                <div class="os-sub-panel" id="os-sub-safety">
+                <!-- SUB-PANEL: SAFETY & EMERGENCY (Selected) -->
+                <div class="os-sub-panel active" id="os-sub-safety" style="display: block;">
+
+                  <!-- Emergency Contact -->
                   <div class="os-detail-card">
-                    <h3>Emergency Contact</h3>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                      <i class="ti ti-phone-call" style="color: #0284c7; font-size: 18px;"></i>
+                      <h3 style="margin: 0;">Emergency Contact</h3>
+                    </div>
                     <p>Authorized person clinic staff may contact in case of dental surgical emergencies.</p>
-                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 14px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 14px;">
                       <div>
-                        <label class="form-label">Contact Full Name</label>
+                        <label class="form-label" for="emg-contact-name">Contact Full Name</label>
                         <input type="text" id="emg-contact-name" class="form-input" placeholder="e.g. Maria Santos" value="Maria Santos">
                       </div>
                       <div>
-                        <label class="form-label">Relationship</label>
+                        <label class="form-label" for="emg-contact-rel">Relationship</label>
                         <select id="emg-contact-rel" class="form-input">
-                          <option value="spouse" selected>Spouse / Partner</option>
-                          <option value="parent">Parent / Guardian</option>
-                          <option value="sibling">Sibling</option>
-                          <option value="child">Adult Child</option>
-                          <option value="friend">Friend / Relative</option>
+                          <option value="Spouse / Partner" selected>Spouse / Partner</option>
+                          <option value="Parent / Guardian">Parent / Guardian</option>
+                          <option value="Sibling">Sibling</option>
+                          <option value="Adult Child">Adult Child</option>
+                          <option value="Relative / Friend">Relative / Friend</option>
+                          <option value="Other">Other</option>
                         </select>
                       </div>
                       <div>
-                        <label class="form-label">Mobile Number</label>
+                        <label class="form-label" for="emg-contact-phone">Mobile Number</label>
                         <input type="tel" id="emg-contact-phone" class="form-input" placeholder="+63 9XX XXX XXXX" value="+63 917 888 2211">
+                      </div>
+                      <div>
+                        <label class="form-label" for="emg-contact-email">Email Address</label>
+                        <input type="email" id="emg-contact-email" class="form-input" placeholder="e.g. maria.santos@gmail.com" value="maria.santos@gmail.com">
                       </div>
                     </div>
                   </div>
 
+                  <!-- Medical & Allergy Information -->
                   <div class="os-detail-card">
-                    <h3>Medical &amp; Allergy Precautions</h3>
-                    <p>Key safety flags displayed prominently to your treating dentist.</p>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
-                      <span class="pill-badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-size: 0.8rem; padding: 4px 10px; border-radius: 9999px;">⚠️ Penicillin Alert</span>
-                      <span class="pill-badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 0.8rem; padding: 4px 10px; border-radius: 9999px;">⚠️ Latex Sensitivity</span>
-                      <span class="pill-badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-size: 0.8rem; padding: 4px 10px; border-radius: 9999px;">✓ No Bleeding Disorders</span>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                      <i class="ti ti-alert-triangle" style="color: #dc2626; font-size: 18px;"></i>
+                      <h3 style="margin: 0;">Medical &amp; Allergy Information</h3>
                     </div>
+                    <p>Critical clinical precautions displayed prominently to your attending dentist.</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 14px;">
+                      <div>
+                        <label class="form-label" for="med-known-allergies">Known Allergies</label>
+                        <input type="text" id="med-known-allergies" class="form-input" placeholder="e.g. Penicillin, Latex, Local Anesthetics (or None)" value="Penicillin, Latex">
+                      </div>
+                      <div>
+                        <label class="form-label" for="med-allergy-reactions">Allergy Reactions</label>
+                        <input type="text" id="med-allergy-reactions" class="form-input" placeholder="e.g. Skin rash, facial swelling, hives, shortness of breath" value="Skin rash, facial swelling">
+                      </div>
+                      <div>
+                        <label class="form-label" for="med-conditions">Medical Conditions</label>
+                        <input type="text" id="med-conditions" class="form-input" placeholder="e.g. Hypertension, Diabetes, Asthma, Bleeding disorders" value="Hypertension (Controlled)">
+                      </div>
+                      <div>
+                        <label class="form-label" for="med-current-medications">Current Medications</label>
+                        <input type="text" id="med-current-medications" class="form-input" placeholder="e.g. Aspirin, Blood thinners, Maintenance drugs" value="Amlodipine 5mg">
+                      </div>
+                      <div style="grid-column: 1 / -1;">
+                        <label class="form-label" for="med-special-precautions">Special Precautions</label>
+                        <input type="text" id="med-special-precautions" class="form-input" placeholder="e.g. Dental anxiety, premedication required, pregnant, bleeding tendency" value="Mild dental anxiety; use local anesthetic with care">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Emergency Medical Notes -->
+                  <div class="os-detail-card">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                      <i class="ti ti-notes" style="color: #0b3c4d; font-size: 18px;"></i>
+                      <h3 style="margin: 0;">Emergency Medical Notes</h3>
+                    </div>
+                    <p>Additional information for your dentist.</p>
+                    <div style="margin-top: 14px;">
+                      <label class="form-label" for="med-emergency-notes">Additional information for your dentist</label>
+                      <textarea id="med-emergency-notes" class="form-input" rows="3" placeholder="Provide any additional medical history, past surgical complications, or instructions for your attending dentist...">Patient prefers morning procedures and requires extra numbing duration.</textarea>
+                    </div>
+                  </div>
+
+                  <!-- Save Changes Button -->
+                  <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
+                    <button type="button" class="os-save-btn" id="save-safety-btn" onclick="saveSafetyEmergencySettings()" style="display: inline-flex; align-items: center; gap: 7px; padding: 11px 24px; border-radius: 9px; font-weight: 700; font-size: 0.9rem; background: #0b3c4d; color: white; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(11,60,77,0.25);">
+                      <i class="ti ti-check" style="font-size: 16px;"></i>
+                      <span>Save Changes</span>
+                    </button>
                   </div>
                 </div>
 

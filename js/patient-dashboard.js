@@ -216,6 +216,9 @@ function setupSettings() {
     toggleReduceMotion(savedMotion);
   }
 
+  // 5. Load Safety & Emergency information
+  loadSafetyEmergencySettings();
+
   // 5. Save All Settings button
   document.getElementById('save-settings-btn')?.addEventListener('click', () => {
     // Save notifications
@@ -236,6 +239,9 @@ function setupSettings() {
     if (contrastCheck) localStorage.setItem('pd-high-contrast', contrastCheck.checked);
     if (motionCheck) localStorage.setItem('pd-reduce-motion', motionCheck.checked);
 
+    // Save Safety & Emergency fields
+    saveSafetyEmergencySettings(true);
+
     showToast('✓ Settings saved successfully!', 'success');
   });
 
@@ -244,6 +250,55 @@ function setupSettings() {
   window.closeOsSettingsCategory = closeOsSettingsCategory;
   window.filterOsSettings = filterOsSettings;
 }
+
+
+// ─── Safety & Emergency Management ──────────────────────────
+function loadSafetyEmergencySettings() {
+  const getVal = (id, key, fallback) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const v = localStorage.getItem(key);
+    if (v !== null && v !== '') el.value = v;
+    else if (fallback !== undefined && !el.value) el.value = fallback;
+  };
+
+  getVal('emg-contact-name', 'pd-emg-name', 'Maria Santos');
+  getVal('emg-contact-rel', 'pd-emg-rel', 'Spouse / Partner');
+  getVal('emg-contact-phone', 'pd-emg-phone', '+63 917 888 2211');
+  getVal('emg-contact-email', 'pd-emg-email', 'maria.santos@gmail.com');
+
+  getVal('med-known-allergies', 'pd-med-allergies', 'Penicillin, Latex');
+  getVal('med-allergy-reactions', 'pd-med-reactions', 'Skin rash, facial swelling');
+  getVal('med-conditions', 'pd-med-conditions', 'Hypertension (Controlled)');
+  getVal('med-current-medications', 'pd-med-medications', 'Amlodipine 5mg');
+  getVal('med-special-precautions', 'pd-med-precautions', 'Mild dental anxiety; use local anesthetic with care');
+  getVal('med-emergency-notes', 'pd-med-notes', 'Patient prefers morning procedures and requires extra numbing duration.');
+}
+
+function saveSafetyEmergencySettings(suppressToast = false) {
+  const setVal = (id, key) => {
+    const el = document.getElementById(id);
+    if (el) localStorage.setItem(key, el.value.trim());
+  };
+
+  setVal('emg-contact-name', 'pd-emg-name');
+  setVal('emg-contact-rel', 'pd-emg-rel');
+  setVal('emg-contact-phone', 'pd-emg-phone');
+  setVal('emg-contact-email', 'pd-emg-email');
+
+  setVal('med-known-allergies', 'pd-med-allergies');
+  setVal('med-allergy-reactions', 'pd-med-reactions');
+  setVal('med-conditions', 'pd-med-conditions');
+  setVal('med-current-medications', 'pd-med-medications');
+  setVal('med-special-precautions', 'pd-med-precautions');
+  setVal('med-emergency-notes', 'pd-med-notes');
+
+  if (!suppressToast) {
+    showToast('✓ Safety & Emergency settings saved successfully!', 'success');
+  }
+}
+window.loadSafetyEmergencySettings = loadSafetyEmergencySettings;
+window.saveSafetyEmergencySettings = saveSafetyEmergencySettings;
 
 // ─── Settings Categories Metadata ────────────────────────────
 const OS_SETTINGS_META = {
@@ -274,7 +329,8 @@ const OS_SETTINGS_META = {
 };
 
 function openOsSettingsCategory(catId) {
-  const meta = OS_SETTINGS_META[catId] || OS_SETTINGS_META.privacy;
+  catId = catId || 'safety';
+  const meta = OS_SETTINGS_META[catId] || OS_SETTINGS_META.safety;
 
   // 1. Highlight the active left-sidebar item
   document.querySelectorAll('.os-nav-item').forEach(btn => {
@@ -302,7 +358,7 @@ function openOsSettingsCategory(catId) {
 }
 
 function closeOsSettingsCategory() {
-  openOsSettingsCategory('privacy');
+  openOsSettingsCategory('safety');
 }
 
 function filterOsSettings(query) {
@@ -4819,6 +4875,10 @@ function switchSection(sectionId, event) {
     return;
   }
   safeSet('breadcrumb-current', labels[sectionId] || 'Dashboard');
+
+  if (sectionId === 'settings') {
+    openOsSettingsCategory('safety');
+  }
 
   if (sectionId === 'services') {
     renderServicesCatalog();
