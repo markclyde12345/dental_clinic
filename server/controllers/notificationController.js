@@ -1,4 +1,15 @@
 const supabase = require('../config/db');
+const fs = require('fs');
+const path = require('path');
+
+const REVIEWS_FILE = path.join(__dirname, '../data/patient_reviews.json');
+
+function getReviewsStore() {
+  if (fs.existsSync(REVIEWS_FILE)) {
+    try { return JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8')); } catch (_) { return []; }
+  }
+  return [];
+}
 
 /**
  * Unified Notifications Controller for Fano Dental Clinic
@@ -13,6 +24,7 @@ const getUserNotifications = async (req, res) => {
     const userRole = req.user.role;
     const userId = req.user.id;
     const notifications = [];
+    const allReviews = getReviewsStore();
 
     // ─────────────────────────────────────────────────────────────
     // 1. PATIENT NOTIFICATIONS
@@ -72,17 +84,40 @@ const getUserNotifications = async (req, res) => {
             action: { type: 'view_appointment', id: a.id }
           });
         } else if (a.status === 'Completed') {
-          notifications.push({
-            id: `appt-comp-${a.id}`,
-            entity_id: a.id,
-            category: 'appointment',
-            title: 'Visit Completed — Thank You!',
-            message: `Your visit for ${treatmentName} has been completed. Follow any aftercare instructions from your dentist.`,
-            type: 'success',
-            icon: 'circle-check',
-            time: a.created_at || new Date().toISOString(),
-            action: { type: 'view_appointment', id: a.id }
-          });
+          const rawNotes = a.notes || '';
+          let dentistName = 'Staff Specialist';
+          const dMatch = rawNotes.match(/\[Dentist:\s*([^\]]+)\]/i);
+          if (dMatch && dMatch[1] && dMatch[1] !== 'No Preference') dentistName = dMatch[1].trim();
+
+          const existingReview = allReviews.find(r => String(r.appointment_id) === String(a.id));
+
+          if (!existingReview) {
+            // Surgery / Treatment completed and not yet rated -> Send rating prompt notification!
+            notifications.push({
+              id: `appt-rate-${a.id}`,
+              entity_id: a.id,
+              category: 'review',
+              title: `★ Rate Your Surgery: ${treatmentName}`,
+              message: `Your surgery for ${treatmentName} with Dr. ${dentistName} has finished! Please rate your experience and treatment care.`,
+              type: 'warning',
+              icon: 'star',
+              time: a.created_at || new Date().toISOString(),
+              action: { type: 'rate_appointment', id: a.id }
+            });
+          } else {
+            // Already rated -> show rating confirmation alert
+            notifications.push({
+              id: `appt-rated-${a.id}`,
+              entity_id: a.id,
+              category: 'review',
+              title: `★ Surgery Rated: ${treatmentName}`,
+              message: `Thank you! You rated your ${treatmentName} surgery ${existingReview.rating} ★ (${existingReview.comment ? `"${existingReview.comment}"` : 'Thank you for your rating'}).`,
+              type: 'success',
+              icon: 'star',
+              time: existingReview.created_at || a.created_at || new Date().toISOString(),
+              action: { type: 'view_appointment', id: a.id }
+            });
+          }
         } else if (a.status === 'Cancelled') {
           notifications.push({
             id: `appt-canc-${a.id}`,
@@ -305,6 +340,21 @@ const getUserNotifications = async (req, res) => {
           action: { type: 'switch_tab', tab: 'billing', filterStatus: 'Unpaid' }
         });
       }
+
+      // 2e. Recent Patient Ratings & Feedback for Receptionist
+      allReviews.slice(0, 5).forEach(r => {
+        notifications.push({
+          id: `rec-rev-${r.id}`,
+          entity_id: r.appointment_id,
+          category: 'review',
+          title: `★ Patient Feedback: ${r.rating} Stars`,
+          message: `${r.patient_name || 'Patient'} submitted a ${r.rating}★ rating for ${r.treatment_name}`,
+          type: 'info',
+          icon: 'star',
+          time: r.created_at || new Date().toISOString(),
+          action: { type: 'switch_tab', tab: 'appointments' }
+        });
+      });
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -471,7 +521,22 @@ const getUserNotifications = async (req, res) => {
       }
 
       if (isAdminRole) {
-        // 3f. System & Clinic Operations Status
+        // 3f. Recent Patient Satisfaction Ratings
+        allReviews.slice(0, 6).forEach(r => {
+          notifications.push({
+            id: `admin-rev-${r.id}`,
+            entity_id: r.appointment_id,
+            category: 'review',
+            title: `★ Patient Satisfaction: ${r.rating}★`,
+            message: `${r.patient_name || 'Patient'} rated ${r.treatment_name} with ${r.dentist_name || 'Clinic Specialist'} (${r.rating} stars)${r.comment ? `: "${r.comment}"` : ''}`,
+            type: 'info',
+            icon: 'star',
+            time: r.created_at || new Date().toISOString(),
+            action: { type: 'switch_tab', tab: 'analytics' }
+          });
+        });
+
+        // 3g. System & Clinic Operations Status
         notifications.push({
           id: 'admin-system-status',
           category: 'system',
@@ -509,6 +574,25 @@ const getUserNotifications = async (req, res) => {
           icon: 'user-doctor',
           time: a.created_at || new Date().toISOString(),
           action: { type: 'view_record', id: a.id }
+        });
+      });
+
+      // Dentist notifications for patient surgery ratings
+      const dentistReviews = allReviews.filter(r => {
+        if (!req.user?.name) return true;
+        return !r.dentist_name || r.dentist_name.toLowerCase().includes(req.user.name.toLowerCase()) || req.user.name.toLowerCase().includes((r.dentist_name || '').toLowerCase());
+      });
+      (dentistReviews.length > 0 ? dentistReviews : allReviews).slice(0, 6).forEach(r => {
+        notifications.push({
+          id: `dentist-rev-${r.id}`,
+          entity_id: r.appointment_id,
+          category: 'review',
+          title: `★ New Patient Rating (${r.rating} Stars)`,
+          message: `${r.patient_name || 'Patient'} submitted a ${r.rating}★ rating for ${r.treatment_name}${r.comment ? `: "${r.comment}"` : ''}`,
+          type: 'success',
+          icon: 'star',
+          time: r.created_at || new Date().toISOString(),
+          action: { type: 'view_record', id: r.appointment_id }
         });
       });
     }

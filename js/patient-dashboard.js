@@ -90,6 +90,7 @@ function initDashboard() {
   setupPatientNotifications();
   loadPatientNotifications();
   checkPaymentReturnStatus();
+  checkRatingUrlParam();
 }
 
 // ─── Settings ────────────────────────────────────────────────
@@ -2217,6 +2218,17 @@ function closeReceiptModal() {
     modal.classList.remove('active');
   }
 }
+
+function checkRatingUrlParam() {
+  const params = new URLSearchParams(window.location.search);
+  const rateApptId = params.get('rateAppt') || params.get('rate');
+  if (rateApptId) {
+    setTimeout(() => {
+      openRateTreatmentModal(rateApptId);
+    }, 700);
+  }
+}
+window.checkRatingUrlParam = checkRatingUrlParam;
 
 function checkPaymentReturnStatus() {
   const params = new URLSearchParams(window.location.search);

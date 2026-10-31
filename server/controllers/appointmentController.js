@@ -498,7 +498,16 @@ const sendAppointmentStatusEmail = async (updated, status) => {
           <!-- CTA -->
           <tr>
             <td style="padding:0 40px 28px 40px;text-align:center;">
-              <a href="${process.env.APP_URL || 'http://localhost:5000'}/pages/patient-dashboard.html" style="display:inline-block;background:linear-gradient(135deg,#0b3c4d,#14536a);color:#ffffff;font-size:14px;font-weight:700;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;">View My Appointments &#8594;</a>
+              ${status === 'Completed' ? `
+                <a href="${process.env.APP_URL || 'https://dental-clinic-bxfb.vercel.app'}/pages/patient-dashboard.html?rateAppt=${updated.id}" style="display:inline-block;background:#f59e0b;color:#ffffff;font-size:15px;font-weight:700;padding:14px 34px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;box-shadow:0 3px 10px rgba(245,158,11,0.35);">
+                  &#11088; Rate Your Surgery &amp; Care &#8594;
+                </a>
+                <div style="margin-top: 12px;">
+                  <a href="${process.env.APP_URL || 'https://dental-clinic-bxfb.vercel.app'}/pages/patient-dashboard.html" style="font-size:13px;color:#64748b;text-decoration:underline;">View My Appointments</a>
+                </div>
+              ` : `
+                <a href="${process.env.APP_URL || 'http://localhost:5000'}/pages/patient-dashboard.html" style="display:inline-block;background:linear-gradient(135deg,#0b3c4d,#14536a);color:#ffffff;font-size:14px;font-weight:700;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;">View My Appointments &#8594;</a>
+              `}
             </td>
           </tr>
           <!-- Divider -->
@@ -1071,6 +1080,24 @@ const createAppointmentReview = async (req, res) => {
     }
 
     saveReviewsStore(reviews);
+
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      logAuditAction({
+        action: 'PATIENT_SUBMIT_RATING',
+        entity_id: id,
+        user_id: req.user?.id || appt.patient_id,
+        user_name: req.user?.name || 'Patient',
+        user_role: 'Patient',
+        details: `${reviewData.patient_name} submitted a ${reviewData.rating}-star rating for ${reviewData.treatment_name} with ${reviewData.dentist_name}`,
+        metadata: {
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+          tags: reviewData.tags
+        }
+      });
+    } catch (_) {}
+
     res.status(201).json({ success: true, review: reviewData });
   } catch (error) {
     res.status(500).json({ message: error.message });
