@@ -1033,7 +1033,7 @@ function renderPatientHistoryRecords(list = null) {
   if (!dataset || dataset.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="4" class="empty-table-row">
+        <td colspan="7" class="empty-table-row" style="text-align: center;">
           <div style="padding: 32px 16px; text-align: center;">
             <i class="ti ti-calendar-off" style="font-size: 38px; margin-bottom: 8px; color: #94a3b8; display: inline-block;"></i>
             <p style="margin: 0; font-weight: 600; color: #64748b;">No dental visit records found.</p>
