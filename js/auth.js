@@ -364,65 +364,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize password toggles
   initPasswordToggles();
 
-  // Initialize social authentication buttons
-  initSocialAuth();
-
   // Initialize Terms & Privacy policy modals
   initTermsModal();
 });
-
-// ─── Social Authentication ───────────────────────────────────────────────────
-function initSocialAuth() {
-  const googleBtns = document.querySelectorAll('#google-auth-btn');
-  const fbBtns     = document.querySelectorAll('#facebook-auth-btn');
-
-  googleBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      handleSocialAuth('Google');
-    });
-  });
-
-  fbBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      handleSocialAuth('Facebook');
-    });
-  });
-}
-
-function handleSocialAuth(provider) {
-  const prov = (provider || 'Facebook').toLowerCase();
-
-  // Dynamic callback URL based on current page location
-  // e.g. https://dental-clinic-lac-three.vercel.app/pages/oauth-callback.html
-  const currentPath = window.location.pathname;
-  const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/'));
-  const callbackUrl = `${window.location.origin}${currentDir}/oauth-callback.html`;
-
-  localStorage.setItem('oauth_provider', prov);
-
-  if (prov === 'facebook') {
-    showSuccess('Connecting to Facebook… Redirecting to secure login.');
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const backendOrigin = (isLocal && window.location.port !== '5000' && window.location.port !== '')
-      ? `${window.location.protocol}//${window.location.hostname}:5000`
-      : '';
-    const fbBounceUrl = `${backendOrigin}/api/auth/oauth/facebook?redirect_to=${encodeURIComponent(callbackUrl)}`;
-    setTimeout(() => {
-      window.location.href = fbBounceUrl;
-    }, 400);
-    return;
-  }
-
-  showSuccess(`Connecting to ${provider}… Redirecting to secure login.`);
-
-  // Supabase project authorize endpoint for Google
-  const SUPABASE_PROJECT_URL = 'https://cusxuaugwkjjqbjesksg.supabase.co';
-  const authorizeUrl = `${SUPABASE_PROJECT_URL}/auth/v1/authorize?provider=${prov}&redirect_to=${encodeURIComponent(callbackUrl)}`;
-
-  setTimeout(() => {
-    window.location.href = authorizeUrl;
-  }, 400);
-}
 
 // ─── Terms of Service & Privacy Policy Modal ─────────────────────────────────
 function initTermsModal() {
