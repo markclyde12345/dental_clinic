@@ -188,7 +188,7 @@
           const errText = decodeURIComponent(hashError || queryError);
           // If Supabase rejected Facebook because Facebook didn't return an email ("Error getting user email from external provider"),
           // automatically recover the user's Facebook profile via Facebook SDK or fallback session!
-          if (activeProvider === 'facebook' && errText.toLowerCase().includes('email')) {
+          if (activeProvider === 'facebook' && (errText.toLowerCase().includes('email') || errText.toLowerCase().includes('state') || errText.toLowerCase().includes('expired'))) {
             titleEl.textContent = 'Completing Facebook Sign-In...';
             descEl.textContent = 'Connecting your Facebook profile to Fano Dental Clinic...';
 
@@ -220,12 +220,6 @@
               if (iconEl) {
                 iconEl.style.background = '#e3fcef';
                 iconEl.style.color = '#0e6245';
-                iconEl.innerHTML = '<i class="ti ti-check"></i>';
-              }
-              setTimeout(() => { window.location.href = 'patient-dashboard.html'; }, 700);
-              return;
-            }
-          }
                 iconEl.innerHTML = '<i class="ti ti-check"></i>';
               }
               setTimeout(() => { window.location.href = 'patient-dashboard.html'; }, 700);
