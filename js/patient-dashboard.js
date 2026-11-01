@@ -559,6 +559,17 @@ function closeReportIssueModal() {
 }
 function handleReportIssueSubmit(e) {
   e.preventDefault();
+  const cat = document.getElementById('ri-category')?.value || 'general';
+  const desc = document.getElementById('ri-description')?.value.trim() || '';
+  if (!desc) {
+    showToast('Please describe the issue or inquiry.', 'error');
+    return;
+  }
+  try {
+    const list = JSON.parse(localStorage.getItem('pd_reported_issues') || '[]');
+    list.unshift({ id: 'iss_' + Date.now(), category: cat, description: desc, date: new Date().toISOString() });
+    localStorage.setItem('pd_reported_issues', JSON.stringify(list));
+  } catch (_) {}
   showToast('✓ Issue report submitted! Clinic support will review it.', 'success');
   closeReportIssueModal();
 }
@@ -571,13 +582,27 @@ function closeHelpCenterModal() {
   document.getElementById('modal-help-center')?.classList.remove('active');
 }
 
-// ─── Contact Clinic Prompt ───────────────────────────────────
+// ─── Contact Clinic Desk Modal ───────────────────────────────
 function openContactClinicPrompt() {
-  const choice = confirm('Fano Dental Clinic Support:\n\nTelephone: (032) 489-1200\nWhatsApp: +63 917 489 1200\n\nClick OK to dial receptionist, or Cancel to close.');
-  if (choice) {
-    window.location.href = 'tel:0324891200';
-  }
+  document.getElementById('modal-contact-desk')?.classList.add('active');
 }
+function closeContactDeskModal() {
+  document.getElementById('modal-contact-desk')?.classList.remove('active');
+}
+
+// Explicit global exposure on window
+window.openHelpCenterModal = openHelpCenterModal;
+window.closeHelpCenterModal = closeHelpCenterModal;
+window.openContactClinicPrompt = openContactClinicPrompt;
+window.closeContactDeskModal = closeContactDeskModal;
+window.openReportIssueModal = openReportIssueModal;
+window.closeReportIssueModal = closeReportIssueModal;
+window.handleReportIssueSubmit = handleReportIssueSubmit;
+window.openChangePasswordModal = openChangePasswordModal;
+window.closeChangePasswordModal = closeChangePasswordModal;
+window.handlePasswordChangeSubmit = handlePasswordChangeSubmit;
+window.downloadPatientData = downloadPatientData;
+window.logoutAllDevices = logoutAllDevices;
 
 // ─── Date, Time & Greeting ──────────────────────────────────
 function setDateTime() {

@@ -1501,32 +1501,32 @@
                     <h3>Help &amp; Clinic Support</h3>
                     <p>Get in touch with clinic reception or browse guides for appointments and billing.</p>
 
-                    <div class="support-actions-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
-                      <div class="support-item" onclick="openHelpCenterModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.15s ease;">
-                        <div class="si-icon" style="color: #2563eb; font-size: 1.15rem;"><i class="ti ti-notes-medical"></i></div>
+                    <div class="support-actions-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px;">
+                      <div class="support-item" onclick="openHelpCenterModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                        <div class="si-icon" style="width: 40px; height: 40px; border-radius: 10px; background: rgba(37, 99, 235, 0.1); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;"><i class="ti ti-notes-medical"></i></div>
                         <div class="si-content" style="flex: 1;">
-                          <div class="si-title" style="color: #0f172a; font-weight: 600; font-size: 0.92rem;">Help Center &amp; FAQs</div>
-                          <div class="si-desc" style="color: #64748b; font-size: 0.8rem;">Appointment policies, records &amp; billing guide</div>
+                          <div class="si-title" style="color: #0f172a; font-weight: 700; font-size: 0.94rem;">Help Center &amp; FAQs</div>
+                          <div class="si-desc" style="color: #64748b; font-size: 0.82rem; margin-top: 2px;">Appointment policies, records &amp; billing guide</div>
                         </div>
-                        <button type="button" class="os-back-btn" style="padding: 5px 12px; font-size: 0.78rem; color: #2563eb;">Read →</button>
+                        <button type="button" class="os-back-btn" onclick="event.stopPropagation(); openHelpCenterModal()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 700; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;">Read →</button>
                       </div>
 
-                      <div class="support-item" onclick="openContactClinicPrompt()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.15s ease;">
-                        <div class="si-icon" style="color: #10b981; font-size: 1.15rem;"><i class="ti ti-phone-call"></i></div>
+                      <div class="support-item" onclick="openContactClinicPrompt()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                        <div class="si-icon" style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;"><i class="ti ti-phone-call"></i></div>
                         <div class="si-content" style="flex: 1;">
-                          <div class="si-title" style="color: #0f172a; font-weight: 600; font-size: 0.92rem;">Contact Clinic Desk</div>
-                          <div class="si-desc" style="color: #64748b; font-size: 0.8rem;">Hotline: (032) 489-1200 · +63 917 489 1200</div>
+                          <div class="si-title" style="color: #0f172a; font-weight: 700; font-size: 0.94rem;">Contact Clinic Desk</div>
+                          <div class="si-desc" style="color: #64748b; font-size: 0.82rem; margin-top: 2px;">Hotline: (032) 489-1200 · +63 917 489 1200</div>
                         </div>
-                        <button type="button" class="os-back-btn" style="padding: 5px 12px; font-size: 0.78rem; color: #2563eb;">Call →</button>
+                        <button type="button" class="os-back-btn" onclick="event.stopPropagation(); openContactClinicPrompt()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 700; color: #10b981; border-color: #bbf7d0; background: #f0fdf4;">Call →</button>
                       </div>
 
-                      <div class="support-item" onclick="openReportIssueModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.15s ease;">
-                        <div class="si-icon" style="color: #ef4444; font-size: 1.15rem;"><i class="ti ti-alert-triangle"></i></div>
+                      <div class="support-item" onclick="openReportIssueModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                        <div class="si-icon" style="width: 40px; height: 40px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;"><i class="ti ti-alert-triangle"></i></div>
                         <div class="si-content" style="flex: 1;">
-                          <div class="si-title" style="color: #0f172a; font-weight: 600; font-size: 0.92rem;">Report an Issue</div>
-                          <div class="si-desc" style="color: #64748b; font-size: 0.8rem;">Notify clinic technical support team</div>
+                          <div class="si-title" style="color: #0f172a; font-weight: 700; font-size: 0.94rem;">Report an Issue</div>
+                          <div class="si-desc" style="color: #64748b; font-size: 0.82rem; margin-top: 2px;">Notify clinic technical support team</div>
                         </div>
-                        <button type="button" class="os-back-btn" style="padding: 5px 12px; font-size: 0.78rem; color: #2563eb;">Report →</button>
+                        <button type="button" class="os-back-btn" onclick="event.stopPropagation(); openReportIssueModal()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 700; color: #ef4444; border-color: #fecaca; background: #fef2f2;">Report →</button>
                       </div>
                     </div>
                   </div>
@@ -1896,6 +1896,72 @@
       </div>
       <div class="modal-actions-footer" style="padding: 14px 24px;">
         <button type="button" class="primary-btn full-width" onclick="closeHelpCenterModal()" style="justify-content: center;">Got it, thanks!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ CONTACT CLINIC DESK MODAL ══════════ -->
+  <div class="modal-overlay" id="modal-contact-desk" onclick="if(event.target === this) closeContactDeskModal()">
+    <div class="modal-card" style="max-width: 490px; border-radius: 20px;">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-light); padding: 18px 24px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(16, 185, 129, 0.12); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 19px;">
+            <i class="ti ti-phone-call"></i>
+          </div>
+          <div>
+            <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">Contact Clinic Desk</h3>
+            <p style="margin: 2px 0 0; font-size: 0.8rem; color: #64748b;">Direct channels to Fano Dental Clinic receptionists</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeContactDeskModal()" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 12px;">
+        <!-- Hotline -->
+        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div>
+            <div style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Clinic Telephone Hotline</div>
+            <div style="font-weight: 800; color: #0f172a; font-size: 1.05rem; margin-top: 2px;">(032) 489-1200</div>
+            <div style="font-size: 0.76rem; color: #64748b; margin-top: 1px;">Mon–Sat · 8:00 AM – 6:00 PM</div>
+          </div>
+          <a href="tel:0324891200" class="btn btn-sm" style="background: #0b3c4d; color: white; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.84rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(11,60,77,0.25);">
+            <i class="ti ti-phone"></i> Call
+          </a>
+        </div>
+
+        <!-- Mobile & Viber -->
+        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div>
+            <div style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Mobile &amp; Emergency Viber</div>
+            <div style="font-weight: 800; color: #0f172a; font-size: 1.05rem; margin-top: 2px;">+63 917 489 1200</div>
+            <div style="font-size: 0.76rem; color: #10b981; font-weight: 600; margin-top: 1px;">Emergency &amp; WhatsApp On-Call</div>
+          </div>
+          <a href="tel:+639174891200" class="btn btn-sm" style="background: #10b981; color: white; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.84rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(16,185,129,0.25);">
+            <i class="ti ti-phone"></i> Call
+          </a>
+        </div>
+
+        <!-- Email -->
+        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div>
+            <div style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Clinic Inquiries &amp; Records</div>
+            <div style="font-weight: 800; color: #0f172a; font-size: 0.96rem; margin-top: 2px;">clinic@fanodental.com</div>
+            <div style="font-size: 0.76rem; color: #64748b; margin-top: 1px;">Official receipts &amp; treatment inquiries</div>
+          </div>
+          <a href="mailto:clinic@fanodental.com" class="btn btn-sm" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.84rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="ti ti-mail"></i> Email
+          </a>
+        </div>
+
+        <!-- Address Badge -->
+        <div style="padding: 12px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; font-size: 0.82rem; color: #1e40af; line-height: 1.5; display: flex; align-items: center; gap: 8px;">
+          <i class="ti ti-map-pin" style="font-size: 16px; color: #2563eb; flex-shrink: 0;"></i>
+          <span><strong>Main Clinic:</strong> Balirong Highway, City of Naga, Cebu 6037 (Near Highway Junction)</span>
+        </div>
+      </div>
+
+      <div class="modal-actions-footer" style="padding: 14px 24px; border-top: 1px solid var(--border-light);">
+        <button type="button" class="secondary-btn full-width" onclick="closeContactDeskModal()" style="justify-content: center; padding: 10px; font-weight: 700;">Close</button>
       </div>
     </div>
   </div>
