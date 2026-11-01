@@ -91,6 +91,7 @@ function initDashboard() {
   loadPatientNotifications();
   checkPaymentReturnStatus();
   checkRatingUrlParam();
+  setupHelpSupportListeners();
 }
 
 // ─── Settings ────────────────────────────────────────────────
@@ -551,18 +552,27 @@ function handlePasswordChangeSubmit(e) {
 
 // ─── Report Issue Modal ──────────────────────────────────────
 function openReportIssueModal() {
-  document.getElementById('modal-report-issue')?.classList.add('active');
+  const el = document.getElementById('modal-report-issue');
+  if (el) {
+    el.classList.add('active');
+    el.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; z-index: 10000000 !important;';
+  }
 }
 function closeReportIssueModal() {
-  document.getElementById('modal-report-issue')?.classList.remove('active');
+  const el = document.getElementById('modal-report-issue');
+  if (el) {
+    el.classList.remove('active');
+    el.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+  }
   document.getElementById('form-report-issue')?.reset();
 }
 function handleReportIssueSubmit(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
   const cat = document.getElementById('ri-category')?.value || 'general';
-  const desc = document.getElementById('ri-description')?.value.trim() || '';
+  const desc = (document.getElementById('ri-description')?.value || '').trim();
   if (!desc) {
-    showToast('Please describe the issue or inquiry.', 'error');
+    if (typeof showToast === 'function') showToast('Please describe the issue or inquiry.', 'error');
+    else alert('Please describe the issue or inquiry.');
     return;
   }
   try {
@@ -570,24 +580,61 @@ function handleReportIssueSubmit(e) {
     list.unshift({ id: 'iss_' + Date.now(), category: cat, description: desc, date: new Date().toISOString() });
     localStorage.setItem('pd_reported_issues', JSON.stringify(list));
   } catch (_) {}
-  showToast('✓ Issue report submitted! Clinic support will review it.', 'success');
+  if (typeof showToast === 'function') showToast('✓ Issue report submitted! Clinic support will review it.', 'success');
+  else alert('Issue report submitted! Clinic support will review it.');
   closeReportIssueModal();
 }
 
 // ─── Help Center Modal ───────────────────────────────────────
 function openHelpCenterModal() {
-  document.getElementById('modal-help-center')?.classList.add('active');
+  const el = document.getElementById('modal-help-center');
+  if (el) {
+    el.classList.add('active');
+    el.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; z-index: 10000000 !important;';
+  }
 }
 function closeHelpCenterModal() {
-  document.getElementById('modal-help-center')?.classList.remove('active');
+  const el = document.getElementById('modal-help-center');
+  if (el) {
+    el.classList.remove('active');
+    el.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+  }
 }
 
 // ─── Contact Clinic Desk Modal ───────────────────────────────
 function openContactClinicPrompt() {
-  document.getElementById('modal-contact-desk')?.classList.add('active');
+  const el = document.getElementById('modal-contact-desk');
+  if (el) {
+    el.classList.add('active');
+    el.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; z-index: 10000000 !important;';
+  }
 }
 function closeContactDeskModal() {
-  document.getElementById('modal-contact-desk')?.classList.remove('active');
+  const el = document.getElementById('modal-contact-desk');
+  if (el) {
+    el.classList.remove('active');
+    el.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+  }
+}
+
+function setupHelpSupportListeners() {
+  const triggers = [
+    { ids: ['btn-help-read', 'card-help-center'], fn: openHelpCenterModal },
+    { ids: ['btn-clinic-call', 'card-contact-desk'], fn: openContactClinicPrompt },
+    { ids: ['btn-issue-report', 'card-report-issue'], fn: openReportIssueModal }
+  ];
+  triggers.forEach(({ ids, fn }) => {
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          fn();
+        });
+      }
+    });
+  });
 }
 
 // Explicit global exposure on window
@@ -598,11 +645,19 @@ window.closeContactDeskModal = closeContactDeskModal;
 window.openReportIssueModal = openReportIssueModal;
 window.closeReportIssueModal = closeReportIssueModal;
 window.handleReportIssueSubmit = handleReportIssueSubmit;
+window.setupHelpSupportListeners = setupHelpSupportListeners;
 window.openChangePasswordModal = openChangePasswordModal;
 window.closeChangePasswordModal = closeChangePasswordModal;
 window.handlePasswordChangeSubmit = handlePasswordChangeSubmit;
 window.downloadPatientData = downloadPatientData;
 window.logoutAllDevices = logoutAllDevices;
+
+// Run listeners immediately if DOM is already ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupHelpSupportListeners);
+} else {
+  setupHelpSupportListeners();
+}
 
 // ─── Date, Time & Greeting ──────────────────────────────────
 function setDateTime() {

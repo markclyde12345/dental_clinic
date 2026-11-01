@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20260912_minimal_v2">
+  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20261101_support_v7">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="../css/ai-chat.css">
 </head>
@@ -1502,31 +1502,31 @@
                     <p>Get in touch with clinic reception or browse guides for appointments and billing.</p>
 
                     <div class="support-actions-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px;">
-                      <div class="support-item" onclick="openHelpCenterModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                      <div class="support-item" id="card-help-center" onclick="openHelpCenterModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                         <div class="si-icon" style="width: 40px; height: 40px; border-radius: 10px; background: rgba(37, 99, 235, 0.1); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;"><i class="ti ti-notes-medical"></i></div>
                         <div class="si-content" style="flex: 1;">
                           <div class="si-title" style="color: #0f172a; font-weight: 700; font-size: 0.94rem;">Help Center &amp; FAQs</div>
                           <div class="si-desc" style="color: #64748b; font-size: 0.82rem; margin-top: 2px;">Appointment policies, records &amp; billing guide</div>
                         </div>
-                        <button type="button" class="os-back-btn" onclick="event.stopPropagation(); openHelpCenterModal()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 700; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;">Read →</button>
+                        <button type="button" id="btn-help-read" class="os-back-btn" onclick="event.stopPropagation(); openHelpCenterModal()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 700; color: #2563eb; border-color: #bfdbfe; background: #eff6ff; cursor: pointer;">Read &rarr;</button>
                       </div>
 
-                      <div class="support-item" onclick="openContactClinicPrompt()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                      <div class="support-item" id="card-contact-desk" onclick="openContactClinicPrompt()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                         <div class="si-icon" style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;"><i class="ti ti-phone-call"></i></div>
                         <div class="si-content" style="flex: 1;">
                           <div class="si-title" style="color: #0f172a; font-weight: 700; font-size: 0.94rem;">Contact Clinic Desk</div>
                           <div class="si-desc" style="color: #64748b; font-size: 0.82rem; margin-top: 2px;">Hotline: (032) 489-1200 · +63 917 489 1200</div>
                         </div>
-                        <button type="button" class="os-back-btn" onclick="event.stopPropagation(); openContactClinicPrompt()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 700; color: #10b981; border-color: #bbf7d0; background: #f0fdf4;">Call →</button>
+                        <button type="button" id="btn-clinic-call" class="os-back-btn" onclick="event.stopPropagation(); openContactClinicPrompt()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 700; color: #10b981; border-color: #bbf7d0; background: #f0fdf4; cursor: pointer;">Call &rarr;</button>
                       </div>
 
-                      <div class="support-item" onclick="openReportIssueModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                      <div class="support-item" id="card-report-issue" onclick="openReportIssueModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                         <div class="si-icon" style="width: 40px; height: 40px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;"><i class="ti ti-alert-triangle"></i></div>
                         <div class="si-content" style="flex: 1;">
                           <div class="si-title" style="color: #0f172a; font-weight: 700; font-size: 0.94rem;">Report an Issue</div>
                           <div class="si-desc" style="color: #64748b; font-size: 0.82rem; margin-top: 2px;">Notify clinic technical support team</div>
                         </div>
-                        <button type="button" class="os-back-btn" onclick="event.stopPropagation(); openReportIssueModal()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 700; color: #ef4444; border-color: #fecaca; background: #fef2f2;">Report →</button>
+                        <button type="button" id="btn-issue-report" class="os-back-btn" onclick="event.stopPropagation(); openReportIssueModal()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 700; color: #ef4444; border-color: #fecaca; background: #fef2f2; cursor: pointer;">Report &rarr;</button>
                       </div>
                     </div>
                   </div>
@@ -1566,7 +1566,7 @@
           <h3 class="modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Appointment Details</h3>
           <span class="status-pill" id="modal-appt-status-pill">Pending</span>
         </div>
-        <button type="button" class="modal-close-btn" onclick="closeAppointmentModal()" aria-label="Close modal">✕</button>
+        <button type="button" class="modal-close-btn" onclick="closeAppointmentModal()" aria-label="Close modal">&times;</button>
       </div>
 
       <div class="modal-body" id="modal-appt-body">
@@ -1803,7 +1803,7 @@
           </div>
           <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 800;">Change Password</h3>
         </div>
-        <button type="button" class="modal-close-btn" onclick="closeChangePasswordModal()" aria-label="Close modal">✕</button>
+        <button type="button" class="modal-close-btn" onclick="closeChangePasswordModal()" aria-label="Close modal">&times;</button>
       </div>
       <form id="form-change-password" onsubmit="handlePasswordChangeSubmit(event)">
         <div class="modal-body" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;">
@@ -1837,7 +1837,7 @@
           </div>
           <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 800;">Report an Issue</h3>
         </div>
-        <button type="button" class="modal-close-btn" onclick="closeReportIssueModal()" aria-label="Close modal">✕</button>
+        <button type="button" class="modal-close-btn" onclick="closeReportIssueModal()" aria-label="Close modal">&times;</button>
       </div>
       <form id="form-report-issue" onsubmit="handleReportIssueSubmit(event)">
         <div class="modal-body" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;">
@@ -1874,7 +1874,7 @@
           </div>
           <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 800;">Help Center &amp; Patient FAQs</h3>
         </div>
-        <button type="button" class="modal-close-btn" onclick="closeHelpCenterModal()" aria-label="Close modal">✕</button>
+        <button type="button" class="modal-close-btn" onclick="closeHelpCenterModal()" aria-label="Close modal">&times;</button>
       </div>
       <div class="modal-body" style="padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">
         <div class="faq-item" style="border: 1px solid var(--border-light); border-radius: 12px; padding: 14px; background: var(--bg-base);">
@@ -1913,7 +1913,7 @@
             <p style="margin: 2px 0 0; font-size: 0.8rem; color: #64748b;">Direct channels to Fano Dental Clinic receptionists</p>
           </div>
         </div>
-        <button type="button" class="modal-close-btn" onclick="closeContactDeskModal()" aria-label="Close modal">✕</button>
+        <button type="button" class="modal-close-btn" onclick="closeContactDeskModal()" aria-label="Close modal">&times;</button>
       </div>
 
       <div class="modal-body" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 12px;">
@@ -1974,7 +1974,7 @@
       <div class="sdm-hero" id="sdm-hero-wrap">
         <img id="sdm-hero-img" src="../Resources/services/cleaning.jpg" alt="Service Photo" class="sdm-hero-img">
         <div class="sdm-hero-overlay"></div>
-        <button type="button" class="modal-close-btn sdm-close-btn" onclick="closeServiceDetailsModal()" aria-label="Close modal">✕</button>
+        <button type="button" class="modal-close-btn sdm-close-btn" onclick="closeServiceDetailsModal()" aria-label="Close modal">&times;</button>
         <div class="sdm-hero-content">
           <div class="sdm-category-strip" id="sdm-category-strip">
             <span class="scc-category-badge" id="sdm-category-badge"><i class="ti ti-dental"></i> General Dentistry</span>
@@ -2079,8 +2079,83 @@
   </nav>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/patient-dashboard.js?v=20261005_carto_key_v1"></script>
+  <script src="../js/patient-dashboard.js?v=20261101_support_v7"></script>
   <script src="../js/ai-chat.js"></script>
   <script src="../js/offline-monitor.js"></script>
+
+  <!-- Inline Modal Controller for Help, Clinic Desk & Support Modals -->
+  <script>
+    (function() {
+      function showModal(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add('active');
+        el.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; z-index: 10000000 !important;';
+      }
+      function hideModal(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('active');
+        el.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+      }
+
+      window.openHelpCenterModal = function() { showModal('modal-help-center'); };
+      window.closeHelpCenterModal = function() { hideModal('modal-help-center'); };
+      window.openContactClinicPrompt = function() { showModal('modal-contact-desk'); };
+      window.closeContactDeskModal = function() { hideModal('modal-contact-desk'); };
+      window.openReportIssueModal = function() { showModal('modal-report-issue'); };
+      window.closeReportIssueModal = function() {
+        hideModal('modal-report-issue');
+        var form = document.getElementById('form-report-issue');
+        if (form) form.reset();
+      };
+
+      window.handleReportIssueSubmit = function(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        var desc = (document.getElementById('ri-description')?.value || '').trim();
+        var cat = document.getElementById('ri-category')?.value || 'general';
+        if (!desc) {
+          if (typeof showToast === 'function') showToast('Please describe the issue or inquiry.', 'error');
+          else alert('Please describe the issue or inquiry.');
+          return;
+        }
+        try {
+          var list = JSON.parse(localStorage.getItem('pd_reported_issues') || '[]');
+          list.unshift({ id: 'iss_' + Date.now(), category: cat, description: desc, date: new Date().toISOString() });
+          localStorage.setItem('pd_reported_issues', JSON.stringify(list));
+        } catch (_) {}
+        if (typeof showToast === 'function') showToast('Issue report submitted! Clinic support will review it.', 'success');
+        else alert('Issue report submitted! Clinic support will review it.');
+        window.closeReportIssueModal();
+      };
+
+      function bindListeners() {
+        var triggers = [
+          { ids: ['btn-help-read', 'card-help-center'], fn: window.openHelpCenterModal },
+          { ids: ['btn-clinic-call', 'card-contact-desk'], fn: window.openContactClinicPrompt },
+          { ids: ['btn-issue-report', 'card-report-issue'], fn: window.openReportIssueModal }
+        ];
+        triggers.forEach(function(item) {
+          item.ids.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) {
+              el.addEventListener('click', function(ev) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                item.fn();
+              });
+            }
+          });
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindListeners);
+      } else {
+        bindListeners();
+      }
+    })();
+  </script>
+
 </body>
 </html>
