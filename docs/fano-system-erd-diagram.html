@@ -37,7 +37,7 @@
 
     .entity-box {
       position: absolute;
-      width: 205px;
+      width: 210px;
       background: #ffffff;
       border: 1.5px solid #555555;
       z-index: 20;
@@ -68,12 +68,37 @@
       color: #222222;
       background: #ffffff;
       line-height: 1.3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .entity-fields li:nth-child(even) {
       background: #eeeeee;
     }
     .entity-fields li:last-child {
       border-bottom: none;
+    }
+    .entity-fields li.pk-row {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .key-tag {
+      font-style: normal;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 0px 4px;
+      border-radius: 2px;
+      letter-spacing: 0.3px;
+    }
+    .key-pk {
+      color: #92400e;
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+    }
+    .key-fk {
+      color: #1e40af;
+      background: #dbeafe;
+      border: 1px solid #60a5fa;
     }
   </style>
 </head>
@@ -88,12 +113,12 @@
     <div class="entity-box" id="t-chat_messages" style="left: 25px; top: 20px;">
       <div class="entity-header hdr-purple">chat_messages</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="room_id">room_id</li>
-        <li data-field="sender_id">sender_id</li>
-        <li data-field="content">content</li>
-        <li data-field="sent_at">sent_at</li>
-        <li data-field="is_read">is_read</li>
+        <li data-field="message_id" class="pk-row"><span>message_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="room_id"><span>room_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="sender_id"><span>sender_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="content"><span>content</span></li>
+        <li data-field="sent_at"><span>sent_at</span></li>
+        <li data-field="is_read"><span>is_read</span></li>
       </ul>
     </div>
 
@@ -101,12 +126,12 @@
     <div class="entity-box" id="t-chat_rooms" style="left: 25px; top: 245px;">
       <div class="entity-header hdr-purple">chat_rooms</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="patient_id">patient_id</li>
-        <li data-field="created_by">created_by</li>
-        <li data-field="title">title</li>
-        <li data-field="created_at">created_at</li>
-        <li data-field="updated_at">updated_at</li>
+        <li data-field="room_id" class="pk-row"><span>room_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="patient_id"><span>patient_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="created_by"><span>created_by</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="title"><span>title</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
+        <li data-field="updated_at"><span>updated_at</span></li>
       </ul>
     </div>
 
@@ -114,14 +139,14 @@
     <div class="entity-box" id="t-dental_charts" style="left: 25px; top: 470px;">
       <div class="entity-header hdr-purple">dental_charts</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="patient_id">patient_id</li>
-        <li data-field="dentist_id">dentist_id</li>
-        <li data-field="notes">notes</li>
-        <li data-field="chart_type">chart_type</li>
-        <li data-field="teeth_data">teeth_data</li>
-        <li data-field="created_at">created_at</li>
-        <li data-field="updated_at">updated_at</li>
+        <li data-field="chart_id" class="pk-row"><span>chart_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="patient_id"><span>patient_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="dentist_id"><span>dentist_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="notes"><span>notes</span></li>
+        <li data-field="chart_type"><span>chart_type</span></li>
+        <li data-field="teeth_data"><span>teeth_data</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
+        <li data-field="updated_at"><span>updated_at</span></li>
       </ul>
     </div>
 
@@ -129,15 +154,15 @@
     <div class="entity-box" id="t-treatment_plans" style="left: 25px; top: 750px;">
       <div class="entity-header hdr-purple">treatment_plans</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="patient_id">patient_id</li>
-        <li data-field="dentist_id">dentist_id</li>
-        <li data-field="name">name</li>
-        <li data-field="description">description</li>
-        <li data-field="total_estimated_cost">total_estimated_cost</li>
-        <li data-field="status">status</li>
-        <li data-field="created_at">created_at</li>
-        <li data-field="updated_at">updated_at</li>
+        <li data-field="plan_id" class="pk-row"><span>plan_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="patient_id"><span>patient_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="dentist_id"><span>dentist_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="name"><span>name</span></li>
+        <li data-field="description"><span>description</span></li>
+        <li data-field="total_estimated_cost"><span>total_estimated_cost</span></li>
+        <li data-field="status"><span>status</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
+        <li data-field="updated_at"><span>updated_at</span></li>
       </ul>
     </div>
 
@@ -145,14 +170,14 @@
     <div class="entity-box" id="t-treatment_plan_items" style="left: 25px; top: 1065px;">
       <div class="entity-header hdr-purple">treatment_plan_items</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="plan_id">plan_id</li>
-        <li data-field="treatment_id">treatment_id</li>
-        <li data-field="treatment_name">treatment_name</li>
-        <li data-field="notes">notes</li>
-        <li data-field="sequence">sequence</li>
-        <li data-field="status">status</li>
-        <li data-field="created_at">created_at</li>
+        <li data-field="item_id" class="pk-row"><span>item_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="plan_id"><span>plan_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="treatment_id"><span>treatment_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="treatment_name"><span>treatment_name</span></li>
+        <li data-field="notes"><span>notes</span></li>
+        <li data-field="sequence"><span>sequence</span></li>
+        <li data-field="status"><span>status</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
       </ul>
     </div>
 
@@ -163,15 +188,15 @@
     <div class="entity-box" id="t-patient_profiles" style="left: 355px; top: 20px;">
       <div class="entity-header hdr-blue">patient_profiles</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="user_id">user_id</li>
-        <li data-field="date_of_birth">date_of_birth</li>
-        <li data-field="gender">gender</li>
-        <li data-field="blood_type">blood_type</li>
-        <li data-field="medical_notes">medical_notes</li>
-        <li data-field="allergies">allergies</li>
-        <li data-field="created_at">created_at</li>
-        <li data-field="updated_at">updated_at</li>
+        <li data-field="patient_id" class="pk-row"><span>patient_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="user_id"><span>user_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="date_of_birth"><span>date_of_birth</span></li>
+        <li data-field="gender"><span>gender</span></li>
+        <li data-field="blood_type"><span>blood_type</span></li>
+        <li data-field="medical_notes"><span>medical_notes</span></li>
+        <li data-field="allergies"><span>allergies</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
+        <li data-field="updated_at"><span>updated_at</span></li>
       </ul>
     </div>
 
@@ -179,22 +204,22 @@
     <div class="entity-box" id="t-users" style="left: 355px; top: 340px;">
       <div class="entity-header hdr-blue">users</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="first_name">first_name</li>
-        <li data-field="last_name">last_name</li>
-        <li data-field="name">name</li>
-        <li data-field="email">email</li>
-        <li data-field="password">password</li>
-        <li data-field="role">role</li>
-        <li data-field="contact_number">contact_number</li>
-        <li data-field="address">address</li>
-        <li data-field="otp_code">otp_code</li>
-        <li data-field="otp_expires">otp_expires</li>
-        <li data-field="is_verified">is_verified</li>
-        <li data-field="is_active">is_active</li>
-        <li data-field="otp_attempts">otp_attempts</li>
-        <li data-field="created_at">created_at</li>
-        <li data-field="updated_at">updated_at</li>
+        <li data-field="user_id" class="pk-row"><span>user_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="first_name"><span>first_name</span></li>
+        <li data-field="last_name"><span>last_name</span></li>
+        <li data-field="name"><span>name</span></li>
+        <li data-field="email"><span>email</span></li>
+        <li data-field="password"><span>password</span></li>
+        <li data-field="role"><span>role</span></li>
+        <li data-field="contact_number"><span>contact_number</span></li>
+        <li data-field="address"><span>address</span></li>
+        <li data-field="otp_code"><span>otp_code</span></li>
+        <li data-field="otp_expires"><span>otp_expires</span></li>
+        <li data-field="is_verified"><span>is_verified</span></li>
+        <li data-field="is_active"><span>is_active</span></li>
+        <li data-field="otp_attempts"><span>otp_attempts</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
+        <li data-field="updated_at"><span>updated_at</span></li>
       </ul>
     </div>
 
@@ -202,13 +227,13 @@
     <div class="entity-box" id="t-treatments" style="left: 355px; top: 890px;">
       <div class="entity-header hdr-green">treatments</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="name">name</li>
-        <li data-field="description">description</li>
-        <li data-field="price">price</li>
-        <li data-field="duration_minutes">duration_minutes</li>
-        <li data-field="is_active">is_active</li>
-        <li data-field="created_at">created_at</li>
+        <li data-field="treatment_id" class="pk-row"><span>treatment_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="name"><span>name</span></li>
+        <li data-field="description"><span>description</span></li>
+        <li data-field="price"><span>price</span></li>
+        <li data-field="duration_minutes"><span>duration_minutes</span></li>
+        <li data-field="is_active"><span>is_active</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
       </ul>
     </div>
 
@@ -219,14 +244,14 @@
     <div class="entity-box" id="t-follow_ups" style="left: 685px; top: 20px;">
       <div class="entity-header hdr-green">follow_ups</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="patient_id">patient_id</li>
-        <li data-field="dentist_id">dentist_id</li>
-        <li data-field="appointment_id">appointment_id</li>
-        <li data-field="follow_up_date">follow_up_date</li>
-        <li data-field="notes">notes</li>
-        <li data-field="status">status</li>
-        <li data-field="created_at">created_at</li>
+        <li data-field="followup_id" class="pk-row"><span>followup_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="patient_id"><span>patient_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="dentist_id"><span>dentist_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="appointment_id"><span>appointment_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="follow_up_date"><span>follow_up_date</span></li>
+        <li data-field="notes"><span>notes</span></li>
+        <li data-field="status"><span>status</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
       </ul>
     </div>
 
@@ -234,14 +259,14 @@
     <div class="entity-box" id="t-appointments" style="left: 685px; top: 340px;">
       <div class="entity-header hdr-blue">appointments</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="patient_id">patient_id</li>
-        <li data-field="treatment_id">treatment_id</li>
-        <li data-field="appointment_date">appointment_date</li>
-        <li data-field="notes">notes</li>
-        <li data-field="status">status</li>
-        <li data-field="created_at">created_at</li>
-        <li data-field="updated_at">updated_at</li>
+        <li data-field="appointment_id" class="pk-row"><span>appointment_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="patient_id"><span>patient_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="treatment_id"><span>treatment_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="appointment_date"><span>appointment_date</span></li>
+        <li data-field="notes"><span>notes</span></li>
+        <li data-field="status"><span>status</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
+        <li data-field="updated_at"><span>updated_at</span></li>
       </ul>
     </div>
 
@@ -249,15 +274,15 @@
     <div class="entity-box" id="t-appointment_treatments" style="left: 685px; top: 660px;">
       <div class="entity-header hdr-green">appointment_treatments</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="appointment_id">appointment_id</li>
-        <li data-field="treatment_id">treatment_id</li>
-        <li data-field="treatment_name">treatment_name</li>
-        <li data-field="notes">notes</li>
-        <li data-field="quantity">quantity</li>
-        <li data-field="price_at_time">price_at_time</li>
-        <li data-field="performed_at">performed_at</li>
-        <li data-field="created_at">created_at</li>
+        <li data-field="appt_treatment_id" class="pk-row"><span>appt_treatment_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="appointment_id"><span>appointment_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="treatment_id"><span>treatment_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="treatment_name"><span>treatment_name</span></li>
+        <li data-field="notes"><span>notes</span></li>
+        <li data-field="quantity"><span>quantity</span></li>
+        <li data-field="price_at_time"><span>price_at_time</span></li>
+        <li data-field="performed_at"><span>performed_at</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
       </ul>
     </div>
 
@@ -268,13 +293,13 @@
     <div class="entity-box" id="t-invoices" style="left: 1015px; top: 130px;">
       <div class="entity-header hdr-amber">invoices</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="patient_id">patient_id</li>
-        <li data-field="appointment_id">appointment_id</li>
-        <li data-field="amount">amount</li>
-        <li data-field="paid_at">paid_at</li>
-        <li data-field="status">status</li>
-        <li data-field="issued_at">issued_at</li>
+        <li data-field="invoice_id" class="pk-row"><span>invoice_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="patient_id"><span>patient_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="appointment_id"><span>appointment_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="amount"><span>amount</span></li>
+        <li data-field="paid_at"><span>paid_at</span></li>
+        <li data-field="status"><span>status</span></li>
+        <li data-field="issued_at"><span>issued_at</span></li>
       </ul>
     </div>
 
@@ -282,16 +307,16 @@
     <div class="entity-box" id="t-hmo_claims" style="left: 1015px; top: 400px;">
       <div class="entity-header hdr-amber">hmo_claims</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="patient_id">patient_id</li>
-        <li data-field="invoice_id">invoice_id</li>
-        <li data-field="provider_name">provider_name</li>
-        <li data-field="policy_number">policy_number</li>
-        <li data-field="claim_amount">claim_amount</li>
-        <li data-field="approved_amount">approved_amount</li>
-        <li data-field="status">status</li>
-        <li data-field="filed_at">filed_at</li>
-        <li data-field="updated_at">updated_at</li>
+        <li data-field="claim_id" class="pk-row"><span>claim_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="patient_id"><span>patient_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="invoice_id"><span>invoice_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="provider_name"><span>provider_name</span></li>
+        <li data-field="policy_number"><span>policy_number</span></li>
+        <li data-field="claim_amount"><span>claim_amount</span></li>
+        <li data-field="approved_amount"><span>approved_amount</span></li>
+        <li data-field="status"><span>status</span></li>
+        <li data-field="filed_at"><span>filed_at</span></li>
+        <li data-field="updated_at"><span>updated_at</span></li>
       </ul>
     </div>
 
@@ -299,16 +324,16 @@
     <div class="entity-box" id="t-prescriptions" style="left: 1015px; top: 740px;">
       <div class="entity-header hdr-green">prescriptions</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="appointment_id">appointment_id</li>
-        <li data-field="patient_id">patient_id</li>
-        <li data-field="dentist_id">dentist_id</li>
-        <li data-field="medication">medication</li>
-        <li data-field="dosage">dosage</li>
-        <li data-field="frequency">frequency</li>
-        <li data-field="duration">duration</li>
-        <li data-field="instructions">instructions</li>
-        <li data-field="created_at">created_at</li>
+        <li data-field="prescription_id" class="pk-row"><span>prescription_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="appointment_id"><span>appointment_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="patient_id"><span>patient_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="dentist_id"><span>dentist_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="medication"><span>medication</span></li>
+        <li data-field="dosage"><span>dosage</span></li>
+        <li data-field="frequency"><span>frequency</span></li>
+        <li data-field="duration"><span>duration</span></li>
+        <li data-field="instructions"><span>instructions</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
       </ul>
     </div>
 
@@ -319,49 +344,51 @@
     <div class="entity-box" id="t-staff_schedules" style="left: 1320px; top: 100px;">
       <div class="entity-header hdr-blue">staff_schedules</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="name">name</li>
-        <li data-field="email">email</li>
-        <li data-field="role">role</li>
-        <li data-field="contact">contact</li>
-        <li data-field="shift">shift</li>
-        <li data-field="days">days</li>
-        <li data-field="availability">availability</li>
-        <li data-field="created_at">created_at</li>
+        <li data-field="schedule_id" class="pk-row"><span>schedule_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="user_id"><span>user_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="name"><span>name</span></li>
+        <li data-field="email"><span>email</span></li>
+        <li data-field="role"><span>role</span></li>
+        <li data-field="contact"><span>contact</span></li>
+        <li data-field="shift"><span>shift</span></li>
+        <li data-field="days"><span>days</span></li>
+        <li data-field="availability"><span>availability</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
       </ul>
     </div>
 
     <!-- 16. inventory -->
-    <div class="entity-box" id="t-inventory" style="left: 1320px; top: 430px;">
+    <div class="entity-box" id="t-inventory" style="left: 1320px; top: 440px;">
       <div class="entity-header hdr-green">inventory</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="name">name</li>
-        <li data-field="category">category</li>
-        <li data-field="unit">unit</li>
-        <li data-field="status">status</li>
-        <li data-field="stock">stock</li>
-        <li data-field="threshold">threshold</li>
-        <li data-field="created_at">created_at</li>
+        <li data-field="inventory_id" class="pk-row"><span>inventory_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="name"><span>name</span></li>
+        <li data-field="category"><span>category</span></li>
+        <li data-field="unit"><span>unit</span></li>
+        <li data-field="status"><span>status</span></li>
+        <li data-field="stock"><span>stock</span></li>
+        <li data-field="threshold"><span>threshold</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
       </ul>
     </div>
 
     <!-- 17. expenses -->
-    <div class="entity-box" id="t-expenses" style="left: 1320px; top: 730px;">
+    <div class="entity-box" id="t-expenses" style="left: 1320px; top: 740px;">
       <div class="entity-header hdr-amber">expenses</div>
       <ul class="entity-fields">
-        <li data-field="id">id</li>
-        <li data-field="ref_no">ref_no</li>
-        <li data-field="vendor">vendor</li>
-        <li data-field="category">category</li>
-        <li data-field="description">description</li>
-        <li data-field="amount">amount</li>
-        <li data-field="due_date">due_date</li>
-        <li data-field="paid_date">paid_date</li>
-        <li data-field="payment_method">payment_method</li>
-        <li data-field="reference_no">reference_no</li>
-        <li data-field="status">status</li>
-        <li data-field="created_at">created_at</li>
+        <li data-field="expense_id" class="pk-row"><span>expense_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="inventory_id"><span>inventory_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="ref_no"><span>ref_no</span></li>
+        <li data-field="vendor"><span>vendor</span></li>
+        <li data-field="category"><span>category</span></li>
+        <li data-field="description"><span>description</span></li>
+        <li data-field="amount"><span>amount</span></li>
+        <li data-field="due_date"><span>due_date</span></li>
+        <li data-field="paid_date"><span>paid_date</span></li>
+        <li data-field="payment_method"><span>payment_method</span></li>
+        <li data-field="reference_no"><span>reference_no</span></li>
+        <li data-field="status"><span>status</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
       </ul>
     </div>
 
@@ -485,120 +512,120 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      // 1. users (1) -> patient_profiles (0..1) [vertical]
+      // 1. users.user_id (PK) -> patient_profiles.user_id (FK) [vertical]
       connect(
         { table: 'users', field: null, side: 'top', ratio: 0.5, type: 'one' },
         { table: 'patient_profiles', field: null, side: 'bottom', ratio: 0.5, type: 'zero-one' }
       );
 
-      // 2. chat_rooms (1) -> chat_messages (0..N) [vertical]
+      // 2. chat_rooms.room_id (PK) -> chat_messages.room_id (FK) [vertical]
       connect(
         { table: 'chat_rooms', field: null, side: 'top', ratio: 0.5, type: 'one' },
         { table: 'chat_messages', field: null, side: 'bottom', ratio: 0.5, type: 'zero-many' }
       );
 
-      // 3. users (1) -> chat_rooms (0..N)
+      // 3. patient_profiles.patient_id (PK) -> chat_rooms.patient_id (FK)
       connect(
-        { table: 'users', field: 'id', side: 'left', type: 'one' },
+        { table: 'patient_profiles', field: 'patient_id', side: 'left', type: 'one' },
         { table: 'chat_rooms', field: 'patient_id', side: 'right', type: 'zero-many' },
         305
       );
 
-      // 4. users (1) -> dental_charts (0..1)
+      // 4. patient_profiles.patient_id (PK) -> dental_charts.patient_id (FK)
       connect(
-        { table: 'users', field: 'name', side: 'left', type: 'one' },
+        { table: 'patient_profiles', field: 'user_id', side: 'left', type: 'one' },
         { table: 'dental_charts', field: 'patient_id', side: 'right', type: 'zero-one' },
         285
       );
 
-      // 5. users (1) -> treatment_plans (0..N)
+      // 5. users.user_id (PK) -> treatment_plans.dentist_id (FK)
       connect(
-        { table: 'users', field: 'contact_number', side: 'left', type: 'one' },
-        { table: 'treatment_plans', field: 'patient_id', side: 'right', type: 'zero-many' },
+        { table: 'users', field: 'user_id', side: 'left', type: 'one' },
+        { table: 'treatment_plans', field: 'dentist_id', side: 'right', type: 'zero-many' },
         265
       );
 
-      // 6. treatment_plans (1) -> treatment_plan_items (1..N) [vertical]
+      // 6. treatment_plans.plan_id (PK) -> treatment_plan_items.plan_id (FK) [vertical]
       connect(
         { table: 'treatment_plans', field: null, side: 'bottom', ratio: 0.5, type: 'one' },
         { table: 'treatment_plan_items', field: null, side: 'top', ratio: 0.5, type: 'many' }
       );
 
-      // 7. treatments (1) -> treatment_plan_items (0..N)
+      // 7. treatments.treatment_id (PK) -> treatment_plan_items.treatment_id (FK)
       connect(
-        { table: 'treatments', field: 'id', side: 'left', type: 'one' },
+        { table: 'treatments', field: 'treatment_id', side: 'left', type: 'one' },
         { table: 'treatment_plan_items', field: 'treatment_id', side: 'right', type: 'zero-many' },
         305
       );
 
-      // 8. users (1) -> appointments (0..N)
+      // 8. patient_profiles.patient_id (PK) -> appointments.patient_id (FK)
       connect(
-        { table: 'users', field: 'id', side: 'right', type: 'one' },
+        { table: 'patient_profiles', field: 'patient_id', side: 'right', type: 'one' },
         { table: 'appointments', field: 'patient_id', side: 'left', type: 'many' },
         625
       );
 
-      // 9. treatments (1) -> appointments (0..N)
+      // 9. treatments.treatment_id (PK) -> appointments.treatment_id (FK)
       connect(
-        { table: 'treatments', field: 'id', side: 'right', type: 'one' },
+        { table: 'treatments', field: 'treatment_id', side: 'right', type: 'one' },
         { table: 'appointments', field: 'treatment_id', side: 'left', type: 'zero-many' },
         610
       );
 
-      // 10. appointments (1) -> follow_ups (0..N) [vertical]
+      // 10. appointments.appointment_id (PK) -> follow_ups.appointment_id (FK) [vertical]
       connect(
         { table: 'appointments', field: null, side: 'top', ratio: 0.5, type: 'one' },
         { table: 'follow_ups', field: null, side: 'bottom', ratio: 0.5, type: 'zero-many' }
       );
 
-      // 11. appointments (1) -> appointment_treatments (1..N) [vertical]
+      // 11. appointments.appointment_id (PK) -> appointment_treatments.appointment_id (FK) [vertical]
       connect(
         { table: 'appointments', field: null, side: 'bottom', ratio: 0.5, type: 'one' },
         { table: 'appointment_treatments', field: null, side: 'top', ratio: 0.5, type: 'many' }
       );
 
-      // 12. treatments (1) -> appointment_treatments (0..N)
+      // 12. treatments.treatment_id (PK) -> appointment_treatments.treatment_id (FK)
       connect(
         { table: 'treatments', field: 'price', side: 'right', type: 'one' },
         { table: 'appointment_treatments', field: 'treatment_id', side: 'left', type: 'many' },
         640
       );
 
-      // 13. appointments (1) -> invoices (0..1)
+      // 13. appointments.appointment_id (PK) -> invoices.appointment_id (FK)
       connect(
-        { table: 'appointments', field: 'id', side: 'right', type: 'one' },
+        { table: 'appointments', field: 'appointment_id', side: 'right', type: 'one' },
         { table: 'invoices', field: 'appointment_id', side: 'left', type: 'zero-one' },
         955
       );
 
-      // 14. invoices (1) -> hmo_claims (0..N) [vertical]
+      // 14. invoices.invoice_id (PK) -> hmo_claims.invoice_id (FK) [vertical]
       connect(
         { table: 'invoices', field: null, side: 'bottom', ratio: 0.5, type: 'one' },
         { table: 'hmo_claims', field: null, side: 'top', ratio: 0.5, type: 'zero-many' }
       );
 
-      // 15. appointments (1) -> prescriptions (0..N)
+      // 15. appointments.appointment_id (PK) -> prescriptions.appointment_id (FK)
       connect(
         { table: 'appointments', field: 'notes', side: 'right', type: 'one' },
         { table: 'prescriptions', field: 'appointment_id', side: 'left', type: 'zero-many' },
         955
       );
 
-      // 16. users (1) -> staff_schedules (0..N)
+      // 16. users.user_id (PK) -> staff_schedules.user_id (FK)
       connect(
-        { table: 'users', field: 'email', side: 'right', type: 'one' },
-        { table: 'staff_schedules', field: 'email', side: 'left', type: 'zero-many' },
+        { table: 'users', field: 'user_id', side: 'right', type: 'one' },
+        { table: 'staff_schedules', field: 'user_id', side: 'left', type: 'zero-many' },
         (a1, a2) => [[650, a1.y], [650, 310], [975, 310], [975, 70], [1270, 70], [1270, a2.y]]
       );
 
-      // 17. inventory (1) -> appointment_treatments (0..N)
+      // 17. inventory.inventory_id (PK) -> appointment_treatments (0..N)
       connect(
-        { table: 'inventory', field: 'id', side: 'left', type: 'one' },
+        { table: 'inventory', field: 'inventory_id', side: 'left', type: 'one' },
         { table: 'appointment_treatments', field: 'quantity', side: 'right', type: 'zero-many' },
         (a1, a2) => [[1270, a1.y], [1270, 712], [935, 712], [935, a2.y]]
       );
 
-      // 18. inventory (1) -> expenses (0..N) [vertical]
+      // 18. inventory.inventory_id (PK) -> expenses.inventory_id (FK) [vertical]
       connect(
         { table: 'inventory', field: null, side: 'bottom', ratio: 0.5, type: 'one' },
         { table: 'expenses', field: null, side: 'top', ratio: 0.5, type: 'zero-many' }
