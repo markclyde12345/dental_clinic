@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FANO Dental Clinic - Dentist Use Case Diagram</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    svg {
+      background-color: #ffffff;
+      display: block;
+    }
+    .actor-label {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      fill: #111111;
+      text-anchor: middle;
+    }
+    .uc-text {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      fill: #222222;
+      text-anchor: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <svg width="760" height="1130" viewBox="0 0 760 1130" xmlns="http://www.w3.org/2000/svg">
+    <!-- System Boundary Box -->
+    <rect x="465" y="18" width="265" height="1094" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+
+    <!-- Stick Figure Actor: Dentist -->
+    <!-- Head -->
+    <circle cx="115" cy="430" r="46" fill="#ffffff" stroke="#222222" stroke-width="1.6" />
+    <!-- Spine -->
+    <line x1="115" y1="476" x2="115" y2="655" stroke="#222222" stroke-width="1.6" />
+    <!-- Arms (Left X=25 to Right X=205 at Y=520) -->
+    <line x1="25" y1="520" x2="205" y2="520" stroke="#222222" stroke-width="1.6" />
+    <!-- Left Leg -->
+    <line x1="115" y1="655" x2="25" y2="810" stroke="#222222" stroke-width="1.6" />
+    <!-- Right Leg -->
+    <line x1="115" y1="655" x2="205" y2="810" stroke="#222222" stroke-width="1.6" />
+    <!-- Actor Label -->
+    <text x="115" y="847" class="actor-label">Dentist</text>
+
+    <!-- Association Lines from Actor Right Hand (205, 520) to each Use Case Ellipse Left Edge -->
+    <g stroke="#222222" stroke-width="1.5">
+      <line x1="205" y1="520" x2="493" y2="68" />
+      <line x1="205" y1="520" x2="488" y2="165" />
+      <line x1="205" y1="520" x2="488" y2="262" />
+      <line x1="205" y1="520" x2="488" y2="359" />
+      <line x1="205" y1="520" x2="488" y2="456" />
+      <line x1="205" y1="520" x2="488" y2="553" />
+      <line x1="205" y1="520" x2="488" y2="650" />
+      <line x1="205" y1="520" x2="488" y2="747" />
+      <line x1="205" y1="520" x2="488" y2="844" />
+      <line x1="205" y1="520" x2="488" y2="941" />
+      <line x1="205" y1="520" x2="493" y2="1042" />
+    </g>
+
+    <!-- 1. Login -->
+    <ellipse cx="598" cy="68" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="73" class="uc-text">Login</text>
+
+    <!-- 2. Today's Schedule & Patient Queue -->
+    <ellipse cx="598" cy="165" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="161" class="uc-text">Today's Schedule</text>
+    <text x="598" y="178" class="uc-text">&amp; Patient Queue</text>
+
+    <!-- 3. View Patient Records -->
+    <ellipse cx="598" cy="262" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="258" class="uc-text">View Patient</text>
+    <text x="598" y="275" class="uc-text">Records</text>
+
+    <!-- 4. Interactive Dental Chart -->
+    <ellipse cx="598" cy="359" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="355" class="uc-text">Interactive Dental</text>
+    <text x="598" y="372" class="uc-text">Chart (Odontogram)</text>
+
+    <!-- 5. Treatment Plans & Clinical Notes -->
+    <ellipse cx="598" cy="456" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="452" class="uc-text">Treatment Plans</text>
+    <text x="598" y="469" class="uc-text">&amp; Clinical Notes</text>
+
+    <!-- 6. Prescriptions (Rx) -->
+    <ellipse cx="598" cy="553" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="549" class="uc-text">Prescriptions</text>
+    <text x="598" y="566" class="uc-text">(Rx)</text>
+
+    <!-- 7. Post-Op Follow-Ups -->
+    <ellipse cx="598" cy="650" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="655" class="uc-text">Post-Op Follow-Ups</text>
+
+    <!-- 8. Clinical Calendar -->
+    <ellipse cx="598" cy="747" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="743" class="uc-text">View Clinical</text>
+    <text x="598" y="760" class="uc-text">Calendar</text>
+
+    <!-- 9. Reports & Clinical Stats -->
+    <ellipse cx="598" cy="844" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="840" class="uc-text">Reports &amp;</text>
+    <text x="598" y="857" class="uc-text">Clinical Stats</text>
+
+    <!-- 10. Dentist Profile & Duty Status -->
+    <ellipse cx="598" cy="941" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="937" class="uc-text">Dentist Profile &amp;</text>
+    <text x="598" y="954" class="uc-text">Duty Settings</text>
+
+    <!-- 11. Logout -->
+    <ellipse cx="598" cy="1042" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="1047" class="uc-text">Logout</text>
+
+  </svg>
+
+</body>
+</html>
