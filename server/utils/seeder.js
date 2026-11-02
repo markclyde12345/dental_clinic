@@ -120,6 +120,48 @@ const seedUsers = async () => {
       // Appointments are intentionally preserved across restarts.
       // To reset manually, delete rows in Supabase or run a separate script.
     }
+
+    // 4. Seed Dentists table if present and empty
+    const { data: currDentists, error: dentErr } = await supabase.from('dentists').select('id');
+    if (!dentErr && (!currDentists || currDentists.length === 0)) {
+      const { data: dentistUsers } = await supabase.from('users').select('id, name').eq('role', 'Dentist');
+      const specs = ['General Dentistry & Prophylaxis', 'Orthodontics & Braces', 'Oral & Maxillofacial Surgery', 'Endodontics & Root Canal', 'Prosthodontics & Cosmetic Dentistry'];
+      const rooms = ['Chair 1 (Main Wing)', 'Chair 2 (Ortho Suite)', 'Surgical Room A', 'Chair 3 (Endo Suite)', 'Chair 4 (Cosmetic Wing)'];
+      if (dentistUsers && dentistUsers.length > 0) {
+        const rows = dentistUsers.map((du, i) => ({
+          user_id: du.id,
+          name: du.name,
+          specialization: specs[i % specs.length],
+          license_no: `PRC-DMD-00482${i + 1}`,
+          room_assigned: rooms[i % rooms.length],
+          availability: 'On Duty'
+        }));
+        await supabase.from('dentists').insert(rows);
+        console.log(`✅ Seeded ${rows.length} dentists into dentists table.`);
+      }
+    }
+
+    // 5. Seed Accountancy table if present and empty
+    const { data: currAcc, error: accErr } = await supabase.from('accountancy').select('id');
+    if (!accErr && (!currAcc || currAcc.length === 0)) {
+      const { data: accUsers } = await supabase.from('users').select('id').eq('role', 'Accounting').limit(1);
+      const { data: invs } = await supabase.from('invoices').select('id, amount').limit(3);
+      const { data: exps } = await supabase.from('expenses').select('id, amount, payment_method').limit(3);
+      const accUserId = accUsers?.[0]?.id;
+      if (accUserId && invs?.length && exps?.length) {
+        const ledgerRows = invs.map((inv, idx) => ({
+          user_id: accUserId,
+          invoice_id: inv.id,
+          expense_id: exps[idx % exps.length].id,
+          transaction_type: 'Income',
+          amount: inv.amount || 1500,
+          payment_method: exps[idx % exps.length].payment_method || 'GCash / Bank Transfer',
+          status: 'Completed'
+        }));
+        await supabase.from('accountancy').insert(ledgerRows);
+        console.log(`✅ Seeded ${ledgerRows.length} records into accountancy table.`);
+      }
+    }
   } catch (error) {
     console.error('❌ Seeder database fill error:', error.message);
   }

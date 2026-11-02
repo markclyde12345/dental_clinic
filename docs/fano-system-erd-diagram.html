@@ -286,11 +286,26 @@
       </ul>
     </div>
 
+    <!-- 12. dentists -->
+    <div class="entity-box" id="t-dentists" style="left: 685px; top: 990px;">
+      <div class="entity-header hdr-blue">dentists</div>
+      <ul class="entity-fields">
+        <li data-field="dentist_id" class="pk-row"><span>dentist_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="user_id"><span>user_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="name"><span>name</span></li>
+        <li data-field="specialization"><span>specialization</span></li>
+        <li data-field="license_no"><span>license_no</span></li>
+        <li data-field="room_assigned"><span>room_assigned</span></li>
+        <li data-field="availability"><span>availability</span></li>
+        <li data-field="created_at"><span>created_at</span></li>
+      </ul>
+    </div>
+
 
     <!-- ══════════════════ COLUMN 4 (CENTER-RIGHT: x=1015) ══════════════════ -->
 
-    <!-- 12. invoices -->
-    <div class="entity-box" id="t-invoices" style="left: 1015px; top: 200px;">
+    <!-- 13. invoices -->
+    <div class="entity-box" id="t-invoices" style="left: 1015px; top: 110px;">
       <div class="entity-header hdr-amber">invoices</div>
       <ul class="entity-fields">
         <li data-field="invoice_id" class="pk-row"><span>invoice_id</span><span class="key-tag key-pk">PK</span></li>
@@ -303,8 +318,24 @@
       </ul>
     </div>
 
-    <!-- 13. prescriptions -->
-    <div class="entity-box" id="t-prescriptions" style="left: 1015px; top: 560px;">
+    <!-- 14. accountancy -->
+    <div class="entity-box" id="t-accountancy" style="left: 1015px; top: 390px;">
+      <div class="entity-header hdr-amber">accountancy</div>
+      <ul class="entity-fields">
+        <li data-field="accounting_id" class="pk-row"><span>accounting_id</span><span class="key-tag key-pk">PK</span></li>
+        <li data-field="user_id"><span>user_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="invoice_id"><span>invoice_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="expense_id"><span>expense_id</span><span class="key-tag key-fk">FK</span></li>
+        <li data-field="transaction_type"><span>transaction_type</span></li>
+        <li data-field="amount"><span>amount</span></li>
+        <li data-field="payment_method"><span>payment_method</span></li>
+        <li data-field="status"><span>status</span></li>
+        <li data-field="recorded_at"><span>recorded_at</span></li>
+      </ul>
+    </div>
+
+    <!-- 15. prescriptions -->
+    <div class="entity-box" id="t-prescriptions" style="left: 1015px; top: 740px;">
       <div class="entity-header hdr-green">prescriptions</div>
       <ul class="entity-fields">
         <li data-field="prescription_id" class="pk-row"><span>prescription_id</span><span class="key-tag key-pk">PK</span></li>
@@ -581,11 +612,38 @@
         955
       );
 
-      // 14. appointments.appointment_id (PK) -> prescriptions.appointment_id (FK)
+      // 14. invoices.invoice_id (PK) -> accountancy.invoice_id (FK) [vertical]
+      connect(
+        { table: 'invoices', field: null, side: 'bottom', ratio: 0.5, type: 'one' },
+        { table: 'accountancy', field: null, side: 'top', ratio: 0.5, type: 'zero-many' }
+      );
+
+      // 15. expenses.expense_id (PK) -> accountancy.expense_id (FK)
+      connect(
+        { table: 'expenses', field: 'expense_id', side: 'left', type: 'one' },
+        { table: 'accountancy', field: 'expense_id', side: 'right', type: 'zero-many' },
+        1250
+      );
+
+      // 16. appointments.appointment_id (PK) -> prescriptions.appointment_id (FK)
       connect(
         { table: 'appointments', field: 'notes', side: 'right', type: 'one' },
         { table: 'prescriptions', field: 'appointment_id', side: 'left', type: 'zero-many' },
         955
+      );
+
+      // 17. users.user_id (PK) -> dentists.user_id (FK)
+      connect(
+        { table: 'users', field: 'role', side: 'right', type: 'one' },
+        { table: 'dentists', field: 'user_id', side: 'left', type: 'zero-one' },
+        595
+      );
+
+      // 18. dentists.dentist_id (PK) -> prescriptions.dentist_id (FK)
+      connect(
+        { table: 'dentists', field: 'dentist_id', side: 'right', type: 'one' },
+        { table: 'prescriptions', field: 'dentist_id', side: 'left', type: 'zero-many' },
+        935
       );
 
       // 16. users.user_id (PK) -> staff_schedules.user_id (FK)

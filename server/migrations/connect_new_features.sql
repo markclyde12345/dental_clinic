@@ -101,7 +101,32 @@ create table if not exists expenses (
 -- 7. Remove legacy HMO Claims table if present
 drop table if exists hmo_claims cascade;
 
--- 8. Disable RLS for smooth development (re-enable policies when ready for production)
+-- 8. Dentists Roster & Specialization Table
+create table if not exists dentists (
+  id             uuid primary key default gen_random_uuid(),
+  user_id        uuid references users(id) on delete cascade unique,
+  name           text not null,
+  specialization text not null,
+  license_no     text not null,
+  room_assigned  text not null,
+  availability   text default 'On Duty',
+  created_at     timestamp with time zone default now()
+);
+
+-- 9. Accountancy & Financial Ledger Table
+create table if not exists accountancy (
+  id               uuid primary key default gen_random_uuid(),
+  user_id          uuid references users(id) on delete set null,
+  invoice_id       uuid references invoices(id) on delete set null,
+  expense_id       uuid references expenses(id) on delete set null,
+  transaction_type text not null check (transaction_type in ('Income', 'Expense')),
+  amount           numeric(10,2) not null,
+  payment_method   text not null,
+  status           text default 'Completed',
+  recorded_at      timestamp with time zone default now()
+);
+
+-- 10. Disable RLS for smooth development (re-enable policies when ready for production)
 alter table if exists prescriptions          disable row level security;
 alter table if exists treatment_plans        disable row level security;
 alter table if exists treatment_plan_items   disable row level security;
@@ -109,3 +134,5 @@ alter table if exists appointment_treatments disable row level security;
 alter table if exists dental_charts          disable row level security;
 alter table if exists follow_ups             disable row level security;
 alter table if exists expenses               disable row level security;
+alter table if exists dentists               disable row level security;
+alter table if exists accountancy            disable row level security;
