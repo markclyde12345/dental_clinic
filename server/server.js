@@ -470,10 +470,6 @@ const expenseRoutes = require('./routes/expenseRoutes');
 app.use('/api/expenses', expenseRoutes);
 app.use('/expenses', expenseRoutes);
 
-const hmoRoutes = require('./routes/hmoRoutes');
-app.use('/api/hmo-claims', hmoRoutes);
-app.use('/hmo-claims', hmoRoutes);
-
 const aiRoutes = require('./routes/aiRoutes');
 app.use('/api/ai', aiRoutes);
 app.use('/ai', aiRoutes);

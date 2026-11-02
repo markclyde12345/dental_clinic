@@ -290,7 +290,7 @@
     <!-- ══════════════════ COLUMN 4 (CENTER-RIGHT: x=1015) ══════════════════ -->
 
     <!-- 12. invoices -->
-    <div class="entity-box" id="t-invoices" style="left: 1015px; top: 130px;">
+    <div class="entity-box" id="t-invoices" style="left: 1015px; top: 200px;">
       <div class="entity-header hdr-amber">invoices</div>
       <ul class="entity-fields">
         <li data-field="invoice_id" class="pk-row"><span>invoice_id</span><span class="key-tag key-pk">PK</span></li>
@@ -303,25 +303,8 @@
       </ul>
     </div>
 
-    <!-- 13. hmo_claims -->
-    <div class="entity-box" id="t-hmo_claims" style="left: 1015px; top: 400px;">
-      <div class="entity-header hdr-amber">hmo_claims</div>
-      <ul class="entity-fields">
-        <li data-field="claim_id" class="pk-row"><span>claim_id</span><span class="key-tag key-pk">PK</span></li>
-        <li data-field="patient_id"><span>patient_id</span><span class="key-tag key-fk">FK</span></li>
-        <li data-field="invoice_id"><span>invoice_id</span><span class="key-tag key-fk">FK</span></li>
-        <li data-field="provider_name"><span>provider_name</span></li>
-        <li data-field="policy_number"><span>policy_number</span></li>
-        <li data-field="claim_amount"><span>claim_amount</span></li>
-        <li data-field="approved_amount"><span>approved_amount</span></li>
-        <li data-field="status"><span>status</span></li>
-        <li data-field="filed_at"><span>filed_at</span></li>
-        <li data-field="updated_at"><span>updated_at</span></li>
-      </ul>
-    </div>
-
-    <!-- 14. prescriptions -->
-    <div class="entity-box" id="t-prescriptions" style="left: 1015px; top: 740px;">
+    <!-- 13. prescriptions -->
+    <div class="entity-box" id="t-prescriptions" style="left: 1015px; top: 560px;">
       <div class="entity-header hdr-green">prescriptions</div>
       <ul class="entity-fields">
         <li data-field="prescription_id" class="pk-row"><span>prescription_id</span><span class="key-tag key-pk">PK</span></li>
@@ -598,13 +581,7 @@
         955
       );
 
-      // 14. invoices.invoice_id (PK) -> hmo_claims.invoice_id (FK) [vertical]
-      connect(
-        { table: 'invoices', field: null, side: 'bottom', ratio: 0.5, type: 'one' },
-        { table: 'hmo_claims', field: null, side: 'top', ratio: 0.5, type: 'zero-many' }
-      );
-
-      // 15. appointments.appointment_id (PK) -> prescriptions.appointment_id (FK)
+      // 14. appointments.appointment_id (PK) -> prescriptions.appointment_id (FK)
       connect(
         { table: 'appointments', field: 'notes', side: 'right', type: 'one' },
         { table: 'prescriptions', field: 'appointment_id', side: 'left', type: 'zero-many' },

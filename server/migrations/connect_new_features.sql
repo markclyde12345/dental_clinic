@@ -98,19 +98,8 @@ create table if not exists expenses (
   created_at     timestamp with time zone default now()
 );
 
--- 7. HMO & Insurance Claims
-create table if not exists hmo_claims (
-  id              uuid primary key default gen_random_uuid(),
-  patient_id      uuid references users(id) on delete cascade,
-  invoice_id      uuid references invoices(id) on delete set null,
-  provider_name   text not null,
-  policy_number   text not null,
-  claim_amount    numeric(10,2) not null,
-  approved_amount numeric(10,2) default 0,
-  status          text default 'Pending' check (status in ('Pending', 'Approved', 'Rejected', 'Disbursed')),
-  filed_at        timestamp with time zone default now(),
-  updated_at      timestamp with time zone default now()
-);
+-- 7. Remove legacy HMO Claims table if present
+drop table if exists hmo_claims cascade;
 
 -- 8. Disable RLS for smooth development (re-enable policies when ready for production)
 alter table if exists prescriptions          disable row level security;
@@ -120,4 +109,3 @@ alter table if exists appointment_treatments disable row level security;
 alter table if exists dental_charts          disable row level security;
 alter table if exists follow_ups             disable row level security;
 alter table if exists expenses               disable row level security;
-alter table if exists hmo_claims             disable row level security;
