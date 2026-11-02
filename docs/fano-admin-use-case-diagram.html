@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FANO Dental Clinic - Admin Use Case Diagram</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    svg {
+      background-color: #ffffff;
+      display: block;
+    }
+    .actor-label {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      fill: #111111;
+      text-anchor: middle;
+    }
+    .uc-text {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      fill: #222222;
+      text-anchor: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <svg width="760" height="1220" viewBox="0 0 760 1220" xmlns="http://www.w3.org/2000/svg">
+    <!-- System Boundary Box -->
+    <rect x="465" y="18" width="265" height="1184" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+
+    <!-- Stick Figure Actor: Admin -->
+    <!-- Head -->
+    <circle cx="115" cy="465" r="46" fill="#ffffff" stroke="#222222" stroke-width="1.6" />
+    <!-- Spine -->
+    <line x1="115" y1="511" x2="115" y2="690" stroke="#222222" stroke-width="1.6" />
+    <!-- Arms (Left X=25 to Right X=205 at Y=555) -->
+    <line x1="25" y1="555" x2="205" y2="555" stroke="#222222" stroke-width="1.6" />
+    <!-- Left Leg -->
+    <line x1="115" y1="690" x2="25" y2="845" stroke="#222222" stroke-width="1.6" />
+    <!-- Right Leg -->
+    <line x1="115" y1="690" x2="205" y2="845" stroke="#222222" stroke-width="1.6" />
+    <!-- Actor Label -->
+    <text x="115" y="882" class="actor-label">Admin</text>
+
+    <!-- Association Lines from Actor Right Hand (205, 555) to each Use Case Ellipse Left Edge -->
+    <g stroke="#222222" stroke-width="1.5">
+      <line x1="205" y1="555" x2="493" y2="68" />
+      <line x1="205" y1="555" x2="488" y2="164" />
+      <line x1="205" y1="555" x2="488" y2="260" />
+      <line x1="205" y1="555" x2="488" y2="356" />
+      <line x1="205" y1="555" x2="488" y2="452" />
+      <line x1="205" y1="555" x2="488" y2="548" />
+      <line x1="205" y1="555" x2="488" y2="644" />
+      <line x1="205" y1="555" x2="488" y2="740" />
+      <line x1="205" y1="555" x2="488" y2="836" />
+      <line x1="205" y1="555" x2="488" y2="932" />
+      <line x1="205" y1="555" x2="488" y2="1028" />
+      <line x1="205" y1="555" x2="493" y2="1134" />
+    </g>
+
+    <!-- 1. Login / OTP Verification -->
+    <ellipse cx="598" cy="68" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="73" class="uc-text">Login / Register</text>
+
+    <!-- 2. View Dashboard & Analytics -->
+    <ellipse cx="598" cy="164" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="160" class="uc-text">Dashboard &amp; Data</text>
+    <text x="598" y="177" class="uc-text">Analytics</text>
+
+    <!-- 3. Manage Appointments Agenda -->
+    <ellipse cx="598" cy="260" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="256" class="uc-text">Manage</text>
+    <text x="598" y="273" class="uc-text">Appointments</text>
+
+    <!-- 4. Manage Patient Records -->
+    <ellipse cx="598" cy="356" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="352" class="uc-text">Manage Patient</text>
+    <text x="598" y="369" class="uc-text">Records</text>
+
+    <!-- 5. View Visits & Clinical History -->
+    <ellipse cx="598" cy="452" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="448" class="uc-text">View Visits</text>
+    <text x="598" y="465" class="uc-text">History</text>
+
+    <!-- 6. Manage Staff & Dentists -->
+    <ellipse cx="598" cy="548" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="544" class="uc-text">Manage Staff /</text>
+    <text x="598" y="561" class="uc-text">Dentists Roster</text>
+
+    <!-- 7. Manage Services & Treatments -->
+    <ellipse cx="598" cy="644" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="640" class="uc-text">Manage Services</text>
+    <text x="598" y="657" class="uc-text">&amp; Treatments</text>
+
+    <!-- 8. Billing & Payments -->
+    <ellipse cx="598" cy="740" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="736" class="uc-text">Billing, Invoices &amp;</text>
+    <text x="598" y="753" class="uc-text">Payments</text>
+
+    <!-- 9. Manage Inventory -->
+    <ellipse cx="598" cy="836" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="841" class="uc-text">Manage Inventory</text>
+
+    <!-- 10. Manage Users -->
+    <ellipse cx="598" cy="932" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="937" class="uc-text">Manage Users</text>
+
+    <!-- 11. System Audit Logs & Backups -->
+    <ellipse cx="598" cy="1028" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="1024" class="uc-text">System Logs &amp;</text>
+    <text x="598" y="1041" class="uc-text">Clinic Settings</text>
+
+    <!-- 12. Logout -->
+    <ellipse cx="598" cy="1134" rx="110" ry="37" fill="#ffffff" stroke="#222222" stroke-width="1.5" />
+    <text x="598" y="1139" class="uc-text">Logout</text>
+
+  </svg>
+
+</body>
+</html>
