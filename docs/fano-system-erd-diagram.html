@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>FANO Dental Clinic - Entity Relationship Diagram (ERD)</title>
+  <title>FANO Dental Clinic - System Entity Relationship Diagram (ERD)</title>
   <style>
     * {
       box-sizing: border-box;
@@ -11,39 +11,20 @@
     }
     body {
       background-color: #ffffff;
-      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-      padding: 30px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 28px 36px;
       color: #1e293b;
-      min-width: 1380px;
-    }
-    .diagram-header {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .diagram-header h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #0f172a;
-      letter-spacing: -0.4px;
-    }
-    .diagram-header p {
-      font-size: 13px;
-      color: #64748b;
-      margin-top: 4px;
+      min-width: 1440px;
     }
 
-    /* Board Canvas */
     .board {
       position: relative;
-      width: 1330px;
-      height: 1040px;
+      width: 1380px;
+      height: 1120px;
       margin: 0 auto;
-      border: 1px dashed #cbd5e1;
-      border-radius: 8px;
-      background: #fafafa;
+      background: #ffffff;
     }
 
-    /* SVG Overlay for Connections */
     #erd-svg {
       position: absolute;
       top: 0;
@@ -51,364 +32,471 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 10;
+      z-index: 15;
     }
 
-    /* Entity Table Box */
     .entity-box {
       position: absolute;
-      width: 215px;
+      width: 210px;
       background: #ffffff;
-      border: 1.5px solid #475569;
-      border-radius: 4px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-      font-size: 12px;
+      border: 1.5px solid #555555;
       z-index: 20;
-      overflow: hidden;
     }
 
     .entity-header {
-      padding: 8px 12px;
+      padding: 8px 10px;
       font-weight: 700;
-      font-size: 13.5px;
-      color: #0f172a;
-      border-bottom: 1.5px solid #475569;
-      letter-spacing: -0.2px;
+      font-size: 13px;
+      color: #111111;
+      border-bottom: 1.5px solid #555555;
     }
 
-    /* Header Color Themes matching reference image */
-    .hdr-blue { background: #b9d5fd; }
-    .hdr-green { background: #c8e6c9; }
-    .hdr-amber { background: #ffe0b2; }
-    .hdr-purple { background: #d1c4e9; }
+    /* Reference Image Colors */
+    .hdr-blue   { background: #c9daf8; }
+    .hdr-green  { background: #b9f6ca; }
+    .hdr-purple { background: #d9d2e9; }
+    .hdr-amber  { background: #ffe0b2; }
 
     .entity-fields {
       list-style: none;
     }
     .entity-fields li {
-      padding: 5.5px 10px;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 11.5px;
-      color: #334155;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding: 5px 10px;
+      border-bottom: 1px solid #999999;
+      font-size: 12px;
+      font-style: italic;
+      color: #222222;
+      background: #ffffff;
+      line-height: 1.35;
+    }
+    .entity-fields li:nth-child(even) {
+      background: #eeeeee;
     }
     .entity-fields li:last-child {
       border-bottom: none;
-    }
-    .entity-fields li:nth-child(even) {
-      background: #f8fafc;
-    }
-    .entity-fields li.pk {
-      font-weight: 700;
-      color: #0f172a;
-    }
-    .entity-fields li.pk::after {
-      content: "PK";
-      font-size: 9px;
-      font-weight: 700;
-      color: #b45309;
-      background: #fef3c7;
-      padding: 1px 4px;
-      border-radius: 3px;
-      border: 1px solid #fde68a;
-    }
-    .entity-fields li.fk {
-      color: #1e3a8a;
-    }
-    .entity-fields li.fk::after {
-      content: "FK";
-      font-size: 9px;
-      font-weight: 700;
-      color: #1d4ed8;
-      background: #dbeafe;
-      padding: 1px 4px;
-      border-radius: 3px;
-      border: 1px solid #bfdbfe;
-    }
-
-    /* Legend */
-    .legend-bar {
-      margin-top: 18px;
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      font-size: 12px;
-      color: #475569;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .legend-swatch {
-      width: 16px;
-      height: 12px;
-      border: 1px solid #64748b;
-      border-radius: 2px;
     }
   </style>
 </head>
 <body>
 
-  <div class="diagram-header">
-    <h1>FANO Dental Clinic Management System — Entity Relationship Diagram (ERD)</h1>
-    <p>Physical Relational Schema with Crow's Foot Cardinality Notation</p>
-  </div>
-
   <div class="board" id="board">
-    <svg id="erd-svg">
-      <defs>
-        <!-- Marker: Crow's Foot Many (Fork + Bar) -->
-        <marker id="crows-foot" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="13" markerHeight="13" orient="auto">
-          <path d="M 0,2 L 14,8 L 0,14 M 0,8 L 14,8 M 15,1 L 15,15" fill="none" stroke="#334155" stroke-width="1.8" stroke-linecap="round"/>
-        </marker>
-        <!-- Marker: One and Only One (Mandatory Double Bar) -->
-        <marker id="one-mandatory" viewBox="0 0 16 16" refX="3" refY="8" markerWidth="13" markerHeight="13" orient="auto">
-          <line x1="4" y1="2" x2="4" y2="14" stroke="#334155" stroke-width="2" stroke-linecap="round"/>
-          <line x1="10" y1="2" x2="10" y2="14" stroke="#334155" stroke-width="2" stroke-linecap="round"/>
-        </marker>
-        <!-- Marker: Zero or One (Optional Circle + Bar) -->
-        <marker id="one-optional" viewBox="0 0 16 16" refX="3" refY="8" markerWidth="13" markerHeight="13" orient="auto">
-          <circle cx="10" cy="8" r="4" fill="#ffffff" stroke="#334155" stroke-width="1.8"/>
-          <line x1="3" y1="2" x2="3" y2="14" stroke="#334155" stroke-width="2" stroke-linecap="round"/>
-        </marker>
-      </defs>
+    <svg id="erd-svg"></svg>
 
-      <!-- Relational Connectors -->
-      <!-- Role -> Users -->
-      <path d="M 255,85 L 390,85" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#crows-foot)"/>
+    <!-- ══════════════════ COLUMN 1 (LEFT: x=40) ══════════════════ -->
 
-      <!-- Users -> Staff -->
-      <path d="M 605,85 L 740,85" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#one-optional)"/>
-
-      <!-- Staff -> Dentist -->
-      <path d="M 847,260 L 847,310" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#one-optional)"/>
-
-      <!-- Users -> Patient -->
-      <path d="M 497,260 L 497,310" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#one-optional)"/>
-
-      <!-- Patient -> Appointment -->
-      <path d="M 497,600 L 497,650" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#crows-foot)"/>
-
-      <!-- Dentist -> Appointment -->
-      <path d="M 847,500 L 847,530 L 675,530 L 675,700 L 605,700" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#crows-foot)"/>
-
-      <!-- Schedule -> Appointment -->
-      <path d="M 255,880 L 320,880 L 320,780 L 390,780" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#crows-foot)"/>
-
-      <!-- Appointment -> Treatment -->
-      <path d="M 390,710 L 320,710 L 320,330 L 255,330" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#crows-foot)"/>
-
-      <!-- Treatment -> Prescription -->
-      <path d="M 147,440 L 147,500" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#crows-foot)"/>
-
-      <!-- Appointment -> Invoice -->
-      <path d="M 605,740 L 675,740 L 675,670 L 740,670" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#one-mandatory)"/>
-
-      <!-- Appointment -> Feedback -->
-      <path d="M 605,860 L 675,860 L 675,890 L 740,890" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#one-optional)"/>
-
-      <!-- Patient -> Medical_History -->
-      <path d="M 605,420 L 665,420 L 665,545 L 1015,545 L 1015,420 L 1070,420" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#crows-foot)"/>
-
-      <!-- Patient -> Notification -->
-      <path d="M 605,350 L 665,350 L 665,285 L 1015,285 L 1015,135 L 1070,135" fill="none" stroke="#334155" stroke-width="1.7" marker-start="url(#one-mandatory)" marker-end="url(#crows-foot)"/>
-    </svg>
-
-    <!-- ══════ ENTITIES ══════ -->
-
-    <!-- 1. Role (Top Left) -->
-    <div class="entity-box" id="ent-role" style="left: 40px; top: 40px;">
-      <div class="entity-header hdr-blue">Role</div>
+    <!-- 1. dental_charts -->
+    <div class="entity-box" id="t-dental_charts" style="left: 40px; top: 30px;">
+      <div class="entity-header hdr-purple">dental_charts</div>
       <ul class="entity-fields">
-        <li class="pk">role_id</li>
-        <li>rolename</li>
-        <li>description</li>
+        <li data-field="id">id</li>
+        <li data-field="patient_id">patient_id</li>
+        <li data-field="dentist_id">dentist_id</li>
+        <li data-field="chart_type">chart_type</li>
+        <li data-field="teeth_data">teeth_data</li>
+        <li data-field="notes">notes</li>
+        <li data-field="updated_at">updated_at</li>
       </ul>
     </div>
 
-    <!-- 2. Users (Top Center) -->
-    <div class="entity-box" id="ent-users" style="left: 390px; top: 40px;">
-      <div class="entity-header hdr-blue">Users</div>
+    <!-- 2. treatment_plans -->
+    <div class="entity-box" id="t-treatment_plans" style="left: 40px; top: 310px;">
+      <div class="entity-header hdr-purple">treatment_plans</div>
       <ul class="entity-fields">
-        <li class="pk">user_id</li>
-        <li class="fk">role_id</li>
-        <li>full_name</li>
-        <li>email</li>
-        <li>password_hash</li>
-        <li>contact_number</li>
-        <li>role</li>
+        <li data-field="id">id</li>
+        <li data-field="patient_id">patient_id</li>
+        <li data-field="dentist_id">dentist_id</li>
+        <li data-field="name">name</li>
+        <li data-field="description">description</li>
+        <li data-field="total_estimated_cost">total_estimated_cost</li>
+        <li data-field="status">status</li>
+        <li data-field="created_at">created_at</li>
       </ul>
     </div>
 
-    <!-- 3. Staff (Top Right) -->
-    <div class="entity-box" id="ent-staff" style="left: 740px; top: 40px;">
-      <div class="entity-header hdr-green">Staff</div>
+    <!-- 3. treatment_plan_items -->
+    <div class="entity-box" id="t-treatment_plan_items" style="left: 40px; top: 620px;">
+      <div class="entity-header hdr-purple">treatment_plan_items</div>
       <ul class="entity-fields">
-        <li class="pk">staff_id</li>
-        <li class="fk">user_id</li>
-        <li>name</li>
-        <li>email</li>
-        <li>phone</li>
-        <li>role</li>
-        <li>license_no</li>
+        <li data-field="id">id</li>
+        <li data-field="plan_id">plan_id</li>
+        <li data-field="treatment_id">treatment_id</li>
+        <li data-field="treatment_name">treatment_name</li>
+        <li data-field="sequence">sequence</li>
+        <li data-field="status">status</li>
+        <li data-field="notes">notes</li>
       </ul>
     </div>
 
-    <!-- 4. Notification (Far Top Right) -->
-    <div class="entity-box" id="ent-notification" style="left: 1070px; top: 40px;">
-      <div class="entity-header hdr-purple">Notification</div>
+    <!-- 4. audit_logs -->
+    <div class="entity-box" id="t-audit_logs" style="left: 40px; top: 880px;">
+      <div class="entity-header hdr-amber">audit_logs</div>
       <ul class="entity-fields">
-        <li class="pk">notification_id</li>
-        <li class="fk">patient_id</li>
-        <li>channel</li>
-        <li>message</li>
-        <li>status</li>
-        <li>sent_at</li>
+        <li data-field="id">id</li>
+        <li data-field="user_id">user_id</li>
+        <li data-field="user_name">user_name</li>
+        <li data-field="user_role">user_role</li>
+        <li data-field="action">action</li>
+        <li data-field="entity_type">entity_type</li>
+        <li data-field="entity_id">entity_id</li>
+        <li data-field="details">details</li>
       </ul>
     </div>
 
-    <!-- 5. Treatment (Mid Left) -->
-    <div class="entity-box" id="ent-treatment" style="left: 40px; top: 220px;">
-      <div class="entity-header hdr-purple">Treatment</div>
+
+    <!-- ══════════════════ COLUMN 2 (CENTER-LEFT: x=380) ══════════════════ -->
+
+    <!-- 5. patient_profiles -->
+    <div class="entity-box" id="t-patient_profiles" style="left: 380px; top: 30px;">
+      <div class="entity-header hdr-blue">patient_profiles</div>
       <ul class="entity-fields">
-        <li class="pk">treatment_id</li>
-        <li class="fk">appointment_id</li>
-        <li class="fk">patient_id</li>
-        <li>procedure_name</li>
-        <li>tooth_number</li>
-        <li>price_charged</li>
-        <li>notes</li>
+        <li data-field="id">id</li>
+        <li data-field="user_id">user_id</li>
+        <li data-field="date_of_birth">date_of_birth</li>
+        <li data-field="gender">gender</li>
+        <li data-field="blood_type">blood_type</li>
+        <li data-field="allergies">allergies</li>
+        <li data-field="medical_notes">medical_notes</li>
       </ul>
     </div>
 
-    <!-- 6. Patient (Center) -->
-    <div class="entity-box" id="ent-patient" style="left: 390px; top: 310px;">
-      <div class="entity-header hdr-amber">Patient</div>
+    <!-- 6. users -->
+    <div class="entity-box" id="t-users" style="left: 380px; top: 300px;">
+      <div class="entity-header hdr-blue">users</div>
       <ul class="entity-fields">
-        <li class="pk">patient_id</li>
-        <li class="fk">user_id</li>
-        <li>first_name</li>
-        <li>last_name</li>
-        <li>date_of_birth</li>
-        <li>email</li>
-        <li>contact_no</li>
-        <li>gender</li>
-        <li>blood_type</li>
-        <li>allergies</li>
+        <li data-field="id">id</li>
+        <li data-field="first_name">first_name</li>
+        <li data-field="last_name">last_name</li>
+        <li data-field="name">name</li>
+        <li data-field="email">email</li>
+        <li data-field="password">password</li>
+        <li data-field="role">role</li>
+        <li data-field="contact_number">contact_number</li>
+        <li data-field="address">address</li>
+        <li data-field="is_verified">is_verified</li>
+        <li data-field="is_active">is_active</li>
       </ul>
     </div>
 
-    <!-- 7. Dentist (Mid Right) -->
-    <div class="entity-box" id="ent-dentist" style="left: 740px; top: 310px;">
-      <div class="entity-header hdr-green">Dentist</div>
+    <!-- 7. treatments -->
+    <div class="entity-box" id="t-treatments" style="left: 380px; top: 720px;">
+      <div class="entity-header hdr-green">treatments</div>
       <ul class="entity-fields">
-        <li class="pk">dentist_id</li>
-        <li class="fk">staff_id</li>
-        <li>name</li>
-        <li>specialization</li>
-        <li>schedule_at</li>
-        <li>status</li>
+        <li data-field="id">id</li>
+        <li data-field="name">name</li>
+        <li data-field="description">description</li>
+        <li data-field="price">price</li>
+        <li data-field="duration_minutes">duration_minutes</li>
+        <li data-field="is_active">is_active</li>
       </ul>
     </div>
 
-    <!-- 8. Medical_History (Far Mid Right) -->
-    <div class="entity-box" id="ent-medhistory" style="left: 1070px; top: 310px;">
-      <div class="entity-header hdr-amber">Medical_History</div>
+
+    <!-- ══════════════════ COLUMN 3 (CENTER-RIGHT: x=730) ══════════════════ -->
+
+    <!-- 8. follow_ups -->
+    <div class="entity-box" id="t-follow_ups" style="left: 730px; top: 30px;">
+      <div class="entity-header hdr-green">follow_ups</div>
       <ul class="entity-fields">
-        <li class="pk">history_id</li>
-        <li class="fk">patient_id</li>
-        <li>full_name</li>
-        <li>dentist_name</li>
-        <li>schedule</li>
-        <li>status</li>
-        <li>recorded_at</li>
+        <li data-field="id">id</li>
+        <li data-field="patient_id">patient_id</li>
+        <li data-field="dentist_id">dentist_id</li>
+        <li data-field="appointment_id">appointment_id</li>
+        <li data-field="follow_up_date">follow_up_date</li>
+        <li data-field="status">status</li>
+        <li data-field="notes">notes</li>
       </ul>
     </div>
 
-    <!-- 9. Prescription (Lower Left) -->
-    <div class="entity-box" id="ent-prescription" style="left: 40px; top: 500px;">
-      <div class="entity-header hdr-purple">Prescription</div>
+    <!-- 9. appointments -->
+    <div class="entity-box" id="t-appointments" style="left: 730px; top: 300px;">
+      <div class="entity-header hdr-blue">appointments</div>
       <ul class="entity-fields">
-        <li class="pk">prescription_id</li>
-        <li class="fk">treatment_id</li>
-        <li class="fk">appointment_id</li>
-        <li class="fk">patient_id</li>
-        <li>medication</li>
-        <li>dosage</li>
-        <li>frequency</li>
-        <li>duration_days</li>
+        <li data-field="id">id</li>
+        <li data-field="patient_id">patient_id</li>
+        <li data-field="dentist_id">dentist_id</li>
+        <li data-field="treatment_id">treatment_id</li>
+        <li data-field="appointment_date">appointment_date</li>
+        <li data-field="status">status</li>
+        <li data-field="notes">notes</li>
+        <li data-field="clinical_notes">clinical_notes</li>
+        <li data-field="created_at">created_at</li>
       </ul>
     </div>
 
-    <!-- 10. Schedule (Bottom Left) -->
-    <div class="entity-box" id="ent-schedule" style="left: 40px; top: 800px;">
-      <div class="entity-header hdr-green">Schedule</div>
+    <!-- 10. appointment_treatments -->
+    <div class="entity-box" id="t-appointment_treatments" style="left: 730px; top: 650px;">
+      <div class="entity-header hdr-green">appointment_treatments</div>
       <ul class="entity-fields">
-        <li class="pk">schedule_id</li>
-        <li>day_of_week</li>
-        <li>start_time</li>
-        <li>end_time</li>
-        <li>status</li>
-        <li>is_available</li>
+        <li data-field="id">id</li>
+        <li data-field="appointment_id">appointment_id</li>
+        <li data-field="treatment_id">treatment_id</li>
+        <li data-field="treatment_name">treatment_name</li>
+        <li data-field="quantity">quantity</li>
+        <li data-field="price_at_time">price_at_time</li>
+        <li data-field="notes">notes</li>
+        <li data-field="performed_at">performed_at</li>
       </ul>
     </div>
 
-    <!-- 11. Appointment (Lower Center) -->
-    <div class="entity-box" id="ent-appointment" style="left: 390px; top: 650px;">
-      <div class="entity-header hdr-blue">Appointment</div>
+
+    <!-- ══════════════════ COLUMN 4 (RIGHT: x=1080) ══════════════════ -->
+
+    <!-- 11. invoices -->
+    <div class="entity-box" id="t-invoices" style="left: 1080px; top: 120px;">
+      <div class="entity-header hdr-amber">invoices</div>
       <ul class="entity-fields">
-        <li class="pk">appointment_id</li>
-        <li class="fk">patient_id</li>
-        <li class="fk">dentist_id</li>
-        <li class="fk">schedule_id</li>
-        <li>schedule_at</li>
-        <li>appointment_time</li>
-        <li>status</li>
-        <li>type</li>
-        <li>notes</li>
+        <li data-field="id">id</li>
+        <li data-field="patient_id">patient_id</li>
+        <li data-field="appointment_id">appointment_id</li>
+        <li data-field="amount">amount</li>
+        <li data-field="status">status</li>
+        <li data-field="issued_at">issued_at</li>
+        <li data-field="paid_at">paid_at</li>
       </ul>
     </div>
 
-    <!-- 12. Invoice (Lower Right) -->
-    <div class="entity-box" id="ent-invoice" style="left: 740px; top: 570px;">
-      <div class="entity-header hdr-amber">Invoice</div>
+    <!-- 12. hmo_claims -->
+    <div class="entity-box" id="t-hmo_claims" style="left: 1080px; top: 410px;">
+      <div class="entity-header hdr-amber">hmo_claims</div>
       <ul class="entity-fields">
-        <li class="pk">invoice_id</li>
-        <li class="fk">patient_id</li>
-        <li class="fk">appointment_id</li>
-        <li>total_amount</li>
-        <li>tax</li>
-        <li>status</li>
-        <li>issued_date</li>
+        <li data-field="id">id</li>
+        <li data-field="patient_id">patient_id</li>
+        <li data-field="invoice_id">invoice_id</li>
+        <li data-field="provider_name">provider_name</li>
+        <li data-field="policy_number">policy_number</li>
+        <li data-field="claim_amount">claim_amount</li>
+        <li data-field="approved_amount">approved_amount</li>
+        <li data-field="status">status</li>
       </ul>
     </div>
 
-    <!-- 13. Feedback (Bottom Right) -->
-    <div class="entity-box" id="ent-feedback" style="left: 740px; top: 820px;">
-      <div class="entity-header hdr-amber">Feedback</div>
+    <!-- 13. prescriptions -->
+    <div class="entity-box" id="t-prescriptions" style="left: 1080px; top: 720px;">
+      <div class="entity-header hdr-green">prescriptions</div>
       <ul class="entity-fields">
-        <li class="pk">feedback_id</li>
-        <li class="fk">appointment_id</li>
-        <li class="fk">patient_id</li>
-        <li>ratings</li>
-        <li>comments</li>
-        <li>submitted_at</li>
+        <li data-field="id">id</li>
+        <li data-field="appointment_id">appointment_id</li>
+        <li data-field="patient_id">patient_id</li>
+        <li data-field="dentist_id">dentist_id</li>
+        <li data-field="medication">medication</li>
+        <li data-field="dosage">dosage</li>
+        <li data-field="frequency">frequency</li>
+        <li data-field="duration">duration</li>
+        <li data-field="instructions">instructions</li>
       </ul>
     </div>
 
   </div>
 
-  <div class="legend-bar">
-    <div class="legend-item"><div class="legend-swatch hdr-blue"></div><span>User, Auth &amp; Appointment</span></div>
-    <div class="legend-item"><div class="legend-swatch hdr-green"></div><span>Staff, Dentist &amp; Operatory Schedule</span></div>
-    <div class="legend-item"><div class="legend-swatch hdr-amber"></div><span>Patient, Billing &amp; Clinical Records</span></div>
-    <div class="legend-item"><div class="legend-swatch hdr-purple"></div><span>Clinical Treatments &amp; Prescriptions</span></div>
-    <div class="legend-item"><span style="font-weight:700;">||</span> <span>Mandatory One</span></div>
-    <div class="legend-item"><span style="font-weight:700;">&lt;</span> <span>Crow's Foot (Many)</span></div>
-  </div>
+  <script>
+    const svg = document.getElementById('erd-svg');
+    const board = document.getElementById('board');
+    const NS = 'http://www.w3.org/2000/svg';
 
+    function getAnchor(tableId, fieldName, side, offsetRatio = 0.5) {
+      const box = document.getElementById('t-' + tableId);
+      const bRect = board.getBoundingClientRect();
+      const boxRect = box.getBoundingClientRect();
+
+      const left = boxRect.left - bRect.left;
+      const right = boxRect.right - bRect.left;
+      const top = boxRect.top - bRect.top;
+      const bottom = boxRect.bottom - bRect.top;
+
+      let rowY = top + (boxRect.height * offsetRatio);
+      if (fieldName) {
+        const li = box.querySelector(`li[data-field="${fieldName}"]`);
+        if (li) {
+          const liRect = li.getBoundingClientRect();
+          rowY = (liRect.top - bRect.top) + liRect.height / 2;
+        }
+      }
+
+      if (side === 'left')   return { x: left, y: rowY, nx: -1, ny: 0 };
+      if (side === 'right')  return { x: right, y: rowY, nx: 1, ny: 0 };
+      if (side === 'top')    return { x: left + boxRect.width * offsetRatio, y: top, nx: 0, ny: -1 };
+      if (side === 'bottom') return { x: left + boxRect.width * offsetRatio, y: bottom, nx: 0, ny: 1 };
+    }
+
+    function createSvgEl(tag, attrs) {
+      const el = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        el.setAttribute(k, v);
+      }
+      return el;
+    }
+
+    function drawCardinality(anchor, type) {
+      const { x, y, nx, ny } = anchor;
+      const tx = -ny;
+      const ty = nx;
+      const stroke = '#444444';
+      const sw = '1.5';
+
+      if (type === 'one') {
+        // Two perpendicular ticks ||
+        [6, 11].forEach(d => {
+          const cx = x + nx * d;
+          const cy = y + ny * d;
+          svg.appendChild(createSvgEl('line', {
+            x1: cx - tx * 6, y1: cy - ty * 6,
+            x2: cx + tx * 6, y2: cy + ty * 6,
+            stroke, 'stroke-width': sw
+          }));
+        });
+      } else if (type === 'zero-one') {
+        // Tick + circle o|
+        const cx1 = x + nx * 5;
+        const cy1 = y + ny * 5;
+        svg.appendChild(createSvgEl('line', {
+          x1: cx1 - tx * 6, y1: cy1 - ty * 6,
+          x2: cx1 + tx * 6, y2: cy1 + ty * 6,
+          stroke, 'stroke-width': sw
+        }));
+        svg.appendChild(createSvgEl('circle', {
+          cx: x + nx * 13, cy: y + ny * 13, r: 4.2,
+          fill: '#ffffff', stroke, 'stroke-width': sw
+        }));
+      } else if (type === 'many') {
+        // Crow's foot + perpendicular tick |<
+        const forkX = x + nx * 12;
+        const forkY = y + ny * 12;
+        const dPath = `M ${x - tx * 6.5},${y - ty * 6.5} L ${forkX},${forkY} L ${x + tx * 6.5},${y + ty * 6.5}`;
+        svg.appendChild(createSvgEl('path', {
+          d: dPath, fill: 'none', stroke, 'stroke-width': sw
+        }));
+        const barX = x + nx * 14;
+        const barY = y + ny * 14;
+        svg.appendChild(createSvgEl('line', {
+          x1: barX - tx * 6, y1: barY - ty * 6,
+          x2: barX + tx * 6, y2: barY + ty * 6,
+          stroke, 'stroke-width': sw
+        }));
+      } else if (type === 'zero-many') {
+        // Crow's foot + hollow circle o<
+        const forkX = x + nx * 12;
+        const forkY = y + ny * 12;
+        const dPath = `M ${x - tx * 6.5},${y - ty * 6.5} L ${forkX},${forkY} L ${x + tx * 6.5},${y + ty * 6.5}`;
+        svg.appendChild(createSvgEl('path', {
+          d: dPath, fill: 'none', stroke, 'stroke-width': sw
+        }));
+        svg.appendChild(createSvgEl('circle', {
+          cx: x + nx * 16.5, cy: y + ny * 16.5, r: 4.2,
+          fill: '#ffffff', stroke, 'stroke-width': sw
+        }));
+      }
+    }
+
+    function connect(fromSpec, toSpec, midX = null) {
+      const a1 = getAnchor(fromSpec.table, fromSpec.field, fromSpec.side, fromSpec.ratio ?? 0.5);
+      const a2 = getAnchor(toSpec.table, toSpec.field, toSpec.side, toSpec.ratio ?? 0.5);
+
+      const waypoints = midX !== null ? [[midX, a1.y], [midX, a2.y]] : [];
+      const pts = [[a1.x, a1.y], ...waypoints, [a2.x, a2.y]];
+      const d = pts.map((p, i) => (i === 0 ? `M ${p[0]},${p[1]}` : `L ${p[0]},${p[1]}`)).join(' ');
+
+      svg.appendChild(createSvgEl('path', {
+        d, fill: 'none', stroke: '#444444', 'stroke-width': '1.5'
+      }));
+
+      drawCardinality(a1, fromSpec.type);
+      drawCardinality(a2, toSpec.type);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. users (1) -> patient_profiles (0..1) [vertical]
+      connect(
+        { table: 'users', field: null, side: 'top', ratio: 0.5, type: 'one' },
+        { table: 'patient_profiles', field: null, side: 'bottom', ratio: 0.5, type: 'zero-one' }
+      );
+
+      // 2. users (1) -> dental_charts (0..1)
+      connect(
+        { table: 'users', field: 'id', side: 'left', type: 'one' },
+        { table: 'dental_charts', field: 'patient_id', side: 'right', type: 'zero-one' },
+        320
+      );
+
+      // 3. users (1) -> treatment_plans (0..N)
+      connect(
+        { table: 'users', field: 'name', side: 'left', type: 'one' },
+        { table: 'treatment_plans', field: 'patient_id', side: 'right', type: 'many' },
+        300
+      );
+
+      // 4. treatment_plans (1) -> treatment_plan_items (1..N) [vertical]
+      connect(
+        { table: 'treatment_plans', field: null, side: 'bottom', ratio: 0.5, type: 'one' },
+        { table: 'treatment_plan_items', field: null, side: 'top', ratio: 0.5, type: 'many' }
+      );
+
+      // 5. treatments (1) -> treatment_plan_items (0..N)
+      connect(
+        { table: 'treatments', field: 'id', side: 'left', type: 'one' },
+        { table: 'treatment_plan_items', field: 'treatment_id', side: 'right', type: 'many' },
+        320
+      );
+
+      // 6. users (1) -> audit_logs (0..N)
+      connect(
+        { table: 'users', field: 'is_active', side: 'left', type: 'one' },
+        { table: 'audit_logs', field: 'user_id', side: 'right', type: 'zero-many' },
+        285
+      );
+
+      // 7. users (1) -> appointments (0..N) [patient_id & dentist_id]
+      connect(
+        { table: 'users', field: 'id', side: 'right', type: 'one' },
+        { table: 'appointments', field: 'patient_id', side: 'left', type: 'many' },
+        655
+      );
+
+      // 8. treatments (1) -> appointments (0..N)
+      connect(
+        { table: 'treatments', field: 'id', side: 'right', type: 'one' },
+        { table: 'appointments', field: 'treatment_id', side: 'left', type: 'many' },
+        655
+      );
+
+      // 9. appointments (1) -> follow_ups (0..N) [vertical]
+      connect(
+        { table: 'appointments', field: null, side: 'top', ratio: 0.5, type: 'one' },
+        { table: 'follow_ups', field: null, side: 'bottom', ratio: 0.5, type: 'zero-many' }
+      );
+
+      // 10. appointments (1) -> appointment_treatments (1..N) [vertical]
+      connect(
+        { table: 'appointments', field: null, side: 'bottom', ratio: 0.5, type: 'one' },
+        { table: 'appointment_treatments', field: null, side: 'top', ratio: 0.5, type: 'many' }
+      );
+
+      // 11. treatments (1) -> appointment_treatments (0..N)
+      connect(
+        { table: 'treatments', field: 'price', side: 'right', type: 'one' },
+        { table: 'appointment_treatments', field: 'treatment_id', side: 'left', type: 'many' },
+        680
+      );
+
+      // 12. appointments (1) -> invoices (0..1)
+      connect(
+        { table: 'appointments', field: 'id', side: 'right', type: 'one' },
+        { table: 'invoices', field: 'appointment_id', side: 'left', type: 'zero-one' },
+        1010
+      );
+
+      // 13. invoices (1) -> hmo_claims (0..N) [vertical]
+      connect(
+        { table: 'invoices', field: null, side: 'bottom', ratio: 0.5, type: 'one' },
+        { table: 'hmo_claims', field: null, side: 'top', ratio: 0.5, type: 'zero-many' }
+      );
+
+      // 14. appointments (1) -> prescriptions (0..N)
+      connect(
+        { table: 'appointments', field: 'clinical_notes', side: 'right', type: 'one' },
+        { table: 'prescriptions', field: 'appointment_id', side: 'left', type: 'many' },
+        1010
+      );
+    });
+  </script>
 </body>
 </html>
