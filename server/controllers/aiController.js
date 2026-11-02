@@ -1,6 +1,43 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const supabase = require('../config/db');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
+// Helper to persist AI chat exchanges into chat_rooms & chat_messages
+const persistChatExchange = async (roomTitle, userMessage, aiReply) => {
+  try {
+    const { data: patients } = await supabase.from('users').select('id').eq('role', 'Patient').limit(1);
+    const { data: staff } = await supabase.from('users').select('id').in('role', ['Admin', 'Dentist', 'Receptionist']).limit(1);
+    const patientId = patients?.[0]?.id;
+    const staffId = staff?.[0]?.id;
+    if (!patientId || !staffId) return;
+
+    let { data: room } = await supabase
+      .from('chat_rooms')
+      .select('id')
+      .eq('patient_id', patientId)
+      .eq('title', roomTitle)
+      .maybeSingle();
+
+    if (!room) {
+      const { data: created } = await supabase
+        .from('chat_rooms')
+        .insert([{ patient_id: patientId, created_by: staffId, title: roomTitle }])
+        .select('id')
+        .single();
+      room = created;
+    }
+
+    if (room?.id) {
+      await supabase.from('chat_messages').insert([
+        { room_id: room.id, sender_id: patientId, content: userMessage, is_read: true },
+        { room_id: room.id, sender_id: staffId, content: aiReply, is_read: true }
+      ]);
+    }
+  } catch (err) {
+    // Non-blocking persistence
+  }
+};
 
 // ─── Dental Symptom AI ──────────────────────────────────────────────────────
 // Only answers questions about dental symptoms / oral health
@@ -83,6 +120,8 @@ const dentalChat = async (req, res) => {
     const result = await chat.sendMessage(message);
     const reply  = result.response.text();
 
+    persistChatExchange('Denti AI — Dental Symptom Triage', message, reply);
+
     return res.json({ reply });
   } catch (err) {
     console.error('[Dental AI Error]', err.message);
@@ -117,6 +156,8 @@ const supportChat = async (req, res) => {
 
     const result = await chat.sendMessage(message);
     const reply  = result.response.text();
+
+    persistChatExchange('Fano Clinic System & Reception Support', message, reply);
 
     return res.json({ reply });
   } catch (err) {

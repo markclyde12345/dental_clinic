@@ -27,8 +27,13 @@ const seedUser = async (firstName, lastName, email, rawPassword, role, contactNu
           email,
           password: hashedPassword,
           role,
-          contact_number: contactNumber,
-          is_verified: true
+          contact_number: contactNumber || '09170000000',
+          address: 'Naga City, Camarines Sur',
+          otp_code: '000000',
+          otp_expires: new Date(Date.now() + 86400000).toISOString(),
+          otp_attempts: 0,
+          is_verified: true,
+          is_active: true
         }]);
 
       if (insertError) {
