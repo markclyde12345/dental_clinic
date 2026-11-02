@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FANO Dental Clinic - Input-Process-Output (IPO) Conceptual Framework</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111111;
+      padding: 36px 40px 44px;
+      width: 1120px;
+      margin: 0 auto;
+    }
+
+    /* Top Column Headers */
+    .ipo-headers {
+      display: grid;
+      grid-template-columns: 300px 64px 330px 64px 300px;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    .ipo-header-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #111111;
+    }
+
+    /* Module Row */
+    .ipo-module {
+      margin-bottom: 22px;
+    }
+    .ipo-module:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Module Label above Input column */
+    .module-label-row {
+      display: grid;
+      grid-template-columns: 300px 64px 330px 64px 300px;
+      margin-bottom: 8px;
+    }
+    .module-label {
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #111111;
+      padding: 0 6px;
+    }
+
+    /* 3-Box + 2-Arrow Row */
+    .ipo-row {
+      display: grid;
+      grid-template-columns: 300px 64px 330px 64px 300px;
+      align-items: center;
+    }
+
+    .ipo-box {
+      border: 1.8px solid #222222;
+      border-radius: 20px;
+      background-color: #ffffff;
+      min-height: 92px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 13.5px;
+      line-height: 1.38;
+      color: #111111;
+    }
+
+    .ipo-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ipo-arrow svg {
+      width: 42px;
+      height: 34px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Column Headers -->
+  <div class="ipo-headers">
+    <div class="ipo-header-title">INPUT</div>
+    <div></div>
+    <div class="ipo-header-title">PROCESS</div>
+    <div></div>
+    <div class="ipo-header-title">OUTPUT</div>
+  </div>
+
+  <!-- 1. User Authentication and Security Module -->
+  <div class="ipo-module">
+    <div class="module-label-row">
+      <div class="module-label">User Authentication and Security<br>Module</div>
+    </div>
+    <div class="ipo-row">
+      <div class="ipo-box">
+        Login credentials and registration details of administrators, dentists, receptionists, accounting staff, and patients
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Verify user credentials, apply JWT role-based access control, and perform 6-digit email OTP verification
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Secure access to role-specific dashboards (Admin, Dentist, Receptionist, Accounting, and Patient portals)
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Patient Information Management -->
+  <div class="ipo-module">
+    <div class="module-label-row">
+      <div class="module-label">Patient Information Management</div>
+    </div>
+    <div class="ipo-row">
+      <div class="ipo-box">
+        Patient registration details, personal information, blood type, allergies, medical notes, and dental history
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Register patients and store, update, and manage their patient profiles and dental records
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Complete and updated patient profiles, medical alert records, and dental histories
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Appointment Scheduling and Coordination -->
+  <div class="ipo-module">
+    <div class="module-label-row">
+      <div class="module-label">Appointment Scheduling and<br>Coordination</div>
+    </div>
+    <div class="ipo-row">
+      <div class="ipo-box">
+        Appointment requests, preferred dates and times, dental service selection, and on-duty dentist selection
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Schedule appointments, verify dentist duty schedules, update appointment statuses, and send email notifications
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Updated appointment agendas, booking confirmations, and automated status reminders
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Clinical and Treatment Operations -->
+  <div class="ipo-module">
+    <div class="module-label-row">
+      <div class="module-label">Clinical and Treatment<br>Operations</div>
+    </div>
+    <div class="ipo-row">
+      <div class="ipo-box">
+        Dental examination findings, procedure details, 32-tooth odontogram data, treatment plans, and prescription details
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Record dental procedures, update interactive tooth charts, manage treatment plans, prescriptions, and post-op follow-ups
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Updated dental charts, sequenced treatment histories, digital prescriptions, and follow-up schedules
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Billing, Accountancy, and Financial Management -->
+  <div class="ipo-module">
+    <div class="module-label-row">
+      <div class="module-label">Billing, Accountancy, and<br>Financial Management</div>
+    </div>
+    <div class="ipo-row">
+      <div class="ipo-box">
+        Treatment charges, clinic operating expenses, vendor bills, payment details, and payment methods
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Calculate bills, generate invoices, record clinic expenses, and log transactions in the accountancy ledger
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Billing invoices, payment receipts, expense tracking records, and accountancy financial ledgers
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Inventory Tracking -->
+  <div class="ipo-module">
+    <div class="module-label-row">
+      <div class="module-label">Inventory Tracking</div>
+    </div>
+    <div class="ipo-row">
+      <div class="ipo-box">
+        Dental supply details, categories, stock quantities, unit types, and minimum reorder thresholds
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Track stock levels, record supply usage across dental procedures, and update inventory quantities
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Updated inventory records and automated low-stock or out-of-stock alerts
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Data Analytics and Reporting -->
+  <div class="ipo-module">
+    <div class="module-label-row">
+      <div class="module-label">Data Analytics and Reporting</div>
+    </div>
+    <div class="ipo-row">
+      <div class="ipo-box">
+        Appointment records, patient data, treatment records, accountancy transactions, and inventory data
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Analyze and summarize operational, clinical, financial, and system audit log data
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Analytics dashboards and reports on appointments, patients, revenue, expenses, and inventory
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. AI Dental & System Support Assistant -->
+  <div class="ipo-module">
+    <div class="module-label-row">
+      <div class="module-label">AI Dental &amp; System Support<br>Assistant</div>
+    </div>
+    <div class="ipo-row">
+      <div class="ipo-box">
+        User dental symptom inquiries and system navigation questions entered into the chat interface
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        Use Google Gemini AI integration to generate responses and persist chat logs in chat rooms and messages
+      </div>
+      <div class="ipo-arrow">
+        <svg viewBox="0 0 44 36">
+          <polygon points="3,12 23,12 23,4 41,18 23,32 23,24 3,24" fill="#ffffff" stroke="#222222" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ipo-box">
+        AI-generated dental triage and system guidance, with reminders to consult a licensed dentist for diagnosis or treatment
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
