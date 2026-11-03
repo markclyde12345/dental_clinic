@@ -3188,7 +3188,21 @@ function setupBookingWizard() {
     safeVal('wizard-pat-name', user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || '');
     safeVal('wizard-pat-email', user.email || '');
     safeVal('wizard-pat-phone', user.contact_number || user.contactNumber || user.phone || '');
+    if (user.address) {
+      safeVal('wizard-pat-address', user.address);
+    }
   }
+
+  // Address input change listener
+  const addrInput = document.getElementById('wizard-pat-address');
+  addrInput?.addEventListener('change', () => {
+    geocodeAndLocate(addrInput.value);
+  });
+
+  // GPS detect button
+  document.getElementById('btn-detect-gps')?.addEventListener('click', () => {
+    detectGPSLocation();
+  });
 
   // Populate branch picker cards for clinic selection
   updateNearestBranchAndMap(10.2098, 123.7540, 'Balirong, City of Naga, Cebu');
@@ -3420,10 +3434,9 @@ function renderMapVisuals(patientLat, patientLng, addressLabel, targetBranch) {
       zoomControl: true
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_49xg_1_ea6e2bbc9eb40a1fa32d14c8', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      maxZoom: 20,
-      subdomains: 'abcd'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
     }).addTo(branchMap);
   }
 

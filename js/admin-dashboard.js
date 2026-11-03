@@ -5393,10 +5393,9 @@ window.initAdminBranchMap = function() {
 
   if (!adminMap) {
     adminMap = L.map('admin-branch-map').setView([lat, lng], 14);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_49xg_1_ea6e2bbc9eb40a1fa32d14c8', {
-      maxZoom: 20,
-      subdomains: 'abcd',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
     }).addTo(adminMap);
 
     const marker = L.marker([lat, lng], {
