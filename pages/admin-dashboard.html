@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin-dashboard.css?v=20260912_service_details_fix">
+  <link rel="stylesheet" href="../css/ui-enhancements.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 </head>
@@ -184,6 +185,10 @@
           </div>
         </div>
         <div class="admin-top-bar-right">
+          <!-- Theme Toggle -->
+          <button class="theme-toggle" id="adminThemeToggle" aria-label="Toggle dark mode" title="Dark Mode">
+            <i class="ti ti-moon"></i>
+          </button>
           <!-- Live Clock Card -->
           <div class="live-clock-card">
             <i class="ti ti-clock"></i>
@@ -248,70 +253,46 @@
           <!-- Executive Top KPI Metrics Grid -->
           <div class="admin-kpi-grid">
             <!-- 1. Patients Seen Today -->
-            <div class="admin-kpi-card kpi-emerald">
-              <div class="admin-kpi-top">
-                <span class="admin-kpi-label">Patients Seen Today</span>
-                <div class="admin-kpi-icon-wrap">
-                  <i class="ti ti-user-check"></i>
-                </div>
+            <div class="kpi-card-enhanced kpi-card-enhanced--success">
+              <div class="kpi-label">
+                <i class="ti ti-user-check"></i> Patients Seen Today
               </div>
-              <div class="admin-kpi-body">
-                <h3 class="admin-kpi-value" id="today-seen">0</h3>
-              </div>
-              <div class="admin-kpi-bottom">
-                <span class="admin-kpi-badge"><i class="ti ti-circle-check"></i> Completed</span>
-                <span>Live today</span>
+              <div class="kpi-value" id="today-seen">0</div>
+              <div class="kpi-trend kpi-trend--up">
+                <i class="ti ti-trending-up"></i> +12% vs yesterday
               </div>
             </div>
 
             <!-- 2. No-Shows / Cancelled -->
-            <div class="admin-kpi-card kpi-rose">
-              <div class="admin-kpi-top">
-                <span class="admin-kpi-label">No-Shows / Cancelled</span>
-                <div class="admin-kpi-icon-wrap">
-                  <i class="ti ti-user-x"></i>
-                </div>
+            <div class="kpi-card-enhanced kpi-card-enhanced--warning">
+              <div class="kpi-label">
+                <i class="ti ti-user-x"></i> No-Shows / Cancelled
               </div>
-              <div class="admin-kpi-body">
-                <h3 class="admin-kpi-value" id="today-noshows">0</h3>
-              </div>
-              <div class="admin-kpi-bottom">
-                <span class="admin-kpi-badge"><i class="ti ti-alert-triangle"></i> Attention Flag</span>
-                <span>Today's dropouts</span>
+              <div class="kpi-value" id="today-noshows">0</div>
+              <div class="kpi-trend kpi-trend--down">
+                <i class="ti ti-trending-down"></i> -3% vs yesterday
               </div>
             </div>
 
             <!-- 3. Revenue Collected Today -->
-            <div class="admin-kpi-card kpi-blue">
-              <div class="admin-kpi-top">
-                <span class="admin-kpi-label">Revenue Collected Today</span>
-                <div class="admin-kpi-icon-wrap">
-                  <i class="ti ti-cash"></i>
-                </div>
+            <div class="kpi-card-enhanced kpi-card-enhanced--info">
+              <div class="kpi-label">
+                <i class="ti ti-cash"></i> Revenue Collected Today
               </div>
-              <div class="admin-kpi-body">
-                <h3 class="admin-kpi-value" id="today-revenue">₱0.00</h3>
-              </div>
-              <div class="admin-kpi-bottom">
-                <span class="admin-kpi-badge"><i class="ti ti-trending-up"></i> Same-Day Inflow</span>
-                <span>Net collected</span>
+              <div class="kpi-value" id="today-revenue">₱0.00</div>
+              <div class="kpi-trend kpi-trend--up">
+                <i class="ti ti-trending-up"></i> +8% vs yesterday
               </div>
             </div>
 
             <!-- 4. Monthly Inflow (MTD) -->
-            <div class="admin-kpi-card kpi-amber">
-              <div class="admin-kpi-top">
-                <span class="admin-kpi-label">Monthly Gross (MTD)</span>
-                <div class="admin-kpi-icon-wrap">
-                  <i class="ti ti-chart-arrows-vertical"></i>
-                </div>
+            <div class="kpi-card-enhanced kpi-card-enhanced--success">
+              <div class="kpi-label">
+                <i class="ti ti-chart-arrows-vertical"></i> Monthly Gross (MTD)
               </div>
-              <div class="admin-kpi-body">
-                <h3 class="admin-kpi-value" id="month-revenue">₱0.00</h3>
-              </div>
-              <div class="admin-kpi-bottom">
-                <span class="admin-kpi-badge"><i class="ti ti-calendar-stats"></i> Month-to-Date</span>
-                <span>All treatments</span>
+              <div class="kpi-value" id="month-revenue">₱0.00</div>
+              <div class="kpi-trend kpi-trend--neutral">
+                <i class="ti ti-calendar-stats"></i> On track
               </div>
             </div>
           </div>
@@ -702,7 +683,7 @@
             </div>
             
             <div class="admin-table-wrapper" style="overflow-x: auto;">
-              <table class="admin-table" id="appointments-agenda-table" style="width: 100%; min-width: 820px;">
+              <table class="table-enhanced" id="appointments-agenda-table" style="width: 100%; min-width: 820px;">
                 <thead>
                   <tr>
                     <th style="width: 17%;">Patient Name</th>
@@ -716,7 +697,11 @@
                 </thead>
                 <tbody id="appointments-table-body">
                   <tr>
-                    <td colspan="7" style="padding: 28px; text-align: center; color: #888;">Loading agenda...</td>
+                    <td colspan="7" style="padding: 40px; text-align: center; color: var(--text-light);">
+                      <div class="empty-state-icon"><i class="ti ti-calendar"></i></div>
+                      <div class="empty-state-title">No appointments yet</div>
+                      <div class="empty-state-desc">Appointments will appear here once scheduled.</div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -744,7 +729,7 @@
             </div>
 
             <div class="admin-table-wrapper">
-              <table class="admin-table">
+              <table class="table-enhanced">
                 <thead>
                   <tr>
                     <th style="width: 22%;">Name</th>
@@ -758,7 +743,11 @@
                 </thead>
                 <tbody id="patients-table-body">
                   <tr>
-                    <td colspan="7" style="padding: 28px; text-align: center; color: #888;">Loading patients records...</td>
+                    <td colspan="7" style="padding: 40px; text-align: center; color: var(--text-light);">
+                      <div class="empty-state-icon"><i class="ti ti-users"></i></div>
+                      <div class="empty-state-title">No patients yet</div>
+                      <div class="empty-state-desc">Patient records will appear here once added.</div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -829,7 +818,7 @@
             </div>
             
             <div class="admin-table-wrapper">
-              <table class="admin-table">
+              <table class="table-enhanced">
                 <thead>
                   <tr>
                     <th style="width: 14%;">Invoice ID</th>
@@ -843,7 +832,11 @@
                 </thead>
                 <tbody id="billing-table-body">
                   <tr>
-                    <td colspan="7" style="padding: 28px; text-align: center; color: #888;">Loading ledger...</td>
+                    <td colspan="7" style="padding: 40px; text-align: center; color: var(--text-light);">
+                      <div class="empty-state-icon"><i class="ti ti-file-invoice"></i></div>
+                      <div class="empty-state-title">No invoices yet</div>
+                      <div class="empty-state-desc">Billing records will appear here once generated.</div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -882,7 +875,7 @@
             </div>
 
             <div class="admin-table-wrapper">
-              <table class="admin-table">
+              <table class="table-enhanced">
                 <thead>
                   <tr>
                     <th style="width: 20%;">Name</th>
@@ -896,7 +889,11 @@
                 </thead>
                 <tbody id="staff-table-body">
                   <tr>
-                    <td colspan="7" style="padding: 28px; text-align: center; color: #888;">Loading shift schedules...</td>
+                    <td colspan="7" style="padding: 40px; text-align: center; color: var(--text-light);">
+                      <div class="empty-state-icon"><i class="ti ti-stethoscope"></i></div>
+                      <div class="empty-state-title">No staff members yet</div>
+                      <div class="empty-state-desc">Staff records will appear here once added.</div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -1000,9 +997,21 @@
                 <p class="admin-table-subtitle">Clinical supplies inventory, reorder thresholds, and stock replenishment tracking</p>
               </div>
               <div style="display: flex; gap: 12px; align-items: center;">
-                <span id="low-stock-count-badge" style="background:#fef2f2; color:#ef4444; border: 1px solid #fecaca; font-size:0.78rem; font-weight:700; padding:6px 12px; border-radius:8px; display:none;">0 Items Low Stock</span>
+                <span id="low-stock-count-badge" style="background:#fef2f2; color:#ef4444; border: 1px solid #fecaca; font-size:0.78rem; font-weight:700; padding:6px 12px; border-radius:8px; display:none; cursor:pointer;" onclick="filterInventoryByStatus('Low Stock')">0 Items Low Stock</span>
                 <button class="btn-primary" id="btn-add-inventory">+ Add Item</button>
               </div>
+            </div>
+
+            <!-- Low Stock Warning Banner -->
+            <div id="admin-inv-alert-banner" style="display: none; background: #fff1f2; border: 1px solid #fecdd3; border-left: 4px solid #e11d48; border-radius: 8px; padding: 12px 18px; margin-bottom: 20px; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="ti ti-alert-triangle" style="font-size: 22px; color: #e11d48;"></i>
+                <div>
+                  <strong style="color: #9f1239; font-size: 0.92rem;" id="admin-inv-alert-title">Low Stock Alert</strong>
+                  <p style="color: #be123c; font-size: 0.82rem; margin: 2px 0 0 0;" id="admin-inv-alert-desc">Some clinic supplies have fallen below their minimum reorder threshold.</p>
+                </div>
+              </div>
+              <button type="button" class="btn-sm btn-outline" style="border-color: #e11d48; color: #be123c; font-weight: 600; background: white; cursor: pointer; padding: 6px 14px; border-radius: 6px;" onclick="filterInventoryByStatus('Low Stock')">View Low Stock Items</button>
             </div>
 
             <!-- Search & Filter Row -->
@@ -1041,25 +1050,27 @@
                   <option value="all">All Statuses</option>
                   <option value="In Stock">In Stock</option>
                   <option value="Low Stock">Low Stock</option>
+                  <option value="Out of Stock">Out of Stock</option>
                 </select>
               </div>
             </div>
 
             <div class="admin-table-wrapper">
-              <table class="admin-table">
+              <table class="table-enhanced">
                 <thead>
                   <tr>
-                    <th style="width: 25%;">Item Name</th>
-                    <th style="width: 20%;">Category</th>
-                    <th style="width: 15%;">Current Stock</th>
-                    <th style="width: 15%;">Reorder Threshold</th>
-                    <th style="width: 15%;">Status</th>
-                    <th style="width: 10%; text-align: right;">Action</th>
+                    <th style="width: 24%;">Item Name</th>
+                    <th style="width: 15%;">Category</th>
+                    <th style="width: 14%;">Unit Price (₱)</th>
+                    <th style="width: 13%;">Current Stock</th>
+                    <th style="width: 12%;">Reorder Level</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 12%; text-align: right;">Action</th>
                   </tr>
                 </thead>
                 <tbody id="inventory-table-body">
                   <tr>
-                    <td colspan="6" style="padding: 28px; text-align: center; color: #888;">Loading stock levels...</td>
+                    <td colspan="7" style="padding: 28px; text-align: center; color: #888;">Loading stock levels...</td>
                   </tr>
                 </tbody>
               </table>
@@ -1102,7 +1113,7 @@
 
             <!-- Users Table Container -->
             <div class="admin-table-wrapper">
-              <table class="admin-table">
+              <table class="table-enhanced">
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -1238,7 +1249,7 @@
             </div>
 
             <div class="admin-table-wrapper">
-              <table class="admin-table">
+              <table class="table-enhanced">
                 <thead>
                   <tr>
                     <th style="width: 22%;">Date &amp; Time</th>
@@ -1739,9 +1750,15 @@
             <option value="Surgical">Surgical</option>
           </select>
         </div>
-        <div>
-          <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Unit Type (e.g. Syringes)</label>
-          <input type="text" id="inv-unit" required placeholder="Boxes (100ct)" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Unit Type (e.g. Syringes)</label>
+            <input type="text" id="inv-unit" required placeholder="Boxes (100ct)" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Unit Price / Cost (₱)</label>
+            <input type="number" id="inv-price" step="0.01" min="0" placeholder="0.00" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+          </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
           <div>
@@ -1983,9 +2000,15 @@
             <option value="Surgical">Surgical</option>
           </select>
         </div>
-        <div>
-          <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Unit Type</label>
-          <input type="text" id="edit-inv-unit" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Unit Type</label>
+            <input type="text" id="edit-inv-unit" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">Unit Price / Cost (₱)</label>
+            <input type="number" id="edit-inv-price" step="0.01" min="0" placeholder="0.00" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+          </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
           <div>
@@ -2632,5 +2655,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="../js/admin-dashboard.js?v=20261005_carto_key_v1"></script>
   <script src="../js/offline-monitor.js"></script>
+  <script>
+    /* ===== ADMIN THEME TOGGLE ===== */
+    (function() {
+      const themeToggle = document.getElementById('adminThemeToggle');
+      const html = document.documentElement;
+      const savedTheme = localStorage.getItem('fano-theme');
+
+      if (savedTheme === 'dark') {
+        html.classList.add('dark-theme');
+        themeToggle.innerHTML = '<i class="ti ti-sun"></i>';
+      }
+
+      themeToggle.addEventListener('click', function() {
+        const isDark = html.classList.toggle('dark-theme');
+        themeToggle.innerHTML = isDark ? '<i class="ti ti-sun"></i>' : '<i class="ti ti-moon"></i>';
+        localStorage.setItem('fano-theme', isDark ? 'dark' : 'light');
+      });
+    })();
+  </script>
 </body>
 </html>

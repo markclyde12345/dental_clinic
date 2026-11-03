@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css?v=20260921_auth">
+  <link rel="stylesheet" href="../css/ui-enhancements.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -54,6 +55,9 @@
       <li><a href="#booking" class="nav-cta">Book Now</a></li>
     </ul>
     <div class="nav-auth-wrapper" id="navAuthWrapper"></div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Dark Mode">
+      <i class="ti ti-moon"></i>
+    </button>
     <button class="hamburger" id="hamburger" aria-label="Open menu">
       <span></span><span></span><span></span>
     </button>
@@ -77,7 +81,9 @@
       designed for every smile. Where science meets artistry.
     </p>
     <div class="hero-actions" id="heroActions">
-      <a href="login.html" class="btn-primary" id="heroPrimaryCta">Get Started →</a>
+      <a href="login.html" class="btn-enhanced btn-enhanced--primary btn-enhanced--lg" id="heroPrimaryCta">
+        Get Started → <i class="ti ti-arrow-right"></i>
+      </a>
     </div>
     <div class="hero-stats">
       <div class="hero-stat">
@@ -468,5 +474,24 @@
 
   <script src="../js/main.js?v=20260921_auth"></script>
   <script src="../js/offline-monitor.js"></script>
+  <script>
+    /* ===== THEME TOGGLE ===== */
+    (function() {
+      const themeToggle = document.getElementById('themeToggle');
+      const html = document.documentElement;
+      const savedTheme = localStorage.getItem('fano-theme');
+
+      if (savedTheme === 'dark') {
+        html.classList.add('dark-theme');
+        themeToggle.innerHTML = '<i class="ti ti-sun"></i>';
+      }
+
+      themeToggle.addEventListener('click', function() {
+        const isDark = html.classList.toggle('dark-theme');
+        themeToggle.innerHTML = isDark ? '<i class="ti ti-sun"></i>' : '<i class="ti ti-moon"></i>';
+        localStorage.setItem('fano-theme', isDark ? 'dark' : 'light');
+      });
+    })();
+  </script>
 </body>
 </html>

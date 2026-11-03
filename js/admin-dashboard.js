@@ -3760,45 +3760,71 @@ function loadInventory() {
   });
 }
 
-function renderInventoryTable(data) {
+function renderInventoryRows(data) {
   const tbody = document.getElementById('inventory-table-body');
-  const lowBadge = document.getElementById('low-stock-count-badge');
-  const lowStockItems = data.filter(item => item.status === 'Low Stock').length;
+  if (!tbody) return;
 
-  if (lowBadge) {
-    if (lowStockItems > 0) {
-      lowBadge.style.display = 'inline-block';
-      lowBadge.textContent = `${lowStockItems} Items Low Stock`;
-    } else {
-      lowBadge.style.display = 'none';
-    }
-  }
-
-  if (data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="padding: 24px; text-align: center; color: #888;">No stock listings.</td></tr>';
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding: 32px; text-align: center; color: #888;">No supplies found in inventory ledger.</td></tr>';
     return;
   }
 
   tbody.innerHTML = data.map(item => {
-    const isLow = item.status === 'Low Stock';
-    const statusBadge = isLow 
-      ? `<span style="background:#fef0f0; color:#f56c6c; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; text-transform:uppercase;">Low Stock</span>`
-      : `<span style="background:#f0f9eb; color:#67c23a; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; text-transform:uppercase;">In Stock</span>`;
+    const stockNum = parseInt(item.stock, 10) || 0;
+    const threshNum = parseInt(item.threshold, 10) || 0;
+    const isOutOfStock = stockNum === 0 || (item.status || '').toLowerCase().includes('out');
+    const isLow = !isOutOfStock && (stockNum <= threshNum || (item.status || '').toLowerCase().includes('low'));
+    
+    let statusBadge = '<span style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">In Stock</span>';
+    if (isOutOfStock) {
+      statusBadge = '<span style="background:#fef2f2; color:#ef4444; border:1px solid #fecaca; padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Out of Stock</span>';
+    } else if (isLow) {
+      statusBadge = '<span style="background:#fffbeb; color:#d97706; border:1px solid #fde68a; padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Low Stock</span>';
+    }
+
+    const priceVal = parseFloat(item.price !== undefined ? item.price : (item.unit_price !== undefined ? item.unit_price : 0)) || 0;
+    const priceDisplay = '₱' + priceVal.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     return `
-      <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color);">
-        <td style="padding: 14px 16px; font-weight: 500;">${escapeHTML(item.name)}</td>
-        <td style="padding: 14px 16px;">${item.category}</td>
-        <td style="padding: 14px 16px; font-weight: 600;">${item.stock} ${item.unit}</td>
-        <td style="padding: 14px 16px;">${item.threshold} ${item.unit}</td>
-        <td style="padding: 14px 16px;">${statusBadge}</td>
+      <tr data-item-id="${item.id}" style="border-bottom: 1px solid var(--border-color); color: var(--dark-color); transition: background-color 0.2s;">
+        <td style="padding: 14px 16px; font-weight: 600; color: var(--secondary-color);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="ti ti-box" style="color: #64748b; font-size: 17px;"></i>
+            <span>${escapeHTML(item.name)}</span>
+          </div>
+        </td>
+        <td style="padding: 14px 16px;">
+          <span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:4px; font-size:0.8rem; font-weight:600;">${escapeHTML(item.category || 'Disposables')}</span>
+        </td>
+        <td style="padding: 14px 16px; font-weight: 700; color: #0f172a; font-family: monospace; font-size: 0.92rem;">
+          ${priceDisplay}
+        </td>
+        <td style="padding: 14px 16px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-weight: 700; font-size: 0.92rem; color: ${isOutOfStock ? '#ef4444' : (isLow ? '#d97706' : 'var(--dark-color)')};">
+              ${stockNum} <span style="font-size:0.8rem; font-weight:normal; color:#64748b;">${escapeHTML(item.unit || 'Units')}</span>
+            </span>
+            <div style="display: inline-flex; gap: 2px; margin-left: 4px;">
+              <button type="button" title="Decrease Stock by 1" onclick="quickAdjustStock('${item.id}', -1)" style="border: 1px solid #cbd5e1; background: #ffffff; color:#334155; border-radius: 4px; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1;">-</button>
+              <button type="button" title="Increase Stock by 1" onclick="quickAdjustStock('${item.id}', 1)" style="border: 1px solid #cbd5e1; background: #ffffff; color:#334155; border-radius: 4px; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1;">+</button>
+            </div>
+          </div>
+        </td>
+        <td style="padding: 14px 16px; color: #64748b; font-size: 0.88rem;">
+          ${threshNum} ${escapeHTML(item.unit || 'Units')}
+        </td>
+        <td style="padding: 14px 16px;">
+          ${statusBadge}
+        </td>
         <td style="padding: 14px 16px; text-align: right;">
           <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
-            <button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="openEditInventoryModal('${item.id}', '${escapeJS(item.name)}', '${escapeJS(item.category)}', '${escapeJS(item.unit)}', ${item.stock}, ${item.threshold})">Edit</button>
-            <button onclick="reorderSupply('${escapeHTML(item.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: var(--secondary-color); color: white;">
-              Reorder
+            <button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #0284c7; color: #0284c7; width: auto; font-weight:600;" onclick="openEditInventoryModal('${item.id}', '${escapeJS(item.name)}', '${escapeJS(item.category)}', '${escapeJS(item.unit)}', ${stockNum}, ${threshNum}, ${priceVal})">
+              <i class="ti ti-edit"></i> Edit
             </button>
-            <button onclick="deleteInventoryItem('${item.id}', '${escapeHTML(item.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: #fee2e2; color: #ef4444; transition: background 0.2s;">
+            <button onclick="reorderSupply('${escapeJS(item.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: var(--secondary-color); color: white;">
+              Restock
+            </button>
+            <button onclick="deleteInventoryItem('${item.id}', '${escapeJS(item.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: #fee2e2; color: #ef4444; transition: background 0.2s;">
               Delete
             </button>
           </div>
@@ -3808,13 +3834,103 @@ function renderInventoryTable(data) {
   }).join('');
 }
 
+function renderInventoryTable(data) {
+  const lowBadge = document.getElementById('low-stock-count-badge');
+  const alertBanner = document.getElementById('admin-inv-alert-banner');
+  const alertTitle = document.getElementById('admin-inv-alert-title');
+  const alertDesc = document.getElementById('admin-inv-alert-desc');
+
+  const fullData = localInventory || data || [];
+  const outOfStockItems = fullData.filter(item => {
+    const s = parseInt(item.stock, 10) || 0;
+    return s === 0 || (item.status || '').toLowerCase().includes('out');
+  });
+  const lowStockItems = fullData.filter(item => {
+    const s = parseInt(item.stock, 10) || 0;
+    const t = parseInt(item.threshold, 10) || 0;
+    return s > 0 && (s <= t || (item.status || '').toLowerCase().includes('low'));
+  });
+
+  const totalAlerts = outOfStockItems.length + lowStockItems.length;
+
+  if (lowBadge) {
+    if (totalAlerts > 0) {
+      lowBadge.style.display = 'inline-block';
+      lowBadge.textContent = `${totalAlerts} Item${totalAlerts > 1 ? 's' : ''} Low / Out of Stock`;
+    } else {
+      lowBadge.style.display = 'none';
+    }
+  }
+
+  if (alertBanner) {
+    if (totalAlerts > 0) {
+      alertBanner.style.display = 'flex';
+      if (alertTitle) {
+        alertTitle.textContent = `⚠️ ${totalAlerts} Clinic Supply Item${totalAlerts > 1 ? 's' : ''} Need Immediate Attention`;
+      }
+      if (alertDesc) {
+        let descParts = [];
+        if (outOfStockItems.length > 0) descParts.push(`${outOfStockItems.length} item(s) are completely depleted (0 stock)`);
+        if (lowStockItems.length > 0) descParts.push(`${lowStockItems.length} item(s) are below reorder threshold`);
+        alertDesc.textContent = descParts.join(' and ') + '. Reorder or adjust stock below.';
+      }
+    } else {
+      alertBanner.style.display = 'none';
+    }
+  }
+
+  renderInventoryRows(data);
+}
+
+// Quick Stock Increment / Decrement
+window.quickAdjustStock = function(itemId, delta) {
+  const item = (localInventory || []).find(i => i.id === itemId);
+  if (!item) return;
+
+  const currentStock = parseInt(item.stock, 10) || 0;
+  const newStock = Math.max(0, currentStock + delta);
+  if (newStock === currentStock) return;
+
+  const threshold = parseInt(item.threshold, 10) || 10;
+  const newStatus = newStock === 0 ? 'Out of Stock' : (newStock <= threshold ? 'Low Stock' : 'In Stock');
+
+  // Optimistic update
+  item.stock = newStock;
+  item.status = newStatus;
+  renderInventoryTable(localInventory);
+
+  fetch(`${ADMIN_API}/inventory/${itemId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ stock: newStock })
+  })
+  .then(res => res.json())
+  .then(updated => {
+    if (updated.message && !updated.id) throw new Error(updated.message);
+    const idx = (localInventory || []).findIndex(i => i.id === itemId);
+    if (idx !== -1) {
+      localInventory[idx] = { ...localInventory[idx], ...updated };
+    }
+    renderInventoryTable(localInventory);
+    showToast(`Stock for "${item.name}" updated to ${newStock} ${item.unit || 'units'}.`, 'success');
+  })
+  .catch(err => {
+    console.error('Failed to adjust stock:', err);
+    showToast('Failed to update stock quantity', 'error');
+    loadInventory();
+  });
+};
+
 window.reorderSupply = function(itemName) {
-  showToast(`Reorder request submitted successfully for "${itemName}"!`, 'success');
-  logConsoleEvent(`[ALERT] Admin requested reorder for item "${itemName}". PO submitted.`);
+  showToast(`Restock order request generated for "${itemName}"! Suppliers notified.`, 'success');
+  logConsoleEvent(`[ALERT] Admin requested restock order for item "${itemName}".`);
 };
 
 window.deleteInventoryItem = function(itemId, itemName) {
-  showDeleteConfirmation(`Are you sure you want to delete "${itemName}" from inventory?`, () => {
+  showDeleteConfirmation(`Are you sure you want to permanently delete "${itemName}" from clinic inventory?`, () => {
     fetch(`${ADMIN_API}/inventory/${itemId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -3837,6 +3953,15 @@ window.deleteInventoryItem = function(itemId, itemName) {
   });
 };
 
+// Filter Inventory by clicking badges/buttons
+window.filterInventoryByStatus = function(status) {
+  const statusSelect = document.getElementById('inventory-filter-status');
+  if (statusSelect) {
+    statusSelect.value = status;
+  }
+  filterInventory();
+};
+
 // Client-side inventory filter — triggered by search input and dropdowns
 window.filterInventory = function() {
   if (!localInventory) return;
@@ -3846,48 +3971,29 @@ window.filterInventory = function() {
   const status = document.getElementById('inventory-filter-status')?.value || 'all';
 
   const filtered = localInventory.filter(item => {
-    const matchSearch = !search || item.name.toLowerCase().includes(search);
+    const matchSearch = !search || (item.name || '').toLowerCase().includes(search);
     const matchCat = category === 'all' || item.category === category;
-    const matchStatus = status === 'all' || item.status === status;
+    
+    let matchStatus = true;
+    if (status !== 'all') {
+      const stockNum = parseInt(item.stock, 10) || 0;
+      const threshNum = parseInt(item.threshold, 10) || 0;
+      const statLower = (item.status || '').toLowerCase();
+      if (status === 'Out of Stock') {
+        matchStatus = stockNum === 0 || statLower.includes('out');
+      } else if (status === 'Low Stock') {
+        matchStatus = (stockNum > 0 && stockNum <= threshNum) || statLower.includes('low');
+      } else if (status === 'In Stock') {
+        matchStatus = stockNum > threshNum && !statLower.includes('low') && !statLower.includes('out');
+      } else {
+        matchStatus = item.status === status;
+      }
+    }
+
     return matchSearch && matchCat && matchStatus;
   });
 
-  // Render filtered results (skip the badge update to keep it reflecting full inventory)
-  const tbody = document.getElementById('inventory-table-body');
-  if (!tbody) return;
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="padding: 24px; text-align: center; color: #888;">No matching items found.</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = filtered.map(item => {
-    const isLow = item.status === 'Low Stock';
-    const statusBadge = isLow
-      ? `<span style="background:#fef0f0; color:#f56c6c; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; text-transform:uppercase;">Low Stock</span>`
-      : `<span style="background:#f0f9eb; color:#67c23a; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; text-transform:uppercase;">In Stock</span>`;
-
-    return `
-      <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color);">
-        <td style="padding: 14px 16px; font-weight: 500;">${escapeHTML(item.name)}</td>
-        <td style="padding: 14px 16px;">${item.category}</td>
-        <td style="padding: 14px 16px; font-weight: 600;">${item.stock} ${item.unit}</td>
-        <td style="padding: 14px 16px;">${item.threshold} ${item.unit}</td>
-        <td style="padding: 14px 16px;">${statusBadge}</td>
-        <td style="padding: 14px 16px; text-align: right;">
-          <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
-            <button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="openEditInventoryModal('${item.id}', '${escapeJS(item.name)}', '${escapeJS(item.category)}', '${escapeJS(item.unit)}', ${item.stock}, ${item.threshold})">Edit</button>
-            <button onclick="reorderSupply('${escapeHTML(item.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: var(--secondary-color); color: white;">
-              Reorder
-            </button>
-            <button onclick="deleteInventoryItem('${item.id}', '${escapeHTML(item.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: #fee2e2; color: #ef4444; transition: background 0.2s;">
-              Delete
-            </button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
+  renderInventoryRows(filtered);
 };
 
 
@@ -4078,7 +4184,9 @@ if (addInventoryForm) {
     const unit = document.getElementById('inv-unit').value.trim();
     const stock = parseInt(document.getElementById('inv-stock').value, 10) || 0;
     const threshold = parseInt(document.getElementById('inv-threshold').value, 10) || 0;
-    const status = stock < threshold ? 'Low Stock' : 'In Stock';
+    const priceInput = document.getElementById('inv-price');
+    const price = priceInput ? (parseFloat(priceInput.value) || 0) : 0;
+    const status = stock === 0 ? 'Out of Stock' : (stock <= threshold ? 'Low Stock' : 'In Stock');
 
     fetch(`${ADMIN_API}/inventory`, {
       method: 'POST',
@@ -4086,7 +4194,7 @@ if (addInventoryForm) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ name, category, unit, stock, threshold, status })
+      body: JSON.stringify({ name, category, unit, stock, threshold, status, price, unit_price: price })
     })
     .then(res => res.json())
     .then(newItem => {
@@ -4099,6 +4207,7 @@ if (addInventoryForm) {
 
       showToast(`Inventory item "${name}" added successfully!`, 'success');
       logConsoleEvent(`[INFO] Admin added new inventory supply: "${name}" (${category}).`);
+      addInventoryForm.reset();
       modalAddInventory.classList.remove('active');
       renderInventoryTable(localInventory);
     })
@@ -5949,13 +6058,18 @@ document.getElementById('btn-cancel-edit-staff-schedule')?.addEventListener('cli
 
 
 // ─── Edit Inventory Modal & Handler ───────────────────────────────────────────
-window.openEditInventoryModal = function(id, name, category, unit, stock, threshold) {
-  document.getElementById('edit-inv-id').value = id;
-  document.getElementById('edit-inv-name').value = name;
-  document.getElementById('edit-inv-category').value = category;
-  document.getElementById('edit-inv-unit').value = unit;
-  document.getElementById('edit-inv-stock').value = stock;
-  document.getElementById('edit-inv-threshold').value = threshold;
+window.openEditInventoryModal = function(id, name, category, unit, stock, threshold, price) {
+  document.getElementById('edit-inv-id').value = id || '';
+  document.getElementById('edit-inv-name').value = name || '';
+  document.getElementById('edit-inv-category').value = category || 'Disposables';
+  document.getElementById('edit-inv-unit').value = unit || '';
+  document.getElementById('edit-inv-stock').value = stock !== undefined ? stock : 0;
+  document.getElementById('edit-inv-threshold').value = threshold !== undefined ? threshold : 10;
+  const priceInput = document.getElementById('edit-inv-price');
+  if (priceInput) {
+    const p = parseFloat(price);
+    priceInput.value = (!isNaN(p) && p >= 0) ? p.toFixed(2) : '0.00';
+  }
 
   document.getElementById('modal-edit-inventory').classList.add('active');
 };
@@ -5968,8 +6082,13 @@ document.getElementById('edit-inventory-form')?.addEventListener('submit', (e) =
   const unit = document.getElementById('edit-inv-unit').value.trim();
   const stock = parseInt(document.getElementById('edit-inv-stock').value, 10);
   const threshold = parseInt(document.getElementById('edit-inv-threshold').value, 10);
+  const priceVal = parseFloat(document.getElementById('edit-inv-price')?.value);
 
   const payload = { name, category, unit, stock, threshold };
+  if (!isNaN(priceVal) && priceVal >= 0) {
+    payload.price = priceVal;
+    payload.unit_price = priceVal;
+  }
 
   const btnSave = e.target.querySelector('button[type=submit]');
   btnSave.disabled = true;
@@ -6417,7 +6536,27 @@ function onAdminNotificationClick(notifId, index) {
     if (act.type === 'switch_tab' && act.tab) {
       activateTab(act.tab);
 
-      if (act.tab === 'appointments') {
+      if (act.tab === 'inventory') {
+        if (act.filterStatus && typeof filterInventoryByStatus === 'function') {
+          filterInventoryByStatus(act.filterStatus);
+        }
+        if (act.entityId) {
+          setTimeout(() => {
+            const rows = document.querySelectorAll('#inventory-table-body tr');
+            rows.forEach(tr => {
+              if (tr.dataset.itemId === act.entityId || tr.innerHTML.includes(act.entityId)) {
+                tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                tr.style.outline = '2px solid #ef4444';
+                tr.style.backgroundColor = 'rgba(239, 68, 68, 0.08)';
+                setTimeout(() => {
+                  tr.style.outline = '';
+                  tr.style.backgroundColor = '';
+                }, 3500);
+              }
+            });
+          }, 200);
+        }
+      } else if (act.tab === 'appointments') {
         if (act.filterStatus) {
           const statusSelect = document.getElementById('filter-status');
           if (statusSelect) {

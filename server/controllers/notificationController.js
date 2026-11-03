@@ -364,6 +364,47 @@ const getUserNotifications = async (req, res) => {
       const isAdminRole = userRole === 'Admin' || userRole === 'Super Admin' || req.query.role === 'admin';
 
       if (isAdminRole) {
+        // 3-LowStock: Low Stock & Depleted Supplies Alerts for Admin
+        try {
+          const { data: invList } = await supabase
+            .from('inventory')
+            .select('id, name, stock, threshold, unit, status')
+            .order('created_at', { ascending: true });
+
+          const lowOrOut = (invList || []).filter(item => {
+            const stockNum = parseInt(item.stock, 10) || 0;
+            const threshNum = parseInt(item.threshold, 10) || 10;
+            const statLower = (item.status || '').toLowerCase();
+            return stockNum <= threshNum || statLower.includes('low') || statLower.includes('out');
+          });
+
+          if (lowOrOut.length > 0) {
+            lowOrOut.slice(0, 6).forEach(item => {
+              const isOut = item.stock === 0 || (item.status || '').toLowerCase().includes('out');
+              notifications.push({
+                id: `admin-lowstock-${item.id}`,
+                entity_id: item.id,
+                category: 'operations',
+                title: isOut ? `🚨 Out of Stock: ${item.name}` : `⚠️ Low Stock: ${item.name}`,
+                message: isOut
+                  ? `"${item.name}" is completely out of stock (0 ${item.unit} remaining). Reorder immediately!`
+                  : `"${item.name}" is running low with only ${item.stock} ${item.unit} left (Reorder threshold: ${item.threshold} ${item.unit}).`,
+                type: isOut ? 'danger' : 'warning',
+                icon: 'triangle-exclamation',
+                time: new Date().toISOString(),
+                action: {
+                  type: 'switch_tab',
+                  tab: 'inventory',
+                  filterStatus: 'Low Stock',
+                  entityId: item.id
+                }
+              });
+            });
+          }
+        } catch (e) {
+          console.warn('[Low Stock Notif Check Error]', e.message);
+        }
+
         // 3a. Pending Appointments (Individual actionable bookings)
         const { data: pendingAppts } = await supabase
           .from('appointments')

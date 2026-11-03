@@ -11,6 +11,37 @@ const totpService = require('../utils/totpService');
 // /tmp for cross-platform compatibility (works on Vercel Linux + local Windows via env override)
 const DATA_DIR = process.env.DATA_DIR || '/tmp/dental_clinic_backups';
 const INVENTORY_FILE = path.join(DATA_DIR, 'inventory.json');
+const LOCAL_PRICES_FILE = path.join(__dirname, '../data/inventory_prices.json');
+const INVENTORY_PRICES_FILE = fs.existsSync(LOCAL_PRICES_FILE) ? LOCAL_PRICES_FILE : path.join(DATA_DIR, 'inventory_prices.json');
+
+function getInventoryPricesMap() {
+  const f = fs.existsSync(LOCAL_PRICES_FILE) ? LOCAL_PRICES_FILE : INVENTORY_PRICES_FILE;
+  if (fs.existsSync(f)) {
+    try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (_) { return {}; }
+  }
+  return {};
+}
+
+function saveInventoryPricesMap(map) {
+  try {
+    fs.writeFileSync(INVENTORY_PRICES_FILE, JSON.stringify(map, null, 2), 'utf8');
+  } catch (err) {
+    console.error('[Save Inventory Prices Error]', err);
+  }
+}
+
+function getItemPrice(item, pricesMap) {
+  if (!item) return 250;
+  if (pricesMap[item.id] !== undefined) return parseFloat(pricesMap[item.id]);
+  if (pricesMap[item.name] !== undefined) return parseFloat(pricesMap[item.name]);
+  const nameLower = (item.name || '').toLowerCase();
+  for (const [key, val] of Object.entries(pricesMap)) {
+    if (nameLower.includes(key.toLowerCase()) || key.toLowerCase().includes(nameLower)) {
+      return parseFloat(val);
+    }
+  }
+  return 250;
+}
 const STAFF_FILE = path.join(DATA_DIR, 'staff_schedules.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 const MFA_SETTINGS_PATH = path.join(__dirname, '../data/mfa_settings.json');
@@ -403,7 +434,7 @@ const getDetailedStats = async (req, res) => {
   }
 };
 
-// @desc    Get dental supplies inventory stock levels
+// @desc    Get dental supplies inventory stock levels with pricing
 // @route   GET /api/admin/inventory
 // @access  Private (Admin)
 const getInventory = async (req, res) => {
@@ -415,7 +446,17 @@ const getInventory = async (req, res) => {
 
     if (error) throw error;
 
-    res.json(inventory || []);
+    const pricesMap = getInventoryPricesMap();
+    const enriched = (inventory || []).map(item => {
+      const price = getItemPrice(item, pricesMap);
+      return {
+        ...item,
+        price,
+        unit_price: price
+      };
+    });
+
+    res.json(enriched);
   } catch (error) {
     console.error('[Admin Get Inventory Error]', error.message);
     res.status(500).json({ message: error.message });
@@ -427,7 +468,7 @@ const getInventory = async (req, res) => {
 // @access  Private (Admin)
 const addInventory = async (req, res) => {
   try {
-    const { name, category, unit, stock, threshold, status, notes } = req.body;
+    const { name, category, unit, stock, threshold, status, notes, price, unit_price } = req.body;
     if (!name) {
       return res.status(400).json({ message: 'Item name is required' });
     }
@@ -435,6 +476,7 @@ const addInventory = async (req, res) => {
     const parsedStock = parseInt(stock, 10) || 0;
     const parsedThreshold = parseInt(threshold, 10) || 0;
     const calculatedStatus = status || (parsedStock === 0 ? 'Out of Stock' : (parsedStock <= parsedThreshold ? 'Low Stock' : 'In Stock'));
+    const itemPrice = parseFloat(price !== undefined ? price : (unit_price !== undefined ? unit_price : 250)) || 0;
 
     // Check if an item with the same name already exists (case-insensitive)
     const { data: existing } = await supabase
@@ -478,6 +520,14 @@ const addInventory = async (req, res) => {
       itemResult = newItem;
     }
 
+    // Save Price in local price map
+    const pricesMap = getInventoryPricesMap();
+    pricesMap[itemResult.id] = itemPrice;
+    pricesMap[itemResult.name] = itemPrice;
+    saveInventoryPricesMap(pricesMap);
+    itemResult.price = itemPrice;
+    itemResult.unit_price = itemPrice;
+
     // Detailed Audit Logging
     try {
       const { logAuditAction } = require('../utils/auditLogger');
@@ -487,12 +537,13 @@ const addInventory = async (req, res) => {
         action: 'INVENTORY_REPORTED',
         entityType: 'inventory',
         entityId: itemResult.id,
-        details: `${role} ${reporter} reported stock for "${name}": ${parsedStock} remaining (${calculatedStatus})${notes ? ` — Remarks: ${notes}` : ''}`,
+        details: `${role} ${reporter} added/reported stock for "${name}": ${parsedStock} ${itemResult.unit} @ ₱${itemPrice.toFixed(2)} (${calculatedStatus})${notes ? ` — Remarks: ${notes}` : ''}`,
         metadata: {
           item_id: itemResult.id,
           name,
           stock: parsedStock,
           threshold: parsedThreshold,
+          price: itemPrice,
           status: calculatedStatus,
           reported_by: reporter,
           role
@@ -513,13 +564,13 @@ const addInventory = async (req, res) => {
   }
 };
 
-// @desc    Update a supply item in inventory
+// @desc    Update a supply item in inventory (stock, price, threshold, category)
 // @route   PUT /api/admin/inventory/:id
 // @access  Private (Admin)
 const updateInventory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, category, unit, stock, threshold } = req.body;
+    const { name, category, unit, stock, threshold, price, unit_price } = req.body;
 
     const updateData = {};
     if (name !== undefined) updateData.name = name;
@@ -532,7 +583,7 @@ const updateInventory = async (req, res) => {
     const currentThreshold = threshold !== undefined ? parseInt(threshold, 10) : null;
     const currentStock = stock !== undefined ? parseInt(stock, 10) : null;
     if (currentStock !== null && currentThreshold !== null) {
-      updateData.status = currentStock <= currentThreshold ? 'Low Stock' : 'In Stock';
+      updateData.status = currentStock === 0 ? 'Out of Stock' : (currentStock <= currentThreshold ? 'Low Stock' : 'In Stock');
     }
 
     const { data: updatedItem, error } = await supabase
@@ -543,6 +594,20 @@ const updateInventory = async (req, res) => {
       .single();
 
     if (error) throw error;
+
+    // Update Price in price map if provided
+    const pricesMap = getInventoryPricesMap();
+    if (price !== undefined || unit_price !== undefined) {
+      const itemPrice = parseFloat(price !== undefined ? price : unit_price) || 0;
+      pricesMap[id] = itemPrice;
+      if (updatedItem.name) pricesMap[updatedItem.name] = itemPrice;
+      saveInventoryPricesMap(pricesMap);
+      updatedItem.price = itemPrice;
+      updatedItem.unit_price = itemPrice;
+    } else {
+      updatedItem.price = getItemPrice(updatedItem, pricesMap);
+      updatedItem.unit_price = updatedItem.price;
+    }
 
     res.json(updatedItem);
   } catch (error) {
@@ -564,6 +629,12 @@ const deleteInventory = async (req, res) => {
       .eq('id', id);
 
     if (error) throw error;
+
+    const pricesMap = getInventoryPricesMap();
+    if (pricesMap[id]) {
+      delete pricesMap[id];
+      saveInventoryPricesMap(pricesMap);
+    }
 
     const { data: fullList } = await supabase.from('inventory').select('*').order('created_at', { ascending: true });
     if (fullList) createBackup(INVENTORY_FILE, fullList);
