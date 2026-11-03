@@ -445,7 +445,29 @@ function renderOverviewAppointments() {
     const statusBadge = getStatusBadge(appt.status);
 
     let actionButton = '';
-    if (appt.status === 'Pending' || appt.status === 'Approved') {
+    if (appt.status === 'Reschedule Requested') {
+      actionButton = `
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-sm btn-primary" onclick="handlePatientRequestApproval('${appt.id}', 'approve_reschedule')" title="Approve Patient Reschedule Request">
+            <i class="ti ti-check"></i> <span>Approve Reschedule</span>
+          </button>
+          <button class="btn btn-sm btn-outline" onclick="handlePatientRequestApproval('${appt.id}', 'reject_reschedule')" title="Decline & Restore Original Slot">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+      `;
+    } else if (appt.status === 'Cancellation Requested') {
+      actionButton = `
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-sm btn-danger" style="background:#dc2626; color:#fff; border:none;" onclick="handlePatientRequestApproval('${appt.id}', 'approve_cancel')" title="Approve Patient Cancellation">
+            <i class="ti ti-check"></i> <span>Approve Cancel</span>
+          </button>
+          <button class="btn btn-sm btn-outline" onclick="handlePatientRequestApproval('${appt.id}', 'reject_cancel')" title="Decline Cancellation & Keep Active">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+      `;
+    } else if (appt.status === 'Pending' || appt.status === 'Approved') {
       actionButton = `
         <button class="btn btn-sm btn-gold" onclick="updateAppointmentStatus('${appt.id}', 'Checked In', 'Patient arrived and checked in')">
           <i class="ti ti-user-check"></i>
@@ -613,7 +635,7 @@ function updateStatusPillsCount() {
   };
 
   allAppointments.forEach(a => {
-    if (a.status === 'Pending') counts.Pending++;
+    if (a.status === 'Pending' || a.status === 'Reschedule Requested' || a.status === 'Cancellation Requested') counts.Pending++;
     else if (a.status === 'Approved' || a.status === 'Confirmed') counts.Approved++;
     else if (a.status === 'Checked In') counts['Checked In']++;
     else if (a.status === 'In Progress') counts['In Progress']++;
@@ -737,7 +759,27 @@ function renderAppointmentsTable(list) {
 
     // Front Desk Action Buttons
     let mainActionBtn = '';
-    if (appt.status === 'Pending') {
+    if (appt.status === 'Reschedule Requested') {
+      mainActionBtn = `
+        <button class="btn-action-main btn-action-confirm" onclick="handlePatientRequestApproval('${appt.id}', 'approve_reschedule')" title="Approve New Schedule">
+          <i class="ti ti-check"></i>
+          <span>Approve Resched</span>
+        </button>
+        <button class="btn-action-icon btn-icon-cancel" onclick="handlePatientRequestApproval('${appt.id}', 'reject_reschedule')" title="Decline Reschedule & Keep Previous Date">
+          <i class="ti ti-arrow-back-up"></i>
+        </button>
+      `;
+    } else if (appt.status === 'Cancellation Requested') {
+      mainActionBtn = `
+        <button class="btn-action-main" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;" onclick="handlePatientRequestApproval('${appt.id}', 'approve_cancel')" title="Approve Cancellation">
+          <i class="ti ti-check"></i>
+          <span>Approve Cancel</span>
+        </button>
+        <button class="btn-action-icon btn-icon-view" onclick="handlePatientRequestApproval('${appt.id}', 'reject_cancel')" title="Decline Cancellation & Keep Appointment">
+          <i class="ti ti-arrow-back-up"></i>
+        </button>
+      `;
+    } else if (appt.status === 'Pending') {
       mainActionBtn = `
         <button class="btn-action-main btn-action-confirm" onclick="updateAppointmentStatus('${appt.id}', 'Approved', 'Appointment confirmed')">
           <i class="ti ti-check"></i>
@@ -926,7 +968,8 @@ function filterAppointments() {
     // Status filter
     if (statusFilter !== 'ALL') {
       if (statusFilter === 'Approved' && appt.status !== 'Approved' && appt.status !== 'Confirmed') return false;
-      if (statusFilter !== 'Approved' && appt.status !== statusFilter) return false;
+      if (statusFilter === 'Pending' && appt.status !== 'Pending' && appt.status !== 'Reschedule Requested' && appt.status !== 'Cancellation Requested') return false;
+      if (statusFilter !== 'Approved' && statusFilter !== 'Pending' && appt.status !== statusFilter) return false;
     }
 
     // Date filter
@@ -1105,7 +1148,25 @@ function openApptIntakeDetails(apptId) {
       <button type="button" class="btn btn-outline" onclick="closeModal('modal-appt-details')">Close</button>
     `;
 
-    if (appt.status === 'Pending') {
+    if (appt.status === 'Reschedule Requested') {
+      modalActionBtns += `
+        <button type="button" class="btn btn-outline" onclick="closeModal('modal-appt-details'); handlePatientRequestApproval('${appt.id}', 'reject_reschedule')">
+          <i class="ti ti-x"></i> Decline Reschedule
+        </button>
+        <button type="button" class="btn btn-primary" onclick="closeModal('modal-appt-details'); handlePatientRequestApproval('${appt.id}', 'approve_reschedule')">
+          <i class="ti ti-check"></i> Approve Reschedule
+        </button>
+      `;
+    } else if (appt.status === 'Cancellation Requested') {
+      modalActionBtns += `
+        <button type="button" class="btn btn-outline" onclick="closeModal('modal-appt-details'); handlePatientRequestApproval('${appt.id}', 'reject_cancel')">
+          <i class="ti ti-x"></i> Decline Cancellation
+        </button>
+        <button type="button" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626;" onclick="closeModal('modal-appt-details'); handlePatientRequestApproval('${appt.id}', 'approve_cancel')">
+          <i class="ti ti-check"></i> Approve Cancellation
+        </button>
+      `;
+    } else if (appt.status === 'Pending') {
       modalActionBtns += `
         <button type="button" class="btn btn-primary" onclick="closeModal('modal-appt-details'); updateAppointmentStatus('${appt.id}', 'Approved', 'Appointment confirmed')">
           <i class="ti ti-check"></i> Confirm Appointment
@@ -2957,6 +3018,10 @@ function getStatusBadge(status) {
       return `<span class="status-badge badge-completed"><i class="ti ti-circle-check"></i> Completed</span>`;
     case 'Cancelled':
       return `<span class="status-badge badge-cancelled"><i class="ti ti-ban"></i> Cancelled</span>`;
+    case 'Reschedule Requested':
+      return `<span class="status-badge badge-pending" style="background:#fef3c7; color:#b45309; border:1px solid #f59e0b;"><i class="ti ti-calendar-time"></i> Reschedule Requested</span>`;
+    case 'Cancellation Requested':
+      return `<span class="status-badge badge-cancelled" style="background:#fee2e2; color:#b91c1c; border:1px solid #f87171;"><i class="ti ti-alert-circle"></i> Cancel Requested</span>`;
     case 'Rescheduled':
       return `<span class="status-badge badge-pending"><i class="ti ti-clock-hour-3"></i> Rescheduled</span>`;
     default:
@@ -4253,3 +4318,46 @@ document.addEventListener('keydown', (e) => {
 });
 
 
+
+
+async function handlePatientRequestApproval(appointmentId, actionType) {
+  try {
+    let payload = {};
+    let toastMsg = '';
+
+    if (actionType === 'approve_reschedule') {
+      payload = { status: 'Approved' };
+      toastMsg = 'Reschedule request approved and confirmed!';
+    } else if (actionType === 'reject_reschedule') {
+      payload = { status: 'Approved', reject_request: 'reschedule' };
+      toastMsg = 'Reschedule request declined; original schedule restored.';
+    } else if (actionType === 'approve_cancel') {
+      payload = { status: 'Cancelled' };
+      toastMsg = 'Cancellation request approved; appointment cancelled.';
+    } else if (actionType === 'reject_cancel') {
+      payload = { status: 'Approved', reject_request: 'cancel' };
+      toastMsg = 'Cancellation request declined; appointment remains confirmed.';
+    }
+
+    const res = await fetch(`${BASE_ORIGIN}/api/appointments/${appointmentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Failed to process request.');
+    }
+
+    showToast(toastMsg, 'success');
+    await loadDashboardData();
+  } catch (err) {
+    console.error('[Request Approval Error]', err);
+    showToast(err.message, 'error');
+  }
+}
+window.handlePatientRequestApproval = handlePatientRequestApproval;

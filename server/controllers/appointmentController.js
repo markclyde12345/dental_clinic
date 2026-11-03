@@ -562,18 +562,44 @@ const updateAppointment = async (req, res) => {
     // Fetch prior appointment details to compare previous vs new state
     const { data: existingAppt } = await supabase
       .from('appointments')
-      .select('id, appointment_date, status, patient_id')
+      .select('id, appointment_date, status, patient_id, notes')
       .eq('id', id)
       .maybeSingle();
 
     const previousDate = existingAppt?.appointment_date;
     const previousStatus = existingAppt?.status;
+    const existingNotes = existingAppt?.notes || '';
     const isRescheduled = targetDate && previousDate && targetDate !== previousDate;
 
     const updateFields = {};
     if (targetDate !== undefined) updateFields.appointment_date = targetDate;
     if (status !== undefined) updateFields.status = status;
     if (notes !== undefined) updateFields.notes = notes;
+
+    // Patient reschedule or cancellation requires Receptionist approval
+    if (req.user?.role === 'Patient') {
+      if (isRescheduled) {
+        updateFields.status = 'Reschedule Requested';
+        const cleanedNotes = existingNotes.replace(/\[PreviousDate:\s*[^\]]+\]/gi, '').trim();
+        updateFields.notes = `[PreviousDate: ${previousDate}] ${cleanedNotes}`.trim();
+      } else if (status === 'Cancelled' || status === 'Cancellation Requested') {
+        updateFields.status = 'Cancellation Requested';
+      }
+    } else {
+      // Receptionist / Admin handling approval or rejection of patient requests
+      if (req.body.reject_request === 'reschedule') {
+        const prevMatch = existingNotes.match(/\[PreviousDate:\s*([^\]]+)\]/i);
+        if (prevMatch && prevMatch[1]) {
+          updateFields.appointment_date = prevMatch[1].trim();
+        }
+        updateFields.status = 'Approved';
+        updateFields.notes = existingNotes.replace(/\[PreviousDate:\s*[^\]]+\]/gi, '').trim();
+      } else if (req.body.reject_request === 'cancel') {
+        updateFields.status = 'Approved';
+      } else if (status === 'Approved' && previousStatus === 'Reschedule Requested') {
+        updateFields.notes = existingNotes.replace(/\[PreviousDate:\s*[^\]]+\]/gi, '').trim();
+      }
+    }
 
     let query = supabase
       .from('appointments')

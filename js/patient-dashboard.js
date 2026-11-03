@@ -4303,7 +4303,7 @@ function openAppointmentDetailsModal(apptId) {
   // Disable / Enable action buttons based on status
   const btnReschedule = document.getElementById('btn-modal-reschedule');
   const btnCancel = document.getElementById('btn-modal-cancel');
-  const isPastOrCancelled = status === 'Cancelled' || status === 'Completed' || d < new Date();
+  const isPastOrCancelled = status === 'Cancelled' || status === 'Completed' || status === 'Cancellation Requested' || status === 'Reschedule Requested' || d < new Date();
 
   if (btnReschedule) {
     btnReschedule.disabled = isPastOrCancelled;
@@ -4712,7 +4712,7 @@ function executeReschedule() {
   const formattedNew = new Date(isoDateTime).toLocaleString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
   });
-  if (!confirm(`Please confirm rescheduling:\n\nDo you want to change your appointment to ${formattedNew}?\n\nAn updated confirmation notice will be dispatched to your email.`)) {
+  if (!confirm(`Request Appointment Reschedule:\n\nDo you want to request rescheduling your appointment to ${formattedNew}?\n\n• Your request will be sent to the Receptionist for approval.`)) {
     return;
   }
 
@@ -4729,7 +4729,8 @@ function executeReschedule() {
       'Authorization': `Bearer ${token}`
     },
     body: JSON.stringify({
-      appointment_date: isoDateTime
+      appointment_date: isoDateTime,
+      status: 'Reschedule Requested'
     })
   })
     .then(res => {
@@ -4739,7 +4740,7 @@ function executeReschedule() {
       return res.json();
     })
     .then(updated => {
-      showToast('✓ Appointment rescheduled! Confirmation notice sent.', 'success');
+      showToast('✓ Reschedule request sent! Waiting for receptionist approval.', 'info');
       closeAppointmentModal();
       loadAppointments();
     })
@@ -4762,7 +4763,7 @@ function executeCancelAppointment() {
   const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   // Explicit confirmation with notice of non-reversible cancellation
-  const confirmMsg = `Appointment Cancellation Confirmation:\n\nAre you sure you want to cancel your appointment scheduled for ${formattedDate}?\n\n• This action will release your reserved slot.\n• A cancellation confirmation notice will be sent to your email.\n\nClick OK to proceed with cancellation.`;
+  const confirmMsg = `Request Appointment Cancellation:\n\nAre you sure you want to request cancellation for your appointment on ${formattedDate}?\n\n• Your cancellation request will be sent to the Receptionist for approval.\n\nClick OK to submit your cancellation request.`;
   if (!confirm(confirmMsg)) {
     return;
   }
@@ -4788,7 +4789,7 @@ function executeCancelAppointment() {
       return res.json();
     })
     .then(() => {
-      showToast('Appointment has been cancelled. Confirmation sent.', 'info');
+      showToast('✓ Cancellation request sent! Waiting for receptionist approval.', 'info');
       closeAppointmentModal();
       loadAppointments();
     })
