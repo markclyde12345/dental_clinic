@@ -162,7 +162,7 @@ const getOccupiedSlots = async (req, res) => {
       const raw = appt.appointment_date;
       if (!raw) return;
 
-      // 1. Raw wall-clock extraction (e.g. "2026-09-05T09:00:00")
+      // Extract wall-clock Date and Time (matches createAppointment & updateAppointment conflict logic)
       if (raw.includes('T')) {
         const [rawDate, timePart] = raw.split('T');
         const [hStr, mStr] = timePart.substring(0, 5).split(':');
@@ -177,26 +177,6 @@ const getOccupiedSlots = async (req, res) => {
           appointment_date: appt.appointment_date,
           date: rawDate,
           time: time12
-        });
-      }
-
-      // 2. Date object local conversion in case client relies on local time
-      const d = new Date(raw);
-      if (!isNaN(d.getTime())) {
-        const localTimeStr = d.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        });
-        const y = d.getFullYear();
-        const mo = String(d.getMonth() + 1).padStart(2, '0');
-        const dy = String(d.getDate()).padStart(2, '0');
-
-        occupied.push({
-          id: appt.id,
-          appointment_date: appt.appointment_date,
-          date: `${y}-${mo}-${dy}`,
-          time: localTimeStr
         });
       }
     });

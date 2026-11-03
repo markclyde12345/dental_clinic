@@ -1556,7 +1556,7 @@
           <div class="reschedule-grid-2" style="margin: 14px 0;">
             <div>
               <label class="form-label" style="font-size: 0.78rem;">New Appointment Date</label>
-              <input type="date" id="reschedule-date-input" class="form-input" style="padding: 8px 12px; font-size: 0.88rem;">
+              <input type="date" id="reschedule-date-input" class="form-input" style="padding: 8px 12px; font-size: 0.88rem;" onchange="updateRescheduleSlotOptions()" oninput="updateRescheduleSlotOptions()">
             </div>
             <div>
               <label class="form-label" style="font-size: 0.78rem;">Available Time Slot</label>

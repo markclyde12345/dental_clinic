@@ -8062,3 +8062,20 @@ body.reduce-motion * {
 }
 
 
+
+/* Disabled / Occupied Time Slot Styling */
+#reschedule-time-select option:disabled {
+  color: #94a3b8 !important;
+  background-color: #f1f5f9 !important;
+  cursor: not-allowed !important;
+}
+.slot-btn.occupied,
+.slot-btn:disabled {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  opacity: 0.75 !important;
+  text-decoration: line-through;
+}

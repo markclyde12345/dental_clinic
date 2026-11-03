@@ -3824,8 +3824,42 @@ function renderDentistsPicker() {
   updateDentistSummary(currentSelected);
 }
 
+function extractSlotFromAppointment(appt, targetDateVal) {
+  const results = [];
+  if (!appt) return results;
+  if (appt.status && appt.status.toLowerCase() === 'cancelled') return results;
+
+  if (appt.date === targetDateVal && appt.time) {
+    results.push(appt.time.toUpperCase().trim());
+  }
+
+  const raw = appt.appointment_date || appt.dateTime || '';
+  if (raw && raw.includes('T')) {
+    const [rawD, rawT] = raw.split('T');
+    if (rawD === targetDateVal && rawT) {
+      const [hStr, mStr] = rawT.substring(0, 5).split(':');
+      const h = parseInt(hStr, 10);
+      const m = parseInt(mStr, 10) || 0;
+      if (!isNaN(h)) {
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        const time12 = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+        results.push(time12.toUpperCase().trim());
+      }
+    }
+  }
+  return results;
+}
+
+function isTimeSlotInSet(slotLabel, occupiedSet) {
+  if (!slotLabel) return false;
+  const normTime = slotLabel.trim().toUpperCase();
+  const noZeroTime = normTime.startsWith('0') ? normTime.substring(1) : ('0' + normTime);
+  return occupiedSet.has(normTime) || occupiedSet.has(noZeroTime);
+}
+
 function checkAvailableSlots() {
-  const dateVal = document.getElementById('wizard-date').value;
+  const dateVal = document.getElementById('wizard-date')?.value;
   const slotButtons = document.querySelectorAll('.slot-btn');
 
   if (!dateVal) {
@@ -3840,148 +3874,59 @@ function checkAvailableSlots() {
 
   // Reset selected slot
   selectedTime = '';
-  document.getElementById('wizard-time').value = '';
+  const timeInput = document.getElementById('wizard-time');
+  if (timeInput) timeInput.value = '';
 
-  // ── Instant optimistic render: show all slots as Available immediately ──
-  slotButtons.forEach(btn => {
-    const time = btn.getAttribute('data-time');
-    btn.classList.remove('occupied', 'selected', 'slot-loading');
-    btn.disabled = false;
-    btn.title = 'Click to select this time slot';
-    btn.innerHTML = `
-      <span>${time}</span>
-      <span class="slot-badge-available">Available</span>
-    `;
-  });
+  const occupiedTimes = new Set();
+  if (Array.isArray(allAppointments)) {
+    allAppointments.forEach(appt => {
+      extractSlotFromAppointment(appt, dateVal).forEach(t => occupiedTimes.add(t));
+    });
+  }
 
-  // ── Fetch only today's occupied slots from server (date-filtered) ──
+  const applySlotButtonStates = () => {
+    slotButtons.forEach(btn => {
+      const time = btn.getAttribute('data-time');
+      const isOccupied = isTimeSlotInSet(time, occupiedTimes);
+
+      if (isOccupied) {
+        btn.classList.add('occupied');
+        btn.classList.remove('selected');
+        btn.disabled = true;
+        btn.title = 'This time slot is already booked and cannot be selected';
+        btn.innerHTML = `
+          <span>${time}</span>
+          <span class="slot-badge-occupied">Booked</span>
+        `;
+      } else {
+        btn.classList.remove('occupied');
+        btn.disabled = false;
+        btn.title = 'Click to select this time slot';
+        btn.innerHTML = `
+          <span>${time}</span>
+          <span class="slot-badge-available">Available</span>
+        `;
+      }
+    });
+  };
+
+  // Immediate render from local appointments cache
+  applySlotButtonStates();
+
+  // Fetch clinic-wide occupied slots from server for this date
   apiFetch(`/appointments/occupied?date=${dateVal}`, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(occupiedList => {
-      const occupiedTimes = new Set();
-
       if (Array.isArray(occupiedList)) {
         occupiedList.forEach(appt => {
-          // 1. Direct match from server-provided date & time
-          if (appt.date === dateVal && appt.time) {
-            occupiedTimes.add(appt.time.toUpperCase().trim());
-          }
-
-          // 2. Parse raw wall-clock time string (e.g. "2026-09-05T09:00:00...")
-          const raw = appt.appointment_date;
-          if (raw && raw.includes('T')) {
-            const [rawD, rawT] = raw.split('T');
-            if (rawD === dateVal && rawT) {
-              const [hStr, mStr] = rawT.substring(0, 5).split(':');
-              const h = parseInt(hStr, 10);
-              const m = parseInt(mStr, 10) || 0;
-              const ampm = h >= 12 ? 'PM' : 'AM';
-              const h12 = h % 12 || 12;
-              const time12 = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
-              occupiedTimes.add(time12.toUpperCase().trim());
-            }
-          }
-
-          // 3. Date object parsing for UTC timestamps
-          const apptDateObj = new Date(raw || appt.dateTime);
-          if (!isNaN(apptDateObj.getTime())) {
-            const year = apptDateObj.getFullYear();
-            const month = String(apptDateObj.getMonth() + 1).padStart(2, '0');
-            const day = String(apptDateObj.getDate()).padStart(2, '0');
-            const localDateStr = `${year}-${month}-${day}`;
-
-            if (localDateStr === dateVal) {
-              const formattedTime = apptDateObj.toLocaleTimeString('en-US', {
-                hour: '2-digit', minute: '2-digit', hour12: true
-              });
-              occupiedTimes.add(formattedTime.toUpperCase().trim());
-            }
-          }
+          extractSlotFromAppointment(appt, dateVal).forEach(t => occupiedTimes.add(t));
         });
       }
-
-      // Only update slots that are actually occupied — available ones already rendered
-      slotButtons.forEach(btn => {
-        const time = btn.getAttribute('data-time');
-        const normTime = time ? time.trim().toUpperCase() : '';
-        const noZeroTime = normTime.startsWith('0') ? normTime.substring(1) : ('0' + normTime);
-
-        const isOccupied = occupiedTimes.has(normTime) || occupiedTimes.has(noZeroTime);
-
-        if (isOccupied) {
-          btn.classList.add('occupied');
-          btn.classList.remove('selected');
-          btn.disabled = true;
-          btn.title = 'This time slot is already booked and unavailable';
-          btn.innerHTML = `
-          <span>${time}</span>
-          <span class="slot-badge-occupied">Unavailable</span>
-        `;
-        } else {
-          btn.classList.remove('occupied');
-          btn.disabled = false;
-          btn.title = 'Click to select this time slot';
-          btn.innerHTML = `
-          <span>${time}</span>
-          <span class="slot-badge-available">Available</span>
-        `;
-        }
-      });
+      applySlotButtonStates();
     })
-    .catch(err => {
-      console.error('Error fetching occupied slots:', err);
-      // Fallback: check cached allAppointments
-      slotButtons.forEach(btn => {
-        const time = btn.getAttribute('data-time');
-        const normTime = time ? time.trim().toUpperCase() : '';
-        const noZeroTime = normTime.startsWith('0') ? normTime.substring(1) : ('0' + normTime);
-        let isOccupied = false;
-
-        (allAppointments || []).forEach(appt => {
-          if (appt.status === 'Cancelled') return;
-          const raw = appt.appointment_date || appt.dateTime;
-          if (!raw) return;
-
-          // Raw string match
-          if (raw.includes('T')) {
-            const [rawD, rawT] = raw.split('T');
-            if (rawD === dateVal && rawT) {
-              const [hStr, mStr] = rawT.substring(0, 5).split(':');
-              const h = parseInt(hStr, 10);
-              const m = parseInt(mStr, 10) || 0;
-              const ampm = h >= 12 ? 'PM' : 'AM';
-              const h12 = h % 12 || 12;
-              const time12 = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`.toUpperCase();
-              if (time12 === normTime || time12 === noZeroTime) isOccupied = true;
-            }
-          }
-
-          // Date object match
-          const apptDate = new Date(raw);
-          if (!isNaN(apptDate.getTime())) {
-            const y = apptDate.getFullYear();
-            const mo = String(apptDate.getMonth() + 1).padStart(2, '0');
-            const dy = String(apptDate.getDate()).padStart(2, '0');
-            if (`${y}-${mo}-${dy}` === dateVal) {
-              const apptTimeFormatted = apptDate.toLocaleTimeString('en-US', {
-                hour: '2-digit', minute: '2-digit', hour12: true
-              }).toUpperCase();
-              if (apptTimeFormatted === normTime || apptTimeFormatted === noZeroTime) isOccupied = true;
-            }
-          }
-        });
-
-        if (isOccupied) {
-          btn.classList.add('occupied');
-          btn.classList.remove('selected');
-          btn.disabled = true;
-          btn.innerHTML = `
-          <span>${time}</span>
-          <span class="slot-badge-occupied">Unavailable</span>
-        `;
-        }
-      });
+    .catch(() => {
+      applySlotButtonStates();
     });
 }
 
@@ -4632,6 +4577,83 @@ function submitTreatmentRating(e) {
   });
 }
 
+const STANDARD_RESCHEDULE_SLOTS = [
+  '09:00 AM',
+  '10:00 AM',
+  '11:00 AM',
+  '02:00 PM',
+  '03:00 PM',
+  '04:00 PM'
+];
+
+function updateRescheduleSlotOptions() {
+  const dateInput = document.getElementById('reschedule-date-input');
+  const timeSelect = document.getElementById('reschedule-time-select');
+  if (!dateInput || !timeSelect) return;
+
+  const dateVal = dateInput.value;
+  const previousSelected = timeSelect.value;
+
+  if (!dateVal) {
+    timeSelect.innerHTML = '<option value="">Select Date First</option>' +
+      STANDARD_RESCHEDULE_SLOTS.map(slot => `<option value="${slot}">${slot}</option>`).join('');
+    return;
+  }
+
+  const occupiedTimes = new Set();
+
+  // 1. Check already-loaded appointments in memory
+  if (Array.isArray(allAppointments)) {
+    allAppointments.forEach(appt => {
+      extractSlotFromAppointment(appt, dateVal).forEach(t => occupiedTimes.add(t));
+    });
+  }
+
+  const renderSelectOptions = () => {
+    let optionsHtml = '<option value="">Select Time Slot</option>';
+    let firstAvailableSlot = '';
+
+    STANDARD_RESCHEDULE_SLOTS.forEach(slot => {
+      const isOccupied = isTimeSlotInSet(slot, occupiedTimes);
+      if (isOccupied) {
+        optionsHtml += `<option value="${slot}" disabled style="color: #94a3b8; background-color: #f1f5f9; font-style: italic;">${slot} — Booked (Unavailable)</option>`;
+      } else {
+        if (!firstAvailableSlot) firstAvailableSlot = slot;
+        optionsHtml += `<option value="${slot}" style="color: #0f172a; background-color: #ffffff;">${slot}</option>`;
+      }
+    });
+
+    timeSelect.innerHTML = optionsHtml;
+
+    if (previousSelected && !isTimeSlotInSet(previousSelected, occupiedTimes)) {
+      timeSelect.value = previousSelected;
+    } else if (firstAvailableSlot) {
+      timeSelect.value = firstAvailableSlot;
+    } else {
+      timeSelect.value = '';
+    }
+  };
+
+  renderSelectOptions();
+
+  // 2. Also query server clinic-wide occupied slots for this date
+  apiFetch(`/appointments/occupied?date=${dateVal}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+    .then(occupiedList => {
+      if (Array.isArray(occupiedList)) {
+        occupiedList.forEach(appt => {
+          extractSlotFromAppointment(appt, dateVal).forEach(t => occupiedTimes.add(t));
+        });
+      }
+      renderSelectOptions();
+    })
+    .catch(() => {
+      renderSelectOptions();
+    });
+}
+window.updateRescheduleSlotOptions = updateRescheduleSlotOptions;
+
 function toggleReschedulePanel(show) {
   const panel = document.getElementById('inline-reschedule-panel');
   if (!panel) return;
@@ -4640,20 +4662,25 @@ function toggleReschedulePanel(show) {
 
   if (show && selectedAppointment) {
     const dateInput = document.getElementById('reschedule-date-input');
-    const timeSelect = document.getElementById('reschedule-time-select');
 
-    // Set minimum date to tomorrow
+    // Set minimum date to tomorrow, or default to appointment's current date if in future
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
+    let initialDate = tomorrowStr;
+    const rawApptDate = selectedAppointment.appointment_date || '';
+    if (rawApptDate && rawApptDate.includes('T')) {
+      const apptDay = rawApptDate.split('T')[0];
+      if (apptDay >= tomorrowStr) initialDate = apptDay;
+    }
+
     if (dateInput) {
       dateInput.min = tomorrowStr;
-      dateInput.value = tomorrowStr;
+      dateInput.value = initialDate;
     }
-    if (timeSelect) {
-      timeSelect.value = '10:00 AM';
-    }
+
+    updateRescheduleSlotOptions();
   }
 }
 
@@ -4661,14 +4688,16 @@ function executeReschedule() {
   if (!selectedAppointment) return;
 
   const dateVal = document.getElementById('reschedule-date-input')?.value;
-  const timeVal = document.getElementById('reschedule-time-select')?.value;
+  const timeSelect = document.getElementById('reschedule-time-select');
+  const timeVal = timeSelect?.value;
+  const selectedOpt = timeSelect?.options?.[timeSelect.selectedIndex];
 
   if (!dateVal) {
     showToast('Please pick a new date to reschedule.', 'error');
     return;
   }
-  if (!timeVal) {
-    showToast('Please select a preferred time slot.', 'error');
+  if (!timeVal || (selectedOpt && selectedOpt.disabled)) {
+    showToast('That time slot is already booked or none is selected. Please pick an available time slot.', 'error');
     return;
   }
 
@@ -4716,6 +4745,7 @@ function executeReschedule() {
     })
     .catch(err => {
       showToast(err.message || 'Could not reschedule appointment. Slot may be occupied.', 'error');
+      updateRescheduleSlotOptions();
     })
     .finally(() => {
       if (btnConfirm) {
