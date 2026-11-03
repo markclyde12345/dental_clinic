@@ -481,7 +481,14 @@
                           Detect GPS
                         </button>
                       </div>
-                      <input type="text" id="wizard-pat-address" class="form-input" placeholder="e.g. Balirong, City of Naga, Cebu" required>
+                      <div class="address-autocomplete-wrap" style="position: relative;">
+                        <input type="text" id="wizard-pat-address" class="form-input" placeholder="Start typing barangay, street, or city (e.g. Balirong, Naga)..." autocomplete="off" required>
+                        <div id="wizard-pat-address-dropdown" class="address-autocomplete-dropdown" style="display: none;"></div>
+                      </div>
+                      <div id="wizard-pat-address-error" class="address-error-msg" style="display: none;">
+                        <i class="ti ti-alert-circle" style="font-size: 14px; flex-shrink: 0;"></i>
+                        <span id="wizard-pat-address-error-text">Invalid address. Please select a valid address from the suggestions.</span>
+                      </div>
                     </div>
                   </div>
 

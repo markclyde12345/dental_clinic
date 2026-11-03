@@ -3193,11 +3193,8 @@ function setupBookingWizard() {
     }
   }
 
-  // Address input change listener
-  const addrInput = document.getElementById('wizard-pat-address');
-  addrInput?.addEventListener('change', () => {
-    geocodeAndLocate(addrInput.value);
-  });
+  // Initialize interactive address autocomplete & validation
+  setupAddressAutocomplete();
 
   // GPS detect button
   document.getElementById('btn-detect-gps')?.addEventListener('click', () => {
@@ -3267,6 +3264,104 @@ function getClinicBranches() {
   ];
 }
 
+const CEBU_ADDRESS_DIRECTORY = [
+  // City of Naga Barangays (All 28 Barangays)
+  { title: 'Balirong, City of Naga', label: 'Balirong, City of Naga, Cebu', lat: 10.2098, lng: 123.7540 },
+  { title: 'Central Poblacion, City of Naga', label: 'Central Poblacion, City of Naga, Cebu', lat: 10.2085, lng: 123.7590 },
+  { title: 'North Poblacion, City of Naga', label: 'North Poblacion, City of Naga, Cebu', lat: 10.2120, lng: 123.7600 },
+  { title: 'South Poblacion, City of Naga', label: 'South Poblacion, City of Naga, Cebu', lat: 10.2045, lng: 123.7575 },
+  { title: 'East Poblacion, City of Naga', label: 'East Poblacion, City of Naga, Cebu', lat: 10.2080, lng: 123.7615 },
+  { title: 'West Poblacion, City of Naga', label: 'West Poblacion, City of Naga, Cebu', lat: 10.2082, lng: 123.7562 },
+  { title: 'Inayagan, City of Naga', label: 'Inayagan, City of Naga, Cebu', lat: 10.2360, lng: 123.7760 },
+  { title: 'Tuyan, City of Naga', label: 'Tuyan, City of Naga, Cebu', lat: 10.2235, lng: 123.7685 },
+  { title: 'Colon, City of Naga', label: 'Colon, City of Naga, Cebu', lat: 10.2165, lng: 123.7625 },
+  { title: 'Tinaan, City of Naga', label: 'Tinaan, City of Naga, Cebu', lat: 10.1975, lng: 123.7510 },
+  { title: 'Inoburan, City of Naga', label: 'Inoburan, City of Naga, Cebu', lat: 10.1910, lng: 123.7450 },
+  { title: 'Langtad, City of Naga', label: 'Langtad, City of Naga, Cebu', lat: 10.1815, lng: 123.7365 },
+  { title: 'Pangdan, City of Naga', label: 'Pangdan, City of Naga, Cebu', lat: 10.2240, lng: 123.7380 },
+  { title: 'Lutac, City of Naga', label: 'Lutac, City of Naga, Cebu', lat: 10.2330, lng: 123.7250 },
+  { title: 'Uling, City of Naga', label: 'Uling, City of Naga, Cebu', lat: 10.2480, lng: 123.7110 },
+  { title: 'Mainit, City of Naga', label: 'Mainit, City of Naga, Cebu', lat: 10.2190, lng: 123.7460 },
+  { title: 'Naalad, City of Naga', label: 'Naalad, City of Naga, Cebu', lat: 10.2020, lng: 123.7475 },
+  { title: 'Cogon, City of Naga', label: 'Cogon, City of Naga, Cebu', lat: 10.2145, lng: 123.7495 },
+  { title: 'Cantao-an, City of Naga', label: 'Cantao-an, City of Naga, Cebu', lat: 10.2310, lng: 123.7550 },
+  { title: 'Jaguimit, City of Naga', label: 'Jaguimit, City of Naga, Cebu', lat: 10.2490, lng: 123.7390 },
+  { title: 'Lanas, City of Naga', label: 'Lanas, City of Naga, Cebu', lat: 10.1985, lng: 123.7320 },
+  { title: 'Alpaco, City of Naga', label: 'Alpaco, City of Naga, Cebu', lat: 10.2150, lng: 123.7290 },
+  { title: 'Bairan, City of Naga', label: 'Bairan, City of Naga, Cebu', lat: 10.2280, lng: 123.7190 },
+  { title: 'Cabungahan, City of Naga', label: 'Cabungahan, City of Naga, Cebu', lat: 10.2410, lng: 123.7280 },
+  { title: 'Mayana, City of Naga', label: 'Mayana, City of Naga, Cebu', lat: 10.2560, lng: 123.7210 },
+  { title: 'Patag, City of Naga', label: 'Patag, City of Naga, Cebu', lat: 10.2380, lng: 123.7040 },
+  { title: 'Tagjaguimit, City of Naga', label: 'Tagjaguimit, City of Naga, Cebu', lat: 10.2620, lng: 123.7340 },
+  { title: 'Tangke, City of Naga', label: 'Tangke, City of Naga, Cebu', lat: 10.2055, lng: 123.7595 },
+
+  // Minglanilla Barangays
+  { title: 'Poblacion Ward I, Minglanilla', label: 'Poblacion Ward I, Minglanilla, Cebu', lat: 10.2444, lng: 123.7972 },
+  { title: 'Poblacion Ward II, Minglanilla', label: 'Poblacion Ward II, Minglanilla, Cebu', lat: 10.2450, lng: 123.7962 },
+  { title: 'Poblacion Ward III, Minglanilla', label: 'Poblacion Ward III, Minglanilla, Cebu', lat: 10.2460, lng: 123.7980 },
+  { title: 'Poblacion Ward IV, Minglanilla', label: 'Poblacion Ward IV, Minglanilla, Cebu', lat: 10.2435, lng: 123.7955 },
+  { title: 'Linao, Minglanilla', label: 'Linao, Minglanilla, Cebu', lat: 10.2535, lng: 123.8165 },
+  { title: 'Lipata, Minglanilla', label: 'Lipata, Minglanilla, Cebu', lat: 10.2510, lng: 123.8110 },
+  { title: 'Pakigne, Minglanilla', label: 'Pakigne, Minglanilla, Cebu', lat: 10.2520, lng: 123.7995 },
+  { title: 'Tunghaan, Minglanilla', label: 'Tunghaan, Minglanilla, Cebu', lat: 10.2405, lng: 123.7845 },
+  { title: 'Tungkil, Minglanilla', label: 'Tungkil, Minglanilla, Cebu', lat: 10.2395, lng: 123.8050 },
+  { title: 'Tulay, Minglanilla', label: 'Tulay, Minglanilla, Cebu', lat: 10.2375, lng: 123.7895 },
+  { title: 'Calajo-an, Minglanilla', label: 'Calajo-an, Minglanilla, Cebu', lat: 10.2385, lng: 123.8015 },
+  { title: 'Vito, Minglanilla', label: 'Vito, Minglanilla, Cebu', lat: 10.2620, lng: 123.7820 },
+  { title: 'Cadulawan, Minglanilla', label: 'Cadulawan, Minglanilla, Cebu', lat: 10.2680, lng: 123.7980 },
+
+  // San Fernando Barangays
+  { title: 'Poblacion North, San Fernando', label: 'Poblacion North, San Fernando, Cebu', lat: 10.1645, lng: 123.7095 },
+  { title: 'Poblacion South, San Fernando', label: 'Poblacion South, San Fernando, Cebu', lat: 10.1612, lng: 123.7088 },
+  { title: 'Pitalo, San Fernando', label: 'Pitalo, San Fernando, Cebu', lat: 10.1755, lng: 123.7295 },
+  { title: 'Sangat, San Fernando', label: 'Sangat, San Fernando, Cebu', lat: 10.1510, lng: 123.6980 },
+  { title: 'Balud, San Fernando', label: 'Balud, San Fernando, Cebu', lat: 10.1430, lng: 123.6890 },
+  { title: 'Panadtaran, San Fernando', label: 'Panadtaran, San Fernando, Cebu', lat: 10.1690, lng: 123.7190 },
+
+  // Talisay City Barangays
+  { title: 'Tabunok, Talisay City', label: 'Tabunok, Talisay City, Cebu', lat: 10.2601, lng: 123.8347 },
+  { title: 'Bulacao, Talisay City', label: 'Bulacao, Talisay City, Cebu', lat: 10.2735, lng: 123.8485 },
+  { title: 'Lawaan I, Talisay City', label: 'Lawaan I, Talisay City, Cebu', lat: 10.2585, lng: 123.8255 },
+  { title: 'Lawaan II, Talisay City', label: 'Lawaan II, Talisay City, Cebu', lat: 10.2625, lng: 123.8225 },
+  { title: 'Lawaan III, Talisay City', label: 'Lawaan III, Talisay City, Cebu', lat: 10.2665, lng: 123.8195 },
+  { title: 'Lagtang, Talisay City', label: 'Lagtang, Talisay City, Cebu', lat: 10.2690, lng: 123.8295 },
+  { title: 'San Isidro, Talisay City', label: 'San Isidro, Talisay City, Cebu', lat: 10.2535, lng: 123.8385 },
+  { title: 'Dumlog, Talisay City', label: 'Dumlog, Talisay City, Cebu', lat: 10.2465, lng: 123.8415 },
+  { title: 'Poblacion, Talisay City', label: 'Poblacion, Talisay City, Cebu', lat: 10.2445, lng: 123.8485 },
+  { title: 'Mohon, Talisay City', label: 'Mohon, Talisay City, Cebu', lat: 10.2515, lng: 123.8295 },
+  { title: 'Pooc, Talisay City', label: 'Pooc, Talisay City, Cebu', lat: 10.2450, lng: 123.8220 },
+  { title: 'San Roque, Talisay City', label: 'San Roque, Talisay City, Cebu', lat: 10.2595, lng: 123.8545 },
+
+  // Cebu City & Metro Cebu
+  { title: 'Pardo, Cebu City', label: 'Pardo, Cebu City, Cebu', lat: 10.2815, lng: 123.8595 },
+  { title: 'Basak San Nicolas, Cebu City', label: 'Basak San Nicolas, Cebu City, Cebu', lat: 10.2885, lng: 123.8665 },
+  { title: 'Mambaling, Cebu City', label: 'Mambaling, Cebu City, Cebu', lat: 10.2945, lng: 123.8765 },
+  { title: 'Labangon, Cebu City', label: 'Labangon, Cebu City, Cebu', lat: 10.3015, lng: 123.8795 },
+  { title: 'Tisa, Cebu City', label: 'Tisa, Cebu City, Cebu', lat: 10.3005, lng: 123.8695 },
+  { title: 'Guadalupe, Cebu City', label: 'Guadalupe, Cebu City, Cebu', lat: 10.3215, lng: 123.8835 },
+  { title: 'Fuente Osmeña, Cebu City', label: 'Fuente Osmeña, Capitol Site, Cebu City, Cebu', lat: 10.3105, lng: 123.8915 },
+  { title: 'Lahug, Cebu City', label: 'Lahug, Cebu City, Cebu', lat: 10.3325, lng: 123.8985 },
+  { title: 'Mabolo, Cebu City', label: 'Mabolo, Cebu City, Cebu', lat: 10.3225, lng: 123.9115 },
+  { title: 'Banilad, Cebu City', label: 'Banilad, Cebu City, Cebu', lat: 10.3445, lng: 123.9125 },
+  { title: 'Talamban, Cebu City', label: 'Talamban, Cebu City, Cebu', lat: 10.3695, lng: 123.9155 },
+  { title: 'Cebu City Downtown', label: 'Colon Street, Downtown, Cebu City, Cebu', lat: 10.2965, lng: 123.8995 },
+  { title: 'Mandaue City', label: 'Centro, Mandaue City, Cebu', lat: 10.3321, lng: 123.9357 },
+  { title: 'Lapu-Lapu City', label: 'Poblacion, Lapu-Lapu City, Cebu', lat: 10.3103, lng: 123.9494 },
+  { title: 'Consolacion, Cebu', label: 'Poblacion Oriental, Consolacion, Cebu', lat: 10.3765, lng: 123.9565 },
+  { title: 'Liloan, Cebu', label: 'Poblacion, Liloan, Cebu', lat: 10.4015, lng: 123.9985 },
+  { title: 'Cordova, Cebu', label: 'Poblacion, Cordova, Cebu', lat: 10.2525, lng: 123.9495 },
+
+  // Southern & Western Cebu
+  { title: 'Carcar City, Cebu', label: 'Poblacion I, Carcar City, Cebu', lat: 10.1067, lng: 123.6425 },
+  { title: 'Perrelos, Carcar City', label: 'Perrelos, Carcar City, Cebu', lat: 10.1225, lng: 123.6615 },
+  { title: 'Valladolid, Carcar City', label: 'Valladolid, Carcar City, Cebu', lat: 10.1155, lng: 123.6535 },
+  { title: 'Toledo City, Cebu', label: 'Poblacion, Toledo City, Cebu', lat: 10.3774, lng: 123.6409 },
+  { title: 'Lutopan (DAS), Toledo City', label: 'DAS Lutopan, Toledo City, Cebu', lat: 10.3285, lng: 123.7045 },
+  { title: 'Sibonga, Cebu', label: 'Poblacion, Sibonga, Cebu', lat: 10.0185, lng: 123.6215 },
+  { title: 'Argao, Cebu', label: 'Poblacion, Argao, Cebu', lat: 9.8825, lng: 123.6015 },
+  { title: 'Barili, Cebu', label: 'Poblacion, Barili, Cebu', lat: 10.1145, lng: 123.5155 }
+];
+
 const KNOWN_COORDS = {
   'balirong': { lat: 10.2098, lng: 123.7540, label: 'Balirong, City of Naga, Cebu' },
   'naga': { lat: 10.2070, lng: 123.7570, label: 'City of Naga, Cebu' },
@@ -3286,6 +3381,8 @@ let mapMarkers = [];
 let mapRouteLine = null;
 let currentPatientCoords = { lat: 10.2098, lng: 123.7540 }; // Default: Balirong, Naga
 let selectedBranchObj = getClinicBranches()[0];
+let isPatientAddressValid = false;
+let addressSearchDebounceTimer = null;
 
 function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   const R = 6371; // Earth radius in km
@@ -3299,6 +3396,234 @@ function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+function setAddressValidationError(errorMessage) {
+  const addrInput = document.getElementById('wizard-pat-address');
+  const errBox = document.getElementById('wizard-pat-address-error');
+  const errText = document.getElementById('wizard-pat-address-error-text');
+
+  if (errorMessage) {
+    if (errText) errText.textContent = errorMessage;
+    if (errBox) errBox.style.display = 'flex';
+    if (addrInput) {
+      addrInput.style.borderColor = '#dc2626';
+      addrInput.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.12)';
+    }
+  } else {
+    if (errBox) errBox.style.display = 'none';
+    if (addrInput) {
+      addrInput.style.borderColor = '';
+      addrInput.style.boxShadow = '';
+    }
+  }
+}
+
+function findMatchingLocalAddresses(rawQuery) {
+  const q = (rawQuery || '').toLowerCase().trim();
+  if (!q) {
+    return CEBU_ADDRESS_DIRECTORY.slice(0, 20);
+  }
+
+  return CEBU_ADDRESS_DIRECTORY.filter(item => {
+    const titleLower = item.title.toLowerCase();
+    const labelLower = item.label.toLowerCase();
+    return titleLower.includes(q) || labelLower.includes(q);
+  });
+}
+
+function renderAddressSuggestionsDropdown(items, rawQuery, isSearchingRemote = false) {
+  const dropdown = document.getElementById('wizard-pat-address-dropdown');
+  if (!dropdown) return;
+
+  const clinicBranch = getClinicBranches()[0];
+  const q = (rawQuery || '').trim();
+
+  if ((!items || items.length === 0) && !isSearchingRemote) {
+    dropdown.innerHTML = `
+      <div class="address-suggestion-empty">
+        <i class="ti ti-alert-triangle" style="font-size: 16px; flex-shrink: 0;"></i>
+        <span>No valid address found for "<strong>${escapeHTML(q)}</strong>". Please type a valid barangay, street, or city in Cebu.</span>
+      </div>
+    `;
+    dropdown.style.display = 'block';
+    return;
+  }
+
+  if ((!items || items.length === 0) && isSearchingRemote) {
+    dropdown.innerHTML = `
+      <div style="padding: 10px 14px; font-size: 0.78rem; color: #64748b; display: flex; align-items: center; gap: 8px;">
+        <i class="ti ti-loader ti-spin"></i> Searching addresses for "${escapeHTML(q)}"...
+      </div>
+    `;
+    dropdown.style.display = 'block';
+    return;
+  }
+
+  dropdown.innerHTML = items.map((item, idx) => {
+    const distKm = calculateDistanceKm(item.lat, item.lng, clinicBranch.lat, clinicBranch.lng);
+    const distStr = distKm < 1 ? `${(distKm * 1000).toFixed(0)} m` : `${distKm.toFixed(1)} km`;
+    return `
+      <div class="address-suggestion-item" data-idx="${idx}" data-lat="${item.lat}" data-lng="${item.lng}" data-label="${escapeHTML(item.label)}">
+        <div class="address-suggestion-left">
+          <i class="ti ti-map-pin address-suggestion-icon"></i>
+          <div style="min-width: 0;">
+            <div class="address-suggestion-title">${escapeHTML(item.title || item.label)}</div>
+            <div class="address-suggestion-sub">${escapeHTML(item.label)}</div>
+          </div>
+        </div>
+        <span class="address-suggestion-dist">${distStr}</span>
+      </div>
+    `;
+  }).join('');
+
+  dropdown.querySelectorAll('.address-suggestion-item').forEach(el => {
+    el.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // Prevent input blur before selection
+      const lat = parseFloat(el.getAttribute('data-lat'));
+      const lng = parseFloat(el.getAttribute('data-lng'));
+      const label = el.getAttribute('data-label');
+      selectAddressSuggestion({ lat, lng, label });
+    });
+  });
+
+  dropdown.style.display = 'block';
+}
+
+function selectAddressSuggestion(item) {
+  const addrInput = document.getElementById('wizard-pat-address');
+  const dropdown = document.getElementById('wizard-pat-address-dropdown');
+
+  if (addrInput) addrInput.value = item.label;
+  if (dropdown) dropdown.style.display = 'none';
+
+  isPatientAddressValid = true;
+  setAddressValidationError(null);
+  currentPatientCoords = { lat: item.lat, lng: item.lng };
+  updateNearestBranchAndMap(item.lat, item.lng, item.label);
+}
+
+function setupAddressAutocomplete() {
+  const addrInput = document.getElementById('wizard-pat-address');
+  const dropdown = document.getElementById('wizard-pat-address-dropdown');
+  if (!addrInput) return;
+
+  // Validate initial pre-filled value if any
+  const initVal = addrInput.value.trim();
+  if (initVal) {
+    const initMatches = findMatchingLocalAddresses(initVal);
+    if (initMatches.length > 0 || initVal.toLowerCase().includes('gps')) {
+      isPatientAddressValid = true;
+      setAddressValidationError(null);
+    }
+  }
+
+  addrInput.addEventListener('focus', () => {
+    const val = addrInput.value.trim();
+    const matches = findMatchingLocalAddresses(val);
+    if (matches.length > 0 || !val) {
+      renderAddressSuggestionsDropdown(matches.length > 0 ? matches : CEBU_ADDRESS_DIRECTORY.slice(0, 20), val, false);
+    } else {
+      renderAddressSuggestionsDropdown([], val, false);
+    }
+  });
+
+  addrInput.addEventListener('input', () => {
+    const val = addrInput.value.trim();
+    if (addressSearchDebounceTimer) clearTimeout(addressSearchDebounceTimer);
+
+    if (!val) {
+      isPatientAddressValid = false;
+      setAddressValidationError(null);
+      renderAddressSuggestionsDropdown(CEBU_ADDRESS_DIRECTORY.slice(0, 20), '', false);
+      return;
+    }
+
+    const localMatches = findMatchingLocalAddresses(val);
+
+    if (localMatches.length > 0) {
+      // Check if exact match or valid local match exists
+      isPatientAddressValid = true;
+      setAddressValidationError(null);
+      renderAddressSuggestionsDropdown(localMatches, val, false);
+
+      // Update map preview to top matching local address
+      const top = localMatches[0];
+      currentPatientCoords = { lat: top.lat, lng: top.lng };
+      updateNearestBranchAndMap(top.lat, top.lng, top.label);
+    } else {
+      // No local match found — show error immediately for unrecognized input (e.g. "asdasdad")
+      isPatientAddressValid = false;
+      setAddressValidationError(`Invalid address: "${val}" is not a recognized location. Please select a valid address from the suggestions.`);
+      renderAddressSuggestionsDropdown([], val, val.length >= 3);
+    }
+
+    // Also query OpenStreetMap Nominatim for additional real streets/places in Cebu/Philippines
+    if (val.length >= 3) {
+      addressSearchDebounceTimer = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=ph&limit=8&q=${encodeURIComponent(val + ', Cebu, Philippines')}`)
+          .then(res => res.json())
+          .then(data => {
+            // Ensure input hasn't changed while fetching
+            if (addrInput.value.trim() !== val) return;
+
+            const remoteItems = Array.isArray(data) ? data.map(d => {
+              const parts = (d.display_name || '').split(',').map(s => s.trim());
+              return {
+                title: parts.slice(0, 2).join(', '),
+                label: parts.slice(0, 4).join(', '),
+                lat: parseFloat(d.lat),
+                lng: parseFloat(d.lon)
+              };
+            }) : [];
+
+            // Combine unique local + remote matches
+            const combined = [...localMatches];
+            remoteItems.forEach(rem => {
+              if (!combined.some(c => c.label.toLowerCase() === rem.label.toLowerCase())) {
+                combined.push(rem);
+              }
+            });
+
+            if (combined.length > 0) {
+              isPatientAddressValid = true;
+              setAddressValidationError(null);
+              renderAddressSuggestionsDropdown(combined, val, false);
+              const top = combined[0];
+              currentPatientCoords = { lat: top.lat, lng: top.lng };
+              updateNearestBranchAndMap(top.lat, top.lng, top.label);
+            } else {
+              isPatientAddressValid = false;
+              setAddressValidationError(`Invalid address: "${val}" could not be found. Please select a valid address from the list or click Detect GPS.`);
+              renderAddressSuggestionsDropdown([], val, false);
+            }
+          })
+          .catch(() => {
+            if (localMatches.length === 0) {
+              isPatientAddressValid = false;
+              setAddressValidationError(`Invalid address: "${val}" could not be found. Please select a valid address from the list.`);
+              renderAddressSuggestionsDropdown([], val, false);
+            }
+          });
+      }, 300);
+    }
+  });
+
+  addrInput.addEventListener('blur', () => {
+    setTimeout(() => {
+      if (dropdown) dropdown.style.display = 'none';
+      const val = addrInput.value.trim();
+      if (val && !isPatientAddressValid) {
+        setAddressValidationError(`Invalid address: "${val}" is not recognized. Please select a valid address from the suggestions.`);
+      }
+    }, 180);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (dropdown && !addrInput.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+}
+
 function detectGPSLocation() {
   if (!navigator.geolocation) {
     showToast('Geolocation is not supported by your browser.', 'error');
@@ -3308,22 +3633,47 @@ function detectGPSLocation() {
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       currentPatientCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      isPatientAddressValid = true;
+      setAddressValidationError(null);
+      const dropdown = document.getElementById('wizard-pat-address-dropdown');
+      if (dropdown) dropdown.style.display = 'none';
       updateNearestBranchAndMap(currentPatientCoords.lat, currentPatientCoords.lng, 'My Current GPS Location');
-      safeVal('wizard-pat-address', 'Current GPS Location');
+      safeVal('wizard-pat-address', 'Current GPS Location (Balirong / Naga Area)');
       showToast('GPS location updated!', 'success');
     },
     () => {
-      showToast('Could not access GPS. Using address lookup instead.', 'error');
+      showToast('Could not access GPS. Please select your address from the suggestions.', 'error');
     },
     { timeout: 8000 }
   );
 }
 
-function geocodeAndLocate(addressText) {
-  if (!addressText) addressText = 'Balirong, City of Naga, Cebu';
+function geocodeAndLocate(addressText, isSilentInit = false) {
+  if (!addressText) {
+    if (isSilentInit) {
+      updateNearestBranchAndMap(10.2098, 123.7540, 'Balirong, City of Naga, Cebu');
+    }
+    return;
+  }
   const query = addressText.toLowerCase().trim();
 
-  // 1. Check local dictionary
+  if (query.includes('current gps location')) {
+    isPatientAddressValid = true;
+    setAddressValidationError(null);
+    updateNearestBranchAndMap(currentPatientCoords.lat, currentPatientCoords.lng, addressText);
+    return;
+  }
+
+  // 1. Check CEBU_ADDRESS_DIRECTORY & KNOWN_COORDS
+  const localMatches = findMatchingLocalAddresses(query);
+  if (localMatches.length > 0) {
+    isPatientAddressValid = true;
+    setAddressValidationError(null);
+    currentPatientCoords = { lat: localMatches[0].lat, lng: localMatches[0].lng };
+    updateNearestBranchAndMap(currentPatientCoords.lat, currentPatientCoords.lng, localMatches[0].label);
+    return;
+  }
+
   let matchedCoords = null;
   for (const [key, val] of Object.entries(KNOWN_COORDS)) {
     if (query.includes(key)) {
@@ -3333,27 +3683,35 @@ function geocodeAndLocate(addressText) {
   }
 
   if (matchedCoords) {
+    isPatientAddressValid = true;
+    setAddressValidationError(null);
     currentPatientCoords = { lat: matchedCoords.lat, lng: matchedCoords.lng };
     updateNearestBranchAndMap(matchedCoords.lat, matchedCoords.lng, addressText);
     return;
   }
 
   // 2. Fallback to OpenStreetMap Nominatim
-  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressText + ', Cebu, Philippines')}`)
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=ph&q=${encodeURIComponent(addressText + ', Cebu, Philippines')}`)
     .then(res => res.json())
     .then(data => {
       if (Array.isArray(data) && data.length > 0) {
+        isPatientAddressValid = true;
+        setAddressValidationError(null);
         currentPatientCoords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
         updateNearestBranchAndMap(currentPatientCoords.lat, currentPatientCoords.lng, addressText);
       } else {
-        // Fallback default to Balirong / Naga
-        currentPatientCoords = { lat: 10.2098, lng: 123.7540 };
-        updateNearestBranchAndMap(currentPatientCoords.lat, currentPatientCoords.lng, addressText);
+        isPatientAddressValid = false;
+        if (!isSilentInit) {
+          setAddressValidationError(`Invalid address: "${addressText}" could not be found. Please select a valid address from the suggestions.`);
+          showToast(`Address "${addressText}" not found. Please select a valid address.`, 'error');
+        }
       }
     })
     .catch(() => {
-      currentPatientCoords = { lat: 10.2098, lng: 123.7540 };
-      updateNearestBranchAndMap(currentPatientCoords.lat, currentPatientCoords.lng, addressText);
+      if (!isSilentInit) {
+        isPatientAddressValid = false;
+        setAddressValidationError(`Invalid address: "${addressText}" could not be verified. Please select from the suggested addresses.`);
+      }
     });
 }
 
@@ -3551,8 +3909,12 @@ function goToStep(step) {
   if (step === 1) {
     checkAvailableSlots();
     setTimeout(() => {
-      const addr = document.getElementById('wizard-pat-address')?.value || user?.address || 'Balirong, City of Naga, Cebu';
-      geocodeAndLocate(addr);
+      const addr = document.getElementById('wizard-pat-address')?.value?.trim() || '';
+      if (addr) {
+        geocodeAndLocate(addr, false);
+      } else {
+        updateNearestBranchAndMap(10.2098, 123.7540, 'Balirong, City of Naga, Cebu');
+      }
       if (branchMap) {
         branchMap.invalidateSize();
       }
@@ -3668,13 +4030,25 @@ function validateStep(step) {
     const reminder = reminderEl?.value?.trim();
     const notes = notesEl?.value?.trim();
 
+    const hasValidAddr = !!addr && (
+      isPatientAddressValid ||
+      findMatchingLocalAddresses(addr).length > 0 ||
+      Object.keys(KNOWN_COORDS).some(k => addr.toLowerCase().includes(k)) ||
+      addr.toLowerCase().includes('current gps location')
+    );
+
+    if (addr && !hasValidAddr) {
+      setAddressValidationError(`Invalid address: "${addr}" is not a recognized location. Please select a valid address from the suggestions.`);
+      markFieldError(addrEl, true);
+    }
+
     const requiredChecks = [
       { ok: !!date, el: dateEl, label: 'Appointment Date' },
       { ok: !!time, el: slotsGrid, label: 'Available Time Slot' },
       { ok: !!name, el: nameEl, label: 'Full Name' },
       { ok: !!email, el: emailEl, label: 'Email Address' },
       { ok: !!phone, el: phoneEl, label: 'Contact Number' },
-      { ok: !!addr, el: addrEl, label: 'Patient / Home Address' },
+      { ok: hasValidAddr, el: addrEl, label: addr ? 'Valid Patient / Home Address' : 'Patient / Home Address' },
       { ok: !!emergName, el: emergNameEl, label: 'Emergency Contact Name' },
       { ok: !!emergPhone, el: emergPhoneEl, label: 'Emergency Contact Phone' },
       { ok: !!concern, el: concernEl, label: 'Primary Concern / Symptom' },
@@ -3700,6 +4074,19 @@ function validateStep(step) {
       if (firstMissingEl) {
         firstMissingEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         if (typeof firstMissingEl.focus === 'function') firstMissingEl.focus();
+      }
+      return false;
+    }
+
+    // Validate that the entered address is a real recognized address and not gibberish
+    const hasLocalMatch = findMatchingLocalAddresses(addr).length > 0 || Object.keys(KNOWN_COORDS).some(k => addr.toLowerCase().includes(k)) || addr.toLowerCase().includes('current gps location');
+    if (!isPatientAddressValid && !hasLocalMatch) {
+      setAddressValidationError(`Invalid address: "${addr}" is not a recognized location. Please select a valid address from the suggestions.`);
+      markFieldError(addrEl, true);
+      showToast(`Invalid Patient / Home Address ("${addr}"). Please select a valid address from the suggestions.`, 'error');
+      if (addrEl) {
+        addrEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        addrEl.focus();
       }
       return false;
     }

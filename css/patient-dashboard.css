@@ -8079,3 +8079,114 @@ body.reduce-motion * {
   opacity: 0.75 !important;
   text-decoration: line-through;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ADDRESS AUTOCOMPLETE DROPDOWN & VALIDATION ERROR
+═══════════════════════════════════════════════════════════════ */
+.address-autocomplete-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.address-autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-card, #ffffff);
+  border: 1.5px solid var(--border, #e2e8f0);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 9999;
+  padding: 6px;
+}
+
+.address-suggestion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.address-suggestion-item:hover,
+.address-suggestion-item.active {
+  background: var(--accent-subtle, #f0f9ff);
+}
+
+.address-suggestion-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+}
+
+.address-suggestion-icon {
+  color: var(--accent, #0b3c4d);
+  font-size: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.address-suggestion-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.address-suggestion-sub {
+  font-size: 0.74rem;
+  color: var(--text-muted, #64748b);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.address-suggestion-dist {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0284c7;
+  background: #e0f2fe;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.address-suggestion-empty {
+  padding: 12px 14px;
+  font-size: 0.8rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.address-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
