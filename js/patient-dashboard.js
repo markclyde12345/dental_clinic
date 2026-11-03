@@ -3609,34 +3609,95 @@ function renderPaymentDetails() {
   }
 }
 
+function markFieldError(el, hasError) {
+  if (!el) return;
+  if (hasError) {
+    el.style.borderColor = '#dc2626';
+    el.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.12)';
+    const clearErr = () => {
+      el.style.borderColor = '';
+      el.style.boxShadow = '';
+      el.removeEventListener('input', clearErr);
+      el.removeEventListener('change', clearErr);
+    };
+    el.addEventListener('input', clearErr);
+    el.addEventListener('change', clearErr);
+  } else {
+    el.style.borderColor = '';
+    el.style.boxShadow = '';
+  }
+}
+
 function validateStep(step) {
   if (step === 1) {
-    const date = document.getElementById('wizard-date')?.value;
-    const time = document.getElementById('wizard-time')?.value;
-    const name = document.getElementById('wizard-pat-name')?.value?.trim();
-    const phone = document.getElementById('wizard-pat-phone')?.value?.trim();
-    if (!date) {
-      showToast('Please pick a preferred appointment date.', 'error');
-      document.getElementById('wizard-date')?.focus();
-      return false;
-    }
-    if (!time) {
-      showToast('Please select an available time slot.', 'error');
-      return false;
-    }
-    if (!name) {
-      showToast('Please enter your full name.', 'error');
-      document.getElementById('wizard-pat-name')?.focus();
-      return false;
-    }
-    if (!phone) {
-      showToast('Please enter your mobile contact number.', 'error');
-      document.getElementById('wizard-pat-phone')?.focus();
+    const dateEl = document.getElementById('wizard-date');
+    const timeEl = document.getElementById('wizard-time');
+    const slotsGrid = document.getElementById('slots-picker-grid');
+    const nameEl = document.getElementById('wizard-pat-name');
+    const emailEl = document.getElementById('wizard-pat-email');
+    const phoneEl = document.getElementById('wizard-pat-phone');
+    const addrEl = document.getElementById('wizard-pat-address');
+    const emergNameEl = document.getElementById('wizard-emergency-name');
+    const emergPhoneEl = document.getElementById('wizard-emergency-phone');
+    const concernEl = document.getElementById('wizard-primary-concern');
+    const reminderEl = document.getElementById('wizard-reminder-pref');
+    const notesEl = document.getElementById('wizard-notes');
+
+    const date = dateEl?.value?.trim();
+    const time = timeEl?.value?.trim() || selectedTime;
+    const name = nameEl?.value?.trim();
+    const email = emailEl?.value?.trim();
+    const phone = phoneEl?.value?.trim();
+    const addr = addrEl?.value?.trim();
+    const emergName = emergNameEl?.value?.trim();
+    const emergPhone = emergPhoneEl?.value?.trim();
+    const concern = concernEl?.value?.trim();
+    const reminder = reminderEl?.value?.trim();
+    const notes = notesEl?.value?.trim();
+
+    const requiredChecks = [
+      { ok: !!date, el: dateEl, label: 'Appointment Date' },
+      { ok: !!time, el: slotsGrid, label: 'Available Time Slot' },
+      { ok: !!name, el: nameEl, label: 'Full Name' },
+      { ok: !!email, el: emailEl, label: 'Email Address' },
+      { ok: !!phone, el: phoneEl, label: 'Contact Number' },
+      { ok: !!addr, el: addrEl, label: 'Patient / Home Address' },
+      { ok: !!emergName, el: emergNameEl, label: 'Emergency Contact Name' },
+      { ok: !!emergPhone, el: emergPhoneEl, label: 'Emergency Contact Phone' },
+      { ok: !!concern, el: concernEl, label: 'Primary Concern / Symptom' },
+      { ok: !!reminder, el: reminderEl, label: 'Preferred Appointment Method' },
+      { ok: !!notes, el: notesEl, label: 'Specific Symptoms & Special Requests' }
+    ];
+
+    const missing = [];
+    let firstMissingEl = null;
+
+    requiredChecks.forEach(item => {
+      if (!item.ok) {
+        missing.push(item.label);
+        markFieldError(item.el, true);
+        if (!firstMissingEl && item.el) firstMissingEl = item.el;
+      } else {
+        markFieldError(item.el, false);
+      }
+    });
+
+    if (missing.length > 0) {
+      showToast(`Please fill up all required fields before proceeding (Missing: ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? '...' : ''}).`, 'error');
+      if (firstMissingEl) {
+        firstMissingEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof firstMissingEl.focus === 'function') firstMissingEl.focus();
+      }
       return false;
     }
     return true;
   } else if (step === 2) {
-    const treatmentId = document.getElementById('wizard-treatment-id')?.value;
+    const dentistName = document.getElementById('wizard-dentist-name')?.value?.trim();
+    const treatmentId = document.getElementById('wizard-treatment-id')?.value?.trim();
+    if (!dentistName) {
+      showToast('Please select a dentist to continue.', 'error');
+      return false;
+    }
     if (!treatmentId) {
       showToast('Please select a dental service/treatment to continue.', 'error');
       return false;
@@ -4002,8 +4063,8 @@ function renderConfirmationDetails() {
     safeSet('summary-emergency-contact', 'None specified');
   }
 
-  safeSet('summary-medical-alerts', `Conditions: ${conditionsStr} • Allergies: ${allergies} • Meds: ${medications}`);
-  safeSet('summary-insurance-care', `${hmo}${hmoId ? ' (' + hmoId + ')' : ''} • ${anxiety ? 'Gentle Care Requested' : 'Standard Care'} • Reminders via ${reminderPref}`);
+  safeSet('summary-medical-alerts', concern || 'General Consultation');
+  safeSet('summary-insurance-care', `${anxiety ? 'Gentle Care Requested' : 'Standard Care'} • Reminders via ${reminderPref}`);
 
   const paymentMethod = document.getElementById('wizard-payment-method')?.value || 'paymongo';
 

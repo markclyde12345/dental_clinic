@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="../css/patient-dashboard.css?v=20261101_support_v7">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="../css/ai-chat.css">
+  <link rel="stylesheet" href="../css/ui-enhancements.css">
 </head>
 <body>
 
@@ -122,6 +123,10 @@
           </div>
         </div>
         <div class="header-right">
+          <!-- Theme Toggle -->
+          <button class="theme-toggle" id="patientThemeToggle" aria-label="Toggle dark mode" title="Dark Mode">
+            <i class="ti ti-moon"></i>
+          </button>
           <!-- Live Clock Card -->
           <div class="live-clock-card">
             <i class="ti ti-clock"></i>
@@ -428,11 +433,11 @@
 
                   <div class="form-grid-2" style="gap: 16px;">
                     <div>
-                      <label class="form-label">Select Appointment Date</label>
+                      <label class="form-label">Select Appointment Date <span style="color: #dc2626;">*</span></label>
                       <input type="date" id="wizard-date" class="form-input" required>
                     </div>
                     <div>
-                      <label class="form-label">Available Time Slots</label>
+                      <label class="form-label">Available Time Slots <span style="color: #dc2626;">*</span></label>
                       <div id="slots-picker-grid">
                         <button type="button" class="slot-btn" data-time="09:00 AM">09:00 AM</button>
                         <button type="button" class="slot-btn" data-time="10:00 AM">10:00 AM</button>
@@ -470,85 +475,40 @@
                     </div>
                     <div>
                       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                        <label class="form-label" style="margin-bottom: 0;">Patient / Home Address</label>
+                        <label class="form-label" style="margin-bottom: 0;">Patient / Home Address <span style="color: #dc2626;">*</span></label>
                         <button type="button" class="link-btn" id="btn-detect-gps" style="font-size: 0.76rem; display: flex; align-items: center; gap: 4px;">
                           <i class="ti ti-crosshair" style="font-size: 12px;"></i>
                           Detect GPS
                         </button>
                       </div>
-                      <input type="text" id="wizard-pat-address" class="form-input" placeholder="e.g. Balirong, City of Naga, Cebu">
+                      <input type="text" id="wizard-pat-address" class="form-input" placeholder="e.g. Balirong, City of Naga, Cebu" required>
                     </div>
                   </div>
 
                   <div class="form-grid-2" style="gap: 14px;">
                     <div>
-                      <label class="form-label">Emergency Contact Name</label>
-                      <input type="text" id="wizard-emergency-name" class="form-input" placeholder="e.g. Maria Santos (Family/Spouse)">
+                      <label class="form-label">Emergency Contact Name <span style="color: #dc2626;">*</span></label>
+                      <input type="text" id="wizard-emergency-name" class="form-input" placeholder="e.g. Maria Santos (Family/Spouse)" required>
                     </div>
                     <div>
-                      <label class="form-label">Emergency Contact Phone</label>
-                      <input type="tel" id="wizard-emergency-phone" class="form-input" placeholder="e.g. 0917 123 4567">
+                      <label class="form-label">Emergency Contact Phone <span style="color: #dc2626;">*</span></label>
+                      <input type="tel" id="wizard-emergency-phone" class="form-input" placeholder="e.g. 0917 123 4567" required>
                     </div>
                   </div>
                 </div>
 
-                <!-- Medical Screening & Health Alerts Card -->
-                <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
-                  <div style="font-size: 0.82rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;"><i class="ti ti-stethoscope" style="font-size: 15px;"></i>
-                    3. Medical Screening &amp; Health Alerts
-                  </div>
-
-                  <label class="form-label" style="margin-bottom: 8px;">Pre-existing Medical Conditions (Select all that apply)</label>
-                  <div class="health-conditions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-bottom: 14px;">
-                    <label class="checkbox-pill-label">
-                      <input type="checkbox" name="med_condition" value="Hypertension">
-                      <span> High Blood Pressure</span>
-                    </label>
-                    <label class="checkbox-pill-label">
-                      <input type="checkbox" name="med_condition" value="Diabetes">
-                      <span> Diabetes</span>
-                    </label>
-                    <label class="checkbox-pill-label">
-                      <input type="checkbox" name="med_condition" value="Bleeding Disorder">
-                      <span> Bleeding Disorder</span>
-                    </label>
-                    <label class="checkbox-pill-label">
-                      <input type="checkbox" name="med_condition" value="Heart Condition">
-                      <span> Heart Condition</span>
-                    </label>
-                    <label class="checkbox-pill-label">
-                      <input type="checkbox" name="med_condition" value="Pregnant">
-                      <span> Pregnant</span>
-                    </label>
-                    <label class="checkbox-pill-label">
-                      <input type="checkbox" name="med_condition" value="None" id="cond-none">
-                      <span> None / Healthy</span>
-                    </label>
-                  </div>
-
-                  <div class="form-grid-2" style="gap: 14px;">
-                    <div>
-                      <label class="form-label">Known Allergies (Medications / Latex)</label>
-                      <input type="text" id="wizard-allergies" class="form-input" placeholder="e.g. Penicillin, Latex, Local Anesthesia, None">
-                    </div>
-                    <div>
-                      <label class="form-label">Current Maintenance Medications</label>
-                      <input type="text" id="wizard-medications" class="form-input" placeholder="e.g. Aspirin, Blood Thinners, Insulin, None">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Dental Concern, Insurance & Preferences Card -->
+                <!-- Dental Concern & Clinic Location Card -->
                 <div style="background: var(--bg-base); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
                   <div style="font-size: 0.82rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
                     <i class="ti ti-map-pin" style="font-size: 15px;"></i>
-                    4. Dental Concern, Insurance &amp; Clinic Location
+                    3. Dental Concern &amp; Clinic Location
                   </div>
 
                   <div class="form-grid-2" style="gap: 14px; margin-bottom: 14px;">
                     <div>
-                      <label class="form-label">Primary Concern / Symptom</label>
-                      <select id="wizard-primary-concern" class="form-input">
+                      <label class="form-label">Primary Concern / Symptom <span style="color: #dc2626;">*</span></label>
+                      <select id="wizard-primary-concern" class="form-input" required>
+                        <option value="">-- Select Primary Concern --</option>
                         <option value="Routine Cleaning &amp; General Checkup">Routine Cleaning &amp; General Checkup</option>
                         <option value="Toothache / Tooth Sensitivity">Toothache / Tooth Sensitivity</option>
                         <option value="Cosmetic / Whitening / Alignment">Cosmetic / Whitening / Alignment</option>
@@ -559,28 +519,9 @@
                       </select>
                     </div>
                     <div>
-                      <label class="form-label">Dental Insurance / HMO Provider</label>
-                      <select id="wizard-insurance-provider" class="form-input">
-                        <option value="None / Self-Pay">None / Self-Pay</option>
-                        <option value="Maxicare">Maxicare</option>
-                        <option value="Intellicare">Intellicare</option>
-                        <option value="Medicard">Medicard</option>
-                        <option value="PhilHealth">PhilHealth</option>
-                        <option value="Cigna">Cigna</option>
-                        <option value="PhilCare">PhilCare</option>
-                        <option value="Other HMO">Other HMO</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="form-grid-2" style="gap: 14px; margin-bottom: 14px;">
-                    <div>
-                      <label class="form-label">HMO / Policy Card ID (optional)</label>
-                      <input type="text" id="wizard-insurance-id" class="form-input" placeholder="e.g. MAXI-10293847">
-                    </div>
-                    <div>
-                      <label class="form-label">Preferred Appointment Method</label>
-                      <select id="wizard-reminder-pref" class="form-input">
+                      <label class="form-label">Preferred Appointment Method <span style="color: #dc2626;">*</span></label>
+                      <select id="wizard-reminder-pref" class="form-input" required>
+                        <option value="">-- Select Reminder Method --</option>
                         <option value="SMS Text Message">SMS Text Message</option>
                         <option value="Email">Email</option>
                         <option value="Phone Call">Phone Call</option>
@@ -632,8 +573,8 @@
                   </div>
 
                   <div>
-                    <label class="form-label">Specific Symptoms &amp; Special Requests</label>
-                    <textarea id="wizard-notes" class="form-input" rows="2" placeholder="Describe symptoms, tooth location, pain level, or any special requests..."></textarea>
+                    <label class="form-label">Specific Symptoms &amp; Special Requests <span style="color: #dc2626;">*</span></label>
+                    <textarea id="wizard-notes" class="form-input" rows="2" placeholder="Describe symptoms, tooth location, pain level, or any special requests..." required></textarea>
                   </div>
                 </div>
 
@@ -791,12 +732,12 @@
                       <span id="summary-emergency-contact" style="font-weight: 600; color: var(--text-secondary);">None specified</span>
                     </div>
                     <div>
-                      <span style="color: var(--text-muted); display: block; font-size: 0.74rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Medical Alerts &amp; Allergies</span>
-                      <span id="summary-medical-alerts" style="font-weight: 600; color: var(--text-secondary);">None</span>
+                      <span style="color: var(--text-muted); display: block; font-size: 0.74rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Primary Dental Concern</span>
+                      <span id="summary-medical-alerts" style="font-weight: 600; color: var(--text-secondary);">—</span>
                     </div>
                     <div>
-                      <span style="color: var(--text-muted); display: block; font-size: 0.74rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Insurance &amp; Care Preferences</span>
-                      <span id="summary-insurance-care" style="font-weight: 600; color: var(--text-secondary);">Self-Pay • Standard Care</span>
+                      <span style="color: var(--text-muted); display: block; font-size: 0.74rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Care &amp; Reminder Preferences</span>
+                      <span id="summary-insurance-care" style="font-weight: 600; color: var(--text-secondary);">Standard Care</span>
                     </div>
                   </div>
 
@@ -2157,5 +2098,23 @@
     })();
   </script>
 
+  <script>
+    (function() {
+      const themeToggle = document.getElementById('patientThemeToggle');
+      const html = document.documentElement;
+      const savedTheme = localStorage.getItem('fano-theme');
+
+      if (savedTheme === 'dark') {
+        html.classList.add('dark-theme');
+        themeToggle.innerHTML = '<i class="ti ti-sun"></i>';
+      }
+
+      themeToggle.addEventListener('click', function() {
+        const isDark = html.classList.toggle('dark-theme');
+        themeToggle.innerHTML = isDark ? '<i class="ti ti-sun"></i>' : '<i class="ti ti-moon"></i>';
+        localStorage.setItem('fano-theme', isDark ? 'dark' : 'light');
+      });
+    })();
+  </script>
 </body>
 </html>
