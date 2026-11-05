@@ -5557,7 +5557,7 @@ function renderHistoryTable() {
         <div class="hist-action-group">
           <button class="btn-hist-action btn-hist-view" title="View Complete Details" onclick="openViewVisitModal('${r.id}')"><i class="ti ti-eye"></i></button>
           <button class="btn-hist-action btn-hist-edit" title="Edit Visit Record" onclick="openEditVisitModal('${r.id}')"><i class="ti ti-edit"></i></button>
-          <button class="btn-hist-action btn-hist-timeline" title="Patient Visit Timeline" onclick="openPersonTimeline('${timelinePid}','${timelineName}')"><i class="ti ti-user-clock"></i></button>
+          <button class="btn-hist-action btn-hist-timeline" title="Patient Visit Timeline" onclick="openPersonTimeline('${timelinePid}','${timelineName}')"><i class="ti ti-history"></i></button>
           ${archiveBtn}
         </div>
       </td>
@@ -5846,7 +5846,7 @@ function openViewVisitModal(id) {
       </div>` : '';
 
   const timelineBtn = record.patient && record.patient.id
-    ? `<button class="admin-btn" style="font-size:0.82rem;background:#17a2b8;color:#fff;" onclick="openPersonTimeline('${record.patient.id}','${escapeHTML(pName)}');closeHistModal('modal-view-visit')"><i class="ti ti-user-clock"></i> Timeline</button>`
+    ? `<button class="admin-btn" style="font-size:0.82rem;background:#17a2b8;color:#fff;" onclick="openPersonTimeline('${record.patient.id}','${escapeHTML(pName)}');closeHistModal('modal-view-visit')"><i class="ti ti-history"></i> Timeline</button>`
     : '';
 
   body.innerHTML = `

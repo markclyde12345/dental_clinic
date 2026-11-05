@@ -5793,3 +5793,17 @@ body.dark-theme #modal-admin-service-details #admin-detail-duration {
     padding: 0 !important;
   }
 }
+
+
+/* Tabler Icon Fallbacks & Enhancements */
+.ti-user-clock:before {
+  content: "\ef9e" !important;
+}
+
+.btn-hist-action i {
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
