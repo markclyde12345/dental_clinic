@@ -5523,21 +5523,21 @@ function renderHistoryTable() {
     const isArchived = r.archived ? 'opacity:0.55;' : '';
 
     const archiveBtn = !r.archived
-      ? `<button class="admin-btn" title="Archive" style="font-size:0.72rem;padding:3px 8px;background:#6c757d;color:#fff;" onclick="archiveVisitRecord('${r.id}',true)"><i class="ti ti-archive"></i></button>`
-      : `<button class="admin-btn" title="Restore" style="font-size:0.72rem;padding:3px 8px;background:#28a745;color:#fff;" onclick="archiveVisitRecord('${r.id}',false)"><i class="ti ti-archive-off"></i></button>`;
+      ? `<button class="btn-hist-action btn-hist-archive" title="Archive Visit" onclick="archiveVisitRecord('${r.id}',true)"><i class="ti ti-archive"></i></button>`
+      : `<button class="btn-hist-action btn-hist-restore" title="Restore Visit" onclick="archiveVisitRecord('${r.id}',false)"><i class="ti ti-rotate-clockwise-2"></i></button>`;
 
     const timelinePid  = r.patient ? r.patient.id : '';
     const timelineName = escapeHTML(pName);
 
     const checkInCell = checkIn !== '–'
-      ? `<span class="hist-checkin-badge">${checkIn}</span>`
-      : `<button class="admin-btn" style="font-size:0.72rem;padding:3px 8px;background:#17a2b8;color:#fff;" onclick="quickCheckIn('${r.id}')"><i class="ti ti-login"></i> In</button>`;
+      ? `<span class="hist-checkin-badge"><i class="ti ti-clock-check"></i> ${checkIn}</span>`
+      : `<button class="btn-quick-checkin" onclick="quickCheckIn('${r.id}')"><i class="ti ti-login"></i> Check In</button>`;
 
     const checkOutCell = checkOut !== '–'
-      ? `<span class="hist-checkout-badge">${checkOut}</span>`
+      ? `<span class="hist-checkout-badge"><i class="ti ti-circle-check"></i> ${checkOut}</span>`
       : (checkIn !== '–'
-          ? `<button class="admin-btn" style="font-size:0.72rem;padding:3px 8px;background:#6f42c1;color:#fff;" onclick="quickCheckOut('${r.id}')"><i class="ti ti-logout"></i> Out</button>`
-          : '<span style="color:#ccc;font-size:0.78rem;">–</span>');
+          ? `<button class="btn-quick-checkout" onclick="quickCheckOut('${r.id}')"><i class="ti ti-logout"></i> Check Out</button>`
+          : '<span style="color:#94a3b8;font-size:0.8rem;">–</span>');
 
     return `<tr style="border-bottom:1px solid var(--border-color);color:var(--dark-color);${isArchived}" data-id="${r.id}">
       <td style="padding:12px 14px;"><input type="checkbox" class="hist-row-cb" value="${r.id}"></td>
@@ -5554,10 +5554,10 @@ function renderHistoryTable() {
       <td style="padding:12px 14px;">${checkOutCell}</td>
       <td style="padding:12px 14px;"><span style="font-weight:600;color:${sColor};font-size:0.84rem;">${status}</span></td>
       <td style="padding:12px 14px;">
-        <div style="display:flex;gap:5px;flex-wrap:wrap;">
-          <button class="admin-btn" title="View" style="font-size:0.72rem;padding:3px 8px;" onclick="openViewVisitModal('${r.id}')"><i class="ti ti-eye"></i></button>
-          <button class="admin-btn" title="Edit" style="font-size:0.72rem;padding:3px 8px;background:#ffc107;color:#333;" onclick="openEditVisitModal('${r.id}')"><i class="ti ti-edit"></i></button>
-          <button class="admin-btn" title="Timeline" style="font-size:0.72rem;padding:3px 8px;background:#17a2b8;color:#fff;" onclick="openPersonTimeline('${timelinePid}','${timelineName}')"><i class="ti ti-user-clock"></i></button>
+        <div class="hist-action-group">
+          <button class="btn-hist-action btn-hist-view" title="View Complete Details" onclick="openViewVisitModal('${r.id}')"><i class="ti ti-eye"></i></button>
+          <button class="btn-hist-action btn-hist-edit" title="Edit Visit Record" onclick="openEditVisitModal('${r.id}')"><i class="ti ti-edit"></i></button>
+          <button class="btn-hist-action btn-hist-timeline" title="Patient Visit Timeline" onclick="openPersonTimeline('${timelinePid}','${timelineName}')"><i class="ti ti-user-clock"></i></button>
           ${archiveBtn}
         </div>
       </td>
@@ -5587,7 +5587,8 @@ function renderHistPagination() {
     const end   = Math.min(totalPages, page + 2);
     for (let p = start; p <= end; p++) {
       const isActive = p === page ? 'background:var(--primary-color);color:#fff;' : '';
-      pagesHtml += `<button class="admin-btn" style="font-size:0.8rem;padding:4px 10px;${isActive}" onclick="goHistPage(${p})">${p}</button>`;
+      const activeClass = p === page ? 'btn-primary' : 'btn-secondary';
+      pagesHtml += `<button class="${activeClass}" style="font-size:0.8rem;padding:5px 12px;border-radius:6px;min-width:32px;" onclick="goHistPage(${p})">${p}</button>`;
     }
     nums.innerHTML = pagesHtml;
   }

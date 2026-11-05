@@ -5372,14 +5372,182 @@ body.dark-theme #modal-admin-service-details #admin-detail-duration {
 /* Table badges */
 .hist-checkin-badge,
 .hist-checkout-badge {
-  display: inline-block;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 1.2;
 }
-.hist-checkin-badge  { background: #d1f8e8; color: #1a7a4a; }
-.hist-checkout-badge { background: #e8d5ff; color: #5a2d8c; }
+.hist-checkin-badge  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.hist-checkout-badge { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
+
+/* Visit History Modern Buttons */
+.hist-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-hist-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+.btn-hist-action:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.btn-hist-view {
+  color: #0284c7;
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+.btn-hist-view:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+.btn-hist-edit {
+  color: #d97706;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.btn-hist-edit:hover {
+  background: #d97706;
+  color: #ffffff;
+  border-color: #d97706;
+}
+
+.btn-hist-timeline {
+  color: #7c3aed;
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+.btn-hist-timeline:hover {
+  background: #7c3aed;
+  color: #ffffff;
+  border-color: #7c3aed;
+}
+
+.btn-hist-archive {
+  color: #64748b;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+.btn-hist-archive:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+.btn-hist-restore {
+  color: #16a34a;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.btn-hist-restore:hover {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+
+.btn-quick-checkin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+.btn-quick-checkin:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+}
+
+.btn-quick-checkout {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: #ede9fe;
+  color: #6d28d9;
+  border: 1px solid #c4b5fd;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+.btn-quick-checkout:hover {
+  background: #7c3aed;
+  color: #ffffff;
+  border-color: #7c3aed;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+}
+
+/* Fallback .admin-btn styling */
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: var(--font-body, inherit);
+  font-size: 0.84rem;
+  font-weight: 600;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.admin-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+.admin-btn-primary {
+  background: #0b3c4d !important;
+  color: #ffffff !important;
+  border-color: #0b3c4d !important;
+}
+.admin-btn-primary:hover {
+  background: #072a36 !important;
+  border-color: #072a36 !important;
+}
 
 /* Required star */
 .req-star { color: #e74c3c; font-weight: 700; }
