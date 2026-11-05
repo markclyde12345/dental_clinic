@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 
 const INVOICE_SUPP_PATH = path.join(__dirname, '..', 'data', 'invoice_supplements.json');
 function loadInvoiceSupplements() {
@@ -10,8 +12,6 @@ function loadInvoiceSupplements() {
 }
 
 /* v2 - cross-platform paths */
-const fs = require('fs');
-const path = require('path');
 const supabase = require('../config/db');
 const seedUsers = require('../utils/seeder');
 const sendEmail = require('../utils/emailService');
