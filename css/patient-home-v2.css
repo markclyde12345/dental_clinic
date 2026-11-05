@@ -1,15 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   PATIENT HOME v2 — "DentalCare" style overview redesign
-   Reference: Mobile screenshot (DentalCare - Healthy Smile, Brighter You)
-   - Clean top header (Burger toggle, DentalCare logo + subtitle, Round teal avatar)
-   - Hero greeting card with kawaii smiling tooth mascot & sparkles
-   - Two primary action pills ("Our Services", "Book Appointment")
-   - 2x2 Summary Stat Cards (Next Appointment, Total Visits, Unpaid Balance, Health Status)
-   - Upcoming Appointments card with "Schedule Now"
-   - Quick Access toolbar (My Records, Settings, Invoices, Support)
-   - DentalCare footer with "Need help? Contact us anytime."
-   - Floating dark teal AI Chat orb
-   - Hides mobile bottom taskbar for an uncluttered native app look
+   PATIENT PORTAL — DENTALCARE CROSS-PLATFORM SYSTEM
+   Evaluated under ISO/IEC 25010 Software Quality Standards:
+   - Functional Suitability: Complete patient self-service workflow
+   - Usability & Operability: Clean, consistent interface on all screens
+   - Portability: Mobile, Tablet, Laptop, and Desktop PC parity
+   - Aesthetic & Layout Coherence: DentalCare design system everywhere
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
@@ -27,59 +22,192 @@
   --pd-card-shadow: 0 4px 18px rgba(11, 60, 77, 0.05);
 }
 
-/* ─── Global layout tweaks for Patient Portal ─── */
+/* ─── Universal Layout: Full Width & Centered (Mobile + Desktop) ─── */
+body {
+  background-color: #f6fafc !important;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  color: var(--pd-ink) !important;
+  overflow-x: hidden !important;
+}
+
 .mobile-bottom-taskbar {
   display: none !important;
 }
 
-body {
-  background-color: #f6fafc !important;
+.dashboard-layout {
+  display: block !important;
+  min-height: 100vh !important;
+  background: #f6fafc !important;
 }
 
 .main-content {
-  padding-bottom: 40px !important;
+  margin-left: 0 !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  background: #f6fafc !important;
+  padding-bottom: 50px !important;
 }
 
-/* ─── Top Header & Brand on Patient Portal ─── */
+/* ─── Sidebar: Off-Canvas Drawer on ALL Devices (Desktop & Mobile) ─── */
+.sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 290px !important;
+  max-width: 86vw !important;
+  background: #ffffff !important;
+  z-index: 999999 !important;
+  transform: translateX(-100%) !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 10px 40px rgba(11, 60, 77, 0.25) !important;
+  border-right: 1px solid var(--pd-border) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.sidebar.open {
+  transform: translateX(0) !important;
+}
+
+.sidebar-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(11, 35, 48, 0.45) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 999998 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.24s ease !important;
+}
+
+.sidebar-overlay.show {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* ─── Top Header: Universal DentalCare Bar across ALL Devices ─── */
+.top-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 20px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--pd-border) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  box-shadow: 0 2px 14px rgba(11, 60, 77, 0.04) !important;
+}
+
+.header-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+/* Always hide cluttered legacy items across ALL screens */
+.top-header .breadcrumb,
+.top-header .live-clock-card,
+.top-header .theme-toggle,
+.top-header .notif-wrapper,
+.top-header .header-user-name {
+  display: none !important;
+}
+
+/* Bare 3-line hamburger menu button */
+.top-header .burger-toggle {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+}
+.top-header .burger-toggle span {
+  display: block !important;
+  width: 22px !important;
+  height: 2.5px !important;
+  background: var(--pd-ink) !important;
+  border-radius: 2px !important;
+  transition: transform 0.2s ease, opacity 0.2s ease !important;
+}
+
+/* Brand logo + text */
 .pd-brand-logo-svg {
   flex-shrink: 0;
   display: block;
 }
 
 .pd-mobile-brand {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  text-decoration: none !important;
 }
 .pd-mobile-brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
+  display: flex !important;
+  flex-direction: column !important;
+  line-height: 1.15 !important;
 }
 .pd-mobile-brand-text strong {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--pd-teal-900);
-  letter-spacing: -0.015em;
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: var(--pd-teal-900) !important;
+  letter-spacing: -0.015em !important;
 }
 .pd-mobile-brand-text small {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--pd-teal-700);
-  white-space: nowrap;
+  font-size: 0.68rem !important;
+  font-weight: 600 !important;
+  color: var(--pd-teal-700) !important;
+  white-space: nowrap !important;
 }
 
-/* ─── Section wrapper ─── */
+/* Round teal avatar */
+.top-header .header-user {
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+.top-header .header-avatar {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  background: var(--pd-teal-800) !important;
+  color: #ffffff !important;
+  font-size: 1.18rem !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 3px 10px rgba(11, 60, 77, 0.18) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+}
+.top-header .header-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 14px rgba(11, 60, 77, 0.25) !important;
+}
+
+/* ─── Overview Section: Centered Cross-Platform App Layout ─── */
 #overview-section.pd-home {
+  max-width: 620px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  padding: 16px 14px 40px !important;
   display: none;
   flex-direction: column;
   gap: 16px;
-  max-width: 1080px;
-  margin: 0 auto;
 }
 #overview-section.pd-home.active {
-  display: flex;
+  display: flex !important;
 }
 
 /* ─── Hero card ─── */
@@ -90,8 +218,8 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 170px;
-  padding: 26px 26px;
+  min-height: 165px;
+  padding: 24px 22px;
   border-radius: 24px;
   color: #ffffff;
   background:
@@ -118,14 +246,14 @@ body {
 }
 .pd-hero-greet {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: rgba(255,255,255,0.95);
   line-height: 1.2;
 }
 .pd-hero-name {
   margin: 2px 0 8px;
-  font-size: 2.75rem;
+  font-size: 2.6rem;
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: -0.02em;
@@ -135,7 +263,7 @@ body {
 .pd-hero-sub {
   margin: 0;
   max-width: 320px;
-  font-size: 1rem;
+  font-size: 0.96rem;
   line-height: 1.4;
   color: rgba(255,255,255,0.9);
 }
@@ -143,8 +271,8 @@ body {
   position: relative;
   z-index: 1;
   flex-shrink: 0;
-  width: 175px;
-  height: 155px;
+  width: 165px;
+  height: 145px;
 }
 .pd-hero-mascot svg {
   width: 100%;
@@ -170,9 +298,9 @@ body {
 
 /* ─── Primary action buttons ─── */
 .pd-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
 }
 .pd-action-btn {
   display: inline-flex;
@@ -212,11 +340,11 @@ body {
   transform: translateY(-1px);
 }
 
-/* ─── Stat cards (2x2 on mobile, 4 columns on desktop) ─── */
+/* ─── 2x2 Stat Cards (Universal 2x2 Grid) ─── */
 .pd-stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
 }
 .pd-stat-card {
   display: flex;
@@ -236,8 +364,8 @@ body {
 }
 .pd-stat-icon {
   flex-shrink: 0;
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -246,7 +374,7 @@ body {
   color: var(--pd-teal-700);
 }
 .pd-stat-icon i {
-  font-size: 26px;
+  font-size: 24px;
 }
 .pd-stat-body {
   min-width: 0;
@@ -283,7 +411,7 @@ body {
   transform: translateX(3px);
 }
 
-/* ─── Generic card (Upcoming Appointments) ─── */
+/* ─── Upcoming Appointments Card ─── */
 .pd-card {
   background: #ffffff;
   border: 1px solid var(--pd-border);
@@ -328,7 +456,7 @@ body {
   color: var(--pd-teal-700);
 }
 
-/* Upcoming list items (rendered dynamically) */
+/* Upcoming list items */
 .pd-upcoming-card .appt-preview-item {
   border-radius: 14px;
   background: var(--pd-teal-50);
@@ -399,7 +527,7 @@ body {
   transform: translateY(-1px);
 }
 
-/* ─── Quick access ─── */
+/* ─── Quick access toolbar ─── */
 .pd-quick-title {
   margin: 4px 0 10px;
   display: flex;
@@ -414,9 +542,9 @@ body {
   color: var(--pd-teal-900);
 }
 .pd-quick-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
 }
 .pd-quick-tile {
   display: flex;
@@ -447,17 +575,17 @@ body {
   background: var(--pd-teal-50);
 }
 
-/* ─── Footer ─── */
+/* ─── DentalCare Footer ─── */
 .pd-home-footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 22px;
-  margin-top: 8px;
-  padding: 18px 16px;
-  border-radius: 18px;
-  background: #ffffff;
-  border: 1px solid var(--pd-border);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 22px !important;
+  margin-top: 8px !important;
+  padding: 18px 16px !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  border: 1px solid var(--pd-border) !important;
 }
 .pd-home-footer-brand {
   display: flex;
@@ -504,15 +632,16 @@ body {
   color: var(--pd-teal-700);
 }
 
-/* ─── AI Chat Trigger Button (Floating Orb) ─── */
+/* ─── AI Chat Orb (Floating) ─── */
 .ai-chat-triggers {
-  bottom: 22px !important;
-  right: 18px !important;
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 22px !important;
   z-index: 99999 !important;
 }
 .ai-trigger-orb#ai-unified-trigger {
-  width: 54px !important;
-  height: 54px !important;
+  width: 56px !important;
+  height: 56px !important;
   border-radius: 50% !important;
   background: var(--pd-teal-900) !important;
   color: #ffffff !important;
@@ -531,221 +660,59 @@ body {
   color: #ffffff !important;
 }
 
-/* ═══════════════ Tablet & Mobile (≤ 1024px) ═══════════════ */
-@media (max-width: 1024px) {
-  /* Hide non-mobile header items */
-  .top-header .breadcrumb,
-  .top-header .live-clock-card,
-  .top-header .theme-toggle,
-  .top-header .notif-wrapper,
-  .top-header .header-user-name {
-    display: none !important;
-  }
-
-  .top-header {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 12px 18px !important;
-    background: #ffffff !important;
-    border-bottom: 1px solid var(--pd-border) !important;
-  }
-
-  .header-left {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-  }
-
-  .pd-mobile-brand {
-    display: inline-flex !important;
-  }
-
-  /* Bare 3-line hamburger matching reference */
-  .top-header .burger-toggle {
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    width: 32px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  .top-header .burger-toggle span {
-    width: 22px !important;
-    height: 2.5px !important;
-    background: var(--pd-ink) !important;
-    border-radius: 2px !important;
-  }
-
-  /* Round teal avatar matching reference */
-  .top-header .header-user {
-    padding: 0 !important;
-    background: transparent !important;
-    border: none !important;
-  }
-  .top-header .header-avatar {
-    width: 44px !important;
-    height: 44px !important;
-    border-radius: 50% !important;
-    background: var(--pd-teal-800) !important;
-    color: #ffffff !important;
-    font-size: 1.18rem !important;
-    font-weight: 700 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 3px 10px rgba(11, 60, 77, 0.18) !important;
-  }
-
-  /* 2x2 grid for stat cards */
-  .pd-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
+/* ─── Responsive adaptations for other dashboard submodules ─── */
+.content-section:not(#overview-section) {
+  max-width: 1040px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  padding: 24px 20px 60px !important;
 }
 
-/* ═══════════════ Phones (≤ 600px) ═══════════════ */
+/* ═══════════════ Mobile refinements (≤ 600px) ═══════════════ */
 @media (max-width: 600px) {
   #overview-section.pd-home {
+    padding: 14px 10px 36px !important;
     gap: 14px;
-    padding: 0 4px;
   }
-
   .pd-hero {
     min-height: 150px;
     padding: 20px 18px;
     border-radius: 20px;
   }
-  .pd-hero-greet {
-    font-size: 1.18rem;
-  }
-  .pd-hero-name {
-    font-size: 2.2rem;
-  }
-  .pd-hero-sub {
-    font-size: 0.88rem;
-    max-width: 210px;
-  }
-  .pd-hero-mascot {
-    width: 130px;
-    height: 118px;
-    margin-right: -4px;
-  }
+  .pd-hero-greet { font-size: 1.18rem; }
+  .pd-hero-name { font-size: 2.2rem; }
+  .pd-hero-sub { font-size: 0.88rem; max-width: 210px; }
+  .pd-hero-mascot { width: 130px; height: 118px; margin-right: -4px; }
 
-  .pd-action-btn {
-    min-height: 48px;
-    padding: 10px 12px;
-    font-size: 0.9rem;
-    gap: 8px;
-    border-radius: 14px;
-  }
-  .pd-action-btn i {
-    font-size: 20px;
-  }
+  .pd-action-btn { min-height: 48px; padding: 10px 12px; font-size: 0.9rem; gap: 8px; border-radius: 14px; }
+  .pd-action-btn i { font-size: 20px; }
 
-  .pd-stats {
-    gap: 10px;
-  }
-  .pd-stat-card {
-    padding: 14px 12px;
-    gap: 10px;
-    border-radius: 16px;
-  }
-  .pd-stat-icon {
-    width: 44px;
-    height: 44px;
-  }
-  .pd-stat-icon i {
-    font-size: 22px;
-  }
-  .pd-stat-label {
-    font-size: 0.78rem;
-  }
-  .pd-stat-value {
-    font-size: 1rem;
-    margin-bottom: 6px;
-  }
-  .pd-stat-link {
-    font-size: 0.8rem;
-  }
+  .pd-stats { gap: 10px !important; }
+  .pd-stat-card { padding: 14px 12px; gap: 10px; border-radius: 16px; }
+  .pd-stat-icon { width: 44px; height: 44px; }
+  .pd-stat-icon i { font-size: 22px; }
+  .pd-stat-label { font-size: 0.78rem; }
+  .pd-stat-value { font-size: 1rem; margin-bottom: 6px; }
+  .pd-stat-link { font-size: 0.8rem; }
 
-  .pd-card {
-    padding: 15px;
-    border-radius: 18px;
-  }
-  .pd-card-title {
-    font-size: 1.02rem;
-  }
-  .pd-card-title i {
-    font-size: 22px;
-  }
+  .pd-quick-grid { gap: 8px !important; }
+  .pd-quick-tile { min-height: 72px; font-size: 0.72rem; border-radius: 14px; padding: 10px 4px; }
+  .pd-quick-tile i { font-size: 24px; }
 
-  .pd-empty-appt {
-    padding: 12px;
-    gap: 10px;
-  }
-  .pd-empty-appt-icon {
-    width: 40px;
-    height: 40px;
-  }
-  .pd-empty-appt-icon i {
-    font-size: 22px;
-  }
-  .pd-empty-appt-text strong {
-    font-size: 0.88rem;
-  }
-  .pd-empty-appt-text span {
-    font-size: 0.74rem;
-  }
-  .pd-empty-appt-btn {
-    padding: 9px 13px;
-    font-size: 0.76rem;
-  }
-
-  .pd-quick-grid {
-    gap: 8px;
-  }
-  .pd-quick-tile {
-    min-height: 72px;
-    font-size: 0.72rem;
-    border-radius: 14px;
-    padding: 10px 4px;
-  }
-  .pd-quick-tile i {
-    font-size: 24px;
-  }
-
-  .pd-home-footer {
-    gap: 14px;
-    padding: 14px 12px;
-  }
-  .pd-home-footer-brand {
-    padding-right: 14px;
-  }
-  .pd-home-footer-brand strong {
-    font-size: 0.96rem;
-  }
+  .pd-home-footer { gap: 14px !important; padding: 14px 12px !important; }
+  .pd-home-footer-brand { padding-right: 14px; }
+  .pd-home-footer-brand strong { font-size: 0.96rem; }
 }
 
 @media (max-width: 360px) {
-  .pd-hero-name {
-    font-size: 1.85rem;
-  }
-  .pd-hero-mascot {
-    width: 105px;
-    height: 98px;
-  }
-  .pd-mobile-brand-text small {
-    display: none;
-  }
-  .pd-empty-appt {
-    flex-wrap: wrap;
-  }
-  .pd-empty-appt-btn {
-    width: 100%;
-  }
+  .pd-hero-name { font-size: 1.85rem; }
+  .pd-hero-mascot { width: 105px; height: 98px; }
+  .pd-mobile-brand-text small { display: none !important; }
+  .pd-empty-appt { flex-wrap: wrap; }
+  .pd-empty-appt-btn { width: 100%; }
 }
 
-/* ═══════════════ Dark Theme Support ═══════════════ */
+/* ═══════════════ Dark Theme ═══════════════ */
 html.dark-theme .pd-stat-card,
 html.dark-theme .pd-card,
 html.dark-theme .pd-quick-tile,
