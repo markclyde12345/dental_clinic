@@ -745,46 +745,50 @@ body {
   }
 }
 
-/* ═══════════════ Dark Theme Support ═══════════════ */
-html.dark-theme .pd-stat-card,
-html.dark-theme .pd-card,
-html.dark-theme .pd-quick-tile,
-html.dark-theme .pd-home-footer,
-html.dark-theme .pd-action-outline {
-  background: #111c27 !important;
-  border-color: #1f2f3d !important;
+/* ═══════════════ Clean & Bright Aesthetic Guarantee ═══════════════ */
+/* Ensure the DentalCare overview cards always remain clean, bright, and legible */
+.pd-stat-card,
+.pd-card,
+.pd-quick-tile,
+.pd-home-footer,
+.pd-action-outline {
+  background: #ffffff !important;
+  border-color: var(--pd-border) !important;
 }
-html.dark-theme .pd-stat-value,
-html.dark-theme .pd-card-title,
-html.dark-theme .pd-quick-title,
-html.dark-theme .pd-quick-tile,
-html.dark-theme .pd-see-all,
-html.dark-theme .pd-empty-appt-text strong,
-html.dark-theme .pd-home-footer-help strong {
-  color: #e2e8f0 !important;
+.pd-stat-value,
+.pd-card-title,
+.pd-quick-title,
+.pd-quick-tile span,
+.pd-see-all,
+.pd-empty-appt-text strong,
+.pd-home-footer-help strong {
+  color: var(--pd-ink) !important;
 }
-html.dark-theme .pd-action-outline {
-  color: #e2e8f0 !important;
-  border-color: #5fb3c7 !important;
+.pd-stat-label,
+.pd-empty-appt-text span,
+.pd-home-footer-help small {
+  color: var(--pd-muted) !important;
 }
-html.dark-theme .pd-stat-icon,
-html.dark-theme .pd-empty-appt-icon {
-  background: #16303c !important;
-  color: #7cd0e2 !important;
+.pd-stat-icon {
+  background: var(--pd-teal-100) !important;
+  color: var(--pd-teal-700) !important;
 }
-html.dark-theme .pd-stat-link,
-html.dark-theme .pd-card-title i,
-html.dark-theme .pd-quick-tile i,
-html.dark-theme .pd-quick-title i {
-  color: #7cd0e2 !important;
+.pd-empty-appt-icon {
+  background: #ffffff !important;
+  color: var(--pd-teal-900) !important;
 }
-html.dark-theme .pd-empty-appt {
-  background: #0d1822 !important;
-  border-color: #1f2f3d !important;
+.pd-empty-appt {
+  background: var(--pd-teal-50) !important;
+  border-color: #e1eff2 !important;
 }
-html.dark-theme .pd-home-footer-brand {
-  border-color: #1f2f3d !important;
+.pd-action-outline {
+  background: #ffffff !important;
+  color: var(--pd-teal-900) !important;
+  border-color: var(--pd-teal-900) !important;
 }
-html.dark-theme .pd-home-footer-brand strong {
-  color: #7cd0e2 !important;
+.pd-action-outline:hover {
+  background: var(--pd-teal-50) !important;
+}
+.pd-home-footer-brand strong {
+  color: var(--pd-teal-900) !important;
 }

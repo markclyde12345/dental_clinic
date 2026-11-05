@@ -2183,9 +2183,10 @@
       const html = document.documentElement;
       const savedTheme = localStorage.getItem('fano-theme');
 
+      // Keep clean bright theme by default
+      html.classList.remove('dark-theme');
       if (savedTheme === 'dark') {
-        html.classList.add('dark-theme');
-        themeToggle.innerHTML = '<i class="ti ti-sun"></i>';
+        localStorage.setItem('fano-theme', 'light');
       }
 
       themeToggle.addEventListener('click', function() {
