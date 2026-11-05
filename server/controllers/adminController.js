@@ -1289,9 +1289,8 @@ exports.getVisitsHistory = async (req, res) => {
       .from('appointments')
       .select(`
         id, appointment_date, status, notes,
-        patient:patient_id ( id, first_name, last_name, email, phone ),
-        treatment:treatment_id ( id, name ),
-        dentist:dentist_id ( id, first_name, last_name )
+        patient:patient_id ( id, name, email, contact_number ),
+        treatment:treatment_id ( id, name, price )
       `)
       .order('appointment_date', { ascending: false });
 
@@ -1300,7 +1299,32 @@ exports.getVisitsHistory = async (req, res) => {
     const supplements = loadVisitSupplements();
     let records = (data || []).map(a => {
       const supp = supplements[a.id] || {};
-      return { ...a, ...supp };
+      const notes = a.notes || '';
+      const dentistMatch = notes.match(/\[(?:Dentist|Requested Dentist):\s*([^\]]+)\]/i);
+      const dentistName = supp.dentist_name || (dentistMatch ? dentistMatch[1].trim() : 'Dr. Fano / Assigned Staff');
+      
+      const p = a.patient || {};
+      const fullName = p.name || 'Walk-in Patient';
+      const nameParts = fullName.split(' ');
+      const firstName = nameParts[0] || fullName;
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      return {
+        ...a,
+        ...supp,
+        patient: {
+          ...p,
+          first_name: firstName,
+          last_name: lastName,
+          phone: p.contact_number || ''
+        },
+        dentist: {
+          id: supp.dentist_id || null,
+          name: dentistName,
+          first_name: dentistName.split(' ')[0] || dentistName,
+          last_name: dentistName.split(' ').slice(1).join(' ') || ''
+        }
+      };
     });
 
     // Filter out archived unless requested
@@ -1312,13 +1336,9 @@ exports.getVisitsHistory = async (req, res) => {
     if (search) {
       const q = search.toLowerCase();
       records = records.filter(r => {
-        const pName = r.patient
-          ? `${r.patient.first_name || ''} ${r.patient.last_name || ''}`.toLowerCase()
-          : '';
-        const treat = r.treatment ? (r.treatment.name || '').toLowerCase() : '';
-        const dName = r.dentist
-          ? `${r.dentist.first_name || ''} ${r.dentist.last_name || ''}`.toLowerCase()
-          : '';
+        const pName = (r.patient?.name || `${r.patient?.first_name || ''} ${r.patient?.last_name || ''}`).toLowerCase();
+        const treat = (r.treatment?.name || '').toLowerCase();
+        const dName = (r.dentist?.name || '').toLowerCase();
         const notes = (r.notes || '').toLowerCase();
         const adminNotes = (r.admin_notes || '').toLowerCase();
         return pName.includes(q) || treat.includes(q) || dName.includes(q) || notes.includes(q) || adminNotes.includes(q) || String(r.id).includes(q);
@@ -1398,19 +1418,23 @@ exports.getVisitsHistory = async (req, res) => {
  */
 exports.addVisitRecord = async (req, res) => {
   try {
-    const { patient_id, treatment_id, dentist_id, appointment_date, status, notes, admin_notes, purpose } = req.body;
+    const { patient_id, treatment_id, dentist_id, dentist_name, appointment_date, status, notes, admin_notes, purpose } = req.body;
     if (!patient_id || !appointment_date) {
       return res.status(400).json({ message: 'Patient and appointment date are required.' });
     }
+    const cleanNotes = [
+      notes || '',
+      dentist_name ? `[Dentist: ${dentist_name}]` : ''
+    ].filter(Boolean).join(' ');
+
     const { data, error } = await supabase
       .from('appointments')
       .insert([{
         patient_id,
         treatment_id: treatment_id || null,
-        dentist_id: dentist_id || null,
         appointment_date,
         status: status || 'Completed',
-        notes: notes || '',
+        notes: cleanNotes,
       }])
       .select()
       .single();
@@ -1422,6 +1446,8 @@ exports.addVisitRecord = async (req, res) => {
     supplements[data.id] = {
       admin_notes: admin_notes || '',
       purpose: purpose || '',
+      dentist_id: dentist_id || null,
+      dentist_name: dentist_name || '',
       archived: false,
       check_in_time: null,
       check_out_time: null,
@@ -1565,8 +1591,7 @@ exports.getPersonTimeline = async (req, res) => {
       .from('appointments')
       .select(`
         id, appointment_date, status, notes,
-        treatment:treatment_id ( id, name ),
-        dentist:dentist_id ( id, first_name, last_name )
+        treatment:treatment_id ( id, name, price )
       `)
       .eq('patient_id', patientId)
       .order('appointment_date', { ascending: false });
@@ -1574,7 +1599,22 @@ exports.getPersonTimeline = async (req, res) => {
     if (error) return res.status(500).json({ message: error.message });
 
     const supplements = loadVisitSupplements();
-    const records = (data || []).map(a => ({ ...a, ...(supplements[a.id] || {}) }));
+    const records = (data || []).map(a => {
+      const supp = supplements[a.id] || {};
+      const notes = a.notes || '';
+      const dentistMatch = notes.match(/\[(?:Dentist|Requested Dentist):\s*([^\]]+)\]/i);
+      const dentistName = supp.dentist_name || (dentistMatch ? dentistMatch[1].trim() : 'Dr. Fano / Assigned Staff');
+      return {
+        ...a,
+        ...supp,
+        dentist: {
+          id: supp.dentist_id || null,
+          name: dentistName,
+          first_name: dentistName.split(' ')[0] || dentistName,
+          last_name: dentistName.split(' ').slice(1).join(' ') || ''
+        }
+      };
+    });
     return res.json({ records });
   } catch (err) {
     return res.status(500).json({ message: 'Server error fetching patient timeline' });
@@ -1591,9 +1631,8 @@ exports.exportHistoryCSV = async (req, res) => {
       .from('appointments')
       .select(`
         id, appointment_date, status, notes,
-        patient:patient_id ( first_name, last_name, email, phone ),
-        treatment:treatment_id ( name ),
-        dentist:dentist_id ( first_name, last_name )
+        patient:patient_id ( id, name, email, contact_number ),
+        treatment:treatment_id ( name )
       `)
       .order('appointment_date', { ascending: false });
 
@@ -1602,15 +1641,18 @@ exports.exportHistoryCSV = async (req, res) => {
     const supplements = loadVisitSupplements();
     const rows = (data || []).map(a => {
       const supp = supplements[a.id] || {};
-      const pName = a.patient ? `${a.patient.first_name} ${a.patient.last_name}` : 'Unknown';
+      const p = a.patient || {};
+      const pName = p.name || 'Patient';
       const treat = a.treatment ? a.treatment.name : 'General Consultation';
-      const dName = a.dentist ? `${a.dentist.first_name} ${a.dentist.last_name}` : 'Staff';
+      const notes = a.notes || '';
+      const dentistMatch = notes.match(/\[(?:Dentist|Requested Dentist):\s*([^\]]+)\]/i);
+      const dName = supp.dentist_name || (dentistMatch ? dentistMatch[1].trim() : 'Staff');
       return [
         a.id,
         new Date(a.appointment_date).toLocaleString(),
         pName,
-        a.patient ? a.patient.email : '',
-        a.patient ? a.patient.phone : '',
+        p.email || '',
+        p.contact_number || '',
         treat,
         dName,
         a.status || 'Pending',
