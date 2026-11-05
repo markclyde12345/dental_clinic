@@ -2538,114 +2538,37 @@ function escapeJS(str) {
     .replace(/\r/g, '\\r');
 }
 
-// ─── 4. Billing Ledger & Collections ──────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// 4. BILLING & INVOICES LEDGER — Full Features (CRUD, Partial Pay, Excel, Void)
+// ═══════════════════════════════════════════════════════════════════════════════
+let billingInvoicesList = [];
+let filteredBillingInvoices = [];
+let billingFilterTimer = null;
+let currentSelectedInvoice = null;
+
 function loadBilling() {
+  const tbody = document.getElementById('billing-table-body');
+  if (tbody && (!billingInvoicesList || billingInvoicesList.length === 0)) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding: 28px; text-align: center; color: #888;"><i class="ti ti-loader" style="animation:spin 1s linear infinite;"></i> Loading financial ledger...</td></tr>';
+  }
+
   fetch(`${ADMIN_API}/detailed-stats`, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
   .then(res => res.json())
   .then(data => {
-    if (data.message) {
+    if (data.message && !Array.isArray(data.invoices)) {
       showToast(data.message, 'error');
       return;
     }
 
     allInvoices = data.invoices || [];
+    billingInvoicesList = allInvoices;
     loadAdminNotifications();
 
-    let totalBilled = 0;
-    let totalCollected = 0;
-
-    allInvoices.forEach(inv => {
-      const total = parseFloat(inv.amount || inv.total_amount || 0);
-      const paid = inv.paid_amount !== undefined && inv.paid_amount !== null
-        ? parseFloat(inv.paid_amount)
-        : (inv.status?.toLowerCase() === 'paid' ? total : 0);
-
-      totalBilled += total;
-      totalCollected += paid;
-    });
-
-    const outstanding = totalBilled - totalCollected;
-
-    document.getElementById('billing-total-billed').textContent = `${getCurrencySymbol()}${totalBilled.toFixed(2)}`;
-    document.getElementById('billing-total-collected').textContent = `${getCurrencySymbol()}${totalCollected.toFixed(2)}`;
-    document.getElementById('billing-outstanding').textContent = `${getCurrencySymbol()}${outstanding.toFixed(2)}`;
-
-    const tbody = document.getElementById('billing-table-body');
-    if (allInvoices.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #888;">No invoices created yet.</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = allInvoices.map(inv => {
-      const total = parseFloat(inv.amount || inv.total_amount || 0);
-      const paid = inv.paid_amount !== undefined && inv.paid_amount !== null
-        ? parseFloat(inv.paid_amount)
-        : (inv.status?.toLowerCase() === 'paid' ? total : 0);
-
-      const patientName = inv.patient ? inv.patient.name : (inv.patient_name || 'Patient Roster');
-      const invoiceNum = inv.id.substring(0, 8).toUpperCase();
-      const issuedVal = inv.issued_at || inv.created_at;
-      const issuedDateStr = issuedVal ? new Date(issuedVal).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
-
-      let statusBadge = `
-        <span class="financial-status-pill status-pill-unpaid">
-          <span class="financial-status-dot"></span>
-          <span>Unpaid</span>
-        </span>
-      `;
-      const invStatus = (inv.status || 'Unpaid').toLowerCase();
-      if (invStatus === 'paid') {
-        statusBadge = `
-          <span class="financial-status-pill status-pill-paid">
-            <span class="financial-status-dot"></span>
-            <span>Paid</span>
-          </span>
-        `;
-      } else if (invStatus === 'partial') {
-        statusBadge = `
-          <span class="financial-status-pill status-pill-partial">
-            <span class="financial-status-dot"></span>
-            <span>Partial</span>
-          </span>
-        `;
-      } else if (invStatus === 'written off') {
-        statusBadge = `
-          <span class="financial-status-pill status-pill-written-off">
-            <span class="financial-status-dot"></span>
-            <span>Written Off</span>
-          </span>
-        `;
-      }
-
-      const isPaid = invStatus === 'paid';
-      const actionButton = isPaid 
-        ? `
-          <span class="badge-table-settled" title="Invoice fully paid & settled">
-            <i class="ti ti-circle-check"></i>
-            <span>Settled</span>
-          </span>
-        `
-        : `
-          <button type="button" class="btn-table-action btn-action-pay" onclick="openMarkPaidModal('${inv.id}', '${escapeJS(patientName)}', ${total}, '${escapeJS(inv.status || 'Unpaid')}', ${paid})" title="Collect payment and mark as paid">
-            <i class="ti ti-cash"></i>
-            <span>Mark Paid</span>
-          </button>
-        `;
-
-      return `
-        <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color);">
-          <td style="padding: 14px 16px; font-weight: 600;">#INV-${invoiceNum}</td>
-          <td style="padding: 14px 16px;">${escapeHTML(patientName)}</td>
-          <td style="padding: 14px 16px; font-weight: 600;">${getCurrencySymbol()}${total.toFixed(2)}</td>
-          <td style="padding: 14px 16px;">${getCurrencySymbol()}${paid.toFixed(2)}</td>
-          <td style="padding: 14px 16px;">${escapeHTML(issuedDateStr)}</td>
-          <td style="padding: 14px 16px; vertical-align: middle;">${statusBadge}</td>
-          <td style="padding: 14px 16px; text-align: right; vertical-align: middle;">${actionButton}</td>
-        </tr>
-      `;
-    }).join('');
+    updateBillingKPIs(billingInvoicesList);
+    filterAndRenderBilling();
+    populateBillingModalDropdowns();
 
     logConsoleEvent('[INFO] Financial ledger loaded.');
   })
@@ -2654,8 +2577,702 @@ function loadBilling() {
     showToast('Failed to load billing details', 'error');
   });
 }
+window.loadBilling = loadBilling;
 
-// ─── 5. Staff schedules ──────────────────────────────────────────────────────
+function updateBillingKPIs(invoices) {
+  let totalBilled = 0;
+  let totalCollected = 0;
+  let voidedCount = 0;
+
+  (invoices || []).forEach(inv => {
+    const isVoid = inv.status?.toLowerCase() === 'voided' || inv.voided;
+    if (isVoid) {
+      voidedCount++;
+      return; // Exclude voided from active receivables
+    }
+
+    const total = parseFloat(inv.amount || inv.total_amount || 0);
+    const paid = inv.paid_amount !== undefined && inv.paid_amount !== null
+      ? parseFloat(inv.paid_amount)
+      : (inv.status?.toLowerCase() === 'paid' ? total : 0);
+
+    totalBilled += total;
+    totalCollected += paid;
+  });
+
+  const outstanding = Math.max(0, totalBilled - totalCollected);
+  const curr = getCurrencySymbol();
+
+  const elBilled = document.getElementById('billing-total-billed');
+  const elCollected = document.getElementById('billing-total-collected');
+  const elOutstanding = document.getElementById('billing-outstanding');
+  const elVoided = document.getElementById('billing-total-voided');
+
+  if (elBilled) elBilled.textContent = `${curr}${totalBilled.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (elCollected) elCollected.textContent = `${curr}${totalCollected.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (elOutstanding) elOutstanding.textContent = `${curr}${outstanding.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (elVoided) elVoided.textContent = voidedCount;
+}
+
+function filterAndRenderBilling() {
+  const searchInput = document.getElementById('billing-search');
+  const statusFilter = document.getElementById('billing-status-filter');
+  const dateFromInput = document.getElementById('billing-date-from');
+  const dateToInput = document.getElementById('billing-date-to');
+
+  const q = (searchInput?.value || '').toLowerCase().trim();
+  const selectedStatus = (statusFilter?.value || 'all').toLowerCase();
+  const dateFrom = dateFromInput?.value ? new Date(dateFromInput.value) : null;
+  const dateTo = dateToInput?.value ? new Date(dateToInput.value) : null;
+  if (dateTo) dateTo.setHours(23, 59, 59, 999);
+
+  filteredBillingInvoices = (billingInvoicesList || []).filter(inv => {
+    // 1. Status Filter
+    const rawStatus = (inv.status || 'Unpaid').toLowerCase();
+    const isVoid = rawStatus === 'voided' || inv.voided;
+    const effStatus = isVoid ? 'voided' : rawStatus;
+
+    if (selectedStatus !== 'all' && effStatus !== selectedStatus) return false;
+
+    // 2. Search Query (Invoice ID, Patient name, Email, Treatment)
+    if (q) {
+      const invId = (inv.id || '').toLowerCase();
+      const refNum = `inv-${invId.substring(0, 8)}`;
+      const pName = (inv.patient ? (inv.patient.name || `${inv.patient.first_name || ''} ${inv.patient.last_name || ''}`) : (inv.patient_name || '')).toLowerCase();
+      const pEmail = (inv.patient?.email || '').toLowerCase();
+      const treatName = (inv.appointment?.treatment?.name || inv.treatment_name || '').toLowerCase();
+
+      const matches = invId.includes(q) || refNum.includes(q) || pName.includes(q) || pEmail.includes(q) || treatName.includes(q);
+      if (!matches) return false;
+    }
+
+    // 3. Date Range Filter
+    if (dateFrom || dateTo) {
+      const issuedRaw = inv.issued_at || inv.created_at;
+      if (!issuedRaw) return false;
+      const invDate = new Date(issuedRaw);
+      if (dateFrom && invDate < dateFrom) return false;
+      if (dateTo && invDate > dateTo) return false;
+    }
+
+    return true;
+  });
+
+  renderBillingTable(filteredBillingInvoices);
+}
+
+function renderBillingTable(invoices) {
+  const tbody = document.getElementById('billing-table-body');
+  const label = document.getElementById('billing-results-label');
+  if (!tbody) return;
+
+  const totalCount = (billingInvoicesList || []).length;
+  if (label) {
+    label.textContent = invoices.length === 0
+      ? 'No invoices match your search/filter criteria.'
+      : `Showing ${invoices.length} of ${totalCount} statements`;
+  }
+
+  if (!invoices || invoices.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="padding: 40px; text-align: center; color: var(--text-light);">
+          <div class="empty-state-icon"><i class="ti ti-file-invoice"></i></div>
+          <div class="empty-state-title">No invoices found</div>
+          <div class="empty-state-desc">Try clearing your filters or generate a new patient invoice statement.</div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  const curr = getCurrencySymbol();
+
+  tbody.innerHTML = invoices.map(inv => {
+    const total = parseFloat(inv.amount || inv.total_amount || 0);
+    const paid = inv.paid_amount !== undefined && inv.paid_amount !== null
+      ? parseFloat(inv.paid_amount)
+      : (inv.status?.toLowerCase() === 'paid' ? total : 0);
+
+    const patientName = inv.patient ? (inv.patient.name || `${inv.patient.first_name || ''} ${inv.patient.last_name || ''}`.trim()) : (inv.patient_name || 'Patient');
+    const patientEmail = inv.patient?.email || '';
+    const invoiceNum = (inv.id || '').substring(0, 8).toUpperCase();
+    const issuedVal = inv.issued_at || inv.created_at;
+    const issuedDateStr = issuedVal ? new Date(issuedVal).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+    const treatName = inv.appointment?.treatment?.name || inv.treatment_name || 'Dental Consultation';
+
+    const invStatus = (inv.status || 'Unpaid').toLowerCase();
+    const isVoid = invStatus === 'voided' || inv.voided;
+    const isPaid = !isVoid && (invStatus === 'paid' || paid >= total);
+    const isPartial = !isVoid && !isPaid && (invStatus === 'partial' || paid > 0);
+
+    let statusBadge = `
+      <span class="financial-status-pill status-pill-unpaid">
+        <span class="financial-status-dot"></span>
+        <span>Unpaid</span>
+      </span>
+    `;
+    if (isVoid) {
+      statusBadge = `
+        <span class="financial-status-pill status-pill-voided" title="${escapeHTML(inv.void_reason || 'Voided')}">
+          <span class="financial-status-dot"></span>
+          <span>Voided</span>
+        </span>
+      `;
+    } else if (isPaid) {
+      statusBadge = `
+        <span class="financial-status-pill status-pill-paid">
+          <span class="financial-status-dot"></span>
+          <span>Paid</span>
+        </span>
+      `;
+    } else if (isPartial) {
+      statusBadge = `
+        <span class="financial-status-pill status-pill-partial">
+          <span class="financial-status-dot"></span>
+          <span>Partial</span>
+        </span>
+      `;
+    }
+
+    const payButton = isVoid
+      ? `<span style="color:#94a3b8; font-size:0.75rem;">Cancelled</span>`
+      : (isPaid
+        ? `<button type="button" class="btn-table-action" style="background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd;" onclick="openInvoiceDetailsModal('${inv.id}')" title="View Paid Statement / Receipt"><i class="ti ti-receipt"></i> Receipt</button>`
+        : `<button type="button" class="btn-table-action btn-action-pay" onclick="openRecordPaymentModal('${inv.id}')" title="Collect payment (full or partial)"><i class="ti ti-cash"></i> ${isPartial ? 'Pay Bal' : 'Collect'}</button>`);
+
+    const voidButton = (!isVoid && !isPaid)
+      ? `<button type="button" class="btn-table-action" style="padding:6px 9px; color:#ef4444; background:#fef2f2; border:1px solid #fecaca;" onclick="openVoidInvoiceModal('${inv.id}')" title="Void / Cancel Invoice"><i class="ti ti-ban"></i></button>`
+      : '';
+
+    return `
+      <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color); ${isVoid ? 'opacity:0.6;' : ''}">
+        <td style="padding: 12px 14px; font-weight: 700; font-family:monospace; font-size:0.86rem;">#INV-${invoiceNum}</td>
+        <td style="padding: 12px 14px;">
+          <div style="font-weight: 600; font-size: 0.88rem;">${escapeHTML(patientName)}</div>
+          <div style="font-size: 0.75rem; color: #64748b;">${escapeHTML(patientEmail)}</div>
+        </td>
+        <td style="padding: 12px 14px; font-size: 0.84rem;">${escapeHTML(treatName)}</td>
+        <td style="padding: 12px 14px; font-weight: 700;">${curr}${total.toFixed(2)}</td>
+        <td style="padding: 12px 14px;">
+          <span style="font-weight: 700; color: ${isPaid ? '#10b981' : (isPartial ? '#7c3aed' : '#64748b')};">
+            ${curr}${paid.toFixed(2)}
+          </span>
+          ${isPartial ? `<div style="font-size:0.7rem; color:#e11d48; font-weight:600;">Bal: ${curr}${(total - paid).toFixed(2)}</div>` : ''}
+        </td>
+        <td style="padding: 12px 14px; font-size: 0.82rem;">${escapeHTML(issuedDateStr)}</td>
+        <td style="padding: 12px 14px; vertical-align: middle;">${statusBadge}</td>
+        <td style="padding: 12px 14px; text-align: right; vertical-align: middle;">
+          <div style="display:inline-flex; gap:6px; align-items:center; justify-content:flex-end;">
+            <button type="button" class="btn-table-action" style="padding:6px 9px;" onclick="openInvoiceDetailsModal('${inv.id}')" title="View Invoice & Receipt"><i class="ti ti-eye"></i></button>
+            ${payButton}
+            ${voidButton}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function debounceBillingFilter() {
+  clearTimeout(billingFilterTimer);
+  billingFilterTimer = setTimeout(filterAndRenderBilling, 300);
+}
+
+function applyBillingFilters() {
+  filterAndRenderBilling();
+}
+
+function clearBillingFilters() {
+  const s = document.getElementById('billing-search'); if (s) s.value = '';
+  const st = document.getElementById('billing-status-filter'); if (st) st.selectedIndex = 0;
+  const df = document.getElementById('billing-date-from'); if (df) df.value = '';
+  const dt = document.getElementById('billing-date-to'); if (dt) dt.value = '';
+  filterAndRenderBilling();
+}
+
+// ── Export to Excel (.xlsx) ───────────────────────────────────────────────────
+function exportBillingToExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('Excel exporter is loading. Please try again in a moment.', 'info');
+    return;
+  }
+
+  const exportList = filteredBillingInvoices || [];
+  if (exportList.length === 0) {
+    showToast('No invoices currently match your view to export.', 'error');
+    return;
+  }
+
+  const rows = exportList.map(inv => {
+    const total = parseFloat(inv.amount || inv.total_amount || 0);
+    const paid = inv.paid_amount !== undefined && inv.paid_amount !== null
+      ? parseFloat(inv.paid_amount)
+      : (inv.status?.toLowerCase() === 'paid' ? total : 0);
+
+    const patientName = inv.patient ? (inv.patient.name || `${inv.patient.first_name || ''} ${inv.patient.last_name || ''}`.trim()) : (inv.patient_name || 'Patient');
+    const invoiceNum = `#INV-${(inv.id || '').substring(0, 8).toUpperCase()}`;
+    const issuedVal = inv.issued_at || inv.created_at;
+    const issuedDateStr = issuedVal ? new Date(issuedVal).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+    const status = inv.voided ? 'Voided' : (inv.status || 'Unpaid');
+
+    return {
+      'Invoice ID': invoiceNum,
+      'Patient': patientName,
+      'Billed Amount': total,
+      'Paid Amount': paid,
+      'Issued Date': issuedDateStr,
+      'Status': status
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Invoices Ledger');
+
+  // Auto-size columns
+  ws['!cols'] = [
+    { wch: 16 }, // Invoice ID
+    { wch: 28 }, // Patient
+    { wch: 16 }, // Billed Amount
+    { wch: 16 }, // Paid Amount
+    { wch: 16 }, // Issued Date
+    { wch: 14 }  // Status
+  ];
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `fano_dental_invoices_${todayStr}.xlsx`);
+  showToast(`Exported ${rows.length} invoice record(s) to Excel!`, 'success');
+}
+window.exportBillingToExcel = exportBillingToExcel;
+
+// ── Populate Dropdowns for Generate Invoice Modal ────────────────────────────
+function populateBillingModalDropdowns() {
+  // 1. Patients dropdown
+  const patientSel = document.getElementById('gen-inv-patient');
+  if (patientSel) {
+    const patients = allPatients || [];
+    patientSel.innerHTML = '<option value="">Select Patient...</option>' +
+      patients.map(p => {
+        const name = p.name || `${p.first_name || ''} ${p.last_name || ''}`.trim();
+        return `<option value="${p.id}">${escapeHTML(name)} (${escapeHTML(p.email || '')})</option>`;
+      }).join('');
+  }
+
+  // 2. Treatments dropdown
+  const treatSel = document.getElementById('gen-inv-treatment');
+  if (treatSel) {
+    const treatments = allAdminTreatments || [];
+    treatSel.innerHTML = '<option value="">General Dental Care</option>' +
+      treatments.map(t => `<option value="${t.id}" data-price="${t.price || 0}">${escapeHTML(t.name)} (₱${parseFloat(t.price || 0).toFixed(2)})</option>`).join('');
+  }
+}
+
+function handleGenInvoiceTreatmentChange(treatmentId) {
+  const treatSel = document.getElementById('gen-inv-treatment');
+  const selectedOpt = treatSel?.options[treatSel.selectedIndex];
+  const price = selectedOpt ? selectedOpt.getAttribute('data-price') : 0;
+  const amtInput = document.getElementById('gen-inv-amount');
+  if (amtInput && price) {
+    amtInput.value = parseFloat(price).toFixed(2);
+  }
+}
+
+function handleGenInvoicePatientChange(patientId) {
+  const apptSel = document.getElementById('gen-inv-appointment');
+  if (!apptSel) return;
+
+  if (!patientId) {
+    apptSel.innerHTML = '<option value="">No appointment link (Stand-alone Treatment)</option>';
+    return;
+  }
+
+  // Filter completed/approved appointments for this patient
+  const patientAppts = (allAppointments || []).filter(a => String(a.patient_id || a.patient?.id) === String(patientId));
+  apptSel.innerHTML = '<option value="">No appointment link (Stand-alone Treatment)</option>' +
+    patientAppts.map(a => {
+      const dt = a.appointment_date ? new Date(a.appointment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+      const treat = a.treatment?.name || 'Consultation';
+      return `<option value="${a.id}" data-treatment-id="${a.treatment?.id || ''}" data-price="${a.treatment?.price || 0}">Appointment: ${dt} - ${escapeHTML(treat)} (${a.status})</option>`;
+    }).join('');
+}
+
+function handleGenInvoiceApptChange(apptId) {
+  const apptSel = document.getElementById('gen-inv-appointment');
+  const selectedOpt = apptSel?.options[apptSel.selectedIndex];
+  if (!selectedOpt) return;
+
+  const treatId = selectedOpt.getAttribute('data-treatment-id');
+  const price = selectedOpt.getAttribute('data-price');
+
+  if (treatId) {
+    const treatSel = document.getElementById('gen-inv-treatment');
+    if (treatSel) treatSel.value = treatId;
+  }
+  if (price && parseFloat(price) > 0) {
+    const amtInput = document.getElementById('gen-inv-amount');
+    if (amtInput) amtInput.value = parseFloat(price).toFixed(2);
+  }
+}
+
+// ── Generate Invoice Modal Handlers ──────────────────────────────────────────
+function openGenerateInvoiceModal() {
+  populateBillingModalDropdowns();
+  const form = document.getElementById('form-generate-invoice');
+  if (form) form.reset();
+
+  const modal = document.getElementById('modal-generate-invoice');
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+  }
+}
+
+function submitGenerateInvoice(e) {
+  e.preventDefault();
+  const patientId = document.getElementById('gen-inv-patient')?.value;
+  const apptId = document.getElementById('gen-inv-appointment')?.value || null;
+  const treatId = document.getElementById('gen-inv-treatment')?.value || null;
+  const amount = parseFloat(document.getElementById('gen-inv-amount')?.value);
+  const status = document.getElementById('gen-inv-status')?.value || 'Unpaid';
+  const method = document.getElementById('gen-inv-method')?.value || 'Cash';
+  const notes = document.getElementById('gen-inv-notes')?.value?.trim() || '';
+
+  if (!patientId) {
+    showToast('Please select a patient.', 'error');
+    return;
+  }
+  if (isNaN(amount) || amount <= 0) {
+    showToast('Please enter a valid billed amount.', 'error');
+    return;
+  }
+
+  const payload = {
+    patient_id: patientId,
+    appointment_id: apptId,
+    treatment_id: treatId,
+    amount: amount,
+    status: status,
+    payment_method: status === 'Paid' ? method : '',
+    paid_amount: status === 'Paid' ? amount : 0,
+    notes: notes
+  };
+
+  fetch(`${INVOICE_API}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message && !data.id) {
+      showToast(data.message, 'error');
+      return;
+    }
+    showToast('Invoice generated successfully!', 'success');
+    closeBillingModal('modal-generate-invoice');
+    loadBilling();
+  })
+  .catch(err => {
+    console.error('Error creating invoice:', err);
+    showToast('Failed to create invoice.', 'error');
+  });
+}
+
+// ── View Invoice Details & Printable Official Receipt ────────────────────────
+function openInvoiceDetailsModal(invId) {
+  const inv = (billingInvoicesList || []).find(i => String(i.id) === String(invId));
+  if (!inv) {
+    showToast('Invoice not found.', 'error');
+    return;
+  }
+
+  currentSelectedInvoice = inv;
+  const modal = document.getElementById('modal-invoice-details');
+  if (!modal) return;
+
+  const total = parseFloat(inv.amount || inv.total_amount || 0);
+  const paid = inv.paid_amount !== undefined && inv.paid_amount !== null
+    ? parseFloat(inv.paid_amount)
+    : (inv.status?.toLowerCase() === 'paid' ? total : 0);
+  const balance = Math.max(0, total - paid);
+
+  const patientName = inv.patient ? (inv.patient.name || `${inv.patient.first_name || ''} ${inv.patient.last_name || ''}`.trim()) : (inv.patient_name || 'Valued Patient');
+  const patientEmail = inv.patient?.email || 'patient@fanoclinic.com';
+  const invoiceNum = (inv.id || '').substring(0, 8).toUpperCase();
+  const issuedDateStr = inv.issued_at ? new Date(inv.issued_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+  const paidDateStr = inv.paid_at ? new Date(inv.paid_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : (paid > 0 ? 'Partial Settlement' : 'Unpaid');
+  const treatName = inv.appointment?.treatment?.name || inv.treatment_name || 'Professional Dental Care & Clinical Procedure';
+
+  const isVoid = inv.status?.toLowerCase() === 'voided' || inv.voided;
+  const isPaid = !isVoid && (inv.status?.toLowerCase() === 'paid' || paid >= total);
+  const curr = getCurrencySymbol();
+
+  document.getElementById('rcpt-inv-number').textContent = `#INV-${invoiceNum}`;
+  document.getElementById('rcpt-patient-name').textContent = patientName;
+  document.getElementById('rcpt-patient-email').textContent = patientEmail;
+  document.getElementById('rcpt-issue-date').textContent = issuedDateStr;
+  document.getElementById('rcpt-payment-date').textContent = isPaid ? `Fully Settled: ${paidDateStr}` : (paid > 0 ? `Partial Paid: ₱${paid.toFixed(2)}` : 'Payment Due');
+  document.getElementById('rcpt-service-name').textContent = treatName;
+  document.getElementById('rcpt-billed-subtotal').textContent = `${curr}${total.toFixed(2)}`;
+  document.getElementById('rcpt-total-billed').textContent = `${curr}${total.toFixed(2)}`;
+  document.getElementById('rcpt-total-paid').textContent = `${curr}${paid.toFixed(2)}`;
+  document.getElementById('rcpt-balance-due').textContent = `${curr}${balance.toFixed(2)}`;
+
+  // Status badge
+  const statusEl = document.getElementById('rcpt-inv-status');
+  if (statusEl) {
+    if (isVoid) statusEl.innerHTML = '<span class="status-pill status-cancelled">VOIDED</span>';
+    else if (isPaid) statusEl.innerHTML = '<span class="status-pill status-confirmed">PAID IN FULL</span>';
+    else if (paid > 0) statusEl.innerHTML = '<span class="badge-table-partial">PARTIAL PAYMENT</span>';
+    else statusEl.innerHTML = '<span class="status-pill status-pending">UNPAID</span>';
+  }
+
+  // Payment history list
+  const historyWrap = document.getElementById('rcpt-payments-history-wrap');
+  const historyList = document.getElementById('rcpt-payments-list');
+  const payments = inv.payments_history || [];
+
+  if (historyWrap && historyList) {
+    if (payments.length > 0) {
+      historyWrap.style.display = 'block';
+      historyList.innerHTML = payments.map((p, idx) => `
+        <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dotted #e2e8f0;">
+          <span>#${idx + 1} &bull; ${new Date(p.collected_at).toLocaleDateString()} via <strong>${escapeHTML(p.payment_method || 'Cash')}</strong> ${p.reference ? `(${escapeHTML(p.reference)})` : ''}</span>
+          <strong style="color:#10b981;">+₱${parseFloat(p.amount || 0).toFixed(2)}</strong>
+        </div>
+      `).join('');
+    } else if (inv.payment_method && paid > 0) {
+      historyWrap.style.display = 'block';
+      historyList.innerHTML = `
+        <div style="display:flex; justify-content:space-between; padding:4px 0;">
+          <span>Settlement via <strong>${escapeHTML(inv.payment_method)}</strong></span>
+          <strong style="color:#10b981;">+₱${paid.toFixed(2)}</strong>
+        </div>
+      `;
+    } else {
+      historyWrap.style.display = 'none';
+    }
+  }
+
+  // Toggle Collect button if already fully paid or voided
+  const collectBtn = document.getElementById('btn-rcpt-collect');
+  if (collectBtn) {
+    collectBtn.style.display = (isPaid || isVoid) ? 'none' : 'inline-flex';
+  }
+
+  modal.style.display = 'flex';
+  modal.classList.add('active');
+}
+
+function printInvoiceReceipt() {
+  document.body.classList.add('printing-receipt');
+  window.print();
+  setTimeout(() => {
+    document.body.classList.remove('printing-receipt');
+  }, 1000);
+}
+
+function openPaymentFromDetails() {
+  if (currentSelectedInvoice) {
+    const id = currentSelectedInvoice.id;
+    closeBillingModal('modal-invoice-details');
+    openRecordPaymentModal(id);
+  }
+}
+
+// ── Record Payment (Partial or Full) ─────────────────────────────────────────
+function openRecordPaymentModal(invId) {
+  const inv = (billingInvoicesList || []).find(i => String(i.id) === String(invId));
+  if (!inv) {
+    showToast('Invoice not found.', 'error');
+    return;
+  }
+
+  currentSelectedInvoice = inv;
+  const modal = document.getElementById('modal-record-payment');
+  if (!modal) return;
+
+  const total = parseFloat(inv.amount || inv.total_amount || 0);
+  const paid = inv.paid_amount !== undefined && inv.paid_amount !== null
+    ? parseFloat(inv.paid_amount)
+    : (inv.status?.toLowerCase() === 'paid' ? total : 0);
+  const balance = Math.max(0, total - paid);
+
+  const patientName = inv.patient ? (inv.patient.name || `${inv.patient.first_name || ''} ${inv.patient.last_name || ''}`.trim()) : (inv.patient_name || 'Patient');
+  const invoiceNum = (inv.id || '').substring(0, 8).toUpperCase();
+  const curr = getCurrencySymbol();
+
+  document.getElementById('pay-inv-id').value = inv.id;
+  document.getElementById('pay-summary-num').textContent = `#INV-${invoiceNum}`;
+  document.getElementById('pay-summary-patient').textContent = patientName;
+  document.getElementById('pay-summary-billed').textContent = `${curr}${total.toFixed(2)}`;
+  document.getElementById('pay-summary-paid').textContent = `${curr}${paid.toFixed(2)}`;
+  document.getElementById('pay-summary-balance').textContent = `${curr}${balance.toFixed(2)}`;
+
+  const amtInput = document.getElementById('pay-amount-input');
+  if (amtInput) {
+    amtInput.value = balance > 0 ? balance.toFixed(2) : total.toFixed(2);
+    amtInput.max = balance > 0 ? balance : total;
+  }
+
+  document.getElementById('pay-reference-input').value = '';
+  document.getElementById('pay-notes-input').value = '';
+
+  modal.style.display = 'flex';
+  modal.classList.add('active');
+}
+
+function setFullBalancePayment() {
+  if (!currentSelectedInvoice) return;
+  const total = parseFloat(currentSelectedInvoice.amount || currentSelectedInvoice.total_amount || 0);
+  const paid = currentSelectedInvoice.paid_amount !== undefined && currentSelectedInvoice.paid_amount !== null
+    ? parseFloat(currentSelectedInvoice.paid_amount)
+    : (currentSelectedInvoice.status?.toLowerCase() === 'paid' ? total : 0);
+  const balance = Math.max(0, total - paid);
+
+  const amtInput = document.getElementById('pay-amount-input');
+  if (amtInput) amtInput.value = balance.toFixed(2);
+}
+
+function submitRecordPayment(e) {
+  e.preventDefault();
+  const invId = document.getElementById('pay-inv-id')?.value;
+  const paymentAmt = parseFloat(document.getElementById('pay-amount-input')?.value);
+  const paymentMethod = document.getElementById('pay-method-select')?.value || 'Cash';
+  const reference = document.getElementById('pay-reference-input')?.value?.trim() || '';
+  const notes = document.getElementById('pay-notes-input')?.value?.trim() || '';
+
+  if (!invId) return;
+  if (isNaN(paymentAmt) || paymentAmt <= 0) {
+    showToast('Please enter a valid payment amount.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit-payment');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader" style="animation:spin 1s linear infinite;"></i> Saving...';
+  }
+
+  const payload = {
+    payment_amount: paymentAmt,
+    payment_method: paymentMethod,
+    reference,
+    notes
+  };
+
+  fetch(`${INVOICE_API}/${invId}/payment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-check"></i> Save Payment';
+    }
+    if (data.message && !data.invoice) {
+      showToast(data.message, 'error');
+      return;
+    }
+    showToast(data.message || 'Payment recorded successfully!', 'success');
+    closeBillingModal('modal-record-payment');
+    loadBilling();
+  })
+  .catch(err => {
+    console.error('Error saving payment:', err);
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-check"></i> Save Payment';
+    }
+    showToast('Failed to record payment.', 'error');
+  });
+}
+
+// ── Cancel / Void Invoice ────────────────────────────────────────────────────
+function openVoidInvoiceModal(invId) {
+  const inv = (billingInvoicesList || []).find(i => String(i.id) === String(invId));
+  if (!inv) return;
+
+  const modal = document.getElementById('modal-void-invoice');
+  if (!modal) return;
+
+  document.getElementById('void-inv-id').value = inv.id;
+  const num = (inv.id || '').substring(0, 8).toUpperCase();
+  document.getElementById('void-inv-text').textContent = `Are you sure you want to void Invoice #INV-${num} (${getCurrencySymbol()}${parseFloat(inv.amount||0).toFixed(2)})? This marks it cancelled.`;
+  document.getElementById('void-reason-input').value = '';
+
+  modal.style.display = 'flex';
+  modal.classList.add('active');
+}
+
+function submitVoidInvoice(e) {
+  e.preventDefault();
+  const invId = document.getElementById('void-inv-id')?.value;
+  const reason = document.getElementById('void-reason-input')?.value?.trim();
+
+  if (!invId) return;
+  if (!reason) {
+    showToast('Please provide a reason for cancelling this invoice.', 'error');
+    return;
+  }
+
+  fetch(`${INVOICE_API}/${invId}/void`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ reason })
+  })
+  .then(res => res.json())
+  .then(data => {
+    showToast('Invoice voided and cancelled.', 'success');
+    closeBillingModal('modal-void-invoice');
+    loadBilling();
+  })
+  .catch(err => {
+    console.error('Error voiding invoice:', err);
+    showToast('Failed to void invoice.', 'error');
+  });
+}
+
+// ── Modal Helper ─────────────────────────────────────────────────────────────
+function closeBillingModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+}
+
+window.openGenerateInvoiceModal = openGenerateInvoiceModal;
+window.submitGenerateInvoice = submitGenerateInvoice;
+window.handleGenInvoiceTreatmentChange = handleGenInvoiceTreatmentChange;
+window.handleGenInvoicePatientChange = handleGenInvoicePatientChange;
+window.handleGenInvoiceApptChange = handleGenInvoiceApptChange;
+window.openInvoiceDetailsModal = openInvoiceDetailsModal;
+window.printInvoiceReceipt = printInvoiceReceipt;
+window.openPaymentFromDetails = openPaymentFromDetails;
+window.openRecordPaymentModal = openRecordPaymentModal;
+window.setFullBalancePayment = setFullBalancePayment;
+window.submitRecordPayment = submitRecordPayment;
+window.openVoidInvoiceModal = openVoidInvoiceModal;
+window.submitVoidInvoice = submitVoidInvoice;
+window.closeBillingModal = closeBillingModal;
+window.debounceBillingFilter = debounceBillingFilter;
+window.applyBillingFilters = applyBillingFilters;
+window.clearBillingFilters = clearBillingFilters;
+
+
 function loadStaffSchedules() {
   fetch(`${ADMIN_API}/staff-schedules`, {
     headers: { 'Authorization': `Bearer ${token}` }
@@ -3262,6 +3879,32 @@ function renderAdminTreatments(treatments) {
   }).join('');
 
   grid.innerHTML = cardsHtml;
+
+  // Event delegation to guarantee clicks on action buttons
+  if (!grid.dataset.delegationAttached) {
+    grid.dataset.delegationAttached = 'true';
+    grid.addEventListener('click', (e) => {
+      const btn = e.target.closest('button, .asc-title, .admin-service-card-media');
+      if (!btn) return;
+      const card = btn.closest('.admin-service-card');
+      const id = card?.id?.replace('service-card-', '') || btn.getAttribute('data-id');
+      if (!id) return;
+
+      if (btn.classList.contains('btn-card-details') || btn.classList.contains('asc-title') || btn.classList.contains('admin-service-card-media')) {
+        e.preventDefault();
+        e.stopPropagation();
+        openAdminServiceDetailsModal(id);
+      } else if (btn.classList.contains('btn-card-edit')) {
+        e.preventDefault();
+        e.stopPropagation();
+        openAdminEditServiceModal(id);
+      } else if (btn.classList.contains('btn-card-delete')) {
+        e.preventDefault();
+        e.stopPropagation();
+        deleteAdminService(id);
+      }
+    });
+  }
 }
 
 // ─── Modal: Add / Edit Service ─────────────────────────────────────────────
@@ -3272,41 +3915,54 @@ function openAdminAddServiceModal() {
   const form = document.getElementById('admin-service-form');
   if (form) form.reset();
 
-  document.getElementById('admin-service-modal-title').textContent = 'Add New Clinic Service';
-  document.getElementById('admin-service-modal-subtitle').textContent = 'Configure dental procedure pricing, duration, description and procedure photo';
-  document.getElementById('admin-service-id').value = '';
+  const titleEl = document.getElementById('admin-service-modal-title');
+  if (titleEl) titleEl.textContent = 'Add New Clinic Service';
+  const subEl = document.getElementById('admin-service-modal-subtitle');
+  if (subEl) subEl.textContent = 'Configure dental procedure pricing, duration, description and procedure photo';
+  const idEl = document.getElementById('admin-service-id');
+  if (idEl) idEl.value = '';
 
   const defaultImg = '../Resources/services/cleaning.jpg';
-  document.getElementById('admin-service-image-url').value = defaultImg;
+  const imgUrlEl = document.getElementById('admin-service-image-url');
+  if (imgUrlEl) imgUrlEl.value = defaultImg;
   const previewImg = document.getElementById('admin-service-preview-img');
   if (previewImg) previewImg.src = defaultImg;
   const imgInput = document.getElementById('admin-service-image-input');
   if (imgInput) imgInput.value = '';
 
-  // Preset buttons state
   document.querySelectorAll('.preset-img-btn').forEach((btn, idx) => {
     if (idx === 0) btn.classList.add('active');
     else btn.classList.remove('active');
   });
 
-  document.getElementById('admin-service-name').value = '';
-  document.getElementById('admin-service-category').value = 'Preventive & Hygiene';
-  document.getElementById('admin-service-price').value = '';
-  document.getElementById('admin-service-duration').value = '45';
-  document.getElementById('admin-service-status').value = 'true';
-  document.getElementById('admin-service-description').value = '';
-  document.getElementById('admin-service-highlights').value = '';
-  document.getElementById('admin-service-indications').value = '';
-  document.getElementById('admin-service-steps').value = '';
-  document.getElementById('admin-service-aftercare').value = '';
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  setVal('admin-service-name', '');
+  setVal('admin-service-category', 'Preventive & Hygiene');
+  setVal('admin-service-price', '');
+  setVal('admin-service-duration', '45');
+  setVal('admin-service-status', 'true');
+  setVal('admin-service-description', '');
+  setVal('admin-service-highlights', '');
+  setVal('admin-service-indications', '');
+  setVal('admin-service-steps', '');
+  setVal('admin-service-aftercare', '');
 
   modal.style.display = 'flex';
   modal.classList.add('active');
 }
 window.openAdminAddServiceModal = openAdminAddServiceModal;
 
-function openAdminEditServiceModal(treatmentId) {
-  const treatment = (allAdminTreatments || []).find(t => String(t.id) === String(treatmentId));
+async function openAdminEditServiceModal(treatmentId) {
+  let treatment = (allAdminTreatments || []).find(t => String(t.id) === String(treatmentId));
+  if (!treatment) {
+    try {
+      const curToken = getAuthToken() || token;
+      const res = await fetch(`${TREATMENT_API}/${treatmentId}`, {
+        headers: curToken ? { 'Authorization': `Bearer ${curToken}` } : {}
+      });
+      if (res.ok) treatment = await res.json();
+    } catch (_) {}
+  }
   if (!treatment) {
     showToast('Service record not found', 'error');
     return;
@@ -3564,8 +4220,17 @@ function saveAdminService(event) {
 window.saveAdminService = saveAdminService;
 
 // ─── Modal: View Complete Details ──────────────────────────────────────────
-function openAdminServiceDetailsModal(treatmentId) {
-  const treatment = (allAdminTreatments || []).find(t => String(t.id) === String(treatmentId));
+async function openAdminServiceDetailsModal(treatmentId) {
+  let treatment = (allAdminTreatments || []).find(t => String(t.id) === String(treatmentId));
+  if (!treatment) {
+    try {
+      const curToken = getAuthToken() || token;
+      const res = await fetch(`${TREATMENT_API}/${treatmentId}`, {
+        headers: curToken ? { 'Authorization': `Bearer ${curToken}` } : {}
+      });
+      if (res.ok) treatment = await res.json();
+    } catch (_) {}
+  }
   if (!treatment) {
     showToast('Service record not found', 'error');
     return;
@@ -4714,6 +5379,7 @@ function showDeleteConfirmation(message, onConfirm) {
 
   textEl.innerHTML = formattedHtml;
   onDeleteConfirmCallback = onConfirm;
+  modal.style.display = 'flex';
   modal.classList.add('active');
 }
 
@@ -4725,6 +5391,7 @@ if (btnCancelDelete) {
   btnCancelDelete.addEventListener('click', (e) => {
     e.preventDefault();
     modalConfirmDelete.classList.remove('active');
+    modalConfirmDelete.style.display = 'none';
     onDeleteConfirmCallback = null;
   });
 }

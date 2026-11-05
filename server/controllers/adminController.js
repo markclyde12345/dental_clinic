@@ -1,3 +1,14 @@
+
+const INVOICE_SUPP_PATH = path.join(__dirname, '..', 'data', 'invoice_supplements.json');
+function loadInvoiceSupplements() {
+  try {
+    const raw = fs.readFileSync(INVOICE_SUPP_PATH, 'utf8');
+    return JSON.parse(raw) || {};
+  } catch {
+    return {};
+  }
+}
+
 /* v2 - cross-platform paths */
 const fs = require('fs');
 const path = require('path');
@@ -312,12 +323,19 @@ const getDetailedStats = async (req, res) => {
     if (apptError) throw apptError;
 
     // 2. Fetch invoices with appointment details
-    const { data: invoices, error: invError } = await supabase
+    const { data: rawInvoices, error: invError } = await supabase
       .from('invoices')
       .select(`
         *,
         appointment:appointment_id ( id, appointment_date, notes, treatment:treatment_id ( id, name, price ) )
       `);
+    const invSupps = loadInvoiceSupplements();
+    const invoices = (rawInvoices || []).map(inv => {
+      const s = invSupps[inv.id] || {};
+      const paid = s.paid_amount !== undefined ? s.paid_amount : (inv.status === 'Paid' ? inv.amount : 0);
+      const st = s.voided ? 'Voided' : (inv.status || (paid >= inv.amount ? 'Paid' : (paid > 0 ? 'Partial' : 'Unpaid')));
+      return { ...inv, ...s, status: st, paid_amount: paid, payment_method: s.payment_method || '' };
+    });
 
     if (invError) throw invError;
 

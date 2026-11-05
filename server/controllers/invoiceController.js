@@ -1,3 +1,25 @@
+
+const fs = require('fs');
+const path = require('path');
+const INVOICE_SUPP_PATH = path.join(__dirname, '..', 'data', 'invoice_supplements.json');
+
+function loadInvoiceSupplements() {
+  try {
+    const raw = fs.readFileSync(INVOICE_SUPP_PATH, 'utf8');
+    return JSON.parse(raw) || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveInvoiceSupplements(data) {
+  try {
+    fs.writeFileSync(INVOICE_SUPP_PATH, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to save invoice supplements:', err);
+  }
+}
+
 const supabase = require('../config/db');
 const sendEmail = require('../utils/emailService');
 
@@ -193,19 +215,30 @@ const getInvoices = async (req, res) => {
     if (error) throw error;
 
     // Provide legacy mapping fields and overdue calculation
+    const supplements = loadInvoiceSupplements();
     const mapped = invoices.map(inv => {
+      const supp = supplements[inv.id] || {};
       const issuedTime = inv.issued_at || inv.created_at;
       const daysOld = issuedTime
         ? Math.max(0, Math.floor((Date.now() - new Date(issuedTime).getTime()) / (1000 * 60 * 60 * 24)))
         : 0;
       const isOverdue = inv.status === 'Unpaid' && daysOld > 30;
+      const paidAmount = supp.paid_amount !== undefined ? supp.paid_amount : (inv.status === 'Paid' ? inv.amount : 0);
+      const effStatus = supp.voided ? 'Voided' : (inv.status || (paidAmount >= inv.amount ? 'Paid' : (paidAmount > 0 ? 'Partial' : 'Unpaid')));
       return {
         ...inv,
+        ...supp,
+        status: effStatus,
+        paid_amount: paidAmount,
+        payment_method: supp.payment_method || (inv.status === 'Paid' ? 'Cash / Front Desk' : ''),
+        payments_history: supp.payments_history || [],
         total_amount: inv.amount,
-        is_paid: inv.status === 'Paid',
+        is_paid: effStatus === 'Paid',
+        is_partial: effStatus === 'Partial',
+        is_voided: effStatus === 'Voided',
         created_at: inv.issued_at,
         days_old: daysOld,
-        is_overdue: isOverdue
+        is_overdue: isOverdue && effStatus !== 'Voided'
       };
     });
 
@@ -518,4 +551,128 @@ const getInvoiceById = async (req, res) => {
   }
 };
 
-module.exports = { getInvoices, getInvoiceById, createInvoice, updateInvoice, reconcileInvoices };
+
+// @desc    Void or Cancel an invoice
+// @route   PATCH /api/invoices/:id/void
+// @access  Private (Accounting/Admin)
+const voidInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason = 'Cancelled by administrator' } = req.body;
+    const staffName = req.user?.name || req.user?.email || 'Admin';
+
+    // Update status in Supabase
+    await supabase.from('invoices').update({ status: 'Voided' }).eq('id', id);
+
+    // Save supplement
+    const supplements = loadInvoiceSupplements();
+    if (!supplements[id]) supplements[id] = {};
+    supplements[id].voided = true;
+    supplements[id].void_reason = reason;
+    supplements[id].voided_at = new Date().toISOString();
+    supplements[id].voided_by = staffName;
+    saveInvoiceSupplements(supplements);
+
+    // Log audit
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      logAuditAction({
+        action: 'INVOICE_VOIDED',
+        entityType: 'invoice',
+        entityId: id,
+        details: `${staffName} voided Invoice #${id.slice(0, 8).toUpperCase()}. Reason: ${reason}`,
+        req
+      });
+    } catch (_) {}
+
+    return res.json({ message: 'Invoice voided successfully.', id, voided: true });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// @desc    Record a payment (Full or Partial) for an invoice
+// @route   POST /api/invoices/:id/payment
+// @access  Private (Accounting/Admin/Receptionist)
+const recordInvoicePayment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { payment_amount, payment_method = 'Cash', reference = '', notes = '' } = req.body;
+
+    const amt = parseFloat(payment_amount);
+    if (isNaN(amt) || amt <= 0) {
+      return res.status(400).json({ message: 'A valid payment amount is required.' });
+    }
+
+    // Fetch invoice from DB
+    const { data: inv, error: fetchErr } = await supabase
+      .from('invoices')
+      .select('id, amount, status, patient_id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (fetchErr || !inv) return res.status(404).json({ message: 'Invoice not found.' });
+
+    const supplements = loadInvoiceSupplements();
+    if (!supplements[id]) supplements[id] = { paid_amount: 0, payments_history: [] };
+
+    const currentPaid = parseFloat(supplements[id].paid_amount || 0);
+    const newPaid = currentPaid + amt;
+    const totalDue = parseFloat(inv.amount || 0);
+
+    const isFullyPaid = newPaid >= totalDue;
+    const newStatus = isFullyPaid ? 'Paid' : 'Partial';
+    const paidAt = isFullyPaid ? new Date().toISOString() : null;
+
+    // Update in Supabase
+    const updatePayload = { status: newStatus };
+    if (paidAt) updatePayload.paid_at = paidAt;
+    await supabase.from('invoices').update(updatePayload).eq('id', id);
+
+    // Update supplement
+    const staffName = req.user?.name || req.user?.email || 'Staff';
+    const paymentRecord = {
+      amount: amt,
+      payment_method,
+      reference,
+      notes,
+      collected_at: new Date().toISOString(),
+      collected_by: staffName
+    };
+
+    supplements[id].paid_amount = newPaid;
+    supplements[id].payment_method = payment_method;
+    supplements[id].payment_notes = notes;
+    if (!supplements[id].payments_history) supplements[id].payments_history = [];
+    supplements[id].payments_history.push(paymentRecord);
+    saveInvoiceSupplements(supplements);
+
+    // Audit log
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      logAuditAction({
+        action: isFullyPaid ? 'PAYMENT_COLLECTED' : 'PARTIAL_PAYMENT_COLLECTED',
+        entityType: 'invoice',
+        entityId: id,
+        details: `${staffName} collected ${isFullyPaid ? 'full' : 'partial'} payment of ₱${amt.toFixed(2)} via ${payment_method} for Invoice #${id.slice(0, 8).toUpperCase()}.`,
+        req
+      });
+    } catch (_) {}
+
+    return res.json({
+      message: isFullyPaid ? 'Invoice marked as fully Paid.' : `Partial payment of ₱${amt.toFixed(2)} recorded.`,
+      invoice: {
+        ...inv,
+        status: newStatus,
+        paid_amount: newPaid,
+        remaining: Math.max(0, totalDue - newPaid),
+        payment_method,
+        payments_history: supplements[id].payments_history
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { getInvoices, getInvoiceById, createInvoice, updateInvoice, reconcileInvoices, voidInvoice, recordInvoicePayment, loadInvoiceSupplements };

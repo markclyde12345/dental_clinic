@@ -832,12 +832,14 @@ body {
   z-index: 9999;
   opacity: 0;
   visibility: hidden;
+  pointer-events: none; /* prevent blocking when hidden */
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-overlay.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .modal-card {
@@ -5431,3 +5433,136 @@ body.dark-theme #modal-admin-service-details #admin-detail-duration {
 
 /* Spinner keyframes (if not already defined) */
 @keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BILLING & INVOICE MANAGEMENT STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+.billing-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+}
+.btn-excel-export {
+  background: #107c41 !important;
+  color: #ffffff !important;
+  border: none !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-excel-export:hover {
+  background: #0b5c30 !important;
+  transform: translateY(-1px);
+}
+.status-pill-partial {
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+  border: 1px solid #d8b4fe !important;
+}
+.status-pill-partial .financial-status-dot {
+  background: #7c3aed !important;
+}
+.status-pill-voided {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1px solid #cbd5e1 !important;
+  text-decoration: line-through;
+}
+.status-pill-voided .financial-status-dot {
+  background: #94a3b8 !important;
+}
+.badge-table-partial {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #f3e8ff;
+  color: #7c3aed;
+  border: 1px solid #d8b4fe;
+}
+
+/* Official Clinic Receipt Slip Modal */
+.receipt-paper {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.receipt-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px dashed #cbd5e1;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+.receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+.receipt-table th {
+  background: #f8fafc;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 0.78rem;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+}
+.receipt-table td {
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.receipt-total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.88rem;
+}
+.receipt-total-row.grand {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0b3c4d;
+  border-top: 2px solid #0b3c4d;
+  padding-top: 10px;
+  margin-top: 8px;
+}
+@media print {
+  body.printing-receipt .admin-sidebar,
+  body.printing-receipt .admin-header,
+  body.printing-receipt .nav-tab,
+  body.printing-receipt .admin-main > div:not(.print-receipt-only),
+  body.printing-receipt .modal-footer,
+  body.printing-receipt .modal-close {
+    display: none !important;
+  }
+  body.printing-receipt .modal-overlay {
+    position: static !important;
+    background: transparent !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  body.printing-receipt .modal-card {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}
