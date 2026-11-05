@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="../css/ai-chat.css">
   <link rel="stylesheet" href="../css/ui-enhancements.css">
+  <link rel="stylesheet" href="../css/patient-home-v2.css?v=20261105_v1">
 </head>
 <body>
 
@@ -116,6 +117,16 @@
           <button class="burger-toggle" id="burger-toggle" aria-label="Toggle menu">
             <span></span><span></span><span></span>
           </button>
+          <a href="#" class="pd-mobile-brand" onclick="event.preventDefault(); switchSection('overview');" aria-label="DentalCare home">
+            <svg class="pd-brand-logo-svg" viewBox="0 0 36 36" width="34" height="34" fill="none" stroke="#0e4a5c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 10 C6 14 6 19 8 23 C9.5 26.5 10.5 30 13.5 30 C15.5 30 15.5 25.5 18 25.5 C20.5 25.5 20.5 30 22.5 30 C25.5 30 26.5 26.5 28 23 C30 19 30 14 27 10 C24 6 21 8 18 8 C15 8 12 6 9 10 Z" />
+              <path d="M13 16 Q18 20 23 16" stroke-width="2" />
+            </svg>
+            <span class="pd-mobile-brand-text">
+              <strong>DentalCare</strong>
+              <small>Healthy Smile, Brighter You</small>
+            </span>
+          </a>
           <div class="breadcrumb">
             <span class="breadcrumb-item"><i class="ti ti-heart-handshake" style="font-size: 15px; margin-right: 4px;"></i> Patient Portal</span>
             <i class="ti ti-chevron-right" style="font-size: 14px;"></i>
@@ -174,106 +185,167 @@
       </header>
 
       <!-- ══════════ OVERVIEW SECTION ══════════ -->
-      <section id="overview-section" class="content-section active">
-        <!-- Page Header & Action Bar -->
-        <div class="page-header-bar section-header">
-          <div class="header-title-block">
-            <h1 class="section-title">Patient Overview</h1>
-            <p class="section-subtitle" id="greeting-text">Good morning! Here's your health summary.</p>
+      <section id="overview-section" class="content-section active pd-home">
+        <!-- ─── Hero Greeting Card ─── -->
+        <div class="pd-hero">
+          <div class="pd-hero-text">
+            <p class="pd-hero-greet" id="pd-hero-greet">Good day,</p>
+            <h1 class="pd-hero-name" id="pd-hero-name">there!</h1>
+            <p class="pd-hero-sub" id="greeting-text">Here's your dental health summary for today.</p>
           </div>
-          <div class="header-action-grid" style="display: flex; gap: 10px; align-items: center;">
-            <button class="btn btn-secondary" onclick="switchSection('services')" title="Explore Clinic Services" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 0.88rem;">
-              <i class="ti ti-dental" style="font-size: 16px;"></i>
-              <span>Our Services</span>
+          <div class="pd-hero-mascot" aria-hidden="true">
+            <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="pdToothGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="65%" stop-color="#f2fafc"/>
+                  <stop offset="100%" stop-color="#d4edf2"/>
+                </linearGradient>
+                <linearGradient id="pdArmGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="100%" stop-color="#dbeff4"/>
+                </linearGradient>
+                <filter id="pdSoftGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(8,40,55,0.22)"/>
+                </filter>
+              </defs>
+              <g class="pd-sparkles" fill="#ffffff">
+                <!-- Top-left sparkle -->
+                <path d="M38 32 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3z"/>
+                <!-- Bottom-left sparkle -->
+                <path d="M24 94 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2z" opacity="0.85"/>
+                <!-- Top-right sparkle -->
+                <path d="M174 24 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5z"/>
+                <!-- Bottom-right sparkle -->
+                <path d="M182 108 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5z" opacity="0.85"/>
+              </g>
+              <g class="pd-tooth" filter="url(#pdSoftGlow)">
+                <!-- Left waving arm -->
+                <path d="M64 78 C52 70 42 62 40 50 C38 42 45 38 50 42 C56 46 64 62 70 70" fill="url(#pdArmGrad)" stroke="#cce6ec" stroke-width="1.5" stroke-linecap="round"/>
+                <!-- Right waving arm -->
+                <path d="M142 74 C154 66 166 58 170 48 C173 40 166 36 160 40 C153 45 144 60 138 68" fill="url(#pdArmGrad)" stroke="#cce6ec" stroke-width="1.5" stroke-linecap="round"/>
+                <!-- Tooth body (crown + two roots) -->
+                <path d="M62 48 C62 20 92 16 104 28 C116 16 146 20 146 48 C146 72 138 88 135 112 C132 138 125 158 116 158 C107 158 108 126 104 126 C100 126 101 158 92 158 C83 158 76 138 73 112 C70 88 62 72 62 48 Z"
+                      fill="url(#pdToothGrad)" stroke="#cfe6ec" stroke-width="2"/>
+                <!-- Top highlight sheen -->
+                <path d="M72 40 C75 28 88 24 96 28" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" fill="none" opacity="0.85"/>
+                <!-- Happy crescent eyes -->
+                <path d="M84 65 Q91 56 98 65" stroke="#0f2f3a" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <path d="M110 65 Q117 56 124 65" stroke="#0f2f3a" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <!-- Rosy pink cheeks -->
+                <ellipse cx="76" cy="74" rx="7.5" ry="5" fill="#fca5a5" opacity="0.85"/>
+                <ellipse cx="132" cy="74" rx="7.5" ry="5" fill="#fca5a5" opacity="0.85"/>
+                <!-- Cute smiling mouth -->
+                <path d="M99 74 Q104 83 109 74" stroke="#0f2f3a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- ─── Primary Actions ─── -->
+        <div class="pd-actions">
+          <button type="button" class="pd-action-btn pd-action-outline" onclick="switchSection('services')" title="Explore Clinic Services">
+            <i class="ti ti-dental"></i>
+            <span>Our Services</span>
+          </button>
+          <button type="button" class="pd-action-btn pd-action-solid" id="quick-book-btn" onclick="switchSection('appointments')" title="Book New Appointment">
+            <i class="ti ti-calendar-plus"></i>
+            <span>Book Appointment</span>
+          </button>
+        </div>
+
+        <!-- ─── Summary Stat Cards ─── -->
+        <div class="pd-stats">
+          <div class="pd-stat-card" onclick="switchSection('appointments')">
+            <div class="pd-stat-icon"><i class="ti ti-calendar-check"></i></div>
+            <div class="pd-stat-body">
+              <p class="pd-stat-label">Next Appointment</p>
+              <p class="pd-stat-value" id="next-appt-val">None Scheduled</p>
+              <span class="pd-stat-link">Book Now <i class="ti ti-arrow-right"></i></span>
+            </div>
+          </div>
+          <div class="pd-stat-card" onclick="switchSection('records')">
+            <div class="pd-stat-icon"><i class="ti ti-chart-bar"></i></div>
+            <div class="pd-stat-body">
+              <p class="pd-stat-label">Total Visits</p>
+              <p class="pd-stat-value" id="total-visits-val">0</p>
+              <span class="pd-stat-link">View History <i class="ti ti-arrow-right"></i></span>
+            </div>
+          </div>
+          <div class="pd-stat-card" onclick="switchSection('billing')">
+            <div class="pd-stat-icon"><i class="ti ti-wallet"></i></div>
+            <div class="pd-stat-body">
+              <p class="pd-stat-label">Unpaid Balance</p>
+              <p class="pd-stat-value" id="unpaid-val">₱0.00</p>
+              <span class="pd-stat-link">Pay Now <i class="ti ti-arrow-right"></i></span>
+            </div>
+          </div>
+          <div class="pd-stat-card" onclick="switchSection('records')">
+            <div class="pd-stat-icon"><i class="ti ti-heart-rate-monitor"></i></div>
+            <div class="pd-stat-body">
+              <p class="pd-stat-label">Health Status</p>
+              <p class="pd-stat-value" id="health-status-val">Good</p>
+              <span class="pd-stat-link">View Details <i class="ti ti-arrow-right"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Upcoming Appointments ─── -->
+        <div class="pd-card pd-upcoming-card">
+          <div class="pd-card-head">
+            <h3 class="pd-card-title"><i class="ti ti-calendar-event"></i> Upcoming Appointments</h3>
+            <button type="button" class="pd-see-all" onclick="switchSection('records')">See All <i class="ti ti-arrow-right"></i></button>
+          </div>
+          <!-- Hidden tab buttons kept for JS compatibility -->
+          <div class="mini-tab-pill-group" style="display:none;">
+            <button type="button" class="mini-tab-btn active" id="tab-btn-upcoming" onclick="toggleOverviewApptTab('upcoming')">Upcoming</button>
+            <button type="button" class="mini-tab-btn" id="tab-btn-history" onclick="toggleOverviewApptTab('history')">Past History</button>
+          </div>
+          <div id="upcoming-appointments-list">
+            <div class="pd-empty-appt">
+              <div class="pd-empty-appt-icon"><i class="ti ti-clock"></i></div>
+              <div class="pd-empty-appt-text">
+                <strong>No upcoming appointments</strong>
+                <span>Book your next visit for a healthier smile!</span>
+              </div>
+              <button type="button" class="pd-empty-appt-btn" onclick="switchSection('appointments')">Schedule Now</button>
+            </div>
+          </div>
+          <div id="history-appointments-list" style="display: none;"></div>
+        </div>
+
+        <!-- ─── Quick Access ─── -->
+        <div class="pd-quick">
+          <h3 class="pd-quick-title"><i class="ti ti-bolt"></i> Quick Access</h3>
+          <div class="pd-quick-grid">
+            <button type="button" class="pd-quick-tile" onclick="switchSection('records')">
+              <i class="ti ti-clipboard-heart"></i><span>My Records</span>
             </button>
-            <button class="btn btn-primary" id="quick-book-btn" onclick="switchSection('appointments')" title="Book New Appointment">
-              <i class="ti ti-calendar-plus"></i>
-              <span>Book Appointment</span>
+            <button type="button" class="pd-quick-tile" onclick="switchSection('settings')">
+              <i class="ti ti-settings"></i><span>Settings</span>
+            </button>
+            <button type="button" class="pd-quick-tile" onclick="switchSection('billing')">
+              <i class="ti ti-file-invoice"></i><span>Invoices</span>
+            </button>
+            <button type="button" class="pd-quick-tile" onclick="(window.openContactClinicPrompt || window.openHelpCenterModal)()">
+              <i class="ti ti-headset"></i><span>Support</span>
             </button>
           </div>
         </div>
 
-        <!-- Stats Row -->
-        <div class="stats-row">
-          <div class="stat-card stat-primary">
-            <div class="stat-icon">
-              <i class="ti ti-calendar" style="font-size: 22px;"></i>
-            </div>
-            <div class="stat-content">
-              <p class="stat-label">Next Appointment</p>
-              <p class="stat-value" id="next-appt-val">None Scheduled</p>
-            </div>
+        <!-- ─── Footer ─── -->
+        <div class="pd-home-footer">
+          <div class="pd-home-footer-brand">
+            <svg class="pd-brand-logo-svg" viewBox="0 0 36 36" width="32" height="32" fill="none" stroke="#0e4a5c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 10 C6 14 6 19 8 23 C9.5 26.5 10.5 30 13.5 30 C15.5 30 15.5 25.5 18 25.5 C20.5 25.5 20.5 30 22.5 30 C25.5 30 26.5 26.5 28 23 C30 19 30 14 27 10 C24 6 21 8 18 8 C15 8 12 6 9 10 Z" />
+              <path d="M13 16 Q18 20 23 16" stroke-width="2" />
+            </svg>
+            <span><strong>DentalCare</strong><small>Healthy Smile, Brighter You</small></span>
           </div>
-          <div class="stat-card stat-success">
-            <div class="stat-icon"><i class="ti ti-check" style="font-size: 22px;"></i>
-            </div>
-            <div class="stat-content">
-              <p class="stat-label">Total Visits</p>
-              <p class="stat-value" id="total-visits-val">0</p>
-            </div>
-          </div>
-          <div class="stat-card stat-warning">
-            <div class="stat-icon">
-              <i class="ti ti-credit-card" style="font-size: 22px;"></i>
-            </div>
-            <div class="stat-content">
-              <p class="stat-label">Unpaid Balance</p>
-              <p class="stat-value" id="unpaid-val">₱0.00</p>
-            </div>
-          </div>
-          <div class="stat-card stat-info">
-            <div class="stat-icon">
-              <i class="ti ti-circle-check" style="font-size: 22px;"></i>
-            </div>
-            <div class="stat-content">
-              <p class="stat-label">Health Status</p>
-              <p class="stat-value" id="health-status-val">Good</p>
-            </div>
-          </div>
-        </div>
-
-
-        <!-- Overview Main Grid -->
-        <div class="overview-grid">
-          <!-- Upcoming Appointments & Past History Card -->
-          <div class="card appointments-preview-card">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <h3 class="card-title" style="margin: 0;">Visits</h3>
-                <div class="mini-tab-pill-group">
-                  <button type="button" class="mini-tab-btn active" id="tab-btn-upcoming" onclick="toggleOverviewApptTab('upcoming')">Upcoming</button>
-                  <button type="button" class="mini-tab-btn" id="tab-btn-history" onclick="toggleOverviewApptTab('history')">Past History</button>
-                </div>
-              </div>
-              <button class="card-action-btn" onclick="switchSection('records')">All Records →</button>
-            </div>
-            <div id="upcoming-appointments-list">
-              <div class="empty-state-sm">
-                <i class="ti ti-calendar" style="font-size: 32px;"></i>
-                <p>No upcoming appointments</p>
-                <button class="link-btn" onclick="switchSection('appointments')">Schedule one now →</button>
-              </div>
-            </div>
-            <div id="history-appointments-list" style="display: none;">
-              <div class="empty-state-sm"><i class="ti ti-clock" style="font-size: 32px;"></i>
-                <p>No past visit history yet</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent Invoices Card -->
-          <div class="card invoices-preview-card">
-            <div class="card-header">
-              <h3 class="card-title">Recent Billing</h3>
-              <button class="card-action-btn" onclick="switchSection('billing')">View All</button>
-            </div>
-            <div id="recent-invoices-list">
-              <div class="empty-state-sm">
-                <i class="ti ti-credit-card" style="font-size: 32px;"></i>
-                <p>No billing history</p>
-              </div>
-            </div>
-          </div>
+          <button type="button" class="pd-home-footer-help" onclick="(window.openContactClinicPrompt || window.openHelpCenterModal)()">
+            <strong>Need help?</strong>
+            <small>Contact us anytime.</small>
+          </button>
         </div>
       </section>
 

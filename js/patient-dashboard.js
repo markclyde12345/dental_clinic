@@ -693,7 +693,16 @@ function setGreeting() {
   else if (hour >= 17) greeting = 'Good evening';
   const name = user.firstName || user.name?.split(' ')[0] || 'there';
   const el = document.getElementById('greeting-text');
-  if (el) el.textContent = `${greeting}, ${name}! Here's your dental health summary.`;
+  const heroGreet = document.getElementById('pd-hero-greet');
+  const heroName = document.getElementById('pd-hero-name');
+  if (heroGreet && heroName) {
+    // New hero layout: split greeting, name and summary line
+    heroGreet.textContent = `${greeting},`;
+    heroName.textContent = `${name}!`;
+    if (el) el.textContent = "Here's your dental health summary for today.";
+  } else if (el) {
+    el.textContent = `${greeting}, ${name}! Here's your dental health summary.`;
+  }
 }
 
 // ─── Render User Info ────────────────────────────────────────
@@ -994,10 +1003,13 @@ function renderUpcomingPreview() {
 
   if (upcoming.length === 0) {
     container.innerHTML = `
-      <div class="empty-state-sm">
-        <i class="ti ti-calendar" style="font-size: 32px;"></i>
-        <p>No upcoming appointments</p>
-        <button class="link-btn" onclick="switchSection('appointments')">Schedule one now →</button>
+      <div class="pd-empty-appt">
+        <div class="pd-empty-appt-icon"><i class="ti ti-clock"></i></div>
+        <div class="pd-empty-appt-text">
+          <strong>No upcoming appointments</strong>
+          <span>Book your next visit for a healthier smile!</span>
+        </div>
+        <button type="button" class="pd-empty-appt-btn" onclick="switchSection('appointments')">Schedule Now</button>
       </div>`;
     return;
   }
