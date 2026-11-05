@@ -26,7 +26,15 @@ const {
   verifyTotpSetup,
   disableTotp,
   getTotpStatus,
-  regenerateBackupCodes
+  regenerateBackupCodes,
+  getVisitsHistory,
+  addVisitRecord,
+  updateVisitRecord,
+  archiveVisitRecord,
+  checkInVisit,
+  checkOutVisit,
+  getPersonTimeline,
+  exportHistoryCSV,
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -78,4 +86,22 @@ router.route('/staff-schedules/:id')
   .put(protect, authorize('Admin', 'Receptionist', 'Dentist'), updateStaffSchedule)
   .delete(protect, authorize('Admin'), deleteStaffSchedule);
 
+
+// ─── History / Visits Management Routes ──────────────────────────────────────
+router.route('/history')
+  .get(protect, authorize('Admin', 'Receptionist', 'Dentist'), getVisitsHistory)
+  .post(protect, authorize('Admin', 'Receptionist'), addVisitRecord);
+
+// Person timeline MUST come BEFORE /:id to avoid route conflict
+router.get('/history/person/:patientId', protect, authorize('Admin', 'Receptionist', 'Dentist'), getPersonTimeline);
+
+router.route('/history/:id')
+  .put(protect, authorize('Admin', 'Receptionist'), updateVisitRecord);
+
+router.patch('/history/:id/archive', protect, authorize('Admin'), archiveVisitRecord);
+router.patch('/history/:id/checkin',  protect, authorize('Admin', 'Receptionist'), checkInVisit);
+router.patch('/history/:id/checkout', protect, authorize('Admin', 'Receptionist'), checkOutVisit);
+router.get('/history-export', protect, authorize('Admin', 'Receptionist'), exportHistoryCSV);
+
 module.exports = router;
+

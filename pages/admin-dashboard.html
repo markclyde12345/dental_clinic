@@ -1222,49 +1222,256 @@
 
         <!-- 10. VISITS HISTORY TAB -->
         <div id="tab-history" class="tab-pane">
-          <div class="admin-table-card">
-            <div class="admin-table-card-header">
+
+          <!-- KPI Summary Strip -->
+          <div class="hist-kpi-strip" id="hist-kpi-strip">
+            <div class="hist-kpi-card"><div class="hist-kpi-num" id="hkpi-total">–</div><div class="hist-kpi-lbl">Total Visits</div></div>
+            <div class="hist-kpi-card green"><div class="hist-kpi-num" id="hkpi-completed">–</div><div class="hist-kpi-lbl">Completed</div></div>
+            <div class="hist-kpi-card blue"><div class="hist-kpi-num" id="hkpi-scheduled">–</div><div class="hist-kpi-lbl">Scheduled</div></div>
+            <div class="hist-kpi-card red"><div class="hist-kpi-num" id="hkpi-cancelled">–</div><div class="hist-kpi-lbl">Cancelled</div></div>
+            <div class="hist-kpi-card orange"><div class="hist-kpi-num" id="hkpi-noshow">–</div><div class="hist-kpi-lbl">No-show</div></div>
+            <div class="hist-kpi-card gray"><div class="hist-kpi-num" id="hkpi-archived">–</div><div class="hist-kpi-lbl">Archived</div></div>
+          </div>
+
+          <div class="admin-table-card" style="margin-top:0;">
+            <!-- Header Row -->
+            <div class="admin-table-card-header" style="flex-wrap:wrap; gap:10px;">
               <div>
-                <h3 class="admin-table-title"><i class="ti ti-history"></i> Clinic Visits &amp; Appointment History</h3>
-                <p class="admin-table-subtitle">Historical records of completed, cancelled, and archived consultations</p>
+                <h3 class="admin-table-title"><i class="ti ti-history"></i> Manage Visits History</h3>
+                <p class="admin-table-subtitle">Full CRUD – search, filter, sort, export, archive &amp; audit trail</p>
               </div>
-            </div>
-            
-            <!-- Filter Bar for History -->
-            <div class="admin-filter-bar" style="margin-bottom: 20px; padding: 10px 14px;">
-              <div class="search-input-wrapper" style="flex: 1; min-width: 240px;">
-                <i class="ti ti-search" style="font-size: 16px; color: #94a3b8;"></i>
-                <input type="text" id="history-search-input" placeholder="Search history by patient name or treatment...">
-              </div>
-              <div class="filter-group">
-                <span class="filter-group-label">Status:</span>
-                <select id="history-status-filter" class="admin-select-pill">
-                  <option value="all">All Statuses</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <button class="admin-btn admin-btn-primary" onclick="openAddVisitModal()"><i class="ti ti-plus"></i> Add Visit</button>
+                <button class="admin-btn" style="background:#17a2b8;color:#fff;" onclick="exportHistoryCSV()"><i class="ti ti-table-export"></i> Export CSV</button>
+                <button class="admin-btn" style="background:#6c757d;color:#fff;" onclick="printHistoryTable()"><i class="ti ti-printer"></i> Print</button>
+                <button class="admin-btn" style="background:#6f42c1;color:#fff;" onclick="toggleHistoryArchived()"><i class="ti ti-archive"></i> <span id="hist-archive-toggle-label">Show Archived</span></button>
               </div>
             </div>
 
-            <div class="admin-table-wrapper">
-              <table class="table-enhanced">
+            <!-- Advanced Filter Bar -->
+            <div class="hist-filter-bar" style="padding:14px 20px; display:flex; flex-wrap:wrap; gap:10px; border-bottom:1px solid var(--border-color);">
+              <div class="search-input-wrapper" style="flex:1; min-width:200px;">
+                <i class="ti ti-search" style="font-size:15px;color:#94a3b8;"></i>
+                <input type="text" id="hist-search" placeholder="Search by name, ID, treatment, notes…" oninput="debounceHistoryFilter()">
+              </div>
+              <input type="date" id="hist-date-from" class="admin-select-pill" title="Date From" onchange="applyHistoryFilters()" style="padding:7px 10px;">
+              <input type="date" id="hist-date-to" class="admin-select-pill" title="Date To" onchange="applyHistoryFilters()" style="padding:7px 10px;">
+              <select id="hist-status-filter" class="admin-select-pill" onchange="applyHistoryFilters()">
+                <option value="all">All Statuses</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Checked-In">Checked-In</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="No-show">No-show</option>
+              </select>
+              <select id="hist-dentist-filter" class="admin-select-pill" onchange="applyHistoryFilters()">
+                <option value="">All Dentists</option>
+              </select>
+              <select id="hist-sort-by" class="admin-select-pill" onchange="applyHistoryFilters()">
+                <option value="date_desc">Newest First</option>
+                <option value="date_asc">Oldest First</option>
+                <option value="patient_name">Patient Name</option>
+                <option value="status">Status</option>
+              </select>
+              <button class="admin-btn" style="background:#f8f9fa;color:#495057;border:1px solid #dee2e6;" onclick="clearHistoryFilters()"><i class="ti ti-filter-off"></i> Clear</button>
+            </div>
+
+            <!-- Results count -->
+            <div style="padding:8px 20px; font-size:0.82rem; color:#6c757d;" id="hist-results-label">Loading…</div>
+
+            <!-- Table -->
+            <div class="admin-table-wrapper hist-print-area">
+              <table class="table-enhanced" id="hist-main-table">
                 <thead>
                   <tr>
-                    <th style="width: 22%;">Date &amp; Time</th>
-                    <th style="width: 25%;">Patient</th>
-                    <th style="width: 25%;">Treatment</th>
-                    <th style="width: 15%;">Status</th>
-                    <th style="width: 13%;">Dentist</th>
+                    <th style="width:5%;"><input type="checkbox" id="hist-select-all" onchange="histSelectAll(this)" title="Select All"></th>
+                    <th style="width:16%; cursor:pointer;" onclick="histSortByCol('date')">Date &amp; Time <i class="ti ti-arrows-sort" style="font-size:11px;"></i></th>
+                    <th style="width:18%; cursor:pointer;" onclick="histSortByCol('patient')">Patient <i class="ti ti-arrows-sort" style="font-size:11px;"></i></th>
+                    <th style="width:16%;">Treatment</th>
+                    <th style="width:11%;">Check-In</th>
+                    <th style="width:11%;">Check-Out</th>
+                    <th style="width:11%; cursor:pointer;" onclick="histSortByCol('status')">Status <i class="ti ti-arrows-sort" style="font-size:11px;"></i></th>
+                    <th style="width:12%;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="history-table-body">
-                  <tr>
-                    <td colspan="5" style="padding: 28px; text-align: center; color: #888;">Loading history...</td>
-                  </tr>
+                  <tr><td colspan="8" style="padding:28px;text-align:center;color:#888;">Loading history…</td></tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- Pagination -->
+            <div id="hist-pagination" class="hist-pagination-bar" style="display:none; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; border-top:1px solid var(--border-color);">
+              <span id="hist-page-info" style="font-size:0.83rem;color:#6c757d;"></span>
+              <div style="display:flex;gap:6px;">
+                <button class="admin-btn" id="hist-prev-btn" onclick="changeHistPage(-1)" style="padding:5px 14px;"><i class="ti ti-chevron-left"></i> Prev</button>
+                <div id="hist-page-numbers" style="display:flex;gap:4px;"></div>
+                <button class="admin-btn" id="hist-next-btn" onclick="changeHistPage(1)" style="padding:5px 14px;">Next <i class="ti ti-chevron-right"></i></button>
+              </div>
+              <select id="hist-page-size" class="admin-select-pill" onchange="changeHistPageSize(this.value)" style="font-size:0.82rem;">
+                <option value="10">10 / page</option>
+                <option value="15" selected>15 / page</option>
+                <option value="25">25 / page</option>
+                <option value="50">50 / page</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Per-Person Timeline Panel (collapsible) -->
+          <div id="hist-timeline-panel" style="display:none; margin-top:16px;">
+            <div class="admin-table-card">
+              <div class="admin-table-card-header">
+                <div>
+                  <h3 class="admin-table-title" id="hist-timeline-title"><i class="ti ti-user-clock"></i> Patient Visit Timeline</h3>
+                  <p class="admin-table-subtitle" id="hist-timeline-sub">All visits for selected patient</p>
+                </div>
+                <button class="admin-btn" onclick="closePersonTimeline()" style="background:#f8f9fa;color:#495057;border:1px solid #dee2e6;"><i class="ti ti-x"></i> Close</button>
+              </div>
+              <div id="hist-timeline-body" style="padding:16px 20px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════ HISTORY MODALS ══════════ -->
+
+        <!-- Modal: Add Visit -->
+        <div id="modal-add-visit" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeHistModal('modal-add-visit')">
+          <div class="modal-container" style="max-width:580px; max-height:90vh; overflow-y:auto;">
+            <div class="modal-header">
+              <h3 class="modal-title"><i class="ti ti-calendar-plus"></i> Add Visit Record</h3>
+              <button class="modal-close" onclick="closeHistModal('modal-add-visit')">&times;</button>
+            </div>
+            <form id="form-add-visit" onsubmit="submitAddVisit(event)">
+              <div class="modal-body" style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Patient <span class="req-star">*</span></label>
+                  <select id="av-patient" class="admin-select-pill" style="width:100%;" required>
+                    <option value="">Select Patient…</option>
+                  </select>
+                  <div class="hist-field-err" id="av-patient-err"></div>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Appointment Date &amp; Time <span class="req-star">*</span></label>
+                  <input type="datetime-local" id="av-date" class="admin-select-pill" style="width:100%;" required>
+                  <div class="hist-field-err" id="av-date-err"></div>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Treatment</label>
+                  <select id="av-treatment" class="admin-select-pill" style="width:100%;">
+                    <option value="">General Consultation</option>
+                  </select>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Dentist / Staff</label>
+                  <select id="av-dentist" class="admin-select-pill" style="width:100%;">
+                    <option value="">Unassigned</option>
+                  </select>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Status</label>
+                  <select id="av-status" class="admin-select-pill" style="width:100%;">
+                    <option value="Completed">Completed</option>
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="No-show">No-show</option>
+                  </select>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Purpose / Reason <span class="req-star">*</span></label>
+                  <input type="text" id="av-purpose" class="admin-select-pill" style="width:100%;" placeholder="e.g. Routine check-up, follow-up after extraction…" required>
+                  <div class="hist-field-err" id="av-purpose-err"></div>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Clinical Notes</label>
+                  <textarea id="av-notes" class="admin-select-pill" style="width:100%;resize:vertical;height:70px;" placeholder="Clinical notes or visit summary…"></textarea>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Admin Notes</label>
+                  <textarea id="av-admin-notes" class="admin-select-pill" style="width:100%;resize:vertical;height:60px;" placeholder="Internal admin notes (not visible to patient)…"></textarea>
+                </div>
+              </div>
+              <div class="modal-footer" style="padding:14px 20px; display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="admin-btn" onclick="closeHistModal('modal-add-visit')" style="background:#f8f9fa;color:#495057;border:1px solid #dee2e6;">Cancel</button>
+                <button type="submit" class="admin-btn admin-btn-primary"><i class="ti ti-device-floppy"></i> Save Visit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Modal: Edit Visit -->
+        <div id="modal-edit-visit" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeHistModal('modal-edit-visit')">
+          <div class="modal-container" style="max-width:580px; max-height:90vh; overflow-y:auto;">
+            <div class="modal-header">
+              <h3 class="modal-title"><i class="ti ti-edit"></i> Edit Visit Record</h3>
+              <button class="modal-close" onclick="closeHistModal('modal-edit-visit')">&times;</button>
+            </div>
+            <form id="form-edit-visit" onsubmit="submitEditVisit(event)">
+              <input type="hidden" id="ev-id">
+              <div class="modal-body" style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Patient</label>
+                  <input type="text" id="ev-patient-name" class="admin-select-pill" style="width:100%;" readonly>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Appointment Date &amp; Time <span class="req-star">*</span></label>
+                  <input type="datetime-local" id="ev-date" class="admin-select-pill" style="width:100%;" required>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Status</label>
+                  <select id="ev-status" class="admin-select-pill" style="width:100%;">
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Checked-In">Checked-In</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="No-show">No-show</option>
+                  </select>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Purpose / Reason</label>
+                  <input type="text" id="ev-purpose" class="admin-select-pill" style="width:100%;">
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Check-In Time</label>
+                  <input type="datetime-local" id="ev-checkin" class="admin-select-pill" style="width:100%;">
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Check-Out Time</label>
+                  <input type="datetime-local" id="ev-checkout" class="admin-select-pill" style="width:100%;">
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Clinical Notes</label>
+                  <textarea id="ev-notes" class="admin-select-pill" style="width:100%;resize:vertical;height:70px;"></textarea>
+                </div>
+                <div class="hist-form-row">
+                  <label class="hist-form-label">Admin Notes</label>
+                  <textarea id="ev-admin-notes" class="admin-select-pill" style="width:100%;resize:vertical;height:60px;"></textarea>
+                </div>
+              </div>
+              <div class="modal-footer" style="padding:14px 20px; display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="admin-btn" onclick="closeHistModal('modal-edit-visit')" style="background:#f8f9fa;color:#495057;border:1px solid #dee2e6;">Cancel</button>
+                <button type="submit" class="admin-btn admin-btn-primary"><i class="ti ti-device-floppy"></i> Update Visit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Modal: View Visit Details -->
+        <div id="modal-view-visit" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeHistModal('modal-view-visit')">
+          <div class="modal-container" style="max-width:620px; max-height:90vh; overflow-y:auto;">
+            <div class="modal-header">
+              <h3 class="modal-title"><i class="ti ti-eye"></i> Visit Details</h3>
+              <button class="modal-close" onclick="closeHistModal('modal-view-visit')">&times;</button>
+            </div>
+            <div class="modal-body" id="view-visit-body" style="padding:20px;">
+              <p style="color:#888;">Loading…</p>
+            </div>
+            <div class="modal-footer" style="padding:14px 20px; display:flex; justify-content:flex-end; gap:10px;">
+              <button class="admin-btn" onclick="closeHistModal('modal-view-visit')" style="background:#f8f9fa;color:#495057;border:1px solid #dee2e6;">Close</button>
             </div>
           </div>
         </div>

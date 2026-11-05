@@ -1228,3 +1228,401 @@ module.exports = {
   regenerateBackupCodes
 };
 
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HISTORY MANAGEMENT — Manage Visits / Appointments History
+// ═══════════════════════════════════════════════════════════════════════════════
+const VISIT_SUPP_PATH = path.join(__dirname, '..', 'data', 'visit_supplements.json');
+
+function loadVisitSupplements() {
+  try {
+    const raw = fs.readFileSync(VISIT_SUPP_PATH, 'utf8');
+    return JSON.parse(raw) || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveVisitSupplements(data) {
+  fs.writeFileSync(VISIT_SUPP_PATH, JSON.stringify(data, null, 2), 'utf8');
+}
+
+/**
+ * GET /api/admin/history
+ * Returns all appointments enriched with supplement data (archived, check-in/out, admin_notes).
+ * Query params: search, status, dateFrom, dateTo, dentist, sortBy, page, limit, includeArchived
+ */
+exports.getVisitsHistory = async (req, res) => {
+  try {
+    const {
+      search = '',
+      status = '',
+      dateFrom = '',
+      dateTo = '',
+      dentist = '',
+      sortBy = 'date_desc',
+      page = 1,
+      limit = 15,
+      includeArchived = 'false'
+    } = req.query;
+
+    const { data, error } = await supabase
+      .from('appointments')
+      .select(`
+        id, appointment_date, status, notes,
+        patient:patient_id ( id, first_name, last_name, email, phone ),
+        treatment:treatment_id ( id, name ),
+        dentist:dentist_id ( id, first_name, last_name )
+      `)
+      .order('appointment_date', { ascending: false });
+
+    if (error) return res.status(500).json({ message: error.message });
+
+    const supplements = loadVisitSupplements();
+    let records = (data || []).map(a => {
+      const supp = supplements[a.id] || {};
+      return { ...a, ...supp };
+    });
+
+    // Filter out archived unless requested
+    if (includeArchived !== 'true') {
+      records = records.filter(r => !r.archived);
+    }
+
+    // Search filter
+    if (search) {
+      const q = search.toLowerCase();
+      records = records.filter(r => {
+        const pName = r.patient
+          ? `${r.patient.first_name || ''} ${r.patient.last_name || ''}`.toLowerCase()
+          : '';
+        const treat = r.treatment ? (r.treatment.name || '').toLowerCase() : '';
+        const dName = r.dentist
+          ? `${r.dentist.first_name || ''} ${r.dentist.last_name || ''}`.toLowerCase()
+          : '';
+        const notes = (r.notes || '').toLowerCase();
+        const adminNotes = (r.admin_notes || '').toLowerCase();
+        return pName.includes(q) || treat.includes(q) || dName.includes(q) || notes.includes(q) || adminNotes.includes(q) || String(r.id).includes(q);
+      });
+    }
+
+    // Status filter
+    if (status && status !== 'all') {
+      records = records.filter(r => (r.status || '').toLowerCase() === status.toLowerCase());
+    }
+
+    // Date range filter
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      records = records.filter(r => new Date(r.appointment_date) >= from);
+    }
+    if (dateTo) {
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      records = records.filter(r => new Date(r.appointment_date) <= to);
+    }
+
+    // Dentist filter
+    if (dentist) {
+      const dq = dentist.toLowerCase();
+      records = records.filter(r => {
+        const dName = r.dentist
+          ? `${r.dentist.first_name || ''} ${r.dentist.last_name || ''}`.toLowerCase()
+          : '';
+        return dName.includes(dq);
+      });
+    }
+
+    // Sorting
+    records.sort((a, b) => {
+      if (sortBy === 'date_asc') return new Date(a.appointment_date) - new Date(b.appointment_date);
+      if (sortBy === 'date_desc') return new Date(b.appointment_date) - new Date(a.appointment_date);
+      if (sortBy === 'patient_name') {
+        const na = a.patient ? `${a.patient.first_name} ${a.patient.last_name}` : '';
+        const nb = b.patient ? `${b.patient.first_name} ${b.patient.last_name}` : '';
+        return na.localeCompare(nb);
+      }
+      if (sortBy === 'status') return (a.status || '').localeCompare(b.status || '');
+      return new Date(b.appointment_date) - new Date(a.appointment_date);
+    });
+
+    // Summary stats (computed before pagination)
+    const summary = {
+      total: records.length,
+      completed: records.filter(r => r.status === 'Completed').length,
+      scheduled: records.filter(r => ['Pending', 'Approved', 'Scheduled'].includes(r.status)).length,
+      cancelled: records.filter(r => r.status === 'Cancelled').length,
+      noshow: records.filter(r => r.status === 'No-show').length,
+      archived: records.filter(r => r.archived).length,
+    };
+
+    // Pagination
+    const pageNum = Math.max(1, parseInt(page));
+    const pageSize = Math.max(1, Math.min(100, parseInt(limit)));
+    const totalPages = Math.ceil(records.length / pageSize);
+    const paginated = records.slice((pageNum - 1) * pageSize, pageNum * pageSize);
+
+    return res.json({
+      records: paginated,
+      summary,
+      pagination: { page: pageNum, limit: pageSize, total: records.length, totalPages }
+    });
+  } catch (err) {
+    console.error('getVisitsHistory error:', err);
+    return res.status(500).json({ message: 'Server error fetching history' });
+  }
+};
+
+/**
+ * POST /api/admin/history
+ * Manually add a new visit record (creates an appointment entry).
+ */
+exports.addVisitRecord = async (req, res) => {
+  try {
+    const { patient_id, treatment_id, dentist_id, appointment_date, status, notes, admin_notes, purpose } = req.body;
+    if (!patient_id || !appointment_date) {
+      return res.status(400).json({ message: 'Patient and appointment date are required.' });
+    }
+    const { data, error } = await supabase
+      .from('appointments')
+      .insert([{
+        patient_id,
+        treatment_id: treatment_id || null,
+        dentist_id: dentist_id || null,
+        appointment_date,
+        status: status || 'Completed',
+        notes: notes || '',
+      }])
+      .select()
+      .single();
+
+    if (error) return res.status(500).json({ message: error.message });
+
+    // Store supplement data
+    const supplements = loadVisitSupplements();
+    supplements[data.id] = {
+      admin_notes: admin_notes || '',
+      purpose: purpose || '',
+      archived: false,
+      check_in_time: null,
+      check_out_time: null,
+      attachments: [],
+      audit_entries: [{
+        action: 'created',
+        by: req.user ? req.user.name : 'Admin',
+        at: new Date().toISOString(),
+        notes: 'Visit record manually added'
+      }]
+    };
+    saveVisitSupplements(supplements);
+
+    if (req.auditLogger) {
+      req.auditLogger('ADD_VISIT', req.user, { appointmentId: data.id });
+    }
+
+    return res.status(201).json({ message: 'Visit record added.', record: data });
+  } catch (err) {
+    console.error('addVisitRecord error:', err);
+    return res.status(500).json({ message: 'Server error adding visit record' });
+  }
+};
+
+/**
+ * PUT /api/admin/history/:id
+ * Edit visit record (status, notes, admin_notes, check-in/out times).
+ */
+exports.updateVisitRecord = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, notes, admin_notes, purpose, check_in_time, check_out_time } = req.body;
+
+    const updateData = {};
+    if (status !== undefined) updateData.status = status;
+    if (notes !== undefined) updateData.notes = notes;
+
+    if (Object.keys(updateData).length > 0) {
+      const { error } = await supabase.from('appointments').update(updateData).eq('id', id);
+      if (error) return res.status(500).json({ message: error.message });
+    }
+
+    // Update supplement
+    const supplements = loadVisitSupplements();
+    if (!supplements[id]) supplements[id] = { archived: false, attachments: [], audit_entries: [] };
+    if (admin_notes !== undefined) supplements[id].admin_notes = admin_notes;
+    if (purpose !== undefined) supplements[id].purpose = purpose;
+    if (check_in_time !== undefined) supplements[id].check_in_time = check_in_time;
+    if (check_out_time !== undefined) supplements[id].check_out_time = check_out_time;
+    if (!supplements[id].audit_entries) supplements[id].audit_entries = [];
+    supplements[id].audit_entries.push({
+      action: 'updated',
+      by: req.user ? req.user.name : 'Admin',
+      at: new Date().toISOString(),
+      notes: `Status: ${status || '-'}, Notes updated`
+    });
+    saveVisitSupplements(supplements);
+
+    return res.json({ message: 'Visit record updated.' });
+  } catch (err) {
+    console.error('updateVisitRecord error:', err);
+    return res.status(500).json({ message: 'Server error updating visit record' });
+  }
+};
+
+/**
+ * PATCH /api/admin/history/:id/archive
+ * Soft-archive (or unarchive) a visit record.
+ */
+exports.archiveVisitRecord = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { archived = true } = req.body;
+    const supplements = loadVisitSupplements();
+    if (!supplements[id]) supplements[id] = { archived: false, attachments: [], audit_entries: [] };
+    supplements[id].archived = !!archived;
+    if (!supplements[id].audit_entries) supplements[id].audit_entries = [];
+    supplements[id].audit_entries.push({
+      action: archived ? 'archived' : 'unarchived',
+      by: req.user ? req.user.name : 'Admin',
+      at: new Date().toISOString(),
+      notes: archived ? 'Record archived' : 'Record restored from archive'
+    });
+    saveVisitSupplements(supplements);
+    return res.json({ message: archived ? 'Visit archived.' : 'Visit restored from archive.' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error archiving visit' });
+  }
+};
+
+/**
+ * PATCH /api/admin/history/:id/checkin
+ * Record check-in time.
+ */
+exports.checkInVisit = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const supplements = loadVisitSupplements();
+    if (!supplements[id]) supplements[id] = { archived: false, attachments: [], audit_entries: [] };
+    supplements[id].check_in_time = new Date().toISOString();
+    if (!supplements[id].audit_entries) supplements[id].audit_entries = [];
+    supplements[id].audit_entries.push({ action: 'check_in', by: req.user ? req.user.name : 'Admin', at: supplements[id].check_in_time });
+    saveVisitSupplements(supplements);
+    // Also update status to Checked-In
+    await supabase.from('appointments').update({ status: 'Checked-In' }).eq('id', id);
+    return res.json({ message: 'Patient checked in.', check_in_time: supplements[id].check_in_time });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error during check-in' });
+  }
+};
+
+/**
+ * PATCH /api/admin/history/:id/checkout
+ * Record check-out time.
+ */
+exports.checkOutVisit = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const supplements = loadVisitSupplements();
+    if (!supplements[id]) supplements[id] = { archived: false, attachments: [], audit_entries: [] };
+    supplements[id].check_out_time = new Date().toISOString();
+    if (!supplements[id].audit_entries) supplements[id].audit_entries = [];
+    supplements[id].audit_entries.push({ action: 'check_out', by: req.user ? req.user.name : 'Admin', at: supplements[id].check_out_time });
+    saveVisitSupplements(supplements);
+    // Update status to Completed
+    await supabase.from('appointments').update({ status: 'Completed' }).eq('id', id);
+    return res.json({ message: 'Patient checked out.', check_out_time: supplements[id].check_out_time });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error during check-out' });
+  }
+};
+
+/**
+ * GET /api/admin/history/person/:patientId
+ * All visits for one patient (for per-person timeline).
+ */
+exports.getPersonTimeline = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const { data, error } = await supabase
+      .from('appointments')
+      .select(`
+        id, appointment_date, status, notes,
+        treatment:treatment_id ( id, name ),
+        dentist:dentist_id ( id, first_name, last_name )
+      `)
+      .eq('patient_id', patientId)
+      .order('appointment_date', { ascending: false });
+
+    if (error) return res.status(500).json({ message: error.message });
+
+    const supplements = loadVisitSupplements();
+    const records = (data || []).map(a => ({ ...a, ...(supplements[a.id] || {}) }));
+    return res.json({ records });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error fetching patient timeline' });
+  }
+};
+
+/**
+ * GET /api/admin/history-export
+ * Returns CSV data of history records.
+ */
+exports.exportHistoryCSV = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('appointments')
+      .select(`
+        id, appointment_date, status, notes,
+        patient:patient_id ( first_name, last_name, email, phone ),
+        treatment:treatment_id ( name ),
+        dentist:dentist_id ( first_name, last_name )
+      `)
+      .order('appointment_date', { ascending: false });
+
+    if (error) return res.status(500).json({ message: error.message });
+
+    const supplements = loadVisitSupplements();
+    const rows = (data || []).map(a => {
+      const supp = supplements[a.id] || {};
+      const pName = a.patient ? `${a.patient.first_name} ${a.patient.last_name}` : 'Unknown';
+      const treat = a.treatment ? a.treatment.name : 'General Consultation';
+      const dName = a.dentist ? `${a.dentist.first_name} ${a.dentist.last_name}` : 'Staff';
+      return [
+        a.id,
+        new Date(a.appointment_date).toLocaleString(),
+        pName,
+        a.patient ? a.patient.email : '',
+        a.patient ? a.patient.phone : '',
+        treat,
+        dName,
+        a.status || 'Pending',
+        supp.check_in_time ? new Date(supp.check_in_time).toLocaleString() : '',
+        supp.check_out_time ? new Date(supp.check_out_time).toLocaleString() : '',
+        supp.admin_notes || '',
+        supp.archived ? 'Yes' : 'No'
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+    });
+
+    const header = '"ID","Date & Time","Patient","Email","Phone","Treatment","Dentist","Status","Check-In","Check-Out","Admin Notes","Archived"';
+    const csv = [header, ...rows].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="fano_visits_history.csv"');
+    return res.send(csv);
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error exporting CSV' });
+  }
+};
+
+
+// Export history functions
+Object.assign(module.exports, {
+  getVisitsHistory: exports.getVisitsHistory,
+  addVisitRecord: exports.addVisitRecord,
+  updateVisitRecord: exports.updateVisitRecord,
+  archiveVisitRecord: exports.archiveVisitRecord,
+  checkInVisit: exports.checkInVisit,
+  checkOutVisit: exports.checkOutVisit,
+  getPersonTimeline: exports.getPersonTimeline,
+  exportHistoryCSV: exports.exportHistoryCSV
+});

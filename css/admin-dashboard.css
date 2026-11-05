@@ -5325,3 +5325,109 @@ body.dark-theme #modal-admin-service-details #admin-detail-duration {
 
 
 
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HISTORY MANAGEMENT — KPIs, Timeline, Pagination, Audit Log, Print
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* KPI Strip */
+.hist-kpi-strip {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.hist-kpi-card {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 14px 20px;
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  transition: transform 0.15s;
+}
+.hist-kpi-card:hover { transform: translateY(-2px); }
+.hist-kpi-card.green { border-left: 4px solid #2ecc71; }
+.hist-kpi-card.blue  { border-left: 4px solid #3498db; }
+.hist-kpi-card.red   { border-left: 4px solid #e74c3c; }
+.hist-kpi-card.orange{ border-left: 4px solid #e6a23c; }
+.hist-kpi-card.gray  { border-left: 4px solid #95a5a6; }
+.hist-kpi-num  { font-size: 1.7rem; font-weight: 800; color: var(--dark-color); line-height: 1; }
+.hist-kpi-lbl  { font-size: 0.74rem; color: #6c757d; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* Filter bar */
+.hist-filter-bar .admin-select-pill {
+  height: 36px;
+  font-size: 0.84rem;
+}
+
+/* Results label */
+#hist-results-label { color: #6c757d; font-size: 0.82rem; }
+
+/* Table badges */
+.hist-checkin-badge,
+.hist-checkout-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.hist-checkin-badge  { background: #d1f8e8; color: #1a7a4a; }
+.hist-checkout-badge { background: #e8d5ff; color: #5a2d8c; }
+
+/* Required star */
+.req-star { color: #e74c3c; font-weight: 700; }
+
+/* Form rows in modals */
+.hist-form-row { display: flex; flex-direction: column; gap: 4px; }
+.hist-form-label { font-size: 0.82rem; font-weight: 600; color: var(--dark-color); }
+.hist-field-err { font-size: 0.76rem; color: #e74c3c; min-height: 16px; }
+
+/* Pagination bar */
+.hist-pagination-bar { background: var(--card-bg); border-top: 1px solid var(--border-color); }
+#hist-page-numbers button { min-width: 32px; }
+
+/* Timeline */
+.hist-timeline { display: flex; flex-direction: column; gap: 0; padding-left: 20px; border-left: 2px solid var(--border-color); }
+.hist-timeline-item { display: flex; gap: 14px; padding: 12px 0; position: relative; }
+.hist-tl-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--border-color);
+  flex-shrink: 0;
+  margin-left: -28px;
+  margin-top: 4px;
+}
+.hist-tl-content { flex: 1; }
+.hist-tl-date   { font-size: 0.76rem; color: #6c757d; font-weight: 600; margin-bottom: 2px; }
+.hist-tl-treat  { font-size: 0.9rem; font-weight: 700; color: var(--dark-color); }
+.hist-tl-meta   { font-size: 0.78rem; color: #6c757d; margin-top: 2px; }
+.hist-tl-notes  { font-size: 0.78rem; color: #495057; background: #f8f9fa; padding: 6px 10px; border-radius: 6px; margin-top: 6px; }
+
+/* Audit log entries */
+.audit-log-entry {
+  font-size: 0.8rem;
+  padding: 7px 12px;
+  border-left: 3px solid #17a2b8;
+  background: #f0faff;
+  border-radius: 0 6px 6px 0;
+  color: #333;
+}
+
+/* Print styles */
+@media print {
+  .admin-sidebar, .admin-header, .nav-tab,
+  .hist-kpi-strip, .hist-filter-bar, .hist-pagination-bar,
+  .admin-table-card-header button, .modal-overlay { display: none !important; }
+  .hist-print-area { display: block !important; }
+  .admin-table-card { box-shadow: none !important; border: 1px solid #dee2e6; }
+  body { background: #fff !important; }
+}
+
+/* Spinner keyframes (if not already defined) */
+@keyframes spin { to { transform: rotate(360deg); } }

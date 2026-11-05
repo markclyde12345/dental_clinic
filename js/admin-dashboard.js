@@ -4751,99 +4751,601 @@ if (modalConfirmDelete) {
 }
 
 // ─── 10. Visits History Tab Functions ──────────────────────────────────────────
+// ═══ HISTORY MANAGEMENT JS ════════════════════════════════════════════════════
+// State
+let histData         = [];          // full current page records from server
+let histSummary      = {};          // { total, completed, scheduled, cancelled, noshow, archived }
+let histPagination   = { page: 1, limit: 15, total: 0, totalPages: 1 };
+let histCurrentPage  = 1;
+let histPageSize     = 15;
+let histShowArchived = false;
+let histSortCol      = 'date_desc';
+let histFilterTimer  = null;
+let histAllPatients  = [];
+let histAllDentists  = [];
+let histAllTreatments = [];
+
+// ── Load History ──────────────────────────────────────────────────────────────
 function loadVisitsHistory() {
-  const tbody = document.getElementById('history-table-body');
-  if (allAppointments.length === 0) {
-    if (!token) {
-      if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #888;">Please log in as an administrator to view visits history.</td></tr>';
-      }
-      return;
-    }
-    fetch(APPT_API, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(async res => {
-      if (res.status === 401 || res.status === 403) {
-        if (tbody) {
-          tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #888;">Session expired. Please <a href="login.html" style="color: var(--secondary-color); font-weight: 600;">log in</a> to view visits history.</td></tr>';
-        }
-        return;
-      }
-      const data = await res.json();
-      if (data && data.message && !Array.isArray(data)) {
-        if (tbody) {
-          tbody.innerHTML = `<tr><td colspan="5" style="padding: 24px; text-align: center; color: #e53e3e;">Failed to load history: ${escapeHTML(data.message)}</td></tr>`;
-        }
-        showToast(data.message, 'error');
-        return;
-      }
-      allAppointments = Array.isArray(data) ? data : [];
-      filterAndRenderHistory();
-    })
-    .catch(err => {
-      console.error('Error loading history:', err);
-      if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #e53e3e;">Failed to load visits history. Please check connection.</td></tr>';
-      }
-      showToast('Failed to load visits history', 'error');
-    });
-  } else {
-    filterAndRenderHistory();
-  }
+  fetchHistoryFromServer();
+  populateHistoryDropdowns();
 }
 
-function filterAndRenderHistory() {
-  const searchInput = document.getElementById('history-search-input');
-  const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
+function fetchHistoryFromServer() {
+  const tbody = document.getElementById('history-table-body');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="padding:28px;text-align:center;color:#888;">Loading…</td></tr>';
 
-  const statusFilterEl = document.getElementById('history-status-filter');
-  const statusFilterVal = statusFilterEl ? statusFilterEl.value : 'all';
+  const params = buildHistoryParams();
+  fetch(`/api/admin/history?${params}`, { headers: { 'Authorization': `Bearer ${token}` } })
+    .then(async res => {
+      if (res.status === 401 || res.status === 403) {
+        if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="padding:24px;text-align:center;color:#888;">Session expired. Please <a href="login.html">log in</a>.</td></tr>';
+        return;
+      }
+      const result = await res.json();
+      if (!res.ok) { showToast(result.message || 'Failed to load history', 'error'); return; }
+      histData       = result.records  || [];
+      histSummary    = result.summary  || {};
+      histPagination = result.pagination || { page: 1, limit: histPageSize, total: 0, totalPages: 1 };
+      histCurrentPage = histPagination.page;
+      renderHistoryKPIs();
+      renderHistoryTable();
+      renderHistPagination();
+    })
+    .catch(err => {
+      console.error('fetchHistoryFromServer error:', err);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="padding:24px;text-align:center;color:#e53e3e;">Failed to load history. Check connection.</td></tr>';
+    });
+}
 
-  const filtered = allAppointments.filter(a => {
-    const patientName = a.patient ? (a.patient.name || `${a.patient.first_name || ''} ${a.patient.last_name || ''}`.trim() || '').toLowerCase() : '';
-    const treatmentName = a.treatment ? (a.treatment.name || '').toLowerCase() : 'general consultation';
-    const status = (a.status || 'Pending').toLowerCase();
-    
-    const matchesSearch = patientName.includes(searchVal) || treatmentName.includes(searchVal);
-    const matchesStatus = (statusFilterVal === 'all' || status === statusFilterVal.toLowerCase());
+function buildHistoryParams() {
+  const search    = (document.getElementById('hist-search')?.value || '').trim();
+  const status    = document.getElementById('hist-status-filter')?.value || 'all';
+  const dateFrom  = document.getElementById('hist-date-from')?.value || '';
+  const dateTo    = document.getElementById('hist-date-to')?.value || '';
+  const dentist   = document.getElementById('hist-dentist-filter')?.value || '';
+  const sortBy    = document.getElementById('hist-sort-by')?.value || 'date_desc';
+  const page      = histCurrentPage;
+  const limit     = histPageSize;
+  const archived  = histShowArchived ? 'true' : 'false';
+  return new URLSearchParams({ search, status, dateFrom, dateTo, dentist, sortBy, page, limit, includeArchived: archived }).toString();
+}
 
-    return matchesSearch && matchesStatus;
-  });
+// ── KPI Strip ─────────────────────────────────────────────────────────────────
+function renderHistoryKPIs() {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? '–'; };
+  set('hkpi-total',     histSummary.total     ?? 0);
+  set('hkpi-completed', histSummary.completed  ?? 0);
+  set('hkpi-scheduled', histSummary.scheduled  ?? 0);
+  set('hkpi-cancelled', histSummary.cancelled  ?? 0);
+  set('hkpi-noshow',    histSummary.noshow     ?? 0);
+  set('hkpi-archived',  histSummary.archived   ?? 0);
+}
 
+// ── Table ─────────────────────────────────────────────────────────────────────
+function renderHistoryTable() {
   const tbody = document.getElementById('history-table-body');
   if (!tbody) return;
 
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #888;">No history records found.</td></tr>';
+  const label = document.getElementById('hist-results-label');
+  if (label) label.textContent = histData.length === 0
+    ? 'No records found.'
+    : `Showing ${histData.length} of ${histPagination.total} records`;
+
+  if (histData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:28px;text-align:center;color:#888;"><i class="ti ti-database-off"></i> No visit records found.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = filtered.map(a => {
-    const date = new Date(a.appointment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const time = new Date(a.appointment_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    const pName = a.patient ? (a.patient.name || `${a.patient.first_name || ''} ${a.patient.last_name || ''}`.trim() || 'Unknown Patient') : 'Unknown Patient';
-    const treatment = a.treatment ? a.treatment.name : 'General Consultation';
-    const dentistName = a.dentist ? (a.dentist.name || 'Staff') : 'Staff';
-    const status = a.status || 'Pending';
+  const statusColors = {
+    'Completed':'#2ecc71','Approved':'#3498db','Scheduled':'#17a2b8',
+    'Checked-In':'#9b59b6','Pending':'#e6a23c','Cancelled':'#e74c3c','No-show':'#95a5a6'
+  };
 
-    let statusClr = '#888';
-    if (status === 'Completed') statusClr = '#2ecc71';
-    else if (status === 'Approved') statusClr = '#3498db';
-    else if (status === 'Pending') statusClr = '#e6a23c';
-    else if (status === 'Cancelled') statusClr = '#e74c3c';
+  tbody.innerHTML = histData.map(r => {
+    const pName    = r.patient ? `${r.patient.first_name || ''} ${r.patient.last_name || ''}`.trim() : 'Unknown';
+    const treat    = r.treatment ? r.treatment.name : 'General Consultation';
+    const dName    = r.dentist ? `${r.dentist.first_name || ''} ${r.dentist.last_name || ''}`.trim() : 'Staff';
+    const dt       = r.appointment_date ? new Date(r.appointment_date) : null;
+    const dateStr  = dt ? dt.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '–';
+    const timeStr  = dt ? dt.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) : '';
+    const status   = r.status || 'Pending';
+    const checkIn  = r.check_in_time  ? new Date(r.check_in_time).toLocaleTimeString('en-US',  { hour:'2-digit', minute:'2-digit' }) : '–';
+    const checkOut = r.check_out_time ? new Date(r.check_out_time).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) : '–';
+    const sColor   = statusColors[status] || '#888';
+    const isArchived = r.archived ? 'opacity:0.55;' : '';
 
-    return `
-      <tr style="border-bottom: 1px solid var(--border-color); color: var(--dark-color);">
-        <td style="padding: 14px 16px; font-weight: 500;">${date} at ${time}</td>
-        <td style="padding: 14px 16px;">${escapeHTML(pName)}</td>
-        <td style="padding: 14px 16px;">${escapeHTML(treatment)}</td>
-        <td style="padding: 14px 16px; font-weight: 600; color: ${statusClr}">${status}</td>
-        <td style="padding: 14px 16px;">${escapeHTML(dentistName)}</td>
-      </tr>
-    `;
+    const archiveBtn = !r.archived
+      ? `<button class="admin-btn" title="Archive" style="font-size:0.72rem;padding:3px 8px;background:#6c757d;color:#fff;" onclick="archiveVisitRecord('${r.id}',true)"><i class="ti ti-archive"></i></button>`
+      : `<button class="admin-btn" title="Restore" style="font-size:0.72rem;padding:3px 8px;background:#28a745;color:#fff;" onclick="archiveVisitRecord('${r.id}',false)"><i class="ti ti-archive-off"></i></button>`;
+
+    const timelinePid  = r.patient ? r.patient.id : '';
+    const timelineName = escapeHTML(pName);
+
+    const checkInCell = checkIn !== '–'
+      ? `<span class="hist-checkin-badge">${checkIn}</span>`
+      : `<button class="admin-btn" style="font-size:0.72rem;padding:3px 8px;background:#17a2b8;color:#fff;" onclick="quickCheckIn('${r.id}')"><i class="ti ti-login"></i> In</button>`;
+
+    const checkOutCell = checkOut !== '–'
+      ? `<span class="hist-checkout-badge">${checkOut}</span>`
+      : (checkIn !== '–'
+          ? `<button class="admin-btn" style="font-size:0.72rem;padding:3px 8px;background:#6f42c1;color:#fff;" onclick="quickCheckOut('${r.id}')"><i class="ti ti-logout"></i> Out</button>`
+          : '<span style="color:#ccc;font-size:0.78rem;">–</span>');
+
+    return `<tr style="border-bottom:1px solid var(--border-color);color:var(--dark-color);${isArchived}" data-id="${r.id}">
+      <td style="padding:12px 14px;"><input type="checkbox" class="hist-row-cb" value="${r.id}"></td>
+      <td style="padding:12px 14px;">
+        <div style="font-weight:600;font-size:0.88rem;">${dateStr}</div>
+        <div style="font-size:0.76rem;color:#6c757d;">${timeStr}${r.archived ? ' <span style="background:#6c757d;color:#fff;border-radius:4px;font-size:0.68rem;padding:1px 5px;margin-left:4px;">Archived</span>' : ''}</div>
+      </td>
+      <td style="padding:12px 14px;">
+        <div style="font-weight:600;font-size:0.88rem;">${escapeHTML(pName)}</div>
+        <div style="font-size:0.75rem;color:#6c757d;">${r.patient ? escapeHTML(r.patient.email || '') : ''}</div>
+      </td>
+      <td style="padding:12px 14px;font-size:0.86rem;">${escapeHTML(treat)}</td>
+      <td style="padding:12px 14px;">${checkInCell}</td>
+      <td style="padding:12px 14px;">${checkOutCell}</td>
+      <td style="padding:12px 14px;"><span style="font-weight:600;color:${sColor};font-size:0.84rem;">${status}</span></td>
+      <td style="padding:12px 14px;">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="admin-btn" title="View" style="font-size:0.72rem;padding:3px 8px;" onclick="openViewVisitModal('${r.id}')"><i class="ti ti-eye"></i></button>
+          <button class="admin-btn" title="Edit" style="font-size:0.72rem;padding:3px 8px;background:#ffc107;color:#333;" onclick="openEditVisitModal('${r.id}')"><i class="ti ti-edit"></i></button>
+          <button class="admin-btn" title="Timeline" style="font-size:0.72rem;padding:3px 8px;background:#17a2b8;color:#fff;" onclick="openPersonTimeline('${timelinePid}','${timelineName}')"><i class="ti ti-user-clock"></i></button>
+          ${archiveBtn}
+        </div>
+      </td>
+    </tr>`;
   }).join('');
 }
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+function renderHistPagination() {
+  const bar  = document.getElementById('hist-pagination');
+  const info = document.getElementById('hist-page-info');
+  const nums = document.getElementById('hist-page-numbers');
+  const prev = document.getElementById('hist-prev-btn');
+  const next = document.getElementById('hist-next-btn');
+  if (!bar) return;
+
+  const { page, totalPages, total } = histPagination;
+  bar.style.display = total > 0 ? 'flex' : 'none';
+
+  if (info) info.textContent = `Page ${page} of ${totalPages} (${total} total records)`;
+  if (prev) prev.disabled = page <= 1;
+  if (next) next.disabled = page >= totalPages;
+
+  if (nums) {
+    let pagesHtml = '';
+    const start = Math.max(1, page - 2);
+    const end   = Math.min(totalPages, page + 2);
+    for (let p = start; p <= end; p++) {
+      const isActive = p === page ? 'background:var(--primary-color);color:#fff;' : '';
+      pagesHtml += `<button class="admin-btn" style="font-size:0.8rem;padding:4px 10px;${isActive}" onclick="goHistPage(${p})">${p}</button>`;
+    }
+    nums.innerHTML = pagesHtml;
+  }
+}
+
+function changeHistPage(delta) {
+  const newPage = histCurrentPage + delta;
+  if (newPage < 1 || newPage > histPagination.totalPages) return;
+  histCurrentPage = newPage;
+  fetchHistoryFromServer();
+}
+
+function goHistPage(p) {
+  histCurrentPage = p;
+  fetchHistoryFromServer();
+}
+
+function changeHistPageSize(val) {
+  histPageSize    = parseInt(val) || 15;
+  histCurrentPage = 1;
+  fetchHistoryFromServer();
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+function applyHistoryFilters() {
+  histCurrentPage = 1;
+  fetchHistoryFromServer();
+}
+
+function debounceHistoryFilter() {
+  clearTimeout(histFilterTimer);
+  histFilterTimer = setTimeout(applyHistoryFilters, 350);
+}
+
+function clearHistoryFilters() {
+  ['hist-search','hist-date-from','hist-date-to'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['hist-status-filter','hist-dentist-filter','hist-sort-by'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.selectedIndex = 0;
+  });
+  histCurrentPage = 1;
+  fetchHistoryFromServer();
+}
+
+function toggleHistoryArchived() {
+  histShowArchived = !histShowArchived;
+  const lbl = document.getElementById('hist-archive-toggle-label');
+  if (lbl) lbl.textContent = histShowArchived ? 'Hide Archived' : 'Show Archived';
+  histCurrentPage = 1;
+  fetchHistoryFromServer();
+}
+
+// ── Column Sort ───────────────────────────────────────────────────────────────
+function histSortByCol(col) {
+  const sortEl = document.getElementById('hist-sort-by');
+  if (!sortEl) return;
+  if (col === 'date')    sortEl.value = sortEl.value === 'date_desc' ? 'date_asc' : 'date_desc';
+  if (col === 'patient') sortEl.value = 'patient_name';
+  if (col === 'status')  sortEl.value = 'status';
+  applyHistoryFilters();
+}
+
+// ── Bulk Select ───────────────────────────────────────────────────────────────
+function histSelectAll(cb) {
+  document.querySelectorAll('.hist-row-cb').forEach(c => c.checked = cb.checked);
+}
+
+// ── Dropdowns ─────────────────────────────────────────────────────────────────
+function populateHistoryDropdowns() {
+  // Patients
+  fetch('/api/patients', { headers: { 'Authorization': `Bearer ${token}` } })
+    .then(r => r.json()).then(data => {
+      histAllPatients = Array.isArray(data) ? data : (data.patients || []);
+      const sel = document.getElementById('av-patient');
+      if (sel) {
+        sel.innerHTML = '<option value="">Select Patient…</option>' +
+          histAllPatients.map(p => `<option value="${p.id}">${p.first_name} ${p.last_name} (${p.email || ''})</option>`).join('');
+      }
+    }).catch(() => {});
+
+  // Dentists
+  fetch('/api/users?role=Dentist', { headers: { 'Authorization': `Bearer ${token}` } })
+    .then(r => r.json()).then(data => {
+      histAllDentists = Array.isArray(data) ? data : (data.users || []);
+      const avSel     = document.getElementById('av-dentist');
+      const dentFilter = document.getElementById('hist-dentist-filter');
+      const opts = histAllDentists.map(d => `<option value="${d.id}">${d.first_name} ${d.last_name}</option>`).join('');
+      if (avSel)      avSel.innerHTML      = '<option value="">Unassigned</option>' + opts;
+      if (dentFilter) dentFilter.innerHTML = '<option value="">All Dentists</option>' + opts;
+    }).catch(() => {});
+
+  // Treatments
+  fetch('/api/treatments', { headers: { 'Authorization': `Bearer ${token}` } })
+    .then(r => r.json()).then(data => {
+      histAllTreatments = Array.isArray(data) ? data : [];
+      const sel = document.getElementById('av-treatment');
+      if (sel) {
+        sel.innerHTML = '<option value="">General Consultation</option>' +
+          histAllTreatments.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+      }
+    }).catch(() => {});
+}
+
+// ── Add Visit Modal ───────────────────────────────────────────────────────────
+function openAddVisitModal() {
+  const form = document.getElementById('form-add-visit');
+  if (form) form.reset();
+  const dtEl = document.getElementById('av-date');
+  if (dtEl) {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    dtEl.value = now.toISOString().slice(0, 16);
+  }
+  document.getElementById('modal-add-visit').style.display = 'flex';
+}
+
+function submitAddVisit(e) {
+  e.preventDefault();
+  const patientId = document.getElementById('av-patient')?.value;
+  const dateVal   = document.getElementById('av-date')?.value;
+  const purpose   = document.getElementById('av-purpose')?.value.trim();
+
+  let valid = true;
+  const setErr = (id, msg) => { const el = document.getElementById(id); if (el) el.textContent = msg; };
+  setErr('av-patient-err',''); setErr('av-date-err',''); setErr('av-purpose-err','');
+
+  if (!patientId) { setErr('av-patient-err','Please select a patient.'); valid = false; }
+  if (!dateVal)   { setErr('av-date-err','Date and time are required.'); valid = false; }
+  if (!purpose)   { setErr('av-purpose-err','Please enter a purpose or reason.'); valid = false; }
+  if (!valid) return;
+
+  const payload = {
+    patient_id:       patientId,
+    treatment_id:     document.getElementById('av-treatment')?.value || null,
+    dentist_id:       document.getElementById('av-dentist')?.value   || null,
+    appointment_date: dateVal,
+    status:           document.getElementById('av-status')?.value    || 'Completed',
+    purpose,
+    notes:            document.getElementById('av-notes')?.value      || '',
+    admin_notes:      document.getElementById('av-admin-notes')?.value || '',
+  };
+
+  fetch('/api/admin/history', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(async r => {
+    const data = await r.json();
+    if (!r.ok) { showToast(data.message || 'Failed to add visit', 'error'); return; }
+    showToast('Visit record added!', 'success');
+    closeHistModal('modal-add-visit');
+    fetchHistoryFromServer();
+  }).catch(() => showToast('Network error', 'error'));
+}
+
+// ── Edit Visit Modal ──────────────────────────────────────────────────────────
+function openEditVisitModal(id) {
+  const record = histData.find(r => String(r.id) === String(id));
+  if (!record) { showToast('Record not found', 'error'); return; }
+
+  document.getElementById('ev-id').value           = record.id;
+  document.getElementById('ev-patient-name').value = record.patient
+    ? `${record.patient.first_name || ''} ${record.patient.last_name || ''}`.trim() : 'Unknown';
+
+  const dtEl = document.getElementById('ev-date');
+  if (dtEl && record.appointment_date) {
+    const d = new Date(record.appointment_date);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    dtEl.value = d.toISOString().slice(0, 16);
+  }
+
+  const fmtDT = (ts) => {
+    if (!ts) return '';
+    const d = new Date(ts);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  };
+
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  setVal('ev-status',      record.status || 'Pending');
+  setVal('ev-purpose',     record.purpose || '');
+  setVal('ev-checkin',     fmtDT(record.check_in_time));
+  setVal('ev-checkout',    fmtDT(record.check_out_time));
+  setVal('ev-notes',       record.notes || '');
+  setVal('ev-admin-notes', record.admin_notes || '');
+
+  document.getElementById('modal-edit-visit').style.display = 'flex';
+}
+
+function submitEditVisit(e) {
+  e.preventDefault();
+  const id      = document.getElementById('ev-id')?.value;
+  const dateVal = document.getElementById('ev-date')?.value;
+  if (!dateVal) { showToast('Date is required', 'error'); return; }
+
+  const toISO = (val) => val ? new Date(val).toISOString() : null;
+
+  const payload = {
+    appointment_date: dateVal,
+    status:           document.getElementById('ev-status')?.value,
+    purpose:          document.getElementById('ev-purpose')?.value,
+    check_in_time:    toISO(document.getElementById('ev-checkin')?.value),
+    check_out_time:   toISO(document.getElementById('ev-checkout')?.value),
+    notes:            document.getElementById('ev-notes')?.value,
+    admin_notes:      document.getElementById('ev-admin-notes')?.value,
+  };
+
+  fetch(`/api/admin/history/${id}`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(async r => {
+    const data = await r.json();
+    if (!r.ok) { showToast(data.message || 'Update failed', 'error'); return; }
+    showToast('Visit updated!', 'success');
+    closeHistModal('modal-edit-visit');
+    fetchHistoryFromServer();
+  }).catch(() => showToast('Network error', 'error'));
+}
+
+// ── View Visit Modal ──────────────────────────────────────────────────────────
+function openViewVisitModal(id) {
+  const record = histData.find(r => String(r.id) === String(id));
+  const modal  = document.getElementById('modal-view-visit');
+  const body   = document.getElementById('view-visit-body');
+  if (!modal || !body) return;
+
+  if (!record) {
+    body.innerHTML = '<p style="color:#e53e3e;">Record not found.</p>';
+    modal.style.display = 'flex';
+    return;
+  }
+
+  const pName  = record.patient ? `${record.patient.first_name || ''} ${record.patient.last_name || ''}`.trim() : 'Unknown';
+  const treat  = record.treatment ? record.treatment.name : 'General Consultation';
+  const dName  = record.dentist  ? `${record.dentist.first_name || ''} ${record.dentist.last_name || ''}`.trim() : 'Staff';
+  const dt     = record.appointment_date ? new Date(record.appointment_date).toLocaleString() : '–';
+  const ci     = record.check_in_time    ? new Date(record.check_in_time).toLocaleString()    : '–';
+  const co     = record.check_out_time   ? new Date(record.check_out_time).toLocaleString()   : '–';
+  const audit  = record.audit_entries || [];
+
+  const statusColors = {
+    'Completed':'#2ecc71','Approved':'#3498db','Scheduled':'#17a2b8',
+    'Checked-In':'#9b59b6','Pending':'#e6a23c','Cancelled':'#e74c3c','No-show':'#95a5a6'
+  };
+  const sColor = statusColors[record.status] || '#888';
+
+  const auditHTML = audit.length
+    ? `<div>
+        <label style="font-size:0.76rem;color:#6c757d;font-weight:600;">AUDIT LOG</label>
+        <div style="margin-top:6px;display:flex;flex-direction:column;gap:6px;">
+          ${audit.map(e => `<div class="audit-log-entry"><i class="ti ti-history" style="color:#17a2b8;"></i> <strong>${escapeHTML(e.action)}</strong> by ${escapeHTML(e.by)} on ${new Date(e.at).toLocaleString()}${e.notes ? ` – ${escapeHTML(e.notes)}` : ''}</div>`).join('')}
+        </div>
+      </div>` : '';
+
+  const timelineBtn = record.patient && record.patient.id
+    ? `<button class="admin-btn" style="font-size:0.82rem;background:#17a2b8;color:#fff;" onclick="openPersonTimeline('${record.patient.id}','${escapeHTML(pName)}');closeHistModal('modal-view-visit')"><i class="ti ti-user-clock"></i> Timeline</button>`
+    : '';
+
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+      <div><label style="font-size:0.76rem;color:#6c757d;font-weight:600;">PATIENT</label><div style="font-weight:600;">${escapeHTML(pName)}</div><div style="font-size:0.78rem;color:#6c757d;">${record.patient ? escapeHTML(record.patient.email || '') : ''}</div></div>
+      <div><label style="font-size:0.76rem;color:#6c757d;font-weight:600;">STATUS</label><div style="font-weight:700;color:${sColor};">${record.status || '–'}</div></div>
+      <div><label style="font-size:0.76rem;color:#6c757d;font-weight:600;">APPOINTMENT DATE</label><div>${dt}</div></div>
+      <div><label style="font-size:0.76rem;color:#6c757d;font-weight:600;">DENTIST</label><div>${escapeHTML(dName)}</div></div>
+      <div><label style="font-size:0.76rem;color:#6c757d;font-weight:600;">TREATMENT</label><div>${escapeHTML(treat)}</div></div>
+      <div><label style="font-size:0.76rem;color:#6c757d;font-weight:600;">PURPOSE</label><div>${escapeHTML(record.purpose || '–')}</div></div>
+      <div><label style="font-size:0.76rem;color:#6c757d;font-weight:600;">CHECK-IN</label><div>${ci}</div></div>
+      <div><label style="font-size:0.76rem;color:#6c757d;font-weight:600;">CHECK-OUT</label><div>${co}</div></div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:0.76rem;color:#6c757d;font-weight:600;">CLINICAL NOTES</label>
+      <div style="background:#f8f9fa;border-radius:6px;padding:10px;font-size:0.86rem;margin-top:4px;">${escapeHTML(record.notes || 'None')}</div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:0.76rem;color:#6c757d;font-weight:600;">ADMIN NOTES</label>
+      <div style="background:#fff8e1;border-radius:6px;padding:10px;font-size:0.86rem;margin-top:4px;">${escapeHTML(record.admin_notes || 'None')}</div>
+    </div>
+    ${auditHTML}
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="admin-btn admin-btn-primary" style="font-size:0.82rem;" onclick="openEditVisitModal('${record.id}');closeHistModal('modal-view-visit')"><i class="ti ti-edit"></i> Edit</button>
+      ${timelineBtn}
+    </div>
+  `;
+  modal.style.display = 'flex';
+}
+
+// ── Check-In / Check-Out ──────────────────────────────────────────────────────
+function quickCheckIn(id) {
+  if (!confirm('Record check-in for this patient now?')) return;
+  fetch(`/api/admin/history/${id}/checkin`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${token}` }
+  }).then(async r => {
+    const d = await r.json();
+    if (!r.ok) { showToast(d.message || 'Check-in failed', 'error'); return; }
+    showToast('Patient checked in!', 'success');
+    fetchHistoryFromServer();
+  }).catch(() => showToast('Network error', 'error'));
+}
+
+function quickCheckOut(id) {
+  if (!confirm('Record check-out for this patient now?')) return;
+  fetch(`/api/admin/history/${id}/checkout`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${token}` }
+  }).then(async r => {
+    const d = await r.json();
+    if (!r.ok) { showToast(d.message || 'Check-out failed', 'error'); return; }
+    showToast('Patient checked out!', 'success');
+    fetchHistoryFromServer();
+  }).catch(() => showToast('Network error', 'error'));
+}
+
+// ── Archive / Restore ─────────────────────────────────────────────────────────
+function archiveVisitRecord(id, archive) {
+  const msg = archive ? 'Archive this visit record? It will be hidden from the main view.' : 'Restore this visit from archive?';
+  if (!confirm(msg)) return;
+  fetch(`/api/admin/history/${id}/archive`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ archived: archive })
+  }).then(async r => {
+    const d = await r.json();
+    if (!r.ok) { showToast(d.message || 'Failed', 'error'); return; }
+    showToast(archive ? 'Visit archived.' : 'Visit restored!', 'success');
+    fetchHistoryFromServer();
+  }).catch(() => showToast('Network error', 'error'));
+}
+
+// ── Per-Person Timeline ───────────────────────────────────────────────────────
+function openPersonTimeline(patientId, patientName) {
+  if (!patientId) { showToast('No patient ID available', 'error'); return; }
+  const panel = document.getElementById('hist-timeline-panel');
+  const body  = document.getElementById('hist-timeline-body');
+  const title = document.getElementById('hist-timeline-title');
+  const sub   = document.getElementById('hist-timeline-sub');
+  if (!panel || !body) return;
+
+  if (title) title.innerHTML = `<i class="ti ti-user-clock"></i> ${escapeHTML(patientName || 'Patient')} — Visit Timeline`;
+  if (sub)   sub.textContent = 'All visits in chronological order';
+  body.innerHTML = '<p style="color:#888;">Loading…</p>';
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  fetch(`/api/admin/history/person/${patientId}`, { headers: { 'Authorization': `Bearer ${token}` } })
+    .then(r => r.json())
+    .then(data => {
+      const records = data.records || [];
+      if (records.length === 0) {
+        body.innerHTML = '<p style="color:#888;">No visit records for this patient.</p>';
+        return;
+      }
+      const statusCols = { 'Completed':'#2ecc71','Cancelled':'#e74c3c','No-show':'#95a5a6','Checked-In':'#9b59b6' };
+      body.innerHTML = `<div class="hist-timeline">${records.map(r => {
+        const treat  = r.treatment ? r.treatment.name : 'General Consultation';
+        const dName  = r.dentist   ? `${r.dentist.first_name || ''} ${r.dentist.last_name || ''}`.trim() : 'Staff';
+        const dt     = r.appointment_date ? new Date(r.appointment_date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '–';
+        const sColor = statusCols[r.status] || '#3498db';
+        return `<div class="hist-timeline-item">
+          <div class="hist-tl-dot" style="background:${sColor};"></div>
+          <div class="hist-tl-content">
+            <div class="hist-tl-date">${dt}</div>
+            <div class="hist-tl-treat">${escapeHTML(treat)}</div>
+            <div class="hist-tl-meta">Dr. ${escapeHTML(dName)} &bull; <span style="color:${sColor};font-weight:600;">${r.status || 'Pending'}</span></div>
+            ${r.notes ? `<div class="hist-tl-notes">${escapeHTML(r.notes)}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}</div>`;
+    })
+    .catch(() => { body.innerHTML = '<p style="color:#e53e3e;">Failed to load timeline.</p>'; });
+}
+
+function closePersonTimeline() {
+  const panel = document.getElementById('hist-timeline-panel');
+  if (panel) panel.style.display = 'none';
+}
+
+// ── Export CSV ────────────────────────────────────────────────────────────────
+function exportHistoryCSV() {
+  const link = document.createElement('a');
+  link.href = `/api/admin/history-export`;
+  link.setAttribute('download', 'fano_visits_history.csv');
+  // For authenticated request, open in new tab
+  const newWin = window.open(`/api/admin/history-export`, '_blank');
+  if (!newWin) showToast('Pop-up blocked. Try allowing pop-ups.', 'error');
+}
+
+// ── Print ─────────────────────────────────────────────────────────────────────
+function printHistoryTable() {
+  window.print();
+}
+
+// ── Modal Helpers ─────────────────────────────────────────────────────────────
+function closeHistModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+
+window.loadVisitsHistory     = loadVisitsHistory;
+window.fetchHistoryFromServer = fetchHistoryFromServer;
+window.applyHistoryFilters   = applyHistoryFilters;
+window.debounceHistoryFilter = debounceHistoryFilter;
+window.clearHistoryFilters   = clearHistoryFilters;
+window.toggleHistoryArchived = toggleHistoryArchived;
+window.histSortByCol         = histSortByCol;
+window.histSelectAll         = histSelectAll;
+window.changeHistPage        = changeHistPage;
+window.goHistPage            = goHistPage;
+window.changeHistPageSize    = changeHistPageSize;
+window.openAddVisitModal     = openAddVisitModal;
+window.submitAddVisit        = submitAddVisit;
+window.openEditVisitModal    = openEditVisitModal;
+window.submitEditVisit       = submitEditVisit;
+window.openViewVisitModal    = openViewVisitModal;
+window.quickCheckIn          = quickCheckIn;
+window.quickCheckOut         = quickCheckOut;
+window.archiveVisitRecord    = archiveVisitRecord;
+window.openPersonTimeline    = openPersonTimeline;
+window.closePersonTimeline   = closePersonTimeline;
+window.exportHistoryCSV      = exportHistoryCSV;
+window.printHistoryTable     = printHistoryTable;
+window.closeHistModal        = closeHistModal;
+
 
 // ─── 11. Clinic Settings Functions ─────────────────────────────────────────────
 window.switchSettingsSection = function(sectionId, element) {
