@@ -5703,7 +5703,7 @@ function openAddVisitModal() {
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     dtEl.value = now.toISOString().slice(0, 16);
   }
-  document.getElementById('modal-add-visit').style.display = 'flex';
+  const mAdd = document.getElementById('modal-add-visit'); if (mAdd) { mAdd.style.display = 'flex'; mAdd.classList.add('active'); }
 }
 
 function submitAddVisit(e) {
@@ -5776,7 +5776,7 @@ function openEditVisitModal(id) {
   setVal('ev-notes',       record.notes || '');
   setVal('ev-admin-notes', record.admin_notes || '');
 
-  document.getElementById('modal-edit-visit').style.display = 'flex';
+  const mEdit = document.getElementById('modal-edit-visit'); if (mEdit) { mEdit.style.display = 'flex'; mEdit.classList.add('active'); }
 }
 
 function submitEditVisit(e) {
@@ -5920,52 +5920,73 @@ function archiveVisitRecord(id, archive) {
   }).catch(() => showToast('Network error', 'error'));
 }
 
-// ── Per-Person Timeline ───────────────────────────────────────────────────────
+// ── Per-Person Timeline (Popup Modal) ───────────────────────────────────────
 function openPersonTimeline(patientId, patientName) {
   if (!patientId) { showToast('No patient ID available', 'error'); return; }
-  const panel = document.getElementById('hist-timeline-panel');
+  const modal = document.getElementById('modal-person-timeline');
   const body  = document.getElementById('hist-timeline-body');
   const title = document.getElementById('hist-timeline-title');
   const sub   = document.getElementById('hist-timeline-sub');
-  if (!panel || !body) return;
+  if (!modal || !body) return;
 
-  if (title) title.innerHTML = `<i class="ti ti-user-clock"></i> ${escapeHTML(patientName || 'Patient')} — Visit Timeline`;
-  if (sub)   sub.textContent = 'All visits in chronological order';
-  body.innerHTML = '<p style="color:#888;">Loading…</p>';
-  panel.style.display = 'block';
-  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (title) title.textContent = `${patientName || 'Patient'} — Visit Timeline`;
+  if (sub)   sub.textContent = 'All recorded visits and clinical care in chronological order';
+  body.innerHTML = `
+    <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+      <i class="ti ti-loader" style="font-size: 32px; animation: spin 1s linear infinite; display: inline-block; color: #7c3aed;"></i>
+      <p style="margin: 12px 0 0 0; font-size: 0.9rem; font-weight: 500;">Loading patient timeline…</p>
+    </div>
+  `;
+
+  modal.style.display = 'flex';
+  modal.classList.add('active');
 
   fetch(`/api/admin/history/person/${patientId}`, { headers: { 'Authorization': `Bearer ${token}` } })
     .then(r => r.json())
     .then(data => {
       const records = data.records || [];
       if (records.length === 0) {
-        body.innerHTML = '<p style="color:#888;">No visit records for this patient.</p>';
+        body.innerHTML = `
+          <div style="text-align: center; padding: 48px 20px; color: #64748b;">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: #f1f5f9; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; color: #94a3b8; margin-bottom: 12px;">
+              <i class="ti ti-calendar-off"></i>
+            </div>
+            <p style="margin: 0; font-weight: 700; color: #334155; font-size: 1rem;">No visit records found</p>
+            <p style="margin: 4px 0 0 0; font-size: 0.83rem; color: #94a3b8;">This patient does not have any recorded visits in the ledger yet.</p>
+          </div>
+        `;
         return;
       }
-      const statusCols = { 'Completed':'#2ecc71','Cancelled':'#e74c3c','No-show':'#95a5a6','Checked-In':'#9b59b6' };
+      const statusCols = { 'Completed':'#16a34a','Cancelled':'#dc2626','No-show':'#94a3b8','Checked-In':'#7c3aed','Approved':'#0284c7','Scheduled':'#0284c7','Pending':'#d97706' };
       body.innerHTML = `<div class="hist-timeline">${records.map(r => {
         const treat  = r.treatment ? r.treatment.name : 'General Consultation';
-        const dName  = r.dentist   ? `${r.dentist.first_name || ''} ${r.dentist.last_name || ''}`.trim() : 'Staff';
-        const dt     = r.appointment_date ? new Date(r.appointment_date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '–';
-        const sColor = statusCols[r.status] || '#3498db';
+        const dName  = r.dentist   ? (r.dentist.name || `${r.dentist.first_name || ''} ${r.dentist.last_name || ''}`.trim()) : 'Staff';
+        const dt     = r.appointment_date ? new Date(r.appointment_date).toLocaleDateString('en-US', { weekday: 'short', month:'short', day:'numeric', year:'numeric' }) : '–';
+        const tm     = r.appointment_date ? new Date(r.appointment_date).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) : '';
+        const sColor = statusCols[r.status] || '#0284c7';
         return `<div class="hist-timeline-item">
-          <div class="hist-tl-dot" style="background:${sColor};"></div>
+          <div class="hist-tl-dot" style="background:${sColor}; border-color: #ffffff; box-shadow: 0 0 0 2px ${sColor}40;"></div>
           <div class="hist-tl-content">
-            <div class="hist-tl-date">${dt}</div>
+            <div class="hist-tl-date"><i class="ti ti-calendar" style="font-size: 12px;"></i> ${dt} &bull; ${tm}</div>
             <div class="hist-tl-treat">${escapeHTML(treat)}</div>
-            <div class="hist-tl-meta">Dr. ${escapeHTML(dName)} &bull; <span style="color:${sColor};font-weight:600;">${r.status || 'Pending'}</span></div>
-            ${r.notes ? `<div class="hist-tl-notes">${escapeHTML(r.notes)}</div>` : ''}
+            <div class="hist-tl-meta">Dentist: <strong>${escapeHTML(dName)}</strong> &bull; Status: <span style="display:inline-block; padding: 2px 8px; border-radius: 999px; background:${sColor}18; color:${sColor}; font-weight:700; font-size: 0.72rem;">${escapeHTML(r.status || 'Pending')}</span></div>
+            ${r.notes ? `<div class="hist-tl-notes"><i class="ti ti-notes" style="font-size: 12px; color: #94a3b8;"></i> ${escapeHTML(r.notes)}</div>` : ''}
+            ${r.admin_notes ? `<div class="hist-tl-notes" style="background: #fefce8; border-left: 3px solid #eab308; margin-top: 4px;"><i class="ti ti-shield" style="font-size: 12px; color: #ca8a04;"></i> <strong>Internal Admin Note:</strong> ${escapeHTML(r.admin_notes)}</div>` : ''}
           </div>
         </div>`;
       }).join('')}</div>`;
     })
-    .catch(() => { body.innerHTML = '<p style="color:#e53e3e;">Failed to load timeline.</p>'; });
+    .catch(() => {
+      body.innerHTML = '<p style="color:#ef4444; text-align: center; padding: 24px;">Failed to load visit timeline. Please try again.</p>';
+    });
 }
 
 function closePersonTimeline() {
-  const panel = document.getElementById('hist-timeline-panel');
-  if (panel) panel.style.display = 'none';
+  const modal = document.getElementById('modal-person-timeline');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
 }
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
@@ -5986,7 +6007,10 @@ function printHistoryTable() {
 // ── Modal Helpers ─────────────────────────────────────────────────────────────
 function closeHistModal(id) {
   const el = document.getElementById(id);
-  if (el) el.style.display = 'none';
+  if (el) {
+    el.classList.remove('active');
+    el.style.display = 'none';
+  }
 }
 
 window.loadVisitsHistory     = loadVisitsHistory;
