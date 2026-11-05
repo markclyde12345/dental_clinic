@@ -6696,10 +6696,22 @@ window.initAdminBranchMap = function() {
 
   if (!adminMap) {
     adminMap = L.map('admin-branch-map').setView([lat, lng], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
+    const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Maps'
     }).addTo(adminMap);
+
+    const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 20,
+      subdomains: 'abcd',
+      attribution: '&copy; OpenStreetMap &copy; CARTO'
+    });
+
+    L.control.layers({
+      "Google Maps": googleRoadmap,
+      "CARTO Voyager": cartoVoyager
+    }, null, { position: 'topright' }).addTo(adminMap);
 
     const marker = L.marker([lat, lng], {
       icon: createClinicPin({ isMain: true }),

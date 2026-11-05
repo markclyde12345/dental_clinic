@@ -3804,10 +3804,33 @@ function renderMapVisuals(patientLat, patientLng, addressLabel, targetBranch) {
       zoomControl: true
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
+    // 1. Google Maps Roadmap (Default - Clean authentic Google Maps)
+    const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Maps'
     }).addTo(branchMap);
+
+    // 2. CARTO Voyager (The clean aesthetic used before)
+    const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 20,
+      subdomains: 'abcd',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    });
+
+    // 3. Google Satellite / Hybrid
+    const googleSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Maps'
+    });
+
+    // Layer switch control (Google Maps, CARTO Voyager, Satellite)
+    L.control.layers({
+      "Google Maps": googleRoadmap,
+      "CARTO Voyager": cartoVoyager,
+      "Satellite": googleSatellite
+    }, null, { position: 'topright' }).addTo(branchMap);
   }
 
   // Clear previous markers & route lines
