@@ -144,28 +144,40 @@ body {
   z-index: 1;
   flex-shrink: 0;
   width: 175px;
-  height: 155px;
+  height: 165px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.pd-hero-mascot svg {
+.pd-mascot-img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
   display: block;
-  overflow: visible;
-}
-.pd-hero-mascot .pd-tooth {
+  filter: drop-shadow(0 10px 20px rgba(7, 38, 50, 0.35));
   animation: pdFloat 3.6s ease-in-out infinite;
-  transform-origin: center;
+  transform-origin: center bottom;
 }
-.pd-hero-mascot .pd-sparkles {
+.pd-sparkle {
+  position: absolute;
+  color: #ffffff;
+  pointer-events: none;
   animation: pdTwinkle 2.4s ease-in-out infinite;
+  z-index: 2;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
 }
+.pd-sparkle.s1 { top: 10px; left: 6px; font-size: 20px; animation-delay: 0s; }
+.pd-sparkle.s2 { top: 16px; right: 8px; font-size: 16px; animation-delay: 0.8s; }
+.pd-sparkle.s3 { bottom: 20px; left: -2px; font-size: 14px; animation-delay: 1.4s; }
+.pd-sparkle.s4 { bottom: 26px; right: 2px; font-size: 15px; animation-delay: 1.8s; }
+
 @keyframes pdFloat {
   0%,100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
 }
 @keyframes pdTwinkle {
-  0%,100% { opacity: 1; }
-  50% { opacity: 0.45; }
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.75); }
 }
 
 /* ─── Primary action buttons ─── */
