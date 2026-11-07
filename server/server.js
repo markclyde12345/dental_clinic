@@ -456,6 +456,8 @@ app.use('/appointments', clinicalNotesRoutes);
 const appointmentTreatmentRoutes = require('./routes/appointmentTreatmentRoutes');
 app.use('/api/appointments', appointmentTreatmentRoutes);
 app.use('/appointments', appointmentTreatmentRoutes);
+app.use('/api/appointment-treatments', appointmentTreatmentRoutes);
+app.use('/appointment-treatments', appointmentTreatmentRoutes);
 
 const prescriptionRoutes = require('./routes/prescriptionRoutes');
 app.use('/api/appointments', prescriptionRoutes);
