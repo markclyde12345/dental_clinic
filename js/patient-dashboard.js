@@ -40,7 +40,72 @@ const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 let user = null;
 let allAppointments = [];
 let allInvoices = [];
-let allTreatments = [];
+const DEFAULT_TREATMENTS = [
+  {
+    id: "402c0ba5-99be-45aa-9518-97b25b124e1f",
+    name: "Teeth Cleaning & Scaling",
+    price: 800,
+    duration_minutes: 45,
+    description: "Comprehensive professional oral prophylaxis removing hardened tartar (calculus), plaque, and surface coffee/tea stains."
+  },
+  {
+    id: "264448a6-2170-4623-bab3-f88cd8ca714d",
+    name: "Deep Cavity Filling",
+    price: 1500,
+    duration_minutes: 45,
+    description: "Gentle, tooth-preserving restorative procedure that removes decayed enamel and dentin, restored with shade-matched composite resin."
+  },
+  {
+    id: "791eaf78-169c-4684-9cc4-52b5e558ceb0",
+    name: "Wisdom Tooth Extraction",
+    price: 3500,
+    duration_minutes: 60,
+    description: "Pain-free surgical removal of impacted, partially erupted, or misaligned wisdom teeth under local anesthesia."
+  },
+  {
+    id: "c8c4080c-e380-43f8-a85f-006210cbe556",
+    name: "Root Canal Therapy",
+    price: 6000,
+    duration_minutes: 90,
+    description: "Advanced endodontic procedure to save deeply infected or inflamed teeth by cleansing and sealing root canals."
+  },
+  {
+    id: "be1ca613-9eee-49f7-9f51-39b08e7dd0f6",
+    name: "Laser Teeth Whitening",
+    price: 5000,
+    duration_minutes: 60,
+    description: "In-office laser-assisted dental whitening that lifts deep stains up to 8 shades brighter in a single session."
+  },
+  {
+    id: "dental-implants",
+    name: "Dental Implants",
+    price: 45000,
+    duration_minutes: 90,
+    description: "Permanent titanium tooth replacement matching natural teeth with lifelike zirconia or porcelain crown."
+  },
+  {
+    id: "orthodontic-braces",
+    name: "Orthodontic Braces Alignment",
+    price: 35000,
+    duration_minutes: 60,
+    description: "Comprehensive orthodontic alignment correcting crooked teeth, spacing, and bite irregularities."
+  },
+  {
+    id: "porcelain-crowns",
+    name: "Porcelain & Zirconia Crowns",
+    price: 12000,
+    duration_minutes: 60,
+    description: "Full-coverage tooth caps crafted from high-translucency zirconia to reinforce fractured teeth."
+  },
+  {
+    id: "emergency-care",
+    name: "Urgent Dental Emergency Care",
+    price: 1200,
+    duration_minutes: 45,
+    description: "Priority same-day clinical relief for acute dental pain, knocked-out teeth, facial swelling, or broken restorations."
+  }
+];
+let allTreatments = [...DEFAULT_TREATMENTS];
 
 const sessionExpiry = localStorage.getItem('sessionExpiry');
 if (sessionExpiry && Date.now() > parseInt(sessionExpiry, 10)) {
@@ -2401,7 +2466,7 @@ function loadTreatments(forceRefresh = false) {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(treatments => {
-      allTreatments = Array.isArray(treatments) ? treatments : [];
+      allTreatments = (Array.isArray(treatments) && treatments.length > 0) ? treatments : [...DEFAULT_TREATMENTS];
       renderTreatmentsPicker();
       renderServicesCatalog();
       if (forceRefresh) {
@@ -2411,7 +2476,7 @@ function loadTreatments(forceRefresh = false) {
     .catch(err => {
       console.error('Treatments error:', err);
       if (!allTreatments || allTreatments.length === 0) {
-        allTreatments = [];
+        allTreatments = [...DEFAULT_TREATMENTS];
       }
       renderTreatmentsPicker();
       renderServicesCatalog();
@@ -2910,15 +2975,11 @@ function renderServicesCatalog(list = null) {
           </div>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- Action Buttons: Only View Details -->
         <div class="scc-footer">
-          <button type="button" class="scc-btn-details" onclick="openServiceDetailsModal('${t.id}')" title="Read comprehensive clinical information, steps, and preparation">
+          <button type="button" class="scc-btn-details full-width" onclick="openServiceDetailsModal('${t.id}')" title="View comprehensive clinical information, steps, and preparation for ${escapeHTML(t.name)}">
             <i class="ti ti-info-circle"></i>
-            <span>Details</span>
-          </button>
-          <button type="button" class="scc-btn-book" onclick="bookServiceDirectly('${t.id}')" title="Book appointment for ${escapeHTML(t.name)}">
-            <i class="ti ti-calendar-plus"></i>
-            <span>Book Service</span>
+            <span>View Details</span>
           </button>
         </div>
       </div>
@@ -2927,8 +2988,27 @@ function renderServicesCatalog(list = null) {
 }
 
 function openServiceDetailsModal(treatmentId) {
-  const treat = (allTreatments || []).find(t => String(t.id) === String(treatmentId));
-  if (!treat) return;
+  let treat = (allTreatments || []).find(t => String(t.id) === String(treatmentId));
+  if (!treat) {
+    treat = DEFAULT_TREATMENTS.find(t => String(t.id) === String(treatmentId) || (t.name && t.name.toLowerCase() === String(treatmentId).toLowerCase()));
+  }
+  if (!treat) {
+    const key = Object.keys(CLINIC_SERVICES_METADATA).find(k => k === treatmentId || (treatmentId && treatmentId.toLowerCase().includes(k)));
+    if (key && CLINIC_SERVICES_METADATA[key]) {
+      const m = CLINIC_SERVICES_METADATA[key];
+      treat = {
+        id: treatmentId,
+        name: key.charAt(0).toUpperCase() + key.slice(1),
+        description: m.summary,
+        price: 0,
+        duration_minutes: 45
+      };
+    }
+  }
+  if (!treat) {
+    if (typeof showToast === 'function') showToast('Service details not available', 'info');
+    return;
+  }
 
   const meta = getServiceMetadata(treat.name, treat);
   const theme = getTreatmentTheme(treat.name);
@@ -3008,7 +3088,7 @@ function openServiceDetailsModal(treatmentId) {
   const aftercareEl = document.getElementById('sdm-aftercare');
   if (aftercareEl) aftercareEl.textContent = meta.aftercare || 'Follow any specific advice given by your attending dental specialist.';
 
-  // Price & Book button
+  // Price & Book button (if present)
   const priceEl = document.getElementById('sdm-price');
   if (priceEl) priceEl.textContent = priceStr;
 
@@ -3021,15 +3101,33 @@ function openServiceDetailsModal(treatmentId) {
   }
 
   const modal = document.getElementById('modal-service-details');
-  if (modal) modal.classList.add('active');
+  if (modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    const sdmBody = modal.querySelector('.sdm-body');
+    if (sdmBody) sdmBody.scrollTop = 0;
+  }
 }
 window.openServiceDetailsModal = openServiceDetailsModal;
 
 function closeServiceDetailsModal() {
   const modal = document.getElementById('modal-service-details');
-  if (modal) modal.classList.remove('active');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
 }
 window.closeServiceDetailsModal = closeServiceDetailsModal;
+
+// Close service details on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('modal-service-details');
+    if (modal && modal.classList.contains('active')) {
+      closeServiceDetailsModal();
+    }
+  }
+});
 
 let currentServiceCategory = 'all';
 

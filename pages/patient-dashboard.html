@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20261101_support_v7">
+  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20261107_services_v1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="../css/ai-chat.css">
   <link rel="stylesheet" href="../css/ui-enhancements.css">
@@ -314,7 +314,7 @@
         <div class="section-header" style="flex-wrap: wrap; gap: 14px;">
           <div>
             <h1 class="section-title"><i class="ti ti-dental" style="color: var(--accent); margin-right: 8px;"></i>Clinic Services &amp; Treatments</h1>
-            <p class="section-subtitle">Explore our comprehensive dental treatments, transparent pricing, and book your visit directly.</p>
+            <p class="section-subtitle">Explore our comprehensive dental treatments, procedure guides, clinical indications, and transparent pricing.</p>
           </div>
           <div style="display: flex; gap: 10px; align-items: center;">
             <button type="button" class="btn btn-secondary" onclick="loadTreatments(true)" title="Refresh Services Catalog from clinic system" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 0.85rem;">
@@ -1966,7 +1966,7 @@
       </div>
 
       <!-- Modal Body (Scrollable) -->
-      <div class="modal-body sdm-body" style="padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
+      <div class="modal-body sdm-body" style="padding: 24px; overflow-y: auto; flex: 1 1 auto; min-height: 0; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 20px;">
         
         <!-- Clinical Overview -->
         <div class="sdm-section">
@@ -2006,17 +2006,16 @@
 
       </div>
 
-      <!-- Modal Footer -->
+      <!-- Modal Footer: View Details Only -->
       <div class="modal-actions-footer sdm-footer" style="padding: 16px 24px; background: var(--bg-base); border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; gap: 14px;">
         <div>
           <span style="display: block; font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #94a3b8;">Standard Procedure Fee</span>
           <strong id="sdm-price" style="font-size: 1.4rem; color: var(--accent); font-weight: 800;">₱0.00</strong>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <button type="button" class="btn btn-secondary" onclick="closeServiceDetailsModal()">Close</button>
-          <button type="button" class="btn btn-primary" id="sdm-book-btn" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; padding: 10px 20px; border-radius: 10px;">
-            <i class="ti ti-calendar-plus"></i>
-            <span>Book This Service</span>
+        <div>
+          <button type="button" class="btn btn-secondary" onclick="closeServiceDetailsModal()" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px; border-radius: 10px; font-weight: 700; font-size: 0.88rem;">
+            <i class="ti ti-x"></i>
+            <span>Close Details</span>
           </button>
         </div>
       </div>
