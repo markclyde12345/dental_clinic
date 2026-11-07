@@ -360,7 +360,7 @@ function renderTodayScheduleTable(appointments) {
         <td><span class="badge ${badgeClass(appt.status)}">${esc(appt.status)}</span></td>
         <td>
           <button class="btn btn-ghost small" onclick="openClinicalWorkspace('${appt.id}')">
-            <i class="fa-solid fa-folder-open"></i> Open
+            <i class="fa-solid fa-eye"></i> View Details
           </button>
         </td>
       </tr>
@@ -507,7 +507,7 @@ function applyScheduleFilters() {
         <td><span class="muted small">${esc(appt.notes ? (appt.notes.slice(0, 30) + '...') : 'None')}</span></td>
         <td>
           <button class="btn btn-ghost small" onclick="openClinicalWorkspace('${appt.id}')">
-            <i class="fa-solid fa-folder-open"></i> Workspace
+            <i class="fa-solid fa-eye"></i> View Details
           </button>
           <button class="btn btn-ghost small" onclick="quickUpdateStatus('${appt.id}')">
             <i class="fa-solid fa-pen-to-square"></i> Status
@@ -541,7 +541,7 @@ async function loadQueueView() {
               </div>
               <div style="display:flex; gap:8px;">
                 <button class="btn btn-primary small" onclick="openClinicalWorkspace('${qData.current.id}')">
-                  <i class="fa-solid fa-stethoscope"></i> Clinical Notes & Rx
+                  <i class="fa-solid fa-eye"></i> View Details
                 </button>
                 <button class="btn btn-success small" onclick="completeCurrentPatient('${qData.current.id}', this)">
                   <i class="fa-solid fa-circle-check"></i> Complete Treatment
