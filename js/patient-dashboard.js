@@ -3103,21 +3103,36 @@ function openServiceDetailsModal(treatmentId) {
   const modal = document.getElementById('modal-service-details');
   if (modal) {
     modal.classList.add('active');
+    modal.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; z-index: 10000000 !important;';
     document.body.style.overflow = 'hidden';
     const sdmBody = modal.querySelector('.sdm-body');
     if (sdmBody) sdmBody.scrollTop = 0;
   }
 }
 window.openServiceDetailsModal = openServiceDetailsModal;
+window._openServiceDetailsFull = openServiceDetailsModal;
 
 function closeServiceDetailsModal() {
   const modal = document.getElementById('modal-service-details');
   if (modal) {
     modal.classList.remove('active');
+    modal.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
     document.body.style.overflow = '';
   }
 }
 window.closeServiceDetailsModal = closeServiceDetailsModal;
+
+// Delegated click handler for services catalog cards & View Details buttons
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.scc-btn-details, .scc-img-wrap, .scc-title');
+  if (btn) {
+    const card = btn.closest('.service-catalog-card');
+    const treatId = btn.getAttribute('data-id') || card?.getAttribute('data-id');
+    if (treatId && typeof window.openServiceDetailsModal === 'function') {
+      window.openServiceDetailsModal(treatId);
+    }
+  }
+});
 
 // Close service details on Escape key
 document.addEventListener('keydown', (e) => {

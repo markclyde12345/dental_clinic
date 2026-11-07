@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20261107_services_v1">
+  <link rel="stylesheet" href="../css/patient-dashboard.css?v=20261107_services_popup_v4">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="../css/ai-chat.css">
   <link rel="stylesheet" href="../css/ui-enhancements.css">
@@ -2058,7 +2058,7 @@
   </nav>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="../js/patient-dashboard.js?v=20261101_support_v7"></script>
+  <script src="../js/patient-dashboard.js?v=20261107_services_popup_v4"></script>
   <script src="../js/ai-chat.js"></script>
   <script src="../js/offline-monitor.js"></script>
 
@@ -2078,6 +2078,17 @@
         el.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
       }
 
+      window.openServiceDetailsModal = function(treatmentId) {
+        if (typeof window._openServiceDetailsFull === 'function') {
+          window._openServiceDetailsFull(treatmentId);
+          return;
+        }
+        showModal('modal-service-details');
+      };
+      window.closeServiceDetailsModal = function() {
+        hideModal('modal-service-details');
+        document.body.style.overflow = '';
+      };
       window.openHelpCenterModal = function() { showModal('modal-help-center'); };
       window.closeHelpCenterModal = function() { hideModal('modal-help-center'); };
       window.openContactClinicPrompt = function() { showModal('modal-contact-desk'); };

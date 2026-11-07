@@ -8220,3 +8220,12 @@ body.reduce-motion * {
   font-weight: 600;
   line-height: 1.35;
 }
+
+
+#modal-service-details.active {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 10000000 !important;
+}
