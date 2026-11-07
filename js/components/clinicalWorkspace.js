@@ -72,9 +72,16 @@ const ClinicalWorkspace = (() => {
   async function open(appt) {
     currentAppt = appt;
     Modal.open(`
-      <div class="modal-body modal-clinical-workspace">
-        <div class="cw-loading-state">
-          <div class="cw-spinner"></div>
+      <style>
+        .modal-overlay {
+          background: rgba(255, 255, 255, 0.85) !important;
+          backdrop-filter: blur(8px) !important;
+          -webkit-backdrop-filter: blur(8px) !important;
+        }
+      </style>
+      <div class="modal-body modal-clinical-workspace" style="background:#ffffff !important; background-color:#ffffff !important; color:#0f172a !important;">
+        <div class="cw-loading-state" style="background:#ffffff !important; color:#0d9488 !important;">
+          <div class="cw-spinner" style="border-top-color:#0d9488 !important;"></div>
           <p>Loading Clinical Workspace…</p>
         </div>
       </div>
@@ -99,7 +106,7 @@ const ClinicalWorkspace = (() => {
       render(treatments || [], rxs || []);
     } catch (err) {
       Modal.open(`
-        <div class="modal-body">
+        <div class="modal-body" style="background:#ffffff !important; color:#0f172a !important;">
           <div class="cw-error-banner">
             <i class="fa-solid fa-triangle-exclamation"></i>
             <div>
@@ -129,32 +136,131 @@ const ClinicalWorkspace = (() => {
     ).join('') : '<option value="" disabled selected>No treatments in catalog</option>';
 
     Modal.open(`
-      <div class="modal-body modal-clinical-workspace">
-        <button class="modal-close cw-modal-close" onclick="Modal.close()" title="Close Workspace" aria-label="Close">
+      <style>
+        .modal-overlay {
+          background: rgba(255, 255, 255, 0.85) !important;
+          backdrop-filter: blur(8px) !important;
+          -webkit-backdrop-filter: blur(8px) !important;
+        }
+        .modal-clinical-workspace,
+        .modal-clinical-workspace .cw-header-banner,
+        .modal-clinical-workspace .cw-lifecycle-bar,
+        .modal-clinical-workspace .cw-grid,
+        .modal-clinical-workspace .cw-card,
+        .modal-clinical-workspace .cw-card-header,
+        .modal-clinical-workspace .cw-soap-footer,
+        .modal-clinical-workspace .cw-add-section,
+        .modal-clinical-workspace .cw-notes-editor-wrap,
+        .modal-clinical-workspace .cw-quick-prompts,
+        .modal-clinical-workspace .cw-ai-search-row,
+        .modal-clinical-workspace .cw-ai-disclaimer,
+        .modal-clinical-workspace .cw-list-container,
+        .dark-theme .modal-clinical-workspace,
+        .dark-theme .modal-clinical-workspace .cw-header-banner,
+        .dark-theme .modal-clinical-workspace .cw-lifecycle-bar,
+        .dark-theme .modal-clinical-workspace .cw-grid,
+        .dark-theme .modal-clinical-workspace .cw-card,
+        .dark-theme .modal-clinical-workspace .cw-card-header,
+        .dark-theme .modal-clinical-workspace .cw-soap-footer,
+        .dark-theme .modal-clinical-workspace .cw-add-section,
+        .dark-theme .modal-clinical-workspace .cw-notes-editor-wrap,
+        .dark-theme .modal-clinical-workspace .cw-quick-prompts,
+        .dark-theme .modal-clinical-workspace .cw-ai-search-row,
+        .dark-theme .modal-clinical-workspace .cw-ai-disclaimer,
+        .dark-theme .modal-clinical-workspace .cw-list-container {
+          background: #ffffff !important;
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+        }
+        .modal-clinical-workspace .cw-textarea,
+        .modal-clinical-workspace .cw-input,
+        .modal-clinical-workspace .cw-select,
+        .dark-theme .modal-clinical-workspace .cw-textarea,
+        .dark-theme .modal-clinical-workspace .cw-input,
+        .dark-theme .modal-clinical-workspace .cw-select {
+          background: #ffffff !important;
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+          border: 1px solid #cbd5e1 !important;
+        }
+        .modal-clinical-workspace .cw-patient-title,
+        .dark-theme .modal-clinical-workspace .cw-patient-title {
+          color: #0f172a !important;
+        }
+        .modal-clinical-workspace .cw-card-title,
+        .dark-theme .modal-clinical-workspace .cw-card-title {
+          color: #0f172a !important;
+        }
+        .modal-clinical-workspace .cw-card-subtitle,
+        .dark-theme .modal-clinical-workspace .cw-card-subtitle {
+          color: #64748b !important;
+        }
+        .modal-clinical-workspace .cw-record-item,
+        .dark-theme .modal-clinical-workspace .cw-record-item {
+          background: #ffffff !important;
+          background-color: #ffffff !important;
+          border: 1px solid #e2e8f0 !important;
+        }
+        .modal-clinical-workspace .cw-record-name,
+        .dark-theme .modal-clinical-workspace .cw-record-name {
+          color: #0f172a !important;
+        }
+        .modal-clinical-workspace .cw-status-actions,
+        .dark-theme .modal-clinical-workspace .cw-status-actions {
+          background: #f8fafc !important;
+          border: 1px solid #e2e8f0 !important;
+        }
+        .modal-clinical-workspace .cw-status-btn,
+        .dark-theme .modal-clinical-workspace .cw-status-btn {
+          background: #ffffff !important;
+          color: #475569 !important;
+          border: 1px solid #e2e8f0 !important;
+        }
+        .modal-clinical-workspace .cw-ai-result-box,
+        .dark-theme .modal-clinical-workspace .cw-ai-result-box {
+          background: #fafbfc !important;
+          color: #1e293b !important;
+          border: 1px solid #e2e8f0 !important;
+        }
+        .modal-clinical-workspace .cw-btn-save,
+        .modal-clinical-workspace .cw-add-btn,
+        .modal-clinical-workspace .cw-btn-full,
+        .dark-theme .modal-clinical-workspace .cw-btn-save,
+        .dark-theme .modal-clinical-workspace .cw-add-btn,
+        .dark-theme .modal-clinical-workspace .cw-btn-full {
+          background: #0d9488 !important;
+          background-color: #0d9488 !important;
+          color: #ffffff !important;
+          border: none !important;
+        }
+      </style>
+
+      <div class="modal-body modal-clinical-workspace" style="background:#ffffff !important; background-color:#ffffff !important; color:#0f172a !important;">
+        <button class="modal-close cw-modal-close" onclick="Modal.close()" title="Close Workspace" aria-label="Close" style="background:#f8fafc !important; color:#64748b !important; border:1px solid #e2e8f0 !important;">
           <i class="fa-solid fa-xmark"></i>
         </button>
 
-        <!-- HEADER BANNER -->
-        <div class="cw-header-banner">
+        <!-- HEADER BANNER - PURE WHITE -->
+        <div class="cw-header-banner" style="background:#ffffff !important; background-color:#ffffff !important; color:#0f172a !important; border-bottom:1px solid #f1f5f9 !important;">
           <div class="cw-patient-profile">
-            <div class="cw-avatar-initial">${esc(initial)}</div>
+            <div class="cw-avatar-initial" style="background:#f0fdfa !important; color:#0f766e !important; border:2px solid #99f6e4 !important;">${esc(initial)}</div>
             <div class="cw-patient-info">
-              <div class="cw-kicker">Clinical Operatory Workspace</div>
-              <h2 class="cw-patient-title">${esc(patientName)}</h2>
+              <div class="cw-kicker" style="color:#0d9488 !important;">Clinical Operatory Workspace</div>
+              <h2 class="cw-patient-title" style="color:#0f172a !important;">${esc(patientName)}</h2>
               <div class="cw-meta-tags">
-                <span class="cw-meta-pill" title="Appointment Scheduled Time">
-                  <i class="fa-regular fa-clock"></i> ${esc(appointmentDateStr)}
+                <span class="cw-meta-pill" title="Appointment Scheduled Time" style="background:#f8fafc !important; color:#475569 !important; border:1px solid #e2e8f0 !important;">
+                  <i class="fa-regular fa-clock" style="color:#0d9488 !important;"></i> ${esc(appointmentDateStr)}
                 </span>
-                <span class="cw-meta-pill" title="Scheduled Treatment">
-                  <i class="fa-solid fa-tooth"></i> ${esc(treatmentName)}
+                <span class="cw-meta-pill" title="Scheduled Treatment" style="background:#f8fafc !important; color:#475569 !important; border:1px solid #e2e8f0 !important;">
+                  <i class="fa-solid fa-tooth" style="color:#0d9488 !important;"></i> ${esc(treatmentName)}
                 </span>
-                ${patientPhone ? `<span class="cw-meta-pill"><i class="fa-solid fa-phone"></i> ${esc(patientPhone)}</span>` : ''}
-                <span class="cw-meta-pill cw-appt-id"><i class="fa-solid fa-hashtag"></i> Appt #${esc(a.id ? String(a.id).slice(0, 8) : '')}</span>
+                ${patientPhone ? `<span class="cw-meta-pill" style="background:#f8fafc !important; color:#475569 !important; border:1px solid #e2e8f0 !important;"><i class="fa-solid fa-phone" style="color:#0d9488 !important;"></i> ${esc(patientPhone)}</span>` : ''}
+                <span class="cw-meta-pill cw-appt-id" style="background:#f8fafc !important; color:#475569 !important; border:1px solid #e2e8f0 !important;"><i class="fa-solid fa-hashtag" style="color:#0d9488 !important;"></i> Appt #${esc(a.id ? String(a.id).slice(0, 8) : '')}</span>
               </div>
             </div>
           </div>
           <div class="cw-status-current-box">
-            <span class="cw-status-label">Current Status</span>
+            <span class="cw-status-label" style="color:#64748b !important;">Current Status</span>
             <span class="badge ${statusBadge(status)} cw-status-pill" id="cw-status">
               <span class="cw-status-indicator"></span>
               <span class="cw-status-text">${esc(status)}</span>
@@ -162,109 +268,110 @@ const ClinicalWorkspace = (() => {
           </div>
         </div>
 
-        <!-- WORKFLOW PIPELINE BAR -->
-        <div class="cw-lifecycle-bar">
-          <span class="cw-lifecycle-label"><i class="fa-solid fa-timeline"></i> Lifecycle Stage:</span>
-          <div class="cw-status-actions" role="group" aria-label="Appointment status actions">
-            <button class="cw-status-btn cw-act-confirm ${status === 'Confirmed' ? 'is-active' : ''}" data-act="Confirmed" title="Mark appointment as confirmed">
+        <!-- WORKFLOW PIPELINE BAR - PURE WHITE -->
+        <div class="cw-lifecycle-bar" style="background:#ffffff !important; background-color:#ffffff !important; border-bottom:1px solid #f1f5f9 !important;">
+          <span class="cw-lifecycle-label" style="color:#64748b !important;"><i class="fa-solid fa-timeline"></i> Lifecycle Stage:</span>
+          <div class="cw-status-actions" role="group" aria-label="Appointment status actions" style="background:#f8fafc !important; border:1px solid #e2e8f0 !important;">
+            <button class="cw-status-btn cw-act-confirm ${status === 'Confirmed' ? 'is-active' : ''}" data-act="Confirmed" title="Mark appointment as confirmed" style="background:#ffffff !important; color:#475569 !important; border:1px solid #e2e8f0 !important;">
               <i class="fa-solid fa-clipboard-check"></i> <span>Confirm</span>
             </button>
-            <button class="cw-status-btn cw-act-progress ${status === 'In Progress' ? 'is-active' : ''}" data-act="In Progress" title="Patient is seated in chair / session started">
+            <button class="cw-status-btn cw-act-progress ${status === 'In Progress' ? 'is-active' : ''}" data-act="In Progress" title="Patient is seated in chair / session started" style="background:#ffffff !important; color:#475569 !important; border:1px solid #e2e8f0 !important;">
               <i class="fa-solid fa-play"></i> <span>Start Session</span>
             </button>
-            <button class="cw-status-btn cw-act-complete ${status === 'Completed' ? 'is-active' : ''}" data-act="Completed" title="Mark procedure session completed">
+            <button class="cw-status-btn cw-act-complete ${status === 'Completed' ? 'is-active' : ''}" data-act="Completed" title="Mark procedure session completed" style="background:#ffffff !important; color:#475569 !important; border:1px solid #e2e8f0 !important;">
               <i class="fa-solid fa-circle-check"></i> <span>Complete</span>
             </button>
-            <button class="cw-status-btn cw-act-reschedule ${status === 'Rescheduled' ? 'is-active' : ''}" data-act="Rescheduled" title="Reschedule session">
+            <button class="cw-status-btn cw-act-reschedule ${status === 'Rescheduled' ? 'is-active' : ''}" data-act="Rescheduled" title="Reschedule session" style="background:#ffffff !important; color:#475569 !important; border:1px solid #e2e8f0 !important;">
               <i class="fa-solid fa-calendar-days"></i> <span>Reschedule</span>
             </button>
-            <button class="cw-status-btn cw-act-cancel ${status === 'Cancelled' ? 'is-active' : ''}" data-act="Cancelled" title="Cancel this appointment">
+            <button class="cw-status-btn cw-act-cancel ${status === 'Cancelled' ? 'is-active' : ''}" data-act="Cancelled" title="Cancel this appointment" style="background:#ffffff !important; color:#475569 !important; border:1px solid #e2e8f0 !important;">
               <i class="fa-solid fa-ban"></i> <span>Cancel</span>
             </button>
           </div>
         </div>
 
-        <!-- 2-COLUMN CLINICAL GRID -->
-        <div class="cw-grid">
+        <!-- 2-COLUMN CLINICAL GRID - PURE WHITE -->
+        <div class="cw-grid" style="background:#ffffff !important; background-color:#ffffff !important;">
 
           <!-- LEFT COLUMN: SOAP NOTES + AI ASSISTANT -->
           <div class="cw-col cw-col-main">
 
             <!-- SOAP NOTES CARD -->
-            <div class="cw-card cw-card-soap">
-              <div class="cw-card-header">
+            <div class="cw-card cw-card-soap" style="background:#ffffff !important; background-color:#ffffff !important; border:1px solid #e2e8f0 !important;">
+              <div class="cw-card-header" style="background:#ffffff !important; border-bottom:1px solid #f1f5f9 !important;">
                 <div class="cw-card-title-group">
                   <div class="cw-card-icon cw-icon-soap"><i class="fa-solid fa-notes-medical"></i></div>
                   <div>
-                    <h3 class="cw-card-title">Clinical Notes (SOAP)</h3>
-                    <p class="cw-card-subtitle">Subjective, Objective, Assessment, Plan documentation</p>
+                    <h3 class="cw-card-title" style="color:#0f172a !important;">Clinical Notes (SOAP)</h3>
+                    <p class="cw-card-subtitle" style="color:#64748b !important;">Subjective, Objective, Assessment, Plan documentation</p>
                   </div>
                 </div>
                 <div class="cw-soap-helpers">
-                  <button type="button" class="cw-chip-btn" id="cw-insert-template" title="Insert complete SOAP template outline">
+                  <button type="button" class="cw-chip-btn" id="cw-insert-template" title="Insert complete SOAP template outline" style="background:#f8fafc !important; color:#334155 !important; border:1px solid #cbd5e1 !important;">
                     <i class="fa-solid fa-table-list"></i> Template
                   </button>
-                  <button type="button" class="cw-chip-btn" data-soap-tag="S" title="Insert Subjective section"><b>S</b></button>
-                  <button type="button" class="cw-chip-btn" data-soap-tag="O" title="Insert Objective section"><b>O</b></button>
-                  <button type="button" class="cw-chip-btn" data-soap-tag="A" title="Insert Assessment section"><b>A</b></button>
-                  <button type="button" class="cw-chip-btn" data-soap-tag="P" title="Insert Plan section"><b>P</b></button>
+                  <button type="button" class="cw-chip-btn" data-soap-tag="S" title="Insert Subjective section" style="background:#f8fafc !important; color:#334155 !important; border:1px solid #cbd5e1 !important;"><b>S</b></button>
+                  <button type="button" class="cw-chip-btn" data-soap-tag="O" title="Insert Objective section" style="background:#f8fafc !important; color:#334155 !important; border:1px solid #cbd5e1 !important;"><b>O</b></button>
+                  <button type="button" class="cw-chip-btn" data-soap-tag="A" title="Insert Assessment section" style="background:#f8fafc !important; color:#334155 !important; border:1px solid #cbd5e1 !important;"><b>A</b></button>
+                  <button type="button" class="cw-chip-btn" data-soap-tag="P" title="Insert Plan section" style="background:#f8fafc !important; color:#334155 !important; border:1px solid #cbd5e1 !important;"><b>P</b></button>
                 </div>
               </div>
 
-              <div class="cw-notes-editor-wrap">
+              <div class="cw-notes-editor-wrap" style="background:#ffffff !important;">
                 <textarea id="cw-notes" class="cw-textarea" rows="8"
+                  style="background:#ffffff !important; background-color:#ffffff !important; color:#1e293b !important; border:1px solid #cbd5e1 !important;"
                   placeholder="[S] Subjective: Chief complaint, history of pain…&#10;[O] Objective: Tooth findings, mobility, percussion…&#10;[A] Assessment: Clinical diagnosis, prognosis…&#10;[P] Plan: Treatment performed, follow-up recalls…">${esc(a.clinical_notes || '')}</textarea>
               </div>
 
-              <div class="cw-card-footer cw-soap-footer">
+              <div class="cw-card-footer cw-soap-footer" style="background:#ffffff !important; border-top:1px solid #f1f5f9 !important;">
                 <div class="cw-notes-info">
-                  <span id="cw-char-count" class="cw-char-count">0 chars • 0 words</span>
+                  <span id="cw-char-count" class="cw-char-count" style="color:#94a3b8 !important;">0 chars • 0 words</span>
                   <span id="cw-notes-feedback" class="cw-notes-feedback"></span>
                 </div>
-                <button class="btn btn-primary cw-btn-save" id="cw-save-notes">
+                <button class="btn btn-primary cw-btn-save" id="cw-save-notes" style="background:#0d9488 !important; color:#ffffff !important; border:none !important;">
                   <i class="fa-solid fa-floppy-disk"></i> Save Notes
                 </button>
               </div>
             </div>
 
             <!-- AI CLINICAL ASSISTANT CARD -->
-            <div class="cw-card cw-card-ai">
-              <div class="cw-card-header">
+            <div class="cw-card cw-card-ai" style="background:#ffffff !important; background-color:#ffffff !important; border:1px solid #fef08a !important;">
+              <div class="cw-card-header" style="background:#ffffff !important; border-bottom:1px solid #f1f5f9 !important;">
                 <div class="cw-card-title-group">
                   <div class="cw-card-icon cw-icon-ai"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                   <div>
-                    <h3 class="cw-card-title">AI Dental Clinical Assistant</h3>
-                    <p class="cw-card-subtitle">Evidence-based clinical guidelines & differential diagnosis</p>
+                    <h3 class="cw-card-title" style="color:#0f172a !important;">AI Dental Clinical Assistant</h3>
+                    <p class="cw-card-subtitle" style="color:#64748b !important;">Evidence-based clinical guidelines & differential diagnosis</p>
                   </div>
                 </div>
                 <span class="cw-ai-badge"><i class="fa-solid fa-bolt"></i> Gemini Clinical</span>
               </div>
 
-              <div class="cw-quick-prompts">
-                <span class="cw-quick-prompts-label">Quick Prompts:</span>
-                <button type="button" class="cw-prompt-chip" data-ai-prompt="Acute irreversible pulpitis lower 1st molar with cold lingering pain.">Pulpitis</button>
-                <button type="button" class="cw-prompt-chip" data-ai-prompt="Pericoronitis and swelling around lower 3rd molar.">Pericoronitis</button>
-                <button type="button" class="cw-prompt-chip" data-ai-prompt="Deep dentinal caries close to pulp chamber without spontaneous pain.">Deep Caries</button>
-                <button type="button" class="cw-prompt-chip" data-ai-prompt="Post-surgical extraction socket bleeding after 2 hours.">Post-Op Bleeding</button>
+              <div class="cw-quick-prompts" style="background:#ffffff !important;">
+                <span class="cw-quick-prompts-label" style="color:#92400e !important;">Quick Prompts:</span>
+                <button type="button" class="cw-prompt-chip" data-ai-prompt="Acute irreversible pulpitis lower 1st molar with cold lingering pain." style="background:#fafaf9 !important; color:#57534e !important; border:1px solid #e7e5e4 !important;">Pulpitis</button>
+                <button type="button" class="cw-prompt-chip" data-ai-prompt="Pericoronitis and swelling around lower 3rd molar." style="background:#fafaf9 !important; color:#57534e !important; border:1px solid #e7e5e4 !important;">Pericoronitis</button>
+                <button type="button" class="cw-prompt-chip" data-ai-prompt="Deep dentinal caries close to pulp chamber without spontaneous pain." style="background:#fafaf9 !important; color:#57534e !important; border:1px solid #e7e5e4 !important;">Deep Caries</button>
+                <button type="button" class="cw-prompt-chip" data-ai-prompt="Post-surgical extraction socket bleeding after 2 hours." style="background:#fafaf9 !important; color:#57534e !important; border:1px solid #e7e5e4 !important;">Post-Op Bleeding</button>
               </div>
 
-              <div class="cw-ai-search-row">
+              <div class="cw-ai-search-row" style="background:#ffffff !important;">
                 <div class="cw-input-with-icon">
                   <i class="fa-solid fa-stethoscope"></i>
-                  <input class="input cw-input" id="ai-symptoms" placeholder="Describe symptoms, tooth number, clinical findings…">
+                  <input class="input cw-input" id="ai-symptoms" placeholder="Describe symptoms, tooth number, clinical findings…" style="background:#ffffff !important; color:#0f172a !important; border:1px solid #cbd5e1 !important;">
                 </div>
-                <button class="btn btn-gold cw-ai-ask-btn" id="ai-ask">
+                <button class="btn btn-gold cw-ai-ask-btn" id="ai-ask" style="background:#f59e0b !important; color:#ffffff !important; border:none !important;">
                   <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Ask AI</span>
                 </button>
               </div>
 
-              <div id="ai-result" class="cw-ai-result-box">
+              <div id="ai-result" class="cw-ai-result-box" style="background:#fafbfc !important; color:#1e293b !important; border:1px solid #e2e8f0 !important;">
                 <div class="cw-ai-placeholder">
                   <i class="fa-regular fa-comment-dots"></i>
                   <span>Enter clinical findings above and click <b>Ask AI</b> for evidence-based dental considerations.</span>
                 </div>
               </div>
-              <div class="cw-ai-disclaimer">
+              <div class="cw-ai-disclaimer" style="background:#ffffff !important; color:#94a3b8 !important;">
                 <i class="fa-solid fa-shield-halved"></i> For clinical decision support only. Confirm with standard clinical diagnosis.
               </div>
             </div>
@@ -275,31 +382,31 @@ const ClinicalWorkspace = (() => {
           <div class="cw-col cw-col-side">
 
             <!-- PERFORMED TREATMENTS CARD -->
-            <div class="cw-card cw-card-treatments">
-              <div class="cw-card-header">
+            <div class="cw-card cw-card-treatments" style="background:#ffffff !important; background-color:#ffffff !important; border:1px solid #e2e8f0 !important;">
+              <div class="cw-card-header" style="background:#ffffff !important; border-bottom:1px solid #f1f5f9 !important;">
                 <div class="cw-card-title-group">
                   <div class="cw-card-icon cw-icon-treat"><i class="fa-solid fa-tooth"></i></div>
                   <div>
-                    <h3 class="cw-card-title">Treatments Performed</h3>
-                    <p class="cw-card-subtitle">Billable procedures applied to this session</p>
+                    <h3 class="cw-card-title" style="color:#0f172a !important;">Treatments Performed</h3>
+                    <p class="cw-card-subtitle" style="color:#64748b !important;">Billable procedures applied to this session</p>
                   </div>
                 </div>
-                <span class="cw-pill-counter" id="cw-treat-summary">0 items • ₱0.00</span>
+                <span class="cw-pill-counter" id="cw-treat-summary" style="background:#f0fdfa !important; color:#0f766e !important; border:1px solid #99f6e4 !important;">0 items • ₱0.00</span>
               </div>
 
-              <div id="cw-treatments" class="cw-list-container">
+              <div id="cw-treatments" class="cw-list-container" style="background:#ffffff !important;">
                 ${renderTreatments(treatments)}
               </div>
 
-              <div class="cw-add-section">
-                <label class="cw-field-label"><i class="fa-solid fa-plus-circle"></i> Add Procedure</label>
+              <div class="cw-add-section" style="background:#ffffff !important; border-top:1px solid #f1f5f9 !important;">
+                <label class="cw-field-label" style="color:#64748b !important;"><i class="fa-solid fa-plus-circle"></i> Add Procedure</label>
                 <div class="cw-add-row">
-                  <select id="cw-treat-select" class="input cw-select" aria-label="Select treatment procedure">${treatOptions}</select>
-                  <div class="cw-qty-wrap">
-                    <span class="cw-qty-prefix">Qty</span>
-                    <input type="number" id="cw-treat-qty" class="input cw-qty-input" value="1" min="1" max="99" aria-label="Treatment quantity">
+                  <select id="cw-treat-select" class="input cw-select" aria-label="Select treatment procedure" style="background:#ffffff !important; color:#0f172a !important; border:1px solid #cbd5e1 !important;">${treatOptions}</select>
+                  <div class="cw-qty-wrap" style="background:#ffffff !important; border:1px solid #cbd5e1 !important;">
+                    <span class="cw-qty-prefix" style="background:#f8fafc !important; color:#64748b !important;">Qty</span>
+                    <input type="number" id="cw-treat-qty" class="input cw-qty-input" value="1" min="1" max="99" aria-label="Treatment quantity" style="background:#ffffff !important; color:#0f172a !important;">
                   </div>
-                  <button class="btn btn-primary cw-add-btn" id="cw-add-treat" title="Add treatment procedure">
+                  <button class="btn btn-primary cw-add-btn" id="cw-add-treat" title="Add treatment procedure" style="background:#0d9488 !important; color:#ffffff !important; border:none !important;">
                     <i class="fa-solid fa-plus"></i> Add
                   </button>
                 </div>
@@ -307,33 +414,33 @@ const ClinicalWorkspace = (() => {
             </div>
 
             <!-- DIGITAL PRESCRIPTIONS CARD -->
-            <div class="cw-card cw-card-rx">
-              <div class="cw-card-header">
+            <div class="cw-card cw-card-rx" style="background:#ffffff !important; background-color:#ffffff !important; border:1px solid #e2e8f0 !important;">
+              <div class="cw-card-header" style="background:#ffffff !important; border-bottom:1px solid #f1f5f9 !important;">
                 <div class="cw-card-title-group">
                   <div class="cw-card-icon cw-icon-rx"><i class="fa-solid fa-prescription"></i></div>
                   <div>
-                    <h3 class="cw-card-title">Prescriptions (Rx)</h3>
-                    <p class="cw-card-subtitle">Medications issued for this patient</p>
+                    <h3 class="cw-card-title" style="color:#0f172a !important;">Prescriptions (Rx)</h3>
+                    <p class="cw-card-subtitle" style="color:#64748b !important;">Medications issued for this patient</p>
                   </div>
                 </div>
-                <span class="cw-pill-counter" id="cw-rx-summary">0 issued</span>
+                <span class="cw-pill-counter" id="cw-rx-summary" style="background:#f0fdfa !important; color:#0f766e !important; border:1px solid #99f6e4 !important;">0 issued</span>
               </div>
 
-              <div id="cw-rx" class="cw-list-container">
+              <div id="cw-rx" class="cw-list-container" style="background:#ffffff !important;">
                 ${renderRx(rxs)}
               </div>
 
-              <div class="cw-add-section">
-                <label class="cw-field-label"><i class="fa-solid fa-file-prescription"></i> Issue New Prescription</label>
+              <div class="cw-add-section" style="background:#ffffff !important; border-top:1px solid #f1f5f9 !important;">
+                <label class="cw-field-label" style="color:#64748b !important;"><i class="fa-solid fa-file-prescription"></i> Issue New Prescription</label>
                 <div class="cw-rx-grid">
-                  <input class="input cw-input" id="rx-med" placeholder="Medication (e.g. Amoxicillin)" aria-label="Medication name">
-                  <input class="input cw-input" id="rx-dose" placeholder="Dosage (e.g. 500mg)" aria-label="Dosage">
-                  <input class="input cw-input" id="rx-freq" placeholder="Frequency (e.g. TID / 8h)" aria-label="Frequency">
-                  <input class="input cw-input" id="rx-dur" placeholder="Duration (e.g. 7 days)" aria-label="Duration">
+                  <input class="input cw-input" id="rx-med" placeholder="Medication (e.g. Amoxicillin)" aria-label="Medication name" style="background:#ffffff !important; color:#0f172a !important; border:1px solid #cbd5e1 !important;">
+                  <input class="input cw-input" id="rx-dose" placeholder="Dosage (e.g. 500mg)" aria-label="Dosage" style="background:#ffffff !important; color:#0f172a !important; border:1px solid #cbd5e1 !important;">
+                  <input class="input cw-input" id="rx-freq" placeholder="Frequency (e.g. TID / 8h)" aria-label="Frequency" style="background:#ffffff !important; color:#0f172a !important; border:1px solid #cbd5e1 !important;">
+                  <input class="input cw-input" id="rx-dur" placeholder="Duration (e.g. 7 days)" aria-label="Duration" style="background:#ffffff !important; color:#0f172a !important; border:1px solid #cbd5e1 !important;">
                 </div>
                 <textarea class="input cw-textarea cw-rx-instructions" id="rx-instr" rows="2"
-                  placeholder="Patient instructions (e.g. Take 1 capsule 3 times daily after meals with water)" aria-label="Patient instructions"></textarea>
-                <button class="btn btn-primary cw-btn-full" id="rx-add">
+                  placeholder="Patient instructions (e.g. Take 1 capsule 3 times daily after meals with water)" aria-label="Patient instructions" style="background:#ffffff !important; color:#0f172a !important; border:1px solid #cbd5e1 !important;"></textarea>
+                <button class="btn btn-primary cw-btn-full" id="rx-add" style="background:#0d9488 !important; color:#ffffff !important; border:none !important;">
                   <i class="fa-solid fa-plus"></i> Issue Prescription
                 </button>
               </div>
@@ -353,7 +460,7 @@ const ClinicalWorkspace = (() => {
   function renderTreatments(list) {
     if (!list || !list.length) {
       return `
-        <div class="cw-empty-state">
+        <div class="cw-empty-state" style="color:#94a3b8 !important;">
           <i class="fa-solid fa-tooth"></i>
           <span>No procedures recorded yet for this session.</span>
         </div>
@@ -364,20 +471,20 @@ const ClinicalWorkspace = (() => {
       const qty = Number(tt.quantity || 1);
       const subtotal = unit * qty;
       return `
-        <div class="cw-record-item cw-treat-item">
+        <div class="cw-record-item cw-treat-item" style="background:#ffffff !important; color:#0f172a !important; border:1px solid #e2e8f0 !important; border-left:3px solid #10b981 !important;">
           <div class="cw-record-content">
             <div class="cw-record-main">
-              <strong class="cw-record-name">${esc(tt.treatment_name || 'Dental Procedure')}</strong>
-              <span class="cw-multiplier-badge">× ${qty}</span>
+              <strong class="cw-record-name" style="color:#0f172a !important;">${esc(tt.treatment_name || 'Dental Procedure')}</strong>
+              <span class="cw-multiplier-badge" style="background:#f1f5f9 !important; color:#475569 !important; border:1px solid #e2e8f0 !important;">× ${qty}</span>
             </div>
-            <div class="cw-record-meta">
+            <div class="cw-record-meta" style="color:#64748b !important;">
               <span>₱${unit.toLocaleString('en-US', { minimumFractionDigits: 2 })} each</span>
               <span class="cw-meta-dot">•</span>
-              <strong class="cw-subtotal-price">₱${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
+              <strong class="cw-subtotal-price" style="color:#0f766e !important;">₱${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
             </div>
-            ${tt.notes ? `<div class="cw-record-note">${esc(tt.notes)}</div>` : ''}
+            ${tt.notes ? `<div class="cw-record-note" style="color:#64748b !important;">${esc(tt.notes)}</div>` : ''}
           </div>
-          <button class="cw-del-btn" data-del-treat="${tt.id}" title="Remove this procedure" aria-label="Remove procedure">
+          <button class="cw-del-btn" data-del-treat="${tt.id}" title="Remove this procedure" aria-label="Remove procedure" style="background:transparent !important; color:#94a3b8 !important;">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         </div>
@@ -388,26 +495,26 @@ const ClinicalWorkspace = (() => {
   function renderRx(list) {
     if (!list || !list.length) {
       return `
-        <div class="cw-empty-state">
+        <div class="cw-empty-state" style="color:#94a3b8 !important;">
           <i class="fa-solid fa-pills"></i>
           <span>No prescriptions issued for this patient yet.</span>
         </div>
       `;
     }
     return `<div class="cw-record-list">` + list.map(r => `
-      <div class="cw-record-item cw-rx-item">
+      <div class="cw-record-item cw-rx-item" style="background:#ffffff !important; color:#0f172a !important; border:1px solid #e2e8f0 !important; border-left:3px solid #7c3aed !important;">
         <div class="cw-rx-icon"><i class="fa-solid fa-prescription"></i></div>
         <div class="cw-record-content">
           <div class="cw-record-main">
-            <strong class="cw-record-name">${esc(r.medication)}</strong>
+            <strong class="cw-record-name" style="color:#0f172a !important;">${esc(r.medication)}</strong>
             ${r.dosage ? `<span class="cw-rx-badge">${esc(r.dosage)}</span>` : ''}
           </div>
-          <div class="cw-record-meta">
+          <div class="cw-record-meta" style="color:#64748b !important;">
             ${r.frequency ? `<span><i class="fa-regular fa-clock"></i> ${esc(r.frequency)}</span>` : ''}
             ${r.frequency && r.duration ? `<span class="cw-meta-dot">•</span>` : ''}
             ${r.duration ? `<span><i class="fa-regular fa-calendar"></i> ${esc(r.duration)}</span>` : ''}
           </div>
-          ${r.instructions ? `<div class="cw-record-note"><i class="fa-solid fa-info-circle"></i> ${esc(r.instructions)}</div>` : ''}
+          ${r.instructions ? `<div class="cw-record-note" style="color:#64748b !important;"><i class="fa-solid fa-info-circle"></i> ${esc(r.instructions)}</div>` : ''}
         </div>
       </div>
     `).join('') + `</div>`;
