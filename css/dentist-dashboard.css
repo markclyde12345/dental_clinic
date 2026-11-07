@@ -2454,7 +2454,7 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.38);
+  background: rgba(15, 23, 42, 0.12);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: flex-start;
@@ -3468,8 +3468,8 @@ body {
 }
 
 /* ==========================================================================
-   CLINICAL OPERATORY WORKSPACE MODAL — LIGHT & AIRY CLINICAL THEME
-   Design: Bright, Pristine Medical Suite (Pure White + Light Ice Teal + Slate)
+   CLINICAL OPERATORY WORKSPACE MODAL — PURE WHITE & LIGHT CLINIC THEME
+   Design: Pristine, Bright, Ultra-Clean Medical Suite
    ========================================================================== */
 
 .modal-clinical-workspace {
@@ -3480,8 +3480,8 @@ body {
   padding: 0;
   border-radius: 20px;
   border: 1px solid #e2e8f0;
-  border-top: 4px solid var(--primary-color, #0b3c4d);
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.16);
+  border-top: 4px solid #0d9488;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.08);
   background: #ffffff;
   display: flex;
   flex-direction: column;
@@ -3502,7 +3502,7 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
   color: #64748b;
   display: flex;
@@ -3521,12 +3521,12 @@ body {
   transform: rotate(90deg);
 }
 
-/* Header Banner - Light & Fresh Clinic Look */
+/* Header Banner - Pure White & Airy */
 .cw-header-banner {
-  background: linear-gradient(180deg, #f8fbfd 0%, #ffffff 100%);
+  background: #ffffff;
   color: #0f172a;
   padding: 24px 32px 20px;
-  border-bottom: 1px solid #eef2f6;
+  border-bottom: 1px solid #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3547,16 +3547,16 @@ body {
   width: 56px;
   height: 56px;
   min-width: 56px;
-  background: linear-gradient(135deg, #e6f6f9 0%, #d0eff5 100%);
-  border: 2px solid #bce6ee;
+  background: #f0fdfa;
+  border: 2px solid #99f6e4;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.6rem;
   font-weight: 800;
-  color: #0b3c4d;
-  box-shadow: 0 3px 10px rgba(11, 60, 77, 0.08);
+  color: #0f766e;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.08);
 }
 
 .cw-patient-info {
@@ -3570,7 +3570,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #0b3c4d;
+  color: #0d9488;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -3580,7 +3580,7 @@ body {
   font-family: var(--font-display, 'Playfair Display', serif);
   font-size: 1.55rem;
   font-weight: 700;
-  color: #0b3c4d;
+  color: #0f172a;
   margin: 0;
   line-height: 1.2;
 }
@@ -3594,7 +3594,7 @@ body {
 }
 
 .cw-meta-pill {
-  background: #f1f5f9;
+  background: #f8fafc;
   color: #475569;
   border: 1px solid #e2e8f0;
   padding: 4px 11px;
@@ -3607,7 +3607,7 @@ body {
 }
 
 .cw-meta-pill i {
-  color: #0b3c4d;
+  color: #0d9488;
   font-size: 0.75rem;
 }
 
@@ -3653,10 +3653,10 @@ body {
   100% { transform: scale(0.95); opacity: 0.8; }
 }
 
-/* Lifecycle Stage Bar - Clean Light Segmentation */
+/* Lifecycle Stage Bar - Crisp Pure White */
 .cw-lifecycle-bar {
-  background: #fafbfc;
-  border-bottom: 1px solid #eef2f6;
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
   padding: 12px 32px;
   display: flex;
   align-items: center;
@@ -3678,7 +3678,7 @@ body {
 
 .cw-status-actions {
   display: inline-flex;
-  background: #f1f5f9;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 4px;
@@ -3687,8 +3687,8 @@ body {
 }
 
 .cw-status-btn {
-  background: transparent;
-  border: 1px solid transparent;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 7px 14px;
   font-size: 0.82rem;
@@ -3698,14 +3698,14 @@ body {
   align-items: center;
   gap: 6px;
   color: #475569;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cw-status-btn:hover {
-  background: #ffffff;
+  background: #f8fafc;
   color: #0f172a;
   border-color: #cbd5e1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .cw-act-confirm.is-active {
@@ -3717,11 +3717,11 @@ body {
 }
 
 .cw-act-progress.is-active {
-  background: #eef6f8;
-  color: #0b3c4d;
-  border-color: #8ec5d4;
+  background: #f0fdfa;
+  color: #0f766e;
+  border-color: #99f6e4;
   font-weight: 700;
-  box-shadow: 0 2px 6px rgba(11, 60, 77, 0.12);
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.12);
 }
 
 .cw-act-complete.is-active {
@@ -3748,13 +3748,13 @@ body {
   box-shadow: 0 2px 6px rgba(185, 28, 28, 0.12);
 }
 
-/* 2-Column Grid Layout */
+/* 2-Column Grid Layout - Pure White Canvas */
 .cw-grid {
   padding: 24px 32px 36px;
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   gap: 24px;
-  background: #f8fafc;
+  background: #ffffff;
   align-items: start;
 }
 
@@ -3776,12 +3776,12 @@ body {
   gap: 20px;
 }
 
-/* Workspace Cards - Crisp White on Soft Gray-White Base */
+/* Workspace Cards - Pure White with Clean Light Borders */
 .cw-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(11, 60, 77, 0.03);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -3790,7 +3790,7 @@ body {
 
 .cw-card:hover {
   border-color: #cbd5e1;
-  box-shadow: 0 4px 16px rgba(11, 60, 77, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .cw-card-header {
@@ -3862,9 +3862,9 @@ body {
 }
 
 .cw-chip-btn:hover {
-  background: #eef6f8;
-  border-color: #0b3c4d;
-  color: #0b3c4d;
+  background: #f0fdfa;
+  border-color: #0d9488;
+  color: #0d9488;
 }
 
 /* SOAP Textarea */
@@ -3890,14 +3890,14 @@ body {
 }
 
 .cw-textarea:focus {
-  border-color: #0b3c4d;
+  border-color: #0d9488;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(11, 60, 77, 0.08);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.08);
 }
 
 .cw-soap-footer {
   padding: 12px 20px;
-  background: #fafbfc;
+  background: #ffffff;
   border-top: 1px solid #f1f5f9;
   display: flex;
   align-items: center;
@@ -3926,7 +3926,22 @@ body {
   animation: fadeIn 0.2s;
 }
 
-/* AI Assistant Card - Light & Pristine */
+/* Action Buttons Inside Workspace - Light & Vibrant Teal */
+.cw-btn-save, .cw-add-btn, .cw-btn-full {
+  background: #0d9488 !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(13, 148, 136, 0.18) !important;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cw-btn-save:hover, .cw-add-btn:hover, .cw-btn-full:hover {
+  background: #0f766e !important;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25) !important;
+}
+
+/* AI Assistant Card - Pristine White with Light Amber Accent */
 .cw-card-ai {
   border-color: #fef08a;
   background: #ffffff;
@@ -4012,9 +4027,9 @@ body {
 }
 
 .cw-input-with-icon .cw-input:focus {
-  border-color: #0b3c4d;
+  border-color: #0d9488;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(11, 60, 77, 0.08);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.08);
 }
 
 .cw-ai-ask-btn {
@@ -4025,11 +4040,18 @@ body {
   gap: 7px;
   font-weight: 700;
   border-radius: 10px;
+  background: #f59e0b !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.cw-ai-ask-btn:hover {
+  background: #d97706 !important;
 }
 
 .cw-ai-result-box {
   margin: 4px 20px 12px;
-  background: #fafbfc;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 14px 16px;
@@ -4053,13 +4075,13 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #0b3c4d;
+  color: #0d9488;
   font-weight: 600;
 }
 
 .cw-ai-response-header {
   font-size: 0.82rem;
-  color: #0b3c4d;
+  color: #0d9488;
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -4084,13 +4106,13 @@ body {
 
 /* Right Column Lists: Treatments & Prescriptions */
 .cw-pill-counter {
-  background: #eef6f8;
-  color: #0b3c4d;
+  background: #f0fdfa;
+  color: #0f766e;
   font-size: 0.76rem;
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 16px;
-  border: 1px solid rgba(11, 60, 77, 0.12);
+  border: 1px solid #99f6e4;
 }
 
 .cw-list-container {
@@ -4145,7 +4167,7 @@ body {
 }
 
 .cw-treat-item {
-  border-left: 3px solid #059669;
+  border-left: 3px solid #10b981;
 }
 
 .cw-record-content {
@@ -4190,7 +4212,7 @@ body {
 }
 
 .cw-subtotal-price {
-  color: #0b3c4d;
+  color: #0f766e;
   font-weight: 700;
 }
 
@@ -4223,7 +4245,7 @@ body {
 /* Add Forms inside cards */
 .cw-add-section {
   padding: 14px 20px;
-  background: #fafbfc;
+  background: #ffffff;
   border-top: 1px solid #f1f5f9;
 }
 
@@ -4292,7 +4314,6 @@ body {
   height: 40px;
   padding: 0 16px;
   border-radius: 10px;
-  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -4354,7 +4375,6 @@ body {
   justify-content: center;
   height: 40px;
   border-radius: 10px;
-  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -4368,7 +4388,7 @@ body {
   justify-content: center;
   padding: 80px 24px;
   gap: 16px;
-  color: #0b3c4d;
+  color: #0d9488;
   font-weight: 600;
 }
 
@@ -4376,7 +4396,7 @@ body {
   width: 44px;
   height: 44px;
   border: 4px solid #e2e8f0;
-  border-top-color: #0b3c4d;
+  border-top-color: #0d9488;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -4397,7 +4417,7 @@ body {
   margin-top: 2px;
 }
 
-/* Dark Theme Overrides (Only if user deliberately switches to dark) */
+/* Dark Theme Overrides */
 .dark-theme .modal-clinical-workspace {
   background: #0f172a;
   border-color: #334155;
@@ -4405,7 +4425,7 @@ body {
 }
 
 .dark-theme .cw-header-banner {
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  background: #0f172a;
   border-color: #334155;
 }
 
@@ -4440,7 +4460,7 @@ body {
 }
 
 .dark-theme .cw-lifecycle-bar {
-  background: #1e293b;
+  background: #0f172a;
   border-color: #334155;
 }
 
@@ -4449,11 +4469,13 @@ body {
 }
 
 .dark-theme .cw-status-actions {
-  background: #334155;
-  border-color: #475569;
+  background: #1e293b;
+  border-color: #334155;
 }
 
 .dark-theme .cw-status-btn {
+  background: #0f172a;
+  border-color: #334155;
   color: #e2e8f0;
 }
 
