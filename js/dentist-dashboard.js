@@ -509,9 +509,9 @@ function applyScheduleFilters() {
           <button class="btn btn-ghost small" onclick="openClinicalWorkspace('${appt.id}')">
             <i class="fa-solid fa-eye"></i> View Details
           </button>
-          <button class="btn btn-ghost small" onclick="quickUpdateStatus('${appt.id}')">
+          ${String(appt.status).toLowerCase() === 'cancelled' ? '' : `<button class="btn btn-ghost small" onclick="quickUpdateStatus('${appt.id}')">
             <i class="fa-solid fa-pen-to-square"></i> Status
-          </button>
+          </button>`}
         </td>
       </tr>
     `;
@@ -1794,12 +1794,19 @@ function openClinicalWorkspace(apptId) {
 window.openClinicalWorkspace = openClinicalWorkspace;
 
 function quickUpdateStatus(apptId) {
+  const allList = [...(activeSchedule || []), ...(todaySchedule || [])];
+  const found = allList.find(x => String(x.id) === String(apptId));
+  if (found && String(found.status).toLowerCase() === 'cancelled') {
+    alert('This appointment has been cancelled and cannot be confirmed, started, rescheduled, or completed.');
+    return;
+  }
+
   Modal.open(`
-    <div class="modal-body">
+    <div class="modal-body" style="background:#ffffff !important; border-radius:16px;">
       <button class="modal-close" onclick="Modal.close()">×</button>
-      <h3 style="color:var(--primary-color);">Update Appointment Status</h3>
+      <h3 style="color:#0f172a; margin-top:0;">Update Appointment Status</h3>
       <div style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
-        <button class="btn btn-primary" onclick="setApptStatus('${apptId}', 'In Progress')">Mark In Progress (In Chair)</button>
+        <button class="btn btn-primary" onclick="setApptStatus('${apptId}', 'In Progress')" style="background:#0d9488 !important; border:none;">Mark In Progress (In Chair)</button>
         <button class="btn btn-success" onclick="setApptStatus('${apptId}', 'Completed')">Mark Completed</button>
         <button class="btn btn-ghost" onclick="setApptStatus('${apptId}', 'Pending')">Set Pending / Waiting</button>
         <button class="btn btn-danger" onclick="setApptStatus('${apptId}', 'Cancelled')">Cancel Appointment</button>
@@ -1810,6 +1817,17 @@ function quickUpdateStatus(apptId) {
 window.quickUpdateStatus = quickUpdateStatus;
 
 async function setApptStatus(apptId, status) {
+  const allList = [...(activeSchedule || []), ...(todaySchedule || [])];
+  const found = allList.find(x => String(x.id) === String(apptId));
+  if (found && String(found.status).toLowerCase() === 'cancelled' && status !== 'Cancelled') {
+    alert('This appointment has been cancelled and cannot be confirmed, started, rescheduled, or completed.');
+    return;
+  }
+  if (status === 'Cancelled') {
+    if (!confirm('Are you sure you want to cancel this appointment? Once cancelled, it cannot be rescheduled, confirmed, started, or completed.')) {
+      return;
+    }
+  }
   try {
     await api.put(`/appointments/${apptId}`, { status });
     Modal.close();

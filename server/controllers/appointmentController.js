@@ -571,6 +571,13 @@ const updateAppointment = async (req, res) => {
     const existingNotes = existingAppt?.notes || '';
     const isRescheduled = targetDate && previousDate && targetDate !== previousDate;
 
+    // A cancelled appointment cannot be rescheduled, confirmed, started, or completed
+    if (previousStatus === 'Cancelled' && ((status && status !== 'Cancelled') || isRescheduled)) {
+      return res.status(400).json({
+        message: 'This appointment has been cancelled and cannot be confirmed, started, rescheduled, or completed.'
+      });
+    }
+
     const updateFields = {};
     if (targetDate !== undefined) updateFields.appointment_date = targetDate;
     if (status !== undefined) updateFields.status = status;

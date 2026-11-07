@@ -38,13 +38,18 @@ const ClinicalWorkspace = (() => {
     }
   }
 
-  function calcTreatTotal(list) {
-    if (!Array.isArray(list) || !list.length) return 0;
-    return list.reduce((sum, tt) => {
-      const p = Number(tt.price_at_time || 0);
-      const q = Number(tt.quantity || 1);
-      return sum + (p * q);
-    }, 0);
+  function renderCancelledNotice() {
+    return `
+      <div class="cw-vd-cancelled-card" style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+        <div style="width:38px; height:38px; border-radius:10px; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; font-size:1.15rem; flex-shrink:0;">
+          <i class="fa-solid fa-ban"></i>
+        </div>
+        <div>
+          <strong style="display:block; font-size:0.9rem; color:#991b1b; margin-bottom:2px;">Appointment Cancelled</strong>
+          <span style="font-size:0.78rem; color:#b91c1c; line-height:1.4; display:block;">This appointment has been cancelled. It cannot be rescheduled, confirmed, started, or completed.</span>
+        </div>
+      </div>
+    `;
   }
 
   async function open(appt) {
@@ -104,6 +109,7 @@ const ClinicalWorkspace = (() => {
     const { dateStr, timeStr, fullStr } = formatDateTime(a.appointment_date);
     const initial = patientName.trim().charAt(0).toUpperCase() || 'P';
     const status = a.status || 'Pending';
+    const isCancelled = String(status).toLowerCase() === 'cancelled';
     const apptId = a.id ? String(a.id) : '';
     const cleanNotes = a.notes ? a.notes.replace(/\[[^\]]+\]/g, '').trim() : '';
 
@@ -458,28 +464,32 @@ const ClinicalWorkspace = (() => {
           </div>
         </div>
 
-        <!-- LIFECYCLE STATUS ACTIONS -->
-        <div>
-          <div class="cw-vd-actions-title">
-            <i class="fa-solid fa-arrows-rotate" style="color:#0d9488;"></i> Update Status:
-          </div>
-          <div class="cw-vd-actions-row" role="group">
-            <button class="cw-status-btn cw-act-confirm ${status === 'Confirmed' ? 'is-active' : ''}" data-act="Confirmed">
-              <i class="fa-solid fa-check"></i> Confirm
-            </button>
-            <button class="cw-status-btn cw-act-progress ${status === 'In Progress' ? 'is-active' : ''}" data-act="In Progress">
-              <i class="fa-solid fa-play"></i> Start
-            </button>
-            <button class="cw-status-btn cw-act-complete ${status === 'Completed' ? 'is-active' : ''}" data-act="Completed">
-              <i class="fa-solid fa-circle-check"></i> Complete
-            </button>
-            <button class="cw-status-btn cw-act-reschedule ${status === 'Rescheduled' ? 'is-active' : ''}" data-act="Rescheduled">
-              <i class="fa-solid fa-calendar"></i> Reschedule
-            </button>
-            <button class="cw-status-btn cw-act-cancel ${status === 'Cancelled' ? 'is-active' : ''}" data-act="Cancelled">
-              <i class="fa-solid fa-ban"></i> Cancel
-            </button>
-          </div>
+        <!-- LIFECYCLE STATUS ACTIONS OR CANCELLED NOTICE -->
+        <div id="cw-actions-container">
+          ${isCancelled ? renderCancelledNotice() : `
+            <div>
+              <div class="cw-vd-actions-title">
+                <i class="fa-solid fa-arrows-rotate" style="color:#0d9488;"></i> Update Status:
+              </div>
+              <div class="cw-vd-actions-row" role="group">
+                <button class="cw-status-btn cw-act-confirm ${status === 'Confirmed' ? 'is-active' : ''}" data-act="Confirmed">
+                  <i class="fa-solid fa-check"></i> Confirm
+                </button>
+                <button class="cw-status-btn cw-act-progress ${status === 'In Progress' ? 'is-active' : ''}" data-act="In Progress">
+                  <i class="fa-solid fa-play"></i> Start
+                </button>
+                <button class="cw-status-btn cw-act-complete ${status === 'Completed' ? 'is-active' : ''}" data-act="Completed">
+                  <i class="fa-solid fa-circle-check"></i> Complete
+                </button>
+                <button class="cw-status-btn cw-act-reschedule ${status === 'Rescheduled' ? 'is-active' : ''}" data-act="Rescheduled">
+                  <i class="fa-solid fa-calendar"></i> Reschedule
+                </button>
+                <button class="cw-status-btn cw-act-cancel" data-act="Cancelled" style="color:#dc2626;">
+                  <i class="fa-solid fa-ban"></i> Cancel
+                </button>
+              </div>
+            </div>
+          `}
         </div>
 
         <!-- COLLAPSIBLE CLINICAL NOTES & RX (OPTIONAL) -->
@@ -583,8 +593,22 @@ const ClinicalWorkspace = (() => {
     document.querySelectorAll('[data-act]').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (busy) return;
-        busy = true;
+
+        // If appointment is already cancelled, it cannot be confirmed, started, rescheduled, or completed!
+        if (String(currentAppt.status).toLowerCase() === 'cancelled') {
+          alert('This appointment has been cancelled and cannot be confirmed, started, rescheduled, or completed.');
+          return;
+        }
+
         const act = btn.getAttribute('data-act');
+
+        if (act === 'Cancelled') {
+          if (!confirm('Are you sure you want to cancel this appointment? Once cancelled, it cannot be rescheduled, confirmed, started, or completed.')) {
+            return;
+          }
+        }
+
+        busy = true;
         const prevText = btn.innerHTML;
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
 
@@ -601,19 +625,27 @@ const ClinicalWorkspace = (() => {
             statusEl.textContent = newStatus;
           }
 
-          document.querySelectorAll('[data-act]').forEach(b => {
-            if (b.getAttribute('data-act') === newStatus) {
-              b.classList.add('is-active');
-            } else {
-              b.classList.remove('is-active');
-            }
-          });
-
           currentAppt = { ...currentAppt, status: newStatus };
+
+          if (String(newStatus).toLowerCase() === 'cancelled') {
+            const container = document.getElementById('cw-actions-container');
+            if (container) {
+              container.innerHTML = renderCancelledNotice();
+            }
+          } else {
+            document.querySelectorAll('[data-act]').forEach(b => {
+              if (b.getAttribute('data-act') === newStatus) {
+                b.classList.add('is-active');
+              } else {
+                b.classList.remove('is-active');
+              }
+            });
+          }
 
           if (typeof loadQueueView === 'function') loadQueueView();
           if (typeof loadOverview === 'function') loadOverview();
           if (typeof loadTodaySchedule === 'function') loadTodaySchedule();
+          if (typeof loadScheduleTable === 'function') loadScheduleTable();
         } catch (err) {
           alert('Could not update status: ' + err.message);
         } finally {
