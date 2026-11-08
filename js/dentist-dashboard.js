@@ -347,7 +347,7 @@ function renderTodayScheduleTable(appointments) {
       hour: '2-digit', minute: '2-digit', hour12: true
     });
     const patientName = appt.patient ? appt.patient.name : 'Unknown Patient';
-    const procedure = appt.treatment ? appt.treatment.name : (appt.notes || 'General Consultation');
+    const procedure = appt.treatment ? appt.treatment.name : 'General Consultation';
 
     return `
       <tr>
@@ -472,6 +472,43 @@ function setupScheduleFilters() {
   if (searchFilter) searchFilter.addEventListener('input', applyScheduleFilters);
 }
 
+function formatClinicalNotes(rawNotes) {
+  if (!rawNotes || !rawNotes.trim()) {
+    return '<span class="muted small">None</span>';
+  }
+
+  // Parse bracketed metadata
+  const allergMatch = rawNotes.match(/\[Allergies:\s*([^\]]+)\]/i);
+  const allergies = (allergMatch ? allergMatch[1] : '').trim();
+  const hasAllergies = allergies && !/^(none|n\/a|no)$/i.test(allergies);
+
+  const concernMatch = rawNotes.match(/\[Concern:\s*([^\]]+)\]/i);
+  const concern = (concernMatch ? concernMatch[1] : '').trim();
+  const isMeaningfulConcern = concern && !/^(none|n\/a|routine\s*cleaning|general\s*checkup)$/i.test(concern);
+
+  // Extract clean free-form notes outside brackets
+  let cleanNote = rawNotes.replace(/\[[^\]]+\]/g, '').trim();
+  cleanNote = cleanNote.replace(/^Notes:\s*/i, '').trim();
+  const isMeaningfulNote = cleanNote && !/^(none|nothing|n\/a|na|no|nil|none\s*reported|no\s*notes|no\s*symptoms|normal)$/i.test(cleanNote);
+
+  const parts = [];
+  if (hasAllergies) {
+    parts.push(`<span style="color:#dc2626; font-size:0.75rem; font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> Allergies: ${esc(allergies)}</span>`);
+  }
+  if (isMeaningfulConcern) {
+    parts.push(`<span style="color:#d97706; font-size:0.78rem; font-weight:500;"><i class="fa-solid fa-tooth"></i> ${esc(concern)}</span>`);
+  }
+  if (isMeaningfulNote) {
+    parts.push(`<span class="muted small" style="font-style:italic;" title="${esc(cleanNote)}">"${esc(cleanNote.slice(0, 45))}${cleanNote.length > 45 ? '...' : ''}"</span>`);
+  }
+
+  if (parts.length) {
+    return `<div style="display:flex; flex-direction:column; gap:2px;">${parts.join('')}</div>`;
+  }
+
+  return '<span class="muted small">Standard Care</span>';
+}
+
 function applyScheduleFilters() {
   const tbody = document.getElementById('full-schedule-tbody');
   if (!tbody) return;
@@ -526,7 +563,7 @@ function applyScheduleFilters() {
         <td>${esc(p.contact_number || p.email || 'N/A')}</td>
         <td>${esc(t.name || 'General Consultation')}</td>
         <td><span class="badge ${badgeClass(appt.status)}">${esc(appt.status)}</span></td>
-        <td><span class="muted small">${esc(appt.notes ? (appt.notes.slice(0, 30) + '...') : 'None')}</span></td>
+        <td>${formatClinicalNotes(appt.notes)}</td>
         <td>
           <button class="btn btn-ghost small" onclick="openClinicalWorkspace('${appt.id}')">
             <i class="fa-solid fa-eye"></i> View Details
@@ -839,7 +876,7 @@ async function openPatientRecordModal(userId) {
       <li style="padding:8px 0; border-bottom:1px solid #f1f5f9;">
         <span class="badge ${badgeClass(h.status)}">${esc(h.status)}</span>
         <strong>${new Date(h.appointment_date).toLocaleDateString()}</strong> — ${esc(h.treatment ? h.treatment.name : 'Consultation')}
-        <div class="muted small">${esc(h.notes || '')}</div>
+        <div>${formatClinicalNotes(h.notes)}</div>
       </li>
     `).join('') : '<li class="muted small">No previous dental visits recorded.</li>';
 

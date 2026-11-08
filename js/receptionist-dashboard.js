@@ -605,6 +605,75 @@ function parseAppointmentNotes(rawNotes) {
   return parsed;
 }
 
+function formatHistoryAppointmentNotes(rawNotes) {
+  if (!rawNotes || !rawNotes.trim()) {
+    return '<span class="notes-chip chip-default" style="color: #64748b; font-size: 0.72rem;"><i class="ti ti-notes"></i> Standard Care</span>';
+  }
+
+  const parsed = parseAppointmentNotes(rawNotes);
+  const chips = [];
+
+  // Walk-In tag
+  if (parsed.type && parsed.type.toLowerCase().includes('walk-in')) {
+    chips.push('<span class="notes-chip" style="background:#eef6f8; color:#0b3c4d; border:1px solid rgba(11,60,77,0.25); font-weight:700;"><i class="ti ti-walk"></i> Walk-In</span>');
+  }
+
+  // Doctor assigned (if specifically assigned)
+  const dentist = (parsed.dentist || '').trim();
+  if (dentist && !/^(none|n\/a|no\s*preference)$/i.test(dentist)) {
+    chips.push(`<span class="notes-chip chip-dentist" title="Assigned Doctor: ${escapeHtml(dentist)}"><i class="ti ti-stethoscope"></i> ${escapeHtml(dentist)}</span>`);
+  }
+
+  // Allergies Alert
+  const allergies = (parsed.allergies || '').trim();
+  if (allergies && !/^(none|n\/a|no)$/i.test(allergies)) {
+    chips.push(`<span class="notes-chip chip-alert" title="Allergies: ${escapeHtml(allergies)}"><i class="ti ti-alert-triangle"></i> ${escapeHtml(allergies)}</span>`);
+  }
+
+  // Medical conditions Alert
+  const conditions = (parsed.conditions || '').trim();
+  if (conditions && !/^(none|n\/a|no)$/i.test(conditions)) {
+    chips.push(`<span class="notes-chip chip-alert" title="Condition: ${escapeHtml(conditions)}"><i class="ti ti-first-aid-kit"></i> ${escapeHtml(conditions)}</span>`);
+  }
+
+  // Real HMO
+  const hmo = (parsed.hmo || '').trim();
+  if (hmo && !/none|self-pay|self\s*pay|n\/a|not\s*applicable/i.test(hmo)) {
+    chips.push(`<span class="notes-chip chip-hmo" title="HMO Provider: ${escapeHtml(hmo)}"><i class="ti ti-shield-check"></i> ${escapeHtml(hmo)}</span>`);
+  }
+
+  // Chief Concern (if meaningful)
+  const concern = (parsed.concern || '').trim();
+  if (concern && !/^(none|n\/a|routine\s*cleaning|general\s*checkup)$/i.test(concern)) {
+    chips.push(`<span class="notes-chip chip-concern" title="Chief Concern: ${escapeHtml(concern)}"><i class="ti ti-tooth"></i> ${escapeHtml(concern)}</span>`);
+  }
+
+  // Clean custom patient notes (filtering filler words)
+  let cleanNote = (parsed.freeNotes || '')
+    .replace(/^Notes:\s*/i, '')
+    .replace(/^\[Notes:\s*/i, '')
+    .replace(/\]$/, '')
+    .trim();
+  const isMeaningfulNote = cleanNote &&
+    !/^(none|nothing|n\/a|na|no|nil|none\s*reported|no\s*notes|no\s*symptoms|normal)$/i.test(cleanNote);
+
+  let freeNoteHtml = '';
+  if (isMeaningfulNote) {
+    freeNoteHtml = `<div class="notes-custom-preview" style="font-size:0.75rem; color:#475569; font-style:italic; margin-top:3px; max-width:280px; word-break:break-word;" title="${escapeHtml(cleanNote)}"><i class="ti ti-message-dots" style="color:#0ea5e9; flex-shrink:0;"></i> "${escapeHtml(cleanNote)}"</div>`;
+  }
+
+  if (!chips.length && !freeNoteHtml) {
+    return '<span class="notes-chip chip-default" style="color: #64748b; font-size: 0.72rem;"><i class="ti ti-notes"></i> Standard Care</span>';
+  }
+
+  return `
+    <div style="display:flex; flex-direction:column; gap:4px; max-width:320px;">
+      ${chips.length ? `<div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">${chips.join('')}</div>` : ''}
+      ${freeNoteHtml}
+    </div>
+  `;
+}
+
 const AVATAR_GRADIENTS = [
   'linear-gradient(135deg, #0b3c4d, #14536a)',
   'linear-gradient(135deg, #0d9488, #14b8a6)',
@@ -2914,7 +2983,7 @@ async function openPatientHistoryModal(patientId) {
       medical_notes: p.medical_notes || p.medicalHistory || 'None recorded.'
     };
 
-    const appointments = data.appointments || [];
+    const appointments = (data.appointments || []).sort((a, b) => new Date(b.appointment_date || 0) - new Date(a.appointment_date || 0));
     const prescriptions = data.prescriptions || [];
 
     if (sub) {
@@ -2964,7 +3033,7 @@ async function openPatientHistoryModal(patientId) {
                   <td>${formatDateTime(a.appointment_date)}</td>
                   <td>${escapeHtml(a.treatment ? a.treatment.name : 'Consultation')}</td>
                   <td>${getStatusBadge(a.status)}</td>
-                  <td><small>${escapeHtml(a.notes || 'N/A')}</small></td>
+                  <td>${formatHistoryAppointmentNotes(a.notes)}</td>
                 </tr>
               `).join('')}
             </tbody>

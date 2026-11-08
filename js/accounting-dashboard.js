@@ -1029,7 +1029,7 @@
     const orNo = `${orPrefix}${invIdShort}`;
     const pName = inv.patient ? (inv.patient.name || 'Patient') : 'Walk-in Patient';
     const amount = parseFloat(inv.amount || inv.total_amount || 0);
-    const desc = inv.appointment && inv.appointment.notes ? inv.appointment.notes : (inv.notes || 'Dental Examination, Prophylaxis & Procedure');
+    const desc = inv.appointment?.treatment?.name || inv.treatment?.name || (inv.appointment?.notes && !inv.appointment.notes.startsWith('[') ? inv.appointment.notes : (inv.notes && !inv.notes.startsWith('[') ? inv.notes : 'Dental Examination, Prophylaxis & Procedure'));
     const method = inv.payment_method || 'Cash / Electronic Transfer';
     const footerMsg = localStorage.getItem('acc-receipt-footer') || 'Thank you for trusting Fano Dental Clinic! Keep this receipt for your dental health records.';
 
