@@ -1358,7 +1358,7 @@
       let parsed = raw ? JSON.parse(raw) : [];
       if (!Array.isArray(parsed)) parsed = [];
       // Clean up legacy mock seeded expenses (exp-001 to exp-007)
-      parsed = parsed.filter(e => !['exp-001', 'exp-002', 'exp-003', 'exp-004', 'exp-005', 'exp-006', 'exp-007'].includes(e.id));
+      parsed = parsed.filter(e => !['exp-001', 'exp-002', 'exp-003', 'exp-004', 'exp-005', 'exp-006', 'exp-007'].includes(e.id) && !['MERALCO-2026-08', 'PLDT-2026-08', 'SUPPLY-2026-07', 'MAYNILAD-2026-08', 'BDO-LEASE-2026-08', 'PAYROLL-2026-08', 'MAINT-2026-08'].includes(e.ref) && !String(e.id).startsWith('b291316c') && !String(e.id).startsWith('6703390a') && !String(e.id).startsWith('6564b759') && !String(e.id).startsWith('c223b634') && !String(e.id).startsWith('21d518ab') && !String(e.id).startsWith('8ce7b8b8') && !String(e.id).startsWith('b0ad510c'));
       allExpenses = parsed;
     } catch {
       allExpenses = [];
@@ -1381,10 +1381,10 @@
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    let totalMonth = 0, totalUnpaid = 0, totalPaid = 0, overdueCount = 0, billCount = allExpenses.length;
+    let totalMonth = 0, totalUnpaid = 0, totalPaid = 0, overdueCount = 0, billCount = (allExpenses || []).length;
     let paidCount = 0;
 
-    allExpenses.forEach(exp => {
+    (allExpenses || []).forEach(exp => {
       const amt = parseFloat(exp.amount) || 0;
       const due = new Date(exp.dueDate);
       totalMonth += amt;
@@ -1397,11 +1397,16 @@
       }
     });
 
-    // Net profit: revenue collected minus total expenses
+    // Real Money Collected from actual clinic appointments & invoices
     let totalCollected = 0;
-    allInvoices.forEach(inv => {
-      if (inv.status === 'Paid' || inv.is_paid) totalCollected += parseFloat(inv.amount || 0);
+    (allInvoices || []).forEach(inv => {
+      const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
+      const amt = parseFloat(inv.amount || inv.total_amount || 0);
+      const paidAmt = isPaid ? amt : (parseFloat(inv.paid_amount) || 0);
+      totalCollected += paidAmt;
     });
+
+    // Real Net profit: Real money collected from patients minus actual expenses
     const netProfit = totalCollected - totalMonth;
 
     setText('exp-total-month', formatMoney(totalMonth));
@@ -1413,7 +1418,7 @@
     const profitEl = document.getElementById('exp-net-profit');
     if (profitEl) {
       profitEl.textContent = formatMoney(netProfit);
-      profitEl.style.color = netProfit >= 0 ? '#6366f1' : '#ef4444';
+      profitEl.style.color = netProfit >= 0 ? '#10b981' : '#ef4444';
     }
   }
 
@@ -1729,8 +1734,19 @@
 
   function renderInventoryCostsTab() {
     if (!allInventory || allInventory.length === 0) {
+      setText('inv-total-value', formatMoney(0));
+      setText('inv-item-count', '0 product types');
+      setText('inv-low-stock-count', '0');
+      setText('inv-reorder-cost', formatMoney(0));
+      setText('inv-out-of-stock', '0');
+      setText('inv-summary-count', '0');
+      setText('inv-summary-value', formatMoney(0));
+      setText('inv-summary-low', '0');
+      setText('inv-summary-reorder', formatMoney(0));
+      const sumEl = document.getElementById('inv-cost-summary');
+      if (sumEl) sumEl.style.display = 'none';
       const tb = document.getElementById('inventory-cost-body');
-      if (tb) tb.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#888;padding:24px;">No inventory items found.</td></tr>`;
+      if (tb) tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#888;padding:32px;"><i class="ti ti-package-off" style="font-size:2rem;display:block;margin-bottom:8px;color:#94a3b8;"></i>No inventory items recorded yet. Only items you add will appear here.</td></tr>';
       return;
     }
 
