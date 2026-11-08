@@ -62,10 +62,11 @@ const ClinicalWorkspace = (() => {
           -webkit-backdrop-filter: blur(4px) !important;
         }
       </style>
-      <div class="modal-body cw-vd-modal" style="background:#ffffff !important; border-radius:18px !important; padding:32px !important; text-align:center;">
-        <div style="width:40px; height:40px; border:3px solid #e2e8f0; border-top-color:#0d9488; border-radius:50%; animation:spin 0.8s linear infinite; margin:20px auto 12px;"></div>
-        <p style="color:#64748b; font-weight:600; margin:0;">Loading appointment details…</p>
-      </div>
+      ${window.Skeleton ? window.Skeleton.modal('workspace') : `
+        <div class="modal-body cw-vd-modal" style="background:#ffffff !important; border-radius:18px !important; padding:28px !important;">
+          <div class="skeleton" style="width:100%; height:220px; border-radius:14px;"></div>
+        </div>
+      `}
     `);
 
     try {

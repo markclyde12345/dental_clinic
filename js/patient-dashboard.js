@@ -1021,6 +1021,10 @@ function prefillAddressFields(savedAddress) {
 
 // ─── Load Appointments ───────────────────────────────────────
 function loadAppointments() {
+  const historyTbody = document.getElementById('history-table-body');
+  if (historyTbody && (!allAppointments || !allAppointments.length)) {
+    historyTbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(7, 4) : historyTbody.innerHTML;
+  }
   apiFetch('/appointments', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
@@ -1950,6 +1954,10 @@ window.printPatientTreatmentPlan = printPatientTreatmentPlan;
 let delinquentOverdueInvoice = null;
 
 function loadInvoices() {
+  const invoicesTbody = document.getElementById('invoices-table-body');
+  if (invoicesTbody && (!allInvoices || !allInvoices.length)) {
+    invoicesTbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(7, 4) : invoicesTbody.innerHTML;
+  }
   return apiFetch('/invoices', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
@@ -2461,6 +2469,10 @@ function checkPaymentReturnStatus() {
 function loadTreatments(forceRefresh = false) {
   if (forceRefresh) {
     showToast('Refreshing clinic treatments...', 'info');
+  }
+  const catalogGrid = document.getElementById('patient-services-catalog-grid');
+  if (catalogGrid && (!allTreatments || !allTreatments.length || forceRefresh)) {
+    catalogGrid.innerHTML = window.Skeleton ? window.Skeleton.cards(6, 'service') : catalogGrid.innerHTML;
   }
   return apiFetch('/treatments', {
     headers: { 'Authorization': `Bearer ${token}` }

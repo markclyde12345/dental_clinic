@@ -288,9 +288,19 @@
               <button class="btn btn-sm btn-outline" onclick="switchTab('dentists')">View Roster</button>
             </div>
             <div class="dentists-quick-list" id="overview-dentists-list">
-              <div class="empty-state">
-                <i class="ti ti-loader-2 ti-spin"></i>
-                <p>Loading clinic roster...</p>
+              <div class="skeleton-card" style="padding:14px;border-radius:12px;display:flex;align-items:center;gap:12px;">
+                <div class="skeleton skeleton-circle" style="width:40px;height:40px;border-radius:50%;"></div>
+                <div style="flex:1;">
+                  <div class="skeleton skeleton-bar" style="width:120px;height:14px;margin-bottom:5px;"></div>
+                  <div class="skeleton skeleton-bar" style="width:80px;height:10px;"></div>
+                </div>
+              </div>
+              <div class="skeleton-card" style="padding:14px;border-radius:12px;display:flex;align-items:center;gap:12px;">
+                <div class="skeleton skeleton-circle" style="width:40px;height:40px;border-radius:50%;"></div>
+                <div style="flex:1;">
+                  <div class="skeleton skeleton-bar" style="width:110px;height:14px;margin-bottom:5px;"></div>
+                  <div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -325,10 +335,29 @@
                 </tr>
               </thead>
               <tbody id="overview-appointments-body">
-                <tr>
-                  <td colspan="6" class="text-center py-4 text-muted">
-                    <i class="ti ti-loader-2 ti-spin"></i> Loading today's appointments...
-                  </td>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:45px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:85px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:95px;height:12px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:115px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
+                </tr>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:70px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:40px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:115px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:90px;height:12px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
+                </tr>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:50px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:140px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:90px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:100px;height:12px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:105px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
                 </tr>
               </tbody>
             </table>
@@ -393,10 +422,21 @@
                 </tr>
               </thead>
               <tbody id="appointments-table-body">
-                <tr>
-                  <td colspan="5" class="text-center py-4 text-muted">
-                    <i class="ti ti-loader-2 ti-spin"></i> Loading appointments...
-                  </td>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:45px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:85px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:115px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:140px;height:12px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
+                </tr>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:70px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:40px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:115px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:12px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
                 </tr>
               </tbody>
             </table>
@@ -495,10 +535,21 @@
                 </tr>
               </thead>
               <tbody id="patients-table-body">
-                <tr>
-                  <td colspan="6" class="text-center py-4 text-muted">
-                    <i class="ti ti-loader-2 ti-spin"></i> Loading patient records...
-                  </td>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-circle" style="width:34px;height:34px;border-radius:50%;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:140px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:85px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:105px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:125px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
+                </tr>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-circle" style="width:34px;height:34px;border-radius:50%;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:95px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:115px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
                 </tr>
               </tbody>
             </table>
@@ -580,10 +631,21 @@
                 </tr>
               </thead>
               <tbody id="billing-table-body">
-                <tr>
-                  <td colspan="6" class="text-center py-4 text-muted">
-                    <i class="ti ti-loader-2 ti-spin"></i> Loading billing invoices...
-                  </td>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:85px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:115px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:90px;height:14px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
+                </tr>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:70px;height:14px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:14px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
                 </tr>
               </tbody>
             </table>
@@ -1512,7 +1574,8 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Script Logic -->
-  <script src="../js/receptionist-dashboard.js?v=20260911_rebook_patient_fix_v2"></script>
+  <script src="../js/components/skeleton.js?v=20261108_skeleton_v1"></script>
+  <script src="../js/receptionist-dashboard.js?v=20261108_skeleton_v1"></script>
   <script src="../js/offline-monitor.js"></script>
   <script>
     (function() {

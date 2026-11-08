@@ -440,7 +440,7 @@ function renderQueueWidget(queue) {
 async function loadScheduleTable() {
   const tbody = document.getElementById('full-schedule-tbody');
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="7" class="table-loading">Loading schedule...</td></tr>`;
+  tbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(7, 5) : `<tr><td colspan="7" class="table-loading">Loading schedule...</td></tr>`;
 
   try {
     allAppointments = await api.getDentistAppointments();
@@ -517,6 +517,12 @@ function applyScheduleFilters() {
 
 // ─── 3. PATIENT QUEUE MODULE ────────────────────────────────────
 async function loadQueueView() {
+  const activeChairInit = document.getElementById('queue-detailed-chair');
+  const tbodyInit = document.getElementById('queue-detailed-tbody');
+  if (tbodyInit && !tbodyInit.children.length) {
+    tbodyInit.innerHTML = window.Skeleton ? window.Skeleton.tableRows(6, 4) : `<tr><td colspan="6" class="table-loading">Loading queue...</td></tr>`;
+  }
+
   try {
     const qData = await api.getDentistQueue();
     activeQueue = qData || { current: null, next: null, waiting: [] };
@@ -716,7 +722,7 @@ async function loadPatientsView() {
   const grid = document.getElementById('patient-cards-grid');
   const countEl = document.getElementById('patient-count');
   if (!grid) return;
-  grid.innerHTML = `<div class="table-loading" style="grid-column: 1/-1;">Loading patient records...</div>`;
+  grid.innerHTML = window.Skeleton ? window.Skeleton.cards(6, 'patient') : `<div class="table-loading" style="grid-column: 1/-1;">Loading patient records...</div>`;
 
   try {
     allPatients = await api.get('/patients');
@@ -796,7 +802,7 @@ function renderPatientCards(patients) {
 }
 
 async function openPatientRecordModal(userId) {
-  Modal.open(`<div class="modal-spinner">Loading electronic medical record...</div>`);
+  Modal.open(window.Skeleton ? window.Skeleton.modal('emr') : `<div class="modal-spinner">Loading electronic medical record...</div>`);
   try {
     const data = await api.getPatientRecord(userId);
     const p = data.patient || {};
@@ -1184,7 +1190,7 @@ window.openCreatePlanModal = openCreatePlanModal;
 async function loadPrescriptionsView() {
   const tbody = document.getElementById('prescriptions-tbody');
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="7" class="table-loading">Loading prescriptions...</td></tr>`;
+  tbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(7, 4) : `<tr><td colspan="7" class="table-loading">Loading prescriptions...</td></tr>`;
 
   try {
     const rxs = await api.getPrescriptions();
@@ -1388,7 +1394,7 @@ window.printPrescriptionSlip = printPrescriptionSlip;
 async function loadFollowUpsView() {
   const tbody = document.getElementById('followups-tbody');
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="7" class="table-loading">Loading follow-ups...</td></tr>`;
+  tbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(7, 4) : `<tr><td colspan="7" class="table-loading">Loading follow-ups...</td></tr>`;
 
   try {
     const list = await api.getFollowUps();
