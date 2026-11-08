@@ -113,7 +113,7 @@
         <div class="user-info">
           <div class="user-avatar" id="user-avatar">F</div>
           <div class="user-details">
-            <h4 id="user-name">Loading...</h4>
+            <h4 id="user-name"><span class="skeleton skeleton-bar" style="width:90px;height:14px;"></span></h4>
             <span id="user-role">Accountant</span>
           </div>
         </div>
@@ -144,7 +144,7 @@
             <i class="ti ti-clock"></i>
             <span id="current-time">--:-- --</span>
             <span class="clock-divider">|</span>
-            <span id="current-date">Loading date...</span>
+            <span id="current-date"><span class="skeleton skeleton-bar" style="width:85px;height:12px;"></span></span>
           </div>
         </div>
       </header>
@@ -375,8 +375,21 @@
                   </tr>
                 </thead>
                 <tbody id="overview-invoices-body">
-                  <tr>
-                    <td colspan="8" style="text-align: center; color: #888; padding: 24px;">Loading financial ledger...</td>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:85px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:115px;height:13px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
+                  </tr>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:70px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:13px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:90px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
                   </tr>
                 </tbody>
               </table>
@@ -439,11 +452,27 @@
                   </tr>
                 </thead>
                 <tbody id="full-invoices-body">
-                  <tr>
-                    <td colspan="9" class="empty-state-cell">
-                      <i class="ti ti-loader-2 ti-spin" style="font-size: 1.5rem; color: #94a3b8; display: block; margin-bottom: 8px;"></i>
-                      Loading invoice records...
-                    </td>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:85px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:125px;height:13px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
+                  </tr>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:70px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:140px;height:13px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
                   </tr>
                 </tbody>
               </table>
@@ -477,8 +506,25 @@
                   </tr>
                 </thead>
                 <tbody id="payments-log-body">
-                  <tr>
-                    <td colspan="8" style="text-align: center; color: #888; padding: 24px;">Loading payment logs...</td>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:85px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:70px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
+                  </tr>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:70px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:70px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:115px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:70px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
                   </tr>
                 </tbody>
               </table>
@@ -509,8 +555,25 @@
                   </tr>
                 </thead>
                 <tbody id="hmo-claims-body">
-                  <tr>
-                    <td colspan="8" style="text-align: center; color: #888; padding: 24px;">Loading HMO claims...</td>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:85px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:115px;height:13px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:95px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
+                  </tr>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:70px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:110px;height:13px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:90px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
                   </tr>
                 </tbody>
               </table>
@@ -701,8 +764,15 @@
                   </tr>
                 </thead>
                 <tbody id="inventory-cost-body">
-                  <tr>
-                    <td colspan="9" style="text-align: center; color: #888; padding: 24px;">Loading inventory data...</td>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:80px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:60px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:60px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:70px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
                   </tr>
                 </tbody>
               </table>
@@ -1593,7 +1663,8 @@
         </div>
 
         <div id="po-items-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
-          <p style="color: #888; text-align: center; padding: 24px;">Loading inventory items for ordering...</p>
+          <div class="skeleton" style="width: 100%; height: 50px; border-radius: 8px;"></div>
+          <div class="skeleton" style="width: 100%; height: 50px; border-radius: 8px;"></div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">

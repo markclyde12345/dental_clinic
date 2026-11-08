@@ -162,7 +162,7 @@
         <div class="sb-user-row" onclick="openAdminProfileModal()" style="cursor: pointer;" title="View Administrator Profile">
           <div class="sb-user-avatar" id="user-avatar">A</div>
           <div class="sb-user-info">
-            <div class="sb-user-name" id="user-name">Loading...</div>
+            <div class="sb-user-name" id="user-name"><span class="skeleton skeleton-bar" style="width:90px;height:14px;"></span></div>
             <div class="sb-user-role" id="user-role">Administrator</div>
           </div>
         </div>
@@ -196,7 +196,7 @@
             <i class="ti ti-clock"></i>
             <span id="current-time">--:-- --</span>
             <span class="clock-divider">|</span>
-            <span id="current-date">Loading date...</span>
+            <span id="current-date"><span class="skeleton skeleton-bar" style="width:85px;height:12px;"></span></span>
           </div>
 
           <!-- Admin Notification Bell Center -->
@@ -865,7 +865,7 @@
 
             <!-- Results Counter -->
             <div style="padding: 8px 20px; font-size: 0.82rem; color: #64748b;" id="billing-results-label">
-              Loading invoices ledger...
+              <span class="skeleton skeleton-bar" style="width:140px;height:12px;"></span>
             </div>
             
             <div class="admin-table-wrapper">
@@ -1121,8 +1121,23 @@
                   </tr>
                 </thead>
                 <tbody id="inventory-table-body">
-                  <tr>
-                    <td colspan="7" style="padding: 28px; text-align: center; color: #888;">Loading stock levels...</td>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:140px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:85px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:60px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:60px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:70px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:80px;height:28px;"></div></td>
+                  </tr>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:60px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:60px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:70px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:80px;height:28px;"></div></td>
                   </tr>
                 </tbody>
               </table>
@@ -1177,8 +1192,21 @@
                   </tr>
                 </thead>
                 <tbody id="users-table-body">
-                  <tr>
-                    <td colspan="6" style="padding: 28px; text-align: center; color: #888;">Loading users...</td>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:80px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:150px;height:13px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:100px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:65px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:80px;height:28px;"></div></td>
+                  </tr>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:140px;height:13px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:95px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:65px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:80px;height:28px;"></div></td>
                   </tr>
                 </tbody>
               </table>
@@ -1335,7 +1363,9 @@
             </div>
 
             <!-- Results count -->
-            <div style="padding:8px 20px; font-size:0.82rem; color:#6c757d;" id="hist-results-label">Loading…</div>
+            <div style="padding:8px 20px; font-size:0.82rem; color:#6c757d;" id="hist-results-label">
+              <span class="skeleton skeleton-bar" style="width:120px;height:12px;"></span>
+            </div>
 
             <!-- Table -->
             <div class="admin-table-wrapper hist-print-area">
@@ -1353,7 +1383,26 @@
                   </tr>
                 </thead>
                 <tbody id="history-table-body">
-                  <tr><td colspan="8" style="padding:28px;text-align:center;color:#888;">Loading history…</td></tr>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-circle" style="width:18px;height:18px;border-radius:4px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:110px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:65px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:80px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:13px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:60px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:60px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:80px;height:28px;"></div></td>
+                  </tr>
+                  <tr class="skeleton-tr">
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-circle" style="width:18px;height:18px;border-radius:4px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:105px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:60px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:110px;height:13px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:60px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:60px;height:12px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
+                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:80px;height:28px;"></div></td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -1802,7 +1851,7 @@
 
                   <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 12px; padding: 14px;">
                     <div style="font-size: 0.75rem; color: #854d0e; font-weight: 700; text-transform: uppercase;">Latest Automated Backup</div>
-                    <div id="db-backup-time" style="font-size: 0.95rem; font-weight: 700; color: #a16207; margin-top: 4px;">Loading...</div>
+                    <div id="db-backup-time" style="font-size: 0.95rem; font-weight: 700; color: #a16207; margin-top: 4px;"><span class="skeleton skeleton-bar" style="width:110px;height:14px;"></span></div>
                     <div id="db-backup-size" style="font-size: 0.8rem; color: #ca8a04; margin-top: 2px;">Retention: 14 days</div>
                   </div>
                 </div>

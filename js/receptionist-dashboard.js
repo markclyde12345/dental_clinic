@@ -2857,7 +2857,7 @@ async function openPatientHistoryModal(patientId) {
   const sub = document.getElementById('history-patient-sub');
   const bookBtn = document.getElementById('btn-book-from-history');
 
-  if (body) body.innerHTML = `<div class="text-center py-4 text-muted"><i class="ti ti-loader-2 ti-spin"></i> Loading chart history...</div>`;
+  if (body) body.innerHTML = window.Skeleton ? window.Skeleton.cards(3, 'generic') : `<div class="skeleton" style="height:140px;border-radius:12px;"></div>`;
 
   try {
     if (!patientId) throw new Error('Patient record ID is missing.');
@@ -3170,11 +3170,10 @@ async function loadAuditLogs(forceRefresh = false) {
   }
 
   if (tbody && (forceRefresh || !allAuditLogs.length)) {
-    tbody.innerHTML = `
+    tbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(6, 4) : `
       <tr>
-        <td colspan="6" class="text-center py-5 text-muted" style="padding: 40px 20px; text-align: center;">
-          <i class="ti ti-loader-2 ti-spin" style="font-size: 1.6rem; color: #0284c7; margin-bottom: 8px; display: block;"></i>
-          <span style="font-size: 0.88rem; font-weight: 600; color: #64748b;">Synchronizing front-desk activity records...</span>
+        <td colspan="6" class="text-center py-5 text-muted">
+          <div class="skeleton skeleton-bar" style="width:160px;height:14px;margin:0 auto;display:block;"></div>
         </td>
       </tr>
     `;

@@ -50,7 +50,7 @@ const PatientRecords = (() => {
 
   async function openDetail(userId) {
     if (!userId) return;
-    Modal.open(`<div class="modal-spinner">Loading patient record…</div>`);
+    Modal.open(window.Skeleton ? window.Skeleton.modal('emr') : `<div class="skeleton" style="width:100%; height:280px; border-radius:16px;"></div>`);
     try {
       const data = await api.get(`/patients/${userId}/history`);
       renderDetail(data);

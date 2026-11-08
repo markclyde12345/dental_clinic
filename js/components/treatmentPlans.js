@@ -172,11 +172,8 @@ const TreatmentPlans = (() => {
   async function load() {
     if (!listRoot) return;
     try {
-      listRoot.innerHTML = `
-        <div style="grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--text-muted);">
-          <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 24px; color: var(--primary-color); margin-bottom: 8px;"></i>
-          <p style="margin: 0;">Loading clinical treatment plans & diagnostic catalog...</p>
-        </div>`;
+      listRoot.innerHTML = window.Skeleton ? window.Skeleton.cards(4, 'patient') : `
+        <div class="skeleton" style="grid-column: 1 / -1; height: 180px; border-radius: 14px;"></div>`;
 
       const [plans, pats, cat] = await Promise.all([
         api.get('/treatment-plans'),

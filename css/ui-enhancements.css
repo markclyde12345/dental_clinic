@@ -891,6 +891,74 @@ body.dark-theme .skeleton-card,
   color: var(--text-muted, #64748b);
 }
 
+/* Universal Skeleton Transformation for any remaining modal-spinner or loading text */
+.modal-spinner {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding: 24px !important;
+  font-size: 0 !important;
+  color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  align-items: center !important;
+}
+
+.modal-spinner::before {
+  content: "";
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+  background-size: 200% 100% !important;
+  animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+}
+
+.modal-spinner::after {
+  content: "";
+  display: block;
+  width: 90%;
+  max-width: 420px;
+  height: 120px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+  background-size: 200% 100% !important;
+  animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+}
+
+.table-loading:not(.skeleton-loaded) {
+  position: relative;
+  font-size: 0 !important;
+  color: transparent !important;
+  padding: 20px 16px !important;
+}
+
+.table-loading:not(.skeleton-loaded)::before {
+  content: "";
+  display: block;
+  width: 55%;
+  height: 13px;
+  margin: 0 auto 8px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+  background-size: 200% 100% !important;
+  animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+}
+
+.table-loading:not(.skeleton-loaded)::after {
+  content: "";
+  display: block;
+  width: 35%;
+  height: 10px;
+  margin: 0 auto;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+  background-size: 200% 100% !important;
+  animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+}
+
 .spinner-enhanced {
   width: 20px;
   height: 20px;

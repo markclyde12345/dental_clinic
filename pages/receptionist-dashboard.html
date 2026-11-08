@@ -111,7 +111,7 @@
         <div class="user-info" onclick="openReceptionistProfileModal()" style="cursor: pointer;" title="View Front Desk Staff Profile">
           <div class="user-avatar" id="user-avatar">R</div>
           <div class="user-details">
-            <h4 id="user-name">Loading...</h4>
+            <h4 id="user-name"><span class="skeleton skeleton-bar" style="width:90px;height:14px;"></span></h4>
             <span id="user-role">Receptionist</span>
           </div>
         </div>
@@ -143,7 +143,7 @@
             <i class="ti ti-clock"></i>
             <span id="current-time">--:-- --</span>
             <span class="clock-divider">|</span>
-            <span id="current-date">Loading date...</span>
+            <span id="current-date"><span class="skeleton skeleton-bar" style="width:85px;height:12px;"></span></span>
           </div>
 
           <!-- Front Desk Notification Center -->
@@ -570,7 +570,7 @@
               <p class="card-box-sub">Toggle doctor duty status (On Duty vs Out) and shift hours</p>
             </div>
             <div id="receptionist-duty-counter" style="display: flex; align-items: center; gap: 8px; font-size: 0.86rem; font-weight: 700; color: #0b3c4d; background: #eef6f8; padding: 7px 16px; border-radius: 20px; border: 1px solid rgba(11,60,77,0.12);">
-              <i class="ti ti-user-check" style="color: #10b981; font-size: 1.1rem;"></i> <span id="duty-count-text">Loading roster...</span>
+              <i class="ti ti-user-check" style="color: #10b981; font-size: 1.1rem;"></i> <span id="duty-count-text"><span class="skeleton skeleton-bar" style="width:75px;height:12px;"></span></span>
             </div>
           </div>
 
@@ -589,9 +589,35 @@
           </div>
 
           <div class="dentists-grid" id="dentists-cards-container">
-            <div class="empty-state">
-              <i class="ti ti-loader-2 ti-spin"></i>
-              <p>Loading clinic staff...</p>
+            <div class="skeleton-card" style="padding:18px;border-radius:14px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div class="skeleton skeleton-circle" style="width:48px;height:48px;border-radius:12px;"></div>
+                <div style="flex:1;">
+                  <div class="skeleton skeleton-bar" style="width:130px;height:16px;margin-bottom:6px;"></div>
+                  <div class="skeleton skeleton-bar" style="width:90px;height:11px;"></div>
+                </div>
+              </div>
+              <div class="skeleton skeleton-btn" style="width:100%;height:32px;border-radius:8px;"></div>
+            </div>
+            <div class="skeleton-card" style="padding:18px;border-radius:14px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div class="skeleton skeleton-circle" style="width:48px;height:48px;border-radius:12px;"></div>
+                <div style="flex:1;">
+                  <div class="skeleton skeleton-bar" style="width:120px;height:16px;margin-bottom:6px;"></div>
+                  <div class="skeleton skeleton-bar" style="width:85px;height:11px;"></div>
+                </div>
+              </div>
+              <div class="skeleton skeleton-btn" style="width:100%;height:32px;border-radius:8px;"></div>
+            </div>
+            <div class="skeleton-card" style="padding:18px;border-radius:14px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div class="skeleton skeleton-circle" style="width:48px;height:48px;border-radius:12px;"></div>
+                <div style="flex:1;">
+                  <div class="skeleton skeleton-bar" style="width:140px;height:16px;margin-bottom:6px;"></div>
+                  <div class="skeleton skeleton-bar" style="width:95px;height:11px;"></div>
+                </div>
+              </div>
+              <div class="skeleton skeleton-btn" style="width:100%;height:32px;border-radius:8px;"></div>
             </div>
           </div>
         </div>
@@ -1104,8 +1130,10 @@
         <button type="button" class="modal-close" onclick="closeModal('modal-patient-history')">&times;</button>
       </div>
       <div class="modal-body" id="history-modal-body">
-        <div class="text-center py-4 text-muted">
-          <i class="ti ti-loader-2 ti-spin"></i> Loading records...
+        <div style="display:flex;flex-direction:column;gap:12px;padding:10px 0;">
+          <div class="skeleton" style="width:100%;height:44px;border-radius:10px;"></div>
+          <div class="skeleton" style="width:100%;height:120px;border-radius:12px;"></div>
+          <div class="skeleton" style="width:100%;height:80px;border-radius:10px;"></div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1268,11 +1296,21 @@
                 </tr>
               </thead>
               <tbody id="audit-logs-table-body">
-                <tr>
-                  <td colspan="6" class="text-center py-5 text-muted" style="padding: 40px 20px; text-align: center;">
-                    <i class="ti ti-loader-2 ti-spin" style="font-size: 1.5rem; color: #0284c7; margin-bottom: 8px; display: block;"></i>
-                    <span style="font-size: 0.88rem; font-weight: 600; color: #64748b;">Loading front-desk activity records...</span>
-                  </td>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:110px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:65px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:14px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:85px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:220px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:90px;height:12px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:40px;height:28px;"></div></td>
+                </tr>
+                <tr class="skeleton-tr">
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:100px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:60px;height:10px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:85px;height:22px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:190px;height:13px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:12px;"></div></td>
+                  <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:40px;height:28px;"></div></td>
                 </tr>
               </tbody>
             </table>
