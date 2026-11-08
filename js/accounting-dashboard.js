@@ -1,6 +1,6 @@
 /**
  * Fano Dental Clinic — Accounting & Financial Control Portal
- * Complete Financial Ledger, Invoicing, Payment Settlements, HMO Claims & Reporting
+ * Complete Financial Ledger, Invoicing, Payment Settlements & Reporting
  */
 
 (function() {
@@ -15,7 +15,6 @@
   const USERS_API = `${BASE_ORIGIN}/api/users`;
   const ADMIN_API = `${BASE_ORIGIN}/api/admin`;
   const EXPENSE_API = `${BASE_ORIGIN}/api/expenses`;
-  const HMO_API = `${BASE_ORIGIN}/api/hmo-claims`;
 
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   let currentUser = null;
@@ -23,7 +22,6 @@
   let allPatients = [];
   let allInventory = [];
   let allExpenses = [];  // stored in database with local caching
-  let allHmoClaims = [];
   let currentReceiptInvoice = null;
 
   // Formatting helpers
@@ -159,7 +157,6 @@
       overview: { title: 'Financial Control Portal', sub: 'Manage clinic invoices, revenue ledgers, and payment reconciliations', breadcrumb: 'Financial Overview' },
       invoices: { title: 'Clinic Invoices Ledger', sub: 'Browse issued invoices, check payment statuses, and print billing receipts', breadcrumb: 'Invoices Ledger' },
       payments: { title: 'Payments & Collections', sub: 'Audit cash receipts, GCash/Maya settlements, and card transactions', breadcrumb: 'Payments & Collections' },
-      hmo: { title: 'HMO & Insurance Claims', sub: 'Process insurance coverage claims, corporate provider approvals, and payouts', breadcrumb: 'HMO & Insurance Claims' },
       expenses: { title: 'Clinic Expenses & Bills', sub: 'Record clinic utility costs, supplier payables, and operational overheads', breadcrumb: 'Expenses & Bills' },
       inventory: { title: 'Inventory Valuation & Costs', sub: 'Monitor clinic stock asset valuations, supply acquisitions, and unit costs', breadcrumb: 'Inventory Costs' },
       reports: { title: 'Financial Reports & Analytics', sub: 'Monthly gross revenue, net margin summaries, and printable balance sheets', breadcrumb: 'Financial Reports' },
@@ -237,7 +234,6 @@
     renderOverviewTable();
     renderFullInvoicesTable();
     renderPaymentsLog();
-    renderHMOClaims();
     renderReports();
   }
 
@@ -245,33 +241,25 @@
     let totalBilled = 0;
     let totalCollected = 0;
     let totalOutstanding = 0;
-    let totalHMO = 0;
     let unpaidCount = 0;
-    let hmoCount = 0;
 
     let cashTotal = 0;
     let ewalletTotal = 0;
     let cardTotal = 0;
-    let hmoTotal = 0;
 
     allInvoices.forEach((inv, index) => {
       const amount = parseFloat(inv.amount || inv.total_amount || 0);
       const isPaid = inv.status === 'Paid' || inv.is_paid;
-      const isHMO = inv.status === 'HMO' || (inv.notes && inv.notes.toLowerCase().includes('hmo'));
 
       totalBilled += amount;
 
       if (isPaid) {
         totalCollected += amount;
         // Pseudo distribution based on index if not explicitly saved
-        const mod = index % 4;
+        const mod = index % 3;
         if (mod === 0) cashTotal += amount;
         else if (mod === 1) ewalletTotal += amount;
-        else if (mod === 2) cardTotal += amount;
-        else hmoTotal += amount;
-      } else if (isHMO) {
-        totalHMO += amount;
-        hmoCount++;
+        else cardTotal += amount;
       } else {
         totalOutstanding += amount;
         unpaidCount++;
@@ -279,34 +267,31 @@
     });
 
     // KPI values
-    document.getElementById('acc-total-billed').textContent = formatMoney(totalBilled);
-    document.getElementById('acc-total-collected').textContent = formatMoney(totalCollected);
-    document.getElementById('acc-total-outstanding').textContent = formatMoney(totalOutstanding);
-    document.getElementById('acc-total-hmo').textContent = formatMoney(totalHMO);
+    safeSetText('acc-total-billed', formatMoney(totalBilled));
+    safeSetText('acc-total-collected', formatMoney(totalCollected));
+    safeSetText('acc-total-outstanding', formatMoney(totalOutstanding));
 
     const collectionRate = totalBilled > 0 ? Math.round((totalCollected / totalBilled) * 100) : 0;
-    document.getElementById('acc-collection-rate').textContent = `Collection Rate: ${collectionRate}%`;
-    document.getElementById('acc-unpaid-count').textContent = `${unpaidCount} pending invoices`;
-    document.getElementById('acc-hmo-count').textContent = `${hmoCount} active claims`;
+    safeSetText('acc-collection-rate', `Collection Rate: ${collectionRate}%`);
+    safeSetText('acc-unpaid-count', `${unpaidCount} pending invoices`);
 
     // Progress Bars
     const collectedBase = totalCollected > 0 ? totalCollected : 1;
     const cashPct = Math.round((cashTotal / collectedBase) * 100);
     const ewalletPct = Math.round((ewalletTotal / collectedBase) * 100);
     const cardPct = Math.round((cardTotal / collectedBase) * 100);
-    const hmoPct = Math.round((hmoTotal / collectedBase) * 100);
 
-    document.getElementById('cash-share-val').textContent = `${formatMoney(cashTotal)} (${cashPct}%)`;
-    document.getElementById('cash-bar').style.width = `${cashPct}%`;
+    safeSetText('cash-share-val', `${formatMoney(cashTotal)} (${cashPct}%)`);
+    const cashBar = document.getElementById('cash-bar');
+    if (cashBar) cashBar.style.width = `${cashPct}%`;
 
-    document.getElementById('ewallet-share-val').textContent = `${formatMoney(ewalletTotal)} (${ewalletPct}%)`;
-    document.getElementById('ewallet-bar').style.width = `${ewalletPct}%`;
+    safeSetText('ewallet-share-val', `${formatMoney(ewalletTotal)} (${ewalletPct}%)`);
+    const ewalletBar = document.getElementById('ewallet-bar');
+    if (ewalletBar) ewalletBar.style.width = `${ewalletPct}%`;
 
-    document.getElementById('card-share-val').textContent = `${formatMoney(cardTotal)} (${cardPct}%)`;
-    document.getElementById('card-bar').style.width = `${cardPct}%`;
-
-    document.getElementById('hmo-share-val').textContent = `${formatMoney(hmoTotal)} (${hmoPct}%)`;
-    document.getElementById('hmo-bar').style.width = `${hmoPct}%`;
+    safeSetText('card-share-val', `${formatMoney(cardTotal)} (${cardPct}%)`);
+    const cardBar = document.getElementById('card-bar');
+    if (cardBar) cardBar.style.width = `${cardPct}%`;
 
     updateSidebarBadges();
   }
@@ -314,14 +299,10 @@
   function updateSidebarBadges() {
     // 1. Invoices badge: unpaid active invoices count
     let unpaidInvoices = 0;
-    let hmoCount = 0;
     (allInvoices || []).forEach(inv => {
       const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
       const isWrittenOff = (inv.status || '').toLowerCase() === 'written off';
-      const isHMO = (inv.status || '').toLowerCase() === 'hmo' || (inv.notes && inv.notes.toLowerCase().includes('hmo'));
-      if (isHMO && !isPaid) {
-        hmoCount++;
-      } else if (!isPaid && !isWrittenOff) {
+      if (!isPaid && !isWrittenOff) {
         unpaidInvoices++;
       }
     });
@@ -333,16 +314,6 @@
         invBadge.style.display = 'inline-block';
       } else {
         invBadge.style.display = 'none';
-      }
-    }
-
-    const hmoBadge = document.getElementById('sb-hmo-badge');
-    if (hmoBadge) {
-      if (hmoCount > 0) {
-        hmoBadge.textContent = hmoCount;
-        hmoBadge.style.display = 'inline-block';
-      } else {
-        hmoBadge.style.display = 'none';
       }
     }
 
@@ -369,9 +340,6 @@
     }
     if (s === 'partial') {
       return `<span class="modern-badge badge-partial"><i class="ti ti-adjustments"></i> Partial</span>`;
-    }
-    if (s === 'hmo') {
-      return `<span class="modern-badge badge-hmo"><i class="ti ti-building-hospital"></i> HMO Claim</span>`;
     }
     return `<span class="modern-badge badge-unpaid"><i class="ti ti-clock"></i> Unpaid</span>`;
   }
@@ -633,7 +601,6 @@
     const rawNotes = inv.appointment?.notes || inv.notes || '';
     let dentistName = 'Staff Doctor';
     let concern = 'Routine Dental Care';
-    let hmo = 'Self-pay / Cash';
     let allergies = 'None';
     let emergency = 'None';
 
@@ -642,9 +609,6 @@
 
     const concernMatch = rawNotes.match(/\[Concern:\s*([^\]]+)\]/i);
     if (concernMatch) concern = concernMatch[1];
-
-    const hmoMatch = rawNotes.match(/\[HMO:\s*([^\]]+)\]/i);
-    if (hmoMatch && hmoMatch[1] !== 'N/A') hmo = hmoMatch[1];
 
     const allergyMatch = rawNotes.match(/\[Allergies:\s*([^\]]+)\]/i);
     if (allergyMatch && allergyMatch[1] !== 'None') allergies = allergyMatch[1];
@@ -659,7 +623,6 @@
     safeSetText('inv-detail-dentist', `👨‍⚕️ ${dentistName}`);
     safeSetText('inv-detail-date', `📅 Issued: ${dateStr}`);
     safeSetText('inv-detail-concern', concern);
-    safeSetText('inv-detail-hmo', hmo);
     safeSetText('inv-detail-allergies', allergies);
     safeSetText('inv-detail-emergency', emergency);
 
@@ -717,8 +680,6 @@
         matchesStatus = text.includes('paid') && !text.includes('unpaid');
       } else if (statusFilter === 'Partial') {
         matchesStatus = text.includes('partial');
-      } else if (statusFilter === 'HMO') {
-        matchesStatus = text.includes('hmo');
       }
 
       row.style.display = (matchesQuery && matchesStatus) ? '' : 'none';
@@ -740,7 +701,7 @@
       const invId = inv.id ? (inv.id.length > 8 ? `#INV-${inv.id.slice(0, 8).toUpperCase()}` : `#INV-${inv.id}`) : '#INV-000';
       const patientName = inv.patient ? (inv.patient.name || 'Patient') : 'Walk-in Patient';
       const amount = parseFloat(inv.amount || inv.total_amount || 0);
-      const methods = ['Cash', 'GCash / E-Wallet', 'Credit Card', 'HMO Claim'];
+      const methods = ['Cash', 'GCash / E-Wallet', 'Credit Card'];
       const method = inv.payment_method || methods[idx % methods.length];
 
       return `
@@ -760,112 +721,30 @@
     }).join('');
   }
 
-  async function renderHMOClaims() {
-    const tbody = document.getElementById('hmo-claims-body');
-    if (!tbody) return;
-
-    try {
-      const res = await fetch(HMO_API, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const claims = await res.json();
-        if (Array.isArray(claims) && claims.length > 0) {
-          tbody.innerHTML = claims.map((c, idx) => {
-            const claimId = c.claim_id || (c.id && c.id.length > 8 ? `CLM-${c.id.slice(0, 8).toUpperCase()}` : `CLM-2026-${String(idx + 1).padStart(4, '0')}`);
-            const pName = c.patient ? c.patient.name : (c.patient_name || 'Insured Member');
-            const provider = c.provider_name || 'HMO Provider';
-            const policyNo = c.policy_number || 'POL-00000000';
-            const amt = parseFloat(c.claim_amount) || 0;
-            const isApproved = c.status === 'Approved' || c.status === 'Disbursed';
-
-            return `
-              <tr>
-                <td><strong style="color: var(--primary-color); font-family: monospace;">${claimId}</strong></td>
-                <td><strong>${escapeHtml(pName)}</strong></td>
-                <td>${escapeHtml(provider)}</td>
-                <td style="font-family: monospace; font-size: 0.82rem;">${escapeHtml(policyNo)}</td>
-                <td style="font-weight: 700;">${formatMoney(amt)}</td>
-                <td>${formatDate(c.filed_at || new Date())}</td>
-                <td>
-                  ${isApproved ? '<span class="badge-status badge-paid">✅ Approved & Disbursed</span>' : '<span class="badge-status badge-hmo">⏳ Under HMO Review</span>'}
-                </td>
-                <td style="text-align: right;">
-                  <button type="button" class="btn-text-action" onclick="showToast('HMO Claim ${claimId} verified with ${escapeHtml(provider)}', 'success')">Verify Claim</button>
-                </td>
-              </tr>
-            `;
-          }).join('');
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn('HMO fetch error:', e);
-    }
-
-    const hmoProviders = ['Maxicare Healthcare', 'Intellicare Provider', 'Medicard Philippines', 'PhilHealth Accredited', 'Cocolife Health'];
-    const hmoInvoices = allInvoices.filter(inv => inv.status === 'HMO' || (inv.notes && inv.notes.toLowerCase().includes('hmo')));
-    const displayList = hmoInvoices.length > 0 ? hmoInvoices : allInvoices.slice(0, 3);
-
-    if (displayList.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #888; padding: 24px;">No active HMO claims currently filed.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = displayList.map((inv, idx) => {
-      const claimId = `CLM-2026-${String(idx + 1).padStart(4, '0')}`;
-      const patientName = inv.patient ? (inv.patient.name || 'Patient') : 'Insured Member';
-      const provider = hmoProviders[idx % hmoProviders.length];
-      const policyNo = `POL-${Math.floor(10000000 + Math.random() * 90000000)}`;
-      const amount = parseFloat(inv.amount || inv.total_amount || 2500);
-      const isApproved = idx % 2 === 0;
-
-      return `
-        <tr>
-          <td><strong style="color: var(--primary-color); font-family: monospace;">${claimId}</strong></td>
-          <td><strong>${escapeHtml(patientName)}</strong></td>
-          <td>${provider}</td>
-          <td style="font-family: monospace; font-size: 0.82rem;">${policyNo}</td>
-          <td style="font-weight: 700;">${formatMoney(amount)}</td>
-          <td>${formatDate(inv.issued_at || new Date())}</td>
-          <td>
-            ${isApproved ? '<span class="badge-status badge-paid">✅ Approved & Disbursed</span>' : '<span class="badge-status badge-hmo">⏳ Under HMO Review</span>'}
-          </td>
-          <td style="text-align: right;">
-            <button type="button" class="btn-text-action" onclick="showToast('HMO Claim ${claimId} verified with ${provider}', 'success')">Verify Claim</button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-  }
-
   function renderReports() {
     const totalCount = allInvoices.length;
     let grossBilled = 0;
     let totalCollected = 0;
     let totalOutstanding = 0;
-    let totalHMO = 0;
 
     allInvoices.forEach(inv => {
       const amt = parseFloat(inv.amount || inv.total_amount || 0);
       grossBilled += amt;
       if (inv.status === 'Paid' || inv.is_paid) totalCollected += amt;
-      else if (inv.status === 'HMO') totalHMO += amt;
       else totalOutstanding += amt;
     });
 
     const efficiency = grossBilled > 0 ? Math.round((totalCollected / grossBilled) * 100) : 0;
 
-    document.getElementById('statement-generated-date').textContent = `Generated on: ${new Date().toLocaleString()}`;
-    document.getElementById('rep-total-invoices').textContent = totalCount;
-    document.getElementById('rep-gross-billed').textContent = formatMoney(grossBilled);
-    document.getElementById('rep-total-discounts').textContent = formatMoney(0);
-    document.getElementById('rep-net-billed').textContent = formatMoney(grossBilled);
+    safeSetText('statement-generated-date', `Generated on: ${new Date().toLocaleString()}`);
+    safeSetText('rep-total-invoices', totalCount);
+    safeSetText('rep-gross-billed', formatMoney(grossBilled));
+    safeSetText('rep-total-discounts', formatMoney(0));
+    safeSetText('rep-net-billed', formatMoney(grossBilled));
 
-    document.getElementById('rep-collected').textContent = formatMoney(totalCollected);
-    document.getElementById('rep-outstanding').textContent = formatMoney(totalOutstanding);
-    document.getElementById('rep-hmo-pending').textContent = formatMoney(totalHMO);
-    document.getElementById('rep-efficiency').textContent = `${efficiency}%`;
+    safeSetText('rep-collected', formatMoney(totalCollected));
+    safeSetText('rep-outstanding', formatMoney(totalOutstanding));
+    safeSetText('rep-efficiency', `${efficiency}%`);
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -1195,14 +1074,6 @@
     showToast('Payment Methods updated successfully!', 'success');
   };
 
-  window.saveHMOSection = function(e) {
-    e.preventDefault();
-    localStorage.setItem('acc-hmo-active', document.getElementById('setting-hmo-active').value);
-    localStorage.setItem('acc-hmo-copay', document.getElementById('setting-hmo-copay').value);
-    localStorage.setItem('acc-hmo-providers', document.getElementById('setting-hmo-providers').value.trim());
-    showToast('HMO & Insurance preferences saved!', 'success');
-  };
-
   window.saveControlsSection = function(e) {
     e.preventDefault();
     localStorage.setItem('acc-overdue-lock', document.getElementById('setting-overdue-lock').value);
@@ -1249,10 +1120,6 @@
     safeSetChecked('pay-method-bank', localStorage.getItem('acc-pay-bank') !== 'false');
     safeSetChecked('pay-method-check', localStorage.getItem('acc-pay-check') !== 'false');
     safeSetChecked('pay-method-pos', localStorage.getItem('acc-pay-pos') === 'true');
-
-    safeSetVal('setting-hmo-active', localStorage.getItem('acc-hmo-active') || 'enabled');
-    safeSetVal('setting-hmo-copay', localStorage.getItem('acc-hmo-copay') || '0');
-    if (localStorage.getItem('acc-hmo-providers')) safeSetVal('setting-hmo-providers', localStorage.getItem('acc-hmo-providers'));
 
     safeSetVal('setting-overdue-lock', localStorage.getItem('acc-overdue-lock') || '30');
     if (localStorage.getItem('acc-cash-cap')) safeSetVal('setting-cash-cap', localStorage.getItem('acc-cash-cap'));

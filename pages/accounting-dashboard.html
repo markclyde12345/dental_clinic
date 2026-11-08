@@ -61,13 +61,6 @@
                 <span class="nav-label">Payments & Collections</span>
               </a>
             </li>
-            <li>
-              <a href="#" class="nav-tab" data-tab="hmo">
-                <span class="nav-icon"><i class="ti ti-shield-check"></i></span>
-                <span class="nav-label">HMO & Insurance</span>
-                <span class="sidebar-badge badge-hmo" id="sb-hmo-badge" style="display: none;">0</span>
-              </a>
-            </li>
           </ul>
 
           <div class="sidebar-section-header">
@@ -203,15 +196,6 @@
               <div class="value" id="acc-total-outstanding" style="color: #ef4444;">₱0.00</div>
               <div class="widget-hint" id="acc-unpaid-count">0 pending invoices</div>
             </div>
-
-            <div class="widget-card">
-              <div class="widget-header">
-                <h3>HMO & Insurance Claims</h3>
-                <span class="widget-icon" style="color: #6366f1;">🏥</span>
-              </div>
-              <div class="value" id="acc-total-hmo" style="color: #6366f1;">₱0.00</div>
-              <div class="widget-hint" id="acc-hmo-count">0 active claims</div>
-            </div>
           </div>
 
           <!-- Collection Breakdown & Fast Actions -->
@@ -246,14 +230,6 @@
                     <span id="card-share-val">₱0.00 (0%)</span>
                   </div>
                   <div class="progress-bar-bg"><div class="progress-bar-fill" id="card-bar" style="width: 0%; background: #8b5cf6;"></div></div>
-                </div>
-
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
-                    <span>🏥 HMO / Corporate Insurance</span>
-                    <span id="hmo-share-val">₱0.00 (0%)</span>
-                  </div>
-                  <div class="progress-bar-bg"><div class="progress-bar-fill" id="hmo-bar" style="width: 0%; background: #f59e0b;"></div></div>
                 </div>
               </div>
             </div>
@@ -415,7 +391,6 @@
                   <option value="Unpaid">Pending</option>
                   <option value="Paid">Settled</option>
                   <option value="Partial">Partial</option>
-                  <option value="HMO">HMO Claims</option>
                 </select>
                 <i class="ti ti-chevron-down inv-filter-arrow"></i>
               </div>
@@ -524,55 +499,6 @@
                     <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
                     <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
                     <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:70px;height:22px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- ══════════════ TAB 4: HMO & INSURANCE CLAIMS ══════════════ -->
-        <div id="tab-hmo" class="tab-pane">
-          <div class="section-card">
-            <div class="section-card-header">
-              <h3>HMO & Healthcare Insurance Claims</h3>
-              <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">Track accreditation claims for Maxicare, Intellicare, Medicard, PhilHealth & corporate partners</p>
-            </div>
-
-            <div class="table-responsive" style="margin-top: 16px;">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Claim ID</th>
-                    <th>Patient</th>
-                    <th>HMO / Provider</th>
-                    <th>Policy / Card #</th>
-                    <th>Claim Amount</th>
-                    <th>Filing Date</th>
-                    <th>Claim Status</th>
-                    <th style="text-align: right;">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="hmo-claims-body">
-                  <tr class="skeleton-tr">
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:75px;height:14px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:130px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:85px;height:10px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:115px;height:13px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:95px;height:12px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:12px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
-                  </tr>
-                  <tr class="skeleton-tr">
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:70px;height:14px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:120px;height:14px;margin-bottom:4px;"></div><div class="skeleton skeleton-bar" style="width:75px;height:10px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:110px;height:13px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:90px;height:12px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:80px;height:14px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-bar" style="width:85px;height:12px;"></div></td>
-                    <td style="padding:14px 16px;"><div class="skeleton skeleton-pill" style="width:75px;height:22px;"></div></td>
                     <td style="padding:14px 16px;"><div class="skeleton skeleton-btn" style="width:88px;height:28px;"></div></td>
                   </tr>
                 </tbody>
@@ -861,7 +787,6 @@
                   <h4>Collection & Receivable</h4>
                   <div class="statement-line"><span>Actual Cash/Card Collected:</span><strong id="rep-collected" style="color: #10b981;">₱0.00</strong></div>
                   <div class="statement-line"><span>Outstanding Patient Receivables:</span><strong id="rep-outstanding" style="color: #ef4444;">₱0.00</strong></div>
-                  <div class="statement-line"><span>HMO Claims Pending:</span><strong id="rep-hmo-pending" style="color: #6366f1;">₱0.00</strong></div>
                   <div class="statement-line highlight"><span>Collection Efficiency:</span><strong id="rep-efficiency">0%</strong></div>
                 </div>
               </div>
@@ -1215,48 +1140,6 @@
               </div>
             </div>
 
-            <!-- 5. HMO & Insurance (▶) -->
-            <div class="settings-accordion-item" id="acc-item-hmo">
-              <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('hmo')">
-                <div class="accordion-title-group">
-                  <span class="accordion-arrow" id="arrow-hmo">▶</span>
-                  <span class="accordion-title-text">HMO &amp; Insurance</span>
-                  <span class="accordion-subtitle-text">• Accreditations, co-pay ratios &amp; claim submissions</span>
-                </div>
-                <span class="accordion-badge">Insurance</span>
-              </button>
-              <div class="settings-accordion-content">
-                <form id="form-settings-hmo" onsubmit="saveHMOSection(event)">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-                    <div>
-                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Direct HMO Accreditation</label>
-                      <select id="setting-hmo-active" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
-                        <option value="enabled">Enabled - Accept Accredited HMOs</option>
-                        <option value="disabled">Disabled - Cash Only</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Standard Patient Co-Pay Default</label>
-                      <select id="setting-hmo-copay" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; background: #fff;">
-                        <option value="0">0% (Full HMO Coverage)</option>
-                        <option value="10">10% Patient Co-Pay</option>
-                        <option value="20">20% Patient Co-Pay</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">Active Accredited Providers</label>
-                    <input type="text" id="setting-hmo-providers" value="Maxicare, Intellicare, PhilCare, Medicard, Caritas Health Shield, PhilHealth" style="width: 100%; height: 42px; padding: 0 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box;">
-                  </div>
-
-                  <button type="submit" class="btn-primary-action">
-                    <i class="ti ti-device-floppy"></i> Save HMO &amp; Insurance
-                  </button>
-                </form>
-              </div>
-            </div>
-
             <!-- 6. Financial Controls (▶) -->
             <div class="settings-accordion-item" id="acc-item-controls">
               <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('controls')">
@@ -1432,7 +1315,6 @@
             <select id="new-inv-status" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem;">
               <option value="Unpaid">Pending / Unpaid</option>
               <option value="Paid">Fully Paid</option>
-              <option value="HMO">HMO Claim</option>
             </select>
           </div>
         </div>
@@ -1469,7 +1351,6 @@
               <option value="GCash"> GCash / E-Wallet</option>
               <option value="Credit Card">💳 Credit / Debit Card</option>
               <option value="Bank Transfer"> Bank Transfer</option>
-              <option value="HMO Insurance"> HMO Insurance</option>
             </select>
           </div>
 
@@ -1788,10 +1669,6 @@
             <div>
               <span style="color: #64748b; display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;">Chief Concern</span>
               <span id="inv-detail-concern" style="font-weight: 600; color: #1e293b;">None</span>
-            </div>
-            <div>
-              <span style="color: #64748b; display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;">HMO Coverage</span>
-              <span id="inv-detail-hmo" style="font-weight: 600; color: #1e293b;">None / Self-pay</span>
             </div>
             <div>
               <span style="color: #64748b; display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;">Allergies / Meds</span>
