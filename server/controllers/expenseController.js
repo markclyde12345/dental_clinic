@@ -1,15 +1,31 @@
+const fs = require('fs');
+const path = require('path');
 const supabase = require('../config/db');
 
-// In-memory fallback if Supabase table is not yet migrated
-let fallbackExpenses = [
-  { id: 'exp-001', ref_no: 'MERALCO-2026-08', vendor: 'MERALCO', category: 'Utilities', description: 'Monthly electricity bill – August 2026', amount: 18500, due_date: '2026-08-25', paid_date: '2026-08-27', status: 'Paid', payment_method: 'Bank Transfer', reference_no: 'BDO-TXN-2091833' },
-  { id: 'exp-002', ref_no: 'MAYNILAD-2026-08', vendor: 'Maynilad Water Services', category: 'Utilities', description: 'Monthly water bill – August 2026', amount: 3200, due_date: '2026-09-05', paid_date: null, status: 'Unpaid', payment_method: 'Auto-Debit', reference_no: '' },
-  { id: 'exp-003', ref_no: 'BDO-LEASE-2026-08', vendor: 'BDO Unibank (Landlord)', category: 'Rent', description: 'Monthly clinic lease – Ground Floor, Fano Bldg.', amount: 55000, due_date: '2026-09-01', paid_date: null, status: 'Overdue', payment_method: 'Check', reference_no: '' },
-  { id: 'exp-004', ref_no: 'PAYROLL-2026-08', vendor: 'Fano Dental Staff', category: 'Salaries', description: 'Monthly payroll for all clinic staff – August 2026', amount: 132000, due_date: '2026-09-07', paid_date: null, status: 'Unpaid', payment_method: 'Bank Transfer', reference_no: '' },
-  { id: 'exp-005', ref_no: 'PLDT-2026-08', vendor: 'PLDT Fiber', category: 'Utilities', description: 'Internet & business landline – August 2026', amount: 4200, due_date: '2026-08-20', paid_date: '2026-08-20', status: 'Paid', payment_method: 'Auto-Debit', reference_no: 'PLDT-AUT-28821' },
-  { id: 'exp-006', ref_no: 'SUPPLY-2026-07', vendor: 'Dental Supply Corp.', category: 'Supplies', description: 'Monthly dental consumables restock order', amount: 24300, due_date: '2026-08-10', paid_date: '2026-08-12', status: 'Paid', payment_method: 'Check', reference_no: 'CHK-00219' },
-  { id: 'exp-007', ref_no: 'MAINT-2026-08', vendor: 'TechServ Clinic Solutions', category: 'Maintenance', description: 'Dental chair servicing & autoclave calibration', amount: 8750, due_date: '2026-09-12', paid_date: null, status: 'Unpaid', payment_method: 'Cash', reference_no: '' }
-];
+const EXPENSES_FILE = path.join(__dirname, '..', 'data', 'expenses.json');
+
+function loadExpensesFromFile() {
+  try {
+    if (fs.existsSync(EXPENSES_FILE)) {
+      const raw = fs.readFileSync(EXPENSES_FILE, 'utf8');
+      return JSON.parse(raw) || [];
+    }
+  } catch (e) {
+    console.error('Failed to read expenses.json:', e);
+  }
+  return [];
+}
+
+function saveExpensesToFile(data) {
+  try {
+    fs.writeFileSync(EXPENSES_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Failed to write expenses.json:', e);
+  }
+}
+
+// In-memory / file fallback store (starts empty — no mock data)
+let fallbackExpenses = loadExpensesFromFile();
 
 // @desc    Get all clinic expenses/bills
 // @route   GET /api/expenses
@@ -25,9 +41,11 @@ const getExpenses = async (req, res) => {
     if (Array.isArray(expenses) && expenses.length > 0) {
       return res.json(expenses);
     }
+    fallbackExpenses = loadExpensesFromFile();
     res.json(fallbackExpenses || []);
   } catch (error) {
     console.warn('[Expenses Supabase Fallback]', error.message);
+    fallbackExpenses = loadExpensesFromFile();
     res.json(fallbackExpenses || []);
   }
 };
@@ -62,7 +80,9 @@ const createExpense = async (req, res) => {
   } catch (error) {
     console.warn('[Create Expense Supabase Fallback]', error.message);
     const mockCreated = { id: `exp-${Date.now()}`, ...newRow };
+    fallbackExpenses = loadExpensesFromFile();
     fallbackExpenses.unshift(mockCreated);
+    saveExpensesToFile(fallbackExpenses);
     res.status(201).json(mockCreated);
   }
 };
@@ -86,9 +106,11 @@ const updateExpense = async (req, res) => {
     res.json(updated);
   } catch (error) {
     console.warn('[Update Expense Supabase Fallback]', error.message);
+    fallbackExpenses = loadExpensesFromFile();
     const index = fallbackExpenses.findIndex(e => e.id === id);
     if (index !== -1) {
       fallbackExpenses[index] = { ...fallbackExpenses[index], ...updates };
+      saveExpensesToFile(fallbackExpenses);
       return res.json(fallbackExpenses[index]);
     }
     res.json({ id, ...updates });
@@ -110,7 +132,9 @@ const deleteExpense = async (req, res) => {
     res.json({ message: 'Expense record deleted successfully.' });
   } catch (error) {
     console.warn('[Delete Expense Supabase Fallback]', error.message);
+    fallbackExpenses = loadExpensesFromFile();
     fallbackExpenses = fallbackExpenses.filter(e => e.id !== id);
+    saveExpensesToFile(fallbackExpenses);
     res.json({ message: 'Expense record deleted.' });
   }
 };
@@ -127,10 +151,12 @@ const clearAllExpenses = async (req, res) => {
 
     if (error) throw error;
     fallbackExpenses = [];
+    saveExpensesToFile(fallbackExpenses);
     res.json({ message: 'All expense records cleared successfully.' });
   } catch (error) {
     console.warn('[Clear All Expenses Supabase Fallback]', error.message);
     fallbackExpenses = [];
+    saveExpensesToFile(fallbackExpenses);
     res.json({ message: 'All expense records cleared.' });
   }
 };
@@ -142,4 +168,3 @@ module.exports = {
   deleteExpense,
   clearAllExpenses
 };
-

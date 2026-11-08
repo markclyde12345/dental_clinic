@@ -112,6 +112,7 @@
 
       // Load data
       await Promise.all([loadInvoices(), loadPatients(), loadInventoryCosts(), loadExpenses()]);
+      startFinanceRealtimeSync();
     } catch (err) {
       console.error('Profile fetch failed:', err);
       logout();
@@ -226,6 +227,37 @@
       allPatients.map(p => `<option value="${p.id}">${escapeHtml(p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim())} (${p.email || 'No email'})</option>`).join('');
   }
 
+  
+  function getPatientDisplayName(inv) {
+    if (inv.patient && inv.patient.name && inv.patient.name.trim() && inv.patient.name.trim() !== 'Patient') {
+      return inv.patient.name.trim();
+    }
+    const pid = inv.patient_id || (inv.patient && inv.patient.id);
+    if (pid && Array.isArray(allPatients) && allPatients.length > 0) {
+      const found = allPatients.find(p => p.id === pid);
+      if (found) {
+        const name = (found.name || `${found.firstName || ''} ${found.lastName || ''}`).trim();
+        if (name && name !== 'Patient') return name;
+        if (found.email) return found.email;
+      }
+    }
+    if (inv.patient && inv.patient.email) return inv.patient.email;
+    return 'Walk-in Patient';
+  }
+
+  function getPatientContact(inv) {
+    if (inv.patient && inv.patient.contact_number) return inv.patient.contact_number;
+    if (inv.patient && inv.patient.email) return inv.patient.email;
+    const pid = inv.patient_id || (inv.patient && inv.patient.id);
+    if (pid && Array.isArray(allPatients) && allPatients.length > 0) {
+      const found = allPatients.find(p => p.id === pid);
+      if (found) {
+        return found.phone || found.contact_number || found.email || '';
+      }
+    }
+    return '';
+  }
+
   /* ═══════════════════════════════════════════════════════════
      4. RENDER FINANCIAL VIEWS & KPIS
      ═══════════════════════════════════════════════════════════ */
@@ -247,22 +279,32 @@
     let ewalletTotal = 0;
     let cardTotal = 0;
 
-    allInvoices.forEach((inv, index) => {
+    allInvoices.forEach(inv => {
       const amount = parseFloat(inv.amount || inv.total_amount || 0);
-      const isPaid = inv.status === 'Paid' || inv.is_paid;
+      const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
+      const isWrittenOff = (inv.status || '').toLowerCase() === 'written off';
+      const paidAmt = isPaid ? amount : (parseFloat(inv.paid_amount) || 0);
 
       totalBilled += amount;
 
-      if (isPaid) {
-        totalCollected += amount;
-        // Pseudo distribution based on index if not explicitly saved
-        const mod = index % 3;
-        if (mod === 0) cashTotal += amount;
-        else if (mod === 1) ewalletTotal += amount;
-        else cardTotal += amount;
-      } else {
-        totalOutstanding += amount;
-        unpaidCount++;
+      if (paidAmt > 0) {
+        totalCollected += paidAmt;
+        const methodStr = (inv.payment_method || inv.paymentMethod || '').toLowerCase();
+        if (methodStr.includes('gcash') || methodStr.includes('maya') || methodStr.includes('wallet')) {
+          ewalletTotal += paidAmt;
+        } else if (methodStr.includes('card') || methodStr.includes('credit') || methodStr.includes('debit')) {
+          cardTotal += paidAmt;
+        } else {
+          cashTotal += paidAmt;
+        }
+      }
+
+      if (!isPaid && !isWrittenOff) {
+        const balance = Math.max(0, amount - paidAmt);
+        if (balance > 0) {
+          totalOutstanding += balance;
+          unpaidCount++;
+        }
       }
     });
 
@@ -275,11 +317,11 @@
     safeSetText('acc-collection-rate', `Collection Rate: ${collectionRate}%`);
     safeSetText('acc-unpaid-count', `${unpaidCount} pending invoices`);
 
-    // Progress Bars
+    // Progress Bars — Real breakdown
     const collectedBase = totalCollected > 0 ? totalCollected : 1;
-    const cashPct = Math.round((cashTotal / collectedBase) * 100);
-    const ewalletPct = Math.round((ewalletTotal / collectedBase) * 100);
-    const cardPct = Math.round((cardTotal / collectedBase) * 100);
+    const cashPct = totalCollected > 0 ? Math.round((cashTotal / collectedBase) * 100) : 0;
+    const ewalletPct = totalCollected > 0 ? Math.round((ewalletTotal / collectedBase) * 100) : 0;
+    const cardPct = totalCollected > 0 ? Math.round((cardTotal / collectedBase) * 100) : 0;
 
     safeSetText('cash-share-val', `${formatMoney(cashTotal)} (${cashPct}%)`);
     const cashBar = document.getElementById('cash-bar');
@@ -356,7 +398,7 @@
     const recent = allInvoices.slice(0, 6);
     tbody.innerHTML = recent.map(inv => {
       const invId = inv.id ? (inv.id.length > 8 ? `INV-${inv.id.slice(0, 8).toUpperCase()}` : `INV-${inv.id.toUpperCase()}`) : 'INV-000';
-      const patientName = inv.patient ? (inv.patient.name || inv.patient.email || 'Walk-in Patient') : 'Walk-in Patient';
+      const patientName = getPatientDisplayName(inv);
       const initial = patientName.charAt(0).toUpperCase() || 'P';
       const amount = parseFloat(inv.amount || inv.total_amount || 0);
       const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
@@ -407,9 +449,9 @@
 
     tbody.innerHTML = allInvoices.map(inv => {
       const invId = inv.id ? (inv.id.length > 8 ? `INV-${inv.id.slice(0, 8).toUpperCase()}` : `INV-${inv.id.toUpperCase()}`) : 'INV-000';
-      const patientName = inv.patient ? (inv.patient.name || inv.patient.email || 'Walk-in Patient') : 'Walk-in Patient';
+      const patientName = getPatientDisplayName(inv);
       const patientInitial = patientName.charAt(0).toUpperCase() || 'P';
-      const patientContact = inv.patient?.contact_number || inv.patient?.email || '';
+      const patientContact = getPatientContact(inv);
 
       // Clean treatment & structured metadata parsing (NO RAW BRACKET DUMP)
       let treatmentName = inv.appointment?.treatment?.name || inv.treatment?.name || 'Dental Consultation & Treatment';
@@ -727,11 +769,36 @@
     let totalCollected = 0;
     let totalOutstanding = 0;
 
+    const treatmentMap = {};
+
     allInvoices.forEach(inv => {
       const amt = parseFloat(inv.amount || inv.total_amount || 0);
+      const isPaid = (inv.status || '').toLowerCase() === 'paid' || inv.is_paid;
+      const paidAmt = isPaid ? amt : (parseFloat(inv.paid_amount) || 0);
+
       grossBilled += amt;
-      if (inv.status === 'Paid' || inv.is_paid) totalCollected += amt;
-      else totalOutstanding += amt;
+      totalCollected += paidAmt;
+      if (!isPaid && (inv.status || '').toLowerCase() !== 'written off') {
+        totalOutstanding += Math.max(0, amt - paidAmt);
+      }
+
+      // Group by real treatment procedure
+      let tName = inv.appointment?.treatment?.name || inv.treatment?.name;
+      if (!tName || tName === 'Dental Consultation & Treatment') {
+        const notes = inv.appointment?.notes || inv.notes || '';
+        const match = notes.match(/\[Concern:\s*([^\]]+)\]/i);
+        if (match && match[1] !== 'None') {
+          tName = match[1];
+        } else {
+          tName = 'General Dental Consultation & Examination';
+        }
+      }
+
+      if (!treatmentMap[tName]) {
+        treatmentMap[tName] = { count: 0, total: 0 };
+      }
+      treatmentMap[tName].count += 1;
+      treatmentMap[tName].total += amt;
     });
 
     const efficiency = grossBilled > 0 ? Math.round((totalCollected / grossBilled) * 100) : 0;
@@ -745,6 +812,27 @@
     safeSetText('rep-collected', formatMoney(totalCollected));
     safeSetText('rep-outstanding', formatMoney(totalOutstanding));
     safeSetText('rep-efficiency', `${efficiency}%`);
+
+    // Dynamic Top Dental Procedures Table
+    const tbody = document.getElementById('treatment-revenue-body');
+    if (tbody) {
+      const entries = Object.entries(treatmentMap).sort((a, b) => b[1].total - a[1].total);
+      if (entries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#888; padding:20px;">No invoiced dental procedures recorded yet.</td></tr>';
+      } else {
+        tbody.innerHTML = entries.map(([name, data]) => {
+          const avg = data.count > 0 ? data.total / data.count : 0;
+          return `
+            <tr>
+              <td><strong>${escapeHtml(name)}</strong></td>
+              <td>${data.count}</td>
+              <td>${formatMoney(avg)}</td>
+              <td style="text-align: right; font-weight: 700;">${formatMoney(data.total)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -1553,7 +1641,9 @@
   };
 
   function getUnitCost(item) {
-    return UNIT_COST_MAP[item.name] || UNIT_COST_MAP[`_${item.category}`] || 500;
+    const rawCost = parseFloat(item.unit_cost || item.unitCost || item.cost || item.price);
+    if (!isNaN(rawCost) && rawCost > 0) return rawCost;
+    return UNIT_COST_MAP[item.name] || UNIT_COST_MAP[`_${item.category}`] || 0;
   }
 
   window.loadInventoryCosts = async function() {

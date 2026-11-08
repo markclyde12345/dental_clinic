@@ -128,6 +128,11 @@
           </div>
         </div>
         <div class="top-bar-right">
+          <!-- Real-Time Live Sync Indicator -->
+          <div class="live-sync-indicator" id="finance-live-indicator" title="Connected to clinic appointments, payments & ledger in real time">
+            <span class="pulse-dot"></span>
+            <span>Real-time Live Sync</span>
+          </div>
           <!-- Theme Toggle -->
           <button class="theme-toggle" id="accountingThemeToggle" aria-label="Toggle dark mode" title="Dark Mode">
             <i class="ti ti-moon"></i>
@@ -803,34 +808,9 @@
                 </thead>
                 <tbody id="treatment-revenue-body">
                   <tr>
-                    <td>General Dental Consultation & Examination</td>
-                    <td>14</td>
-                    <td>₱800.00</td>
-                    <td style="text-align: right; font-weight: 700;">₱11,200.00</td>
-                  </tr>
-                  <tr>
-                    <td>Oral Prophylaxis (Teeth Cleaning)</td>
-                    <td>22</td>
-                    <td>₱1,500.00</td>
-                    <td style="text-align: right; font-weight: 700;">₱33,000.00</td>
-                  </tr>
-                  <tr>
-                    <td>Orthodontic Braces & Adjustments</td>
-                    <td>8</td>
-                    <td>₱35,000.00</td>
-                    <td style="text-align: right; font-weight: 700;">₱280,000.00</td>
-                  </tr>
-                  <tr>
-                    <td>Dental Composite Restoration (Fillings)</td>
-                    <td>16</td>
-                    <td>₱1,800.00</td>
-                    <td style="text-align: right; font-weight: 700;">₱28,800.00</td>
-                  </tr>
-                  <tr>
-                    <td>Tooth Extraction & Minor Surgery</td>
-                    <td>11</td>
-                    <td>₱2,500.00</td>
-                    <td style="text-align: right; font-weight: 700;">₱27,500.00</td>
+                    <td colspan="4" style="text-align: center; color: #888; padding: 20px;">
+                      <i class="ti ti-refresh" style="margin-right: 6px;"></i>Loading treatment revenue...
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -1411,7 +1391,7 @@
           <tbody>
             <tr>
               <td id="rec-desc">Dental Treatment & Consultation</td>
-              <td style="text-align: right; font-weight: 700;" id="rec-amount">₱1,500.00</td>
+              <td style="text-align: right; font-weight: 700;" id="rec-amount">₱0.00</td>
             </tr>
           </tbody>
         </table>
@@ -1419,7 +1399,7 @@
         <div class="receipt-divider"></div>
 
         <div class="receipt-totals">
-          <div class="rec-total-row"><span>Total Amount Paid:</span> <strong id="rec-total-paid" style="font-size: 1.15rem; color: var(--primary-color);">₱1,500.00</strong></div>
+          <div class="rec-total-row"><span>Total Amount Paid:</span> <strong id="rec-total-paid" style="font-size: 1.15rem; color: var(--primary-color);">₱0.00</strong></div>
           <div class="rec-total-row" style="font-size: 0.8rem; color: #777;"><span>Payment Status:</span> <strong style="color: #10b981;">SETTLED & PAID</strong></div>
         </div>
 
