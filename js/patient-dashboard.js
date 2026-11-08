@@ -3344,13 +3344,20 @@ function setupBookingWizard() {
   // Initialize interactive address autocomplete & validation
   setupAddressAutocomplete();
 
-  // GPS detect button
+  // GPS detect button and Map relocate button
   document.getElementById('btn-detect-gps')?.addEventListener('click', () => {
-    detectGPSLocation();
+    detectGPSLocation(false);
+  });
+  document.getElementById('btn-map-relocate')?.addEventListener('click', () => {
+    detectGPSLocation(false);
   });
 
-  // Populate branch picker cards for clinic selection
-  updateNearestBranchAndMap(10.2098, 123.7540, 'Balirong, City of Naga, Cebu');
+  // Dynamic symptoms/notes requirement (required ONLY for 'Other Consultation')
+  document.getElementById('wizard-primary-concern')?.addEventListener('change', updateNotesRequirement);
+  updateNotesRequirement();
+
+  // Populate branch picker cards and auto-detect patient's live location
+  detectGPSLocation(true);
 
   // Next Button Click
   btnNext?.addEventListener('click', () => {
@@ -3772,28 +3779,152 @@ function setupAddressAutocomplete() {
   });
 }
 
-function detectGPSLocation() {
+function updateNotesRequirement() {
+  const concernSelect = document.getElementById('wizard-primary-concern');
+  const reqIndicator = document.getElementById('wizard-notes-req-indicator');
+  const notesEl = document.getElementById('wizard-notes');
+  if (!concernSelect || !notesEl) return;
+
+  const val = (concernSelect.value || '').trim();
+  const isOther = val === 'Other Consultation' || val.toLowerCase().includes('other');
+
+  if (isOther) {
+    if (reqIndicator) {
+      reqIndicator.innerHTML = '<span style="color: #dc2626; font-weight: 700;">* (Required for Other Consultation)</span>';
+    }
+    notesEl.placeholder = 'Please describe your specific symptoms, tooth concerns, or reason for consultation (required)...';
+    notesEl.required = true;
+  } else {
+    if (reqIndicator) {
+      reqIndicator.innerHTML = '<span style="color: var(--text-muted); font-weight: normal;">(Optional)</span>';
+    }
+    notesEl.placeholder = 'Describe symptoms, tooth location, pain level, or any special requests (optional)...';
+    notesEl.required = false;
+    markFieldError(notesEl, false);
+  }
+}
+
+async function reverseGeocodeCoords(lat, lng) {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+      headers: { 'Accept-Language': 'en' }
+    });
+    if (!res.ok) throw new Error('Geocoding failed');
+    const data = await res.json();
+    if (data && data.address) {
+      const a = data.address;
+      const road = a.road || a.pedestrian || a.street || '';
+      const neighborhood = a.suburb || a.neighbourhood || a.quarter || a.village || '';
+      const city = a.city || a.town || a.municipality || a.county || '';
+      const state = a.province || a.state || '';
+
+      const parts = [road, neighborhood, city, state].filter(Boolean);
+      if (parts.length > 0) return parts.join(', ');
+      if (data.display_name) return data.display_name.split(',').slice(0, 3).join(', ').trim();
+    } else if (data && data.display_name) {
+      return data.display_name.split(',').slice(0, 3).join(', ').trim();
+    }
+  } catch (err) {
+    console.warn('Reverse geocode error:', err);
+  }
+  return null;
+}
+
+function detectGPSLocation(isSilent = false) {
   if (!navigator.geolocation) {
-    showToast('Geolocation is not supported by your browser.', 'error');
+    if (!isSilent) showToast('Geolocation is not supported by your browser.', 'error');
+    fallbackToProfileAddressOrIP(isSilent);
     return;
   }
-  showToast('Detecting your GPS location...', 'info');
+  if (!isSilent) showToast('Detecting your live GPS location...', 'info');
+
+  const options = {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 60000
+  };
+
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      currentPatientCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    async (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const accuracy = pos.coords.accuracy ? Math.round(pos.coords.accuracy) : null;
+      console.log(`[GPS] Live coords detected: ${lat}, ${lng} (accuracy: ~${accuracy}m)`);
+
+      currentPatientCoords = { lat, lng };
       isPatientAddressValid = true;
       setAddressValidationError(null);
+
       const dropdown = document.getElementById('wizard-pat-address-dropdown');
       if (dropdown) dropdown.style.display = 'none';
-      updateNearestBranchAndMap(currentPatientCoords.lat, currentPatientCoords.lng, 'My Current GPS Location');
-      safeVal('wizard-pat-address', 'Current GPS Location (Balirong / Naga Area)');
-      showToast('GPS location updated!', 'success');
+
+      // Reverse geocode to get actual city / barangay name
+      let resolved = await reverseGeocodeCoords(lat, lng);
+      const displayAddr = resolved || `Current GPS Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+
+      safeVal('wizard-pat-address', displayAddr);
+      updateNearestBranchAndMap(lat, lng, displayAddr);
+
+      if (!isSilent) {
+        showToast(`📍 Location detected: ${displayAddr}`, 'success');
+      }
     },
-    () => {
-      showToast('Could not access GPS. Please select your address from the suggestions.', 'error');
+    (err) => {
+      console.warn('[GPS] Geolocation error/declined:', err.message);
+      if (!isSilent) {
+        showToast('Could not access live GPS. You can drag the blue pin or click anywhere on the map.', 'warning');
+      }
+      fallbackToProfileAddressOrIP(isSilent);
     },
-    { timeout: 8000 }
+    options
   );
+}
+
+async function fallbackToProfileAddressOrIP(isSilent = false) {
+  const addrInput = document.getElementById('wizard-pat-address')?.value?.trim();
+  if (addrInput && !addrInput.toLowerCase().includes('balirong') && !addrInput.toLowerCase().includes('gps')) {
+    geocodeAndLocate(addrInput, isSilent);
+    return;
+  }
+
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.latitude && data.longitude) {
+        const lat = parseFloat(data.latitude);
+        const lng = parseFloat(data.longitude);
+        const cityLabel = [data.city, data.region, 'Philippines'].filter(Boolean).join(', ');
+        currentPatientCoords = { lat, lng };
+        isPatientAddressValid = true;
+        safeVal('wizard-pat-address', cityLabel);
+        updateNearestBranchAndMap(lat, lng, cityLabel);
+        return;
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  // Fallback to clinic default if nothing else is available
+  updateNearestBranchAndMap(10.2098, 123.7540, 'Balirong, City of Naga, Cebu');
+}
+
+async function handlePatientPinRelocate(lat, lng) {
+  currentPatientCoords = { lat, lng };
+  isPatientAddressValid = true;
+  setAddressValidationError(null);
+
+  const tempLabel = `Selected Map Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+  safeVal('wizard-pat-address', tempLabel);
+  updateNearestBranchAndMap(lat, lng, tempLabel);
+
+  const resolved = await reverseGeocodeCoords(lat, lng);
+  if (resolved) {
+    safeVal('wizard-pat-address', resolved);
+    updateNearestBranchAndMap(lat, lng, resolved);
+    showToast(`📍 Location updated: ${resolved}`, 'success');
+  }
 }
 
 function geocodeAndLocate(addressText, isSilentInit = false) {
@@ -3967,6 +4098,11 @@ function renderMapVisuals(patientLat, patientLng, addressLabel, targetBranch) {
       "CARTO Voyager": cartoVoyager,
       "Satellite": googleSatellite
     }, null, { position: 'topright' }).addTo(branchMap);
+
+    // Allow clicking anywhere on the map to place patient pin
+    branchMap.on('click', async (e) => {
+      await handlePatientPinRelocate(e.latlng.lat, e.latlng.lng);
+    });
   }
 
   // Clear previous markers & route lines
@@ -3977,21 +4113,31 @@ function renderMapVisuals(patientLat, patientLng, addressLabel, targetBranch) {
     mapRouteLine = null;
   }
 
-  // 1. Patient Location Marker (Blue Pulse Icon)
+  // 1. Patient Location Marker (Blue Pulse Icon - Draggable)
   const patientIcon = L.divIcon({
     className: 'patient-map-pin',
     html: `
-      <div style="background:#2563eb; width:22px; height:22px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(37,99,235,0.8); display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;">
-        P
+      <div style="background:#2563eb; width:26px; height:26px; border-radius:50%; border:3px solid white; box-shadow:0 0 14px rgba(37,99,235,0.9); display:flex; align-items:center; justify-content:center; color:white; font-size:11px; font-weight:bold; cursor:grab;" title="You (Drag to move)">
+        <i class="ti ti-user" style="font-size: 13px;"></i>
       </div>
     `,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11]
+    iconSize: [26, 26],
+    iconAnchor: [13, 13]
   });
 
-  const patientMarker = L.marker([patientLat, patientLng], { icon: patientIcon })
+  const patientMarker = L.marker([patientLat, patientLng], {
+    icon: patientIcon,
+    draggable: true,
+    title: 'Your Location (Drag to adjust)'
+  })
     .addTo(branchMap)
-    .bindPopup(`<b>Your Location</b><br>${escapeHTML(addressLabel || 'Home Address')}`);
+    .bindPopup(`<b>Your Real Location</b><br><span style="font-size:12px;color:#475569;">${escapeHTML(addressLabel || 'Current Location')}</span><br><small style="color:#2563eb;font-weight:600;">(Drag pin or click map to move)</small>`);
+
+  patientMarker.on('dragend', async (e) => {
+    const newPos = e.target.getLatLng();
+    await handlePatientPinRelocate(newPos.lat, newPos.lng);
+  });
+
   mapMarkers.push(patientMarker);
 
   // 2. Dental Clinic Markers
@@ -4081,10 +4227,12 @@ function goToStep(step) {
     checkAvailableSlots();
     setTimeout(() => {
       const addr = document.getElementById('wizard-pat-address')?.value?.trim() || '';
-      if (addr) {
-        geocodeAndLocate(addr, false);
+      if (addr && !addr.toLowerCase().includes('balirong') && !addr.toLowerCase().includes('gps')) {
+        geocodeAndLocate(addr, true);
+      } else if (currentPatientCoords && (currentPatientCoords.lat !== 10.2098 || currentPatientCoords.lng !== 123.7540)) {
+        updateNearestBranchAndMap(currentPatientCoords.lat, currentPatientCoords.lng, addr || 'My Current Location');
       } else {
-        updateNearestBranchAndMap(10.2098, 123.7540, 'Balirong, City of Naga, Cebu');
+        detectGPSLocation(true);
       }
       if (branchMap) {
         branchMap.invalidateSize();
@@ -4205,13 +4353,17 @@ function validateStep(step) {
       isPatientAddressValid ||
       findMatchingLocalAddresses(addr).length > 0 ||
       Object.keys(KNOWN_COORDS).some(k => addr.toLowerCase().includes(k)) ||
-      addr.toLowerCase().includes('current gps location')
+      addr.toLowerCase().includes('gps') ||
+      addr.toLowerCase().includes('location') ||
+      addr.toLowerCase().includes('cebu')
     );
 
     if (addr && !hasValidAddr) {
       setAddressValidationError(`Invalid address: "${addr}" is not a recognized location. Please select a valid address from the suggestions.`);
       markFieldError(addrEl, true);
     }
+
+    const isOtherConsultation = concern === 'Other Consultation' || (concern && concern.toLowerCase().includes('other'));
 
     const requiredChecks = [
       { ok: !!date, el: dateEl, label: 'Appointment Date' },
@@ -4223,9 +4375,18 @@ function validateStep(step) {
       { ok: !!emergName, el: emergNameEl, label: 'Emergency Contact Name' },
       { ok: !!emergPhone, el: emergPhoneEl, label: 'Emergency Contact Phone' },
       { ok: !!concern, el: concernEl, label: 'Primary Concern / Symptom' },
-      { ok: !!reminder, el: reminderEl, label: 'Preferred Appointment Method' },
-      { ok: !!notes, el: notesEl, label: 'Specific Symptoms & Special Requests' }
+      { ok: !!reminder, el: reminderEl, label: 'Preferred Appointment Method' }
     ];
+
+    if (isOtherConsultation) {
+      requiredChecks.push({
+        ok: !!notes,
+        el: notesEl,
+        label: 'Specific Symptoms (Required for Other Consultation)'
+      });
+    } else {
+      markFieldError(notesEl, false);
+    }
 
     const missing = [];
     let firstMissingEl = null;
@@ -4250,7 +4411,11 @@ function validateStep(step) {
     }
 
     // Validate that the entered address is a real recognized address and not gibberish
-    const hasLocalMatch = findMatchingLocalAddresses(addr).length > 0 || Object.keys(KNOWN_COORDS).some(k => addr.toLowerCase().includes(k)) || addr.toLowerCase().includes('current gps location');
+    const hasLocalMatch = findMatchingLocalAddresses(addr).length > 0 ||
+      Object.keys(KNOWN_COORDS).some(k => addr.toLowerCase().includes(k)) ||
+      addr.toLowerCase().includes('gps') ||
+      addr.toLowerCase().includes('location') ||
+      addr.toLowerCase().includes('cebu');
     if (!isPatientAddressValid && !hasLocalMatch) {
       setAddressValidationError(`Invalid address: "${addr}" is not a recognized location. Please select a valid address from the suggestions.`);
       markFieldError(addrEl, true);

@@ -599,9 +599,16 @@
                   <div class="map-section-wrap" style="margin-bottom: 16px;">
                     <div class="map-header-row" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                       <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">Clinic Map &amp; Navigation</span>
-                      <span style="font-size: 0.76rem; color: var(--text-muted);">Blue pin = You • Red pin = Fano Clinic</span>
+                      <span style="font-size: 0.76rem; color: var(--text-muted);">(Blue pin = You • Red pin = Fano Clinic)</span>
+                      <button type="button" class="btn btn-sm" id="btn-map-relocate" style="padding: 4px 10px; font-size: 0.75rem; background: var(--bg-card); border: 1px solid var(--border); color: var(--accent); font-weight: 600; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <i class="ti ti-current-location"></i> Pin My Real Location
+                      </button>
                     </div>
                     <div id="clinic-map-container" class="clinic-map-container"></div>
+                    <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+                      <i class="ti ti-info-circle"></i>
+                      <span>Tip: Click anywhere on the map or drag the blue pin to set your exact location &amp; calculate distance.</span>
+                    </div>
                   </div>
 
                   <div style="margin-bottom: 16px;">
@@ -612,8 +619,8 @@
                   </div>
 
                   <div>
-                    <label class="form-label">Specific Symptoms &amp; Special Requests <span style="color: #dc2626;">*</span></label>
-                    <textarea id="wizard-notes" class="form-input" rows="2" placeholder="Describe symptoms, tooth location, pain level, or any special requests..." required></textarea>
+                    <label class="form-label" id="wizard-notes-label">Specific Symptoms &amp; Special Requests <span id="wizard-notes-req-indicator" style="color: var(--text-muted); font-weight: normal; font-size: 0.82em;">(Optional)</span></label>
+                    <textarea id="wizard-notes" class="form-input" rows="2" placeholder="Describe symptoms, tooth location, pain level, or any special requests (optional)..."></textarea>
                   </div>
                 </div>
 
