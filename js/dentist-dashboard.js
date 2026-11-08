@@ -446,10 +446,12 @@ async function loadScheduleTable() {
     allAppointments = await api.getDentistAppointments();
     if (Array.isArray(allAppointments)) {
       allAppointments.sort((a, b) => {
-        const timeB = new Date(b.appointment_date || b.created_at || 0).getTime();
-        const timeA = new Date(a.appointment_date || a.created_at || 0).getTime();
-        if (timeB !== timeA) return timeB - timeA;
-        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        const createB = new Date(b.created_at || b.createdAt || 0).getTime();
+        const createA = new Date(a.created_at || a.createdAt || 0).getTime();
+        if (createB && createA && createB !== createA) return createB - createA;
+        const timeB = new Date(b.appointment_date || b.dateTime || 0).getTime();
+        const timeA = new Date(a.appointment_date || a.dateTime || 0).getTime();
+        return timeB - timeA;
       });
     }
     if (stopSkeleton) stopSkeleton();
@@ -492,12 +494,14 @@ function applyScheduleFilters() {
     return true;
   });
 
-  // Display newest appointments at the top (descending by appointment date & creation time)
+  // Display newly put / created appointments at the upper (top), older at the bottom
   filtered.sort((a, b) => {
-    const timeB = new Date(b.appointment_date || b.created_at || 0).getTime();
-    const timeA = new Date(a.appointment_date || a.created_at || 0).getTime();
-    if (timeB !== timeA) return timeB - timeA;
-    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    const createB = new Date(b.created_at || b.createdAt || 0).getTime();
+    const createA = new Date(a.created_at || a.createdAt || 0).getTime();
+    if (createB && createA && createB !== createA) return createB - createA;
+    const timeB = new Date(b.appointment_date || b.dateTime || 0).getTime();
+    const timeA = new Date(a.appointment_date || a.dateTime || 0).getTime();
+    return timeB - timeA;
   });
 
   if (!filtered.length) {

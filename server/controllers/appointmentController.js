@@ -18,6 +18,7 @@ const getMyAppointments = async (req, res) => {
         patient:patient_id ( id, name, email, contact_number ),
         treatment:treatment_id ( id, name, price, duration_minutes )
       `)
+      .order('created_at', { ascending: false })
       .order('appointment_date', { ascending: false });
 
     if (error) throw error;
@@ -111,7 +112,9 @@ const getAppointments = async (req, res) => {
       query = query.eq('patient_id', req.user.id);
     }
 
-    const { data: appointments, error } = await query.order('appointment_date', { ascending: false });
+    const { data: appointments, error } = await query
+      .order('created_at', { ascending: false })
+      .order('appointment_date', { ascending: false });
 
     if (error) throw error;
 

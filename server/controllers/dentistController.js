@@ -120,6 +120,7 @@ const getAppointmentsForDentist = async (req, res) => {
         patient:patient_id ( id, name, email, contact_number ),
         treatment:treatment_id ( id, name, price, duration_minutes )
       `)
+      .order('created_at', { ascending: false })
       .order('appointment_date', { ascending: false });
 
     if (error) throw error;
@@ -245,6 +246,7 @@ const getPatientRecord = async (req, res) => {
         treatment:treatment_id ( id, name, price )
       `)
       .eq('patient_id', id)
+      .order('created_at', { ascending: false })
       .order('appointment_date', { ascending: false });
 
     if (err3) throw err3;

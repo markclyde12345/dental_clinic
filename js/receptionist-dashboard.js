@@ -709,7 +709,17 @@ function renderAppointmentsTable(list) {
     return;
   }
 
-  tbody.innerHTML = list.map(appt => {
+  // Display newly put / created appointments at the upper (top), older at the bottom
+  const sorted = [...list].sort((a, b) => {
+    const createB = new Date(b.created_at || b.createdAt || 0).getTime();
+    const createA = new Date(a.created_at || a.createdAt || 0).getTime();
+    if (createB && createA && createB !== createA) return createB - createA;
+    const timeB = new Date(b.appointment_date || b.dateTime || 0).getTime();
+    const timeA = new Date(a.appointment_date || a.dateTime || 0).getTime();
+    return timeB - timeA;
+  });
+
+  tbody.innerHTML = sorted.map(appt => {
     const patientName = appt.patient ? (appt.patient.name || 'Patient') : 'Unknown Patient';
     const patientPhone = appt.patient ? (appt.patient.contact_number || appt.patient.email || '') : '';
     const treatmentName = appt.treatment ? appt.treatment.name : 'General Consultation';

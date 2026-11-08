@@ -2269,6 +2269,16 @@ function filterAndRenderAppointments() {
     return;
   }
 
+  // Display newly put / created appointments at the upper (top), older at the bottom
+  filtered.sort((a, b) => {
+    const createB = new Date(b.created_at || b.createdAt || 0).getTime();
+    const createA = new Date(a.created_at || a.createdAt || 0).getTime();
+    if (createB && createA && createB !== createA) return createB - createA;
+    const timeB = new Date(b.appointment_date || b.dateTime || 0).getTime();
+    const timeA = new Date(a.appointment_date || a.dateTime || 0).getTime();
+    return timeB - timeA;
+  });
+
   tbody.innerHTML = filtered.map(a => {
     const d = new Date(a.appointment_date);
     const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
