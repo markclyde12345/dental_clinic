@@ -801,7 +801,7 @@
 .skeleton,
 .skeleton-shimmer {
   /* Soft, clean light gray shimmer - never too dark */
-  background: linear-gradient(90deg, #f8fafc 0%, #edf2f7 50%, #f8fafc 100%) !important;
+  background: linear-gradient(90deg, #e5e9f0 0%, #f4f6f8 50%, #e5e9f0 100%) !important;
   background-size: 200% 100% !important;
   border-radius: var(--radius-md, 8px);
   position: relative;
@@ -819,21 +819,37 @@
 .is-slow-connection .skeleton,
 .is-slow-connection .skeleton-shimmer,
 .skeleton-immediate,
-.skeleton-modal-body .skeleton {
+.skeleton-modal-body .skeleton,
+.cw-vd-modal .skeleton,
+.modal-body .skeleton {
   opacity: 1 !important;
+  background: linear-gradient(90deg, #e5e9f0 0%, #f4f6f8 50%, #e5e9f0 100%) !important;
+  background-size: 200% 100% !important;
   animation: skeletonShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
 }
 
-/* Dark mode skeleton - kept soft light-muted gray, NEVER dark or black */
-body.dark-theme .skeleton,
-.dark-theme .skeleton,
-[data-theme="dark"] .skeleton,
-body.dark-theme .skeleton-shimmer,
-.dark-theme .skeleton-shimmer,
-[data-theme="dark"] .skeleton-shimmer {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.14) 50%, rgba(255, 255, 255, 0.06) 100%) !important;
+/* Modals and white cards: GUARANTEE soft light gray skeleton, never dark */
+html.dark-theme .skeleton-modal-body .skeleton,
+html.dark-theme .cw-vd-modal .skeleton,
+html.dark-theme .modal-body .skeleton,
+body.dark-theme .skeleton-modal-body .skeleton,
+body.dark-theme .cw-vd-modal .skeleton,
+body.dark-theme .modal-body .skeleton,
+.dark-theme .skeleton-modal-body .skeleton,
+.dark-theme .cw-vd-modal .skeleton,
+.dark-theme .modal-body .skeleton {
+  background: linear-gradient(90deg, #e5e9f0 0%, #f4f6f8 50%, #e5e9f0 100%) !important;
   background-size: 200% 100% !important;
-  border-color: transparent !important;
+  opacity: 1 !important;
+}
+
+/* Dark theme skeleton on dark surfaces - soft muted light-slate, NEVER pitch dark */
+html.dark-theme .card-enhanced .skeleton,
+html.dark-theme .table-enhanced .skeleton,
+body.dark-theme .card-enhanced .skeleton,
+body.dark-theme .table-enhanced .skeleton {
+  background: linear-gradient(90deg, #2d3748 0%, #3d4a5c 50%, #2d3748 100%) !important;
+  background-size: 200% 100% !important;
 }
 
 .skeleton-text {
@@ -1064,11 +1080,6 @@ body.dark-theme .modal-enhanced {
   background-color: #141f2e !important;
   border-color: #233246 !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35) !important;
-}
-
-body.dark-theme .skeleton {
-  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
-  background-size: 200% 100%;
 }
 
 body.dark-theme .empty-state-icon {

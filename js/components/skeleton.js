@@ -218,6 +218,19 @@ const Skeleton = (() => {
      */
     modal(type = 'workspace') {
       return `
+        <style>
+          .skeleton-modal-body,
+          .cw-vd-modal {
+            background: #ffffff !important;
+          }
+          .skeleton-modal-body .skeleton,
+          .cw-vd-modal .skeleton {
+            background: linear-gradient(90deg, #e5e9f0 0%, #f4f6f8 50%, #e5e9f0 100%) !important;
+            background-size: 200% 100% !important;
+            animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+            opacity: 1 !important;
+          }
+        </style>
         <div class="modal-body cw-vd-modal skeleton-modal-body" style="background: #ffffff !important; border-radius: 20px !important; padding: 28px 32px !important; max-width: 680px; width: 95vw; border-top: 4px solid #0d9488 !important; box-shadow: 0 25px 70px rgba(0,0,0,0.12) !important;">
           <!-- Top Header Row -->
           <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid #f1f5f9; margin-bottom: 20px;">
