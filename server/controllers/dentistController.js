@@ -451,13 +451,22 @@ const saveDentalChart = async (req, res) => {
 const getPrescriptions = async (req, res) => {
   const patientId = req.query.patientId;
   try {
-    let query = supabase.from('prescriptions').select('*').order('created_at', { ascending: false });
+    let query = supabase.from('prescriptions').select(`
+      *,
+      patient:patient_id ( id, name, email, contact_number ),
+      dentist:dentist_id ( id, name, email )
+    `).order('created_at', { ascending: false });
     if (patientId) {
       query = query.eq('patient_id', patientId);
     }
     const { data, error } = await query;
     if (!error && data && data.length > 0) {
-      return res.json(data);
+      const enriched = data.map(r => ({
+        ...r,
+        patient_name: r.patient?.name || r.patient_name || 'Patient',
+        dentist_name: r.dentist?.name || r.dentist_name || 'Dr. Dentist'
+      }));
+      return res.json(enriched);
     }
   } catch (err) {
     console.warn('[Prescriptions Supabase Fetch Fallback]', err.message);
@@ -490,11 +499,20 @@ const createPrescription = async (req, res) => {
         duration: duration || '',
         instructions: instructions || precautions || notes || ''
       }])
-      .select()
+      .select(`
+        *,
+        patient:patient_id ( id, name, email, contact_number ),
+        dentist:dentist_id ( id, name, email )
+      `)
       .maybeSingle();
 
     if (!error && data) {
-      return res.status(201).json(data);
+      const enriched = {
+        ...data,
+        patient_name: data.patient?.name || patient_name || 'Patient',
+        dentist_name: data.dentist?.name || req.user.name || 'Dr. Dentist'
+      };
+      return res.status(201).json(enriched);
     }
   } catch (err) {
     console.warn('[Prescriptions Supabase Insert Fallback]', err.message);

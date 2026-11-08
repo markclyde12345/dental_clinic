@@ -624,12 +624,23 @@
           <div class="panel-card">
             <div class="panel-header flex-wrap">
               <div>
-                <h3>Prescription Management (Rx)</h3>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <h3 style="margin:0;">Prescription Management (Rx)</h3>
+                  <span class="badge" id="rx-live-indicator" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; font-size:0.72rem; padding:2px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:5px;">
+                    <span style="width:7px; height:7px; background:#10b981; border-radius:50%; display:inline-block; box-shadow:0 0 6px #10b981;"></span>
+                    Live Real-Time
+                  </span>
+                </div>
                 <p class="panel-sub">Issue digital prescriptions with clinical instructions & printable Rx slips</p>
               </div>
-              <button class="btn btn-primary" onclick="openNewPrescriptionModal()">
-                <i class="fa-solid fa-prescription"></i> + New Prescription
-              </button>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button type="button" class="btn btn-ghost" id="btn-refresh-prescriptions" onclick="loadPrescriptionsView(false)" title="Refresh prescriptions" style="padding:8px 14px;">
+                  <i class="fa-solid fa-arrows-rotate" id="rx-refresh-icon"></i> Refresh
+                </button>
+                <button class="btn btn-primary" onclick="openNewPrescriptionModal()">
+                  <i class="fa-solid fa-prescription"></i> + New Prescription
+                </button>
+              </div>
             </div>
 
             <div class="table-responsive">

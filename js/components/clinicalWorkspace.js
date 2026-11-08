@@ -728,6 +728,7 @@ const ClinicalWorkspace = (() => {
 
           const list = await api.get(`/appointments/${a.id}/prescriptions`);
           document.getElementById('cw-rx').innerHTML = renderRx(list);
+          window.dispatchEvent(new CustomEvent('prescription:created'));
         } catch (err) {
           alert('Could not issue prescription: ' + err.message);
         }

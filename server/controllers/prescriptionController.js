@@ -8,12 +8,17 @@ const getAppointmentPrescriptions = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('prescriptions')
-      .select('*')
+      .select('*, patient:patient_id ( id, name, email ), dentist:dentist_id ( id, name, email )')
       .eq('appointment_id', id)
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    res.json(data || []);
+    const enriched = (data || []).map(r => ({
+      ...r,
+      patient_name: r.patient?.name || r.patient_name || 'Patient',
+      dentist_name: r.dentist?.name || r.dentist_name || 'Dr. Dentist'
+    }));
+    res.json(enriched);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -27,7 +32,7 @@ const getPatientPrescriptions = async (req, res) => {
   try {
     let query = supabase
       .from('prescriptions')
-      .select('*, appointment:appointment_id ( id, appointment_date )')
+      .select('*, patient:patient_id ( id, name, email ), dentist:dentist_id ( id, name, email ), appointment:appointment_id ( id, appointment_date )')
       .eq('patient_id', id)
       .order('created_at', { ascending: false });
 
@@ -37,7 +42,12 @@ const getPatientPrescriptions = async (req, res) => {
 
     const { data, error } = await query;
     if (error) throw error;
-    res.json(data || []);
+    const enriched = (data || []).map(r => ({
+      ...r,
+      patient_name: r.patient?.name || r.patient_name || 'Patient',
+      dentist_name: r.dentist?.name || r.dentist_name || 'Dr. Dentist'
+    }));
+    res.json(enriched);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

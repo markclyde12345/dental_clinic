@@ -1210,15 +1210,52 @@ function openCreatePlanModal() {}
 window.openCreatePlanModal = openCreatePlanModal;
 
 // ─── 7. PRESCRIPTIONS MANAGEMENT MODULE ─────────────────────────
-async function loadPrescriptionsView() {
+window._dentistPatientMap = window._dentistPatientMap || new Map();
+let _lastPrescriptionsJson = '';
+let _prescriptionsRealtimeTimer = null;
+
+async function syncPatientLookupMap() {
+  try {
+    if (!allPatients || !allPatients.length) {
+      allPatients = await api.get('/patients').catch(() => []);
+    }
+    (allPatients || []).forEach(p => {
+      const u = p.user || {};
+      const pId = p.id || p.user_id || u.id;
+      const name = u.name || p.name || `${u.first_name || p.first_name || ''} ${u.last_name || p.last_name || ''}`.trim();
+      if (pId && name) window._dentistPatientMap.set(String(pId), name);
+      if (u.id && name) window._dentistPatientMap.set(String(u.id), name);
+    });
+  } catch (_) {}
+}
+
+async function loadPrescriptionsView(isSilent = false) {
   const tbody = document.getElementById('prescriptions-tbody');
   if (!tbody) return;
-  const stopSkeleton = window.Skeleton ? window.Skeleton.show(tbody, () => window.Skeleton.tableRows(7, 4)) : null;
+
+  const refreshIcon = document.getElementById('rx-refresh-icon');
+  if (refreshIcon && !isSilent) {
+    refreshIcon.classList.add('fa-spin');
+  }
+
+  // Only show skeleton on initial load if table has no data rows
+  const hasExistingRows = tbody.querySelectorAll('tr:not(.skeleton-tr)').length > 0;
+  const stopSkeleton = (!isSilent && !hasExistingRows && window.Skeleton)
+    ? window.Skeleton.show(tbody, () => window.Skeleton.tableRows(7, 4))
+    : null;
 
   try {
+    // Ensure patient map is ready for instant name resolution
+    if (!window._dentistPatientMap.size) {
+      await syncPatientLookupMap();
+    }
+
     const rxs = await api.getPrescriptions();
     if (stopSkeleton) stopSkeleton();
-    if (!rxs.length) {
+    if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+
+    if (!rxs || !rxs.length) {
+      _lastPrescriptionsJson = '[]';
       tbody.innerHTML = `<tr><td colspan="7" class="table-loading">No prescriptions issued yet.</td></tr>`;
       return;
     }
@@ -1226,25 +1263,80 @@ async function loadPrescriptionsView() {
     // Newest prescriptions at the top
     rxs.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-    tbody.innerHTML = rxs.map(r => `
-      <tr>
-        <td>${new Date(r.created_at).toLocaleDateString()}</td>
-        <td><strong>${esc(r.patient_name || 'Patient')}</strong></td>
-        <td><strong>${esc(r.medication)}</strong></td>
-        <td>${esc(r.dosage || '')} ${esc(r.frequency || '')}</td>
-        <td>${esc(r.duration || '')}</td>
-        <td>${esc(r.dentist_name || 'Dr. Dentist')}</td>
-        <td>
-          <button class="btn btn-ghost small" onclick="printPrescriptionSlip('${r.id}')">
-            <i class="fa-solid fa-print"></i> Print Rx
-          </button>
-        </td>
-      </tr>
-    `).join('');
+    // If silent real-time sync and data hasn't changed, skip re-rendering to prevent DOM re-paint
+    const newJson = JSON.stringify(rxs.map(x => ({ id: x.id, p: x.patient_name || x.patient_id, m: x.medication, d: x.created_at })));
+    if (isSilent && newJson === _lastPrescriptionsJson && hasExistingRows) {
+      return;
+    }
+    _lastPrescriptionsJson = newJson;
+
+    tbody.innerHTML = rxs.map(r => {
+      const pId = r.patient_id ? String(r.patient_id) : '';
+      const patientName = r.patient_name || r.patient?.name || (pId && window._dentistPatientMap.get(pId)) || 'Patient';
+      const patientSub = r.patient?.email || r.patient?.contact_number || '';
+      const doctorName = r.dentist_name || r.dentist?.name || (currentUser && currentUser.name) || 'Dr. Dentist';
+      const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString() : new Date().toLocaleDateString();
+
+      return `
+        <tr>
+          <td>${dateStr}</td>
+          <td>
+            <strong style="color:var(--text-primary); display:block; font-size:0.92rem;">${esc(patientName)}</strong>
+            ${patientSub ? `<small style="color:var(--text-muted); font-size:0.75rem;">${esc(patientSub)}</small>` : ''}
+          </td>
+          <td><strong>${esc(r.medication)}</strong></td>
+          <td>${esc(r.dosage || '')} ${esc(r.frequency || '')}</td>
+          <td>${esc(r.duration || '')}</td>
+          <td>${esc(doctorName)}</td>
+          <td>
+            <button class="btn btn-ghost small" onclick="printPrescriptionSlip('${r.id}')">
+              <i class="fa-solid fa-print"></i> Print Rx
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Briefly flash live real-time badge
+    const liveBadge = document.getElementById('rx-live-indicator');
+    if (liveBadge && isSilent) {
+      liveBadge.style.transition = 'all 0.3s ease';
+      liveBadge.style.background = '#d1fae5';
+      setTimeout(() => { if (liveBadge) liveBadge.style.background = '#ecfdf5'; }, 600);
+    }
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="7" class="table-loading error">${esc(err.message)}</td></tr>`;
+    if (stopSkeleton) stopSkeleton();
+    if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+    if (!hasExistingRows) {
+      tbody.innerHTML = `<tr><td colspan="7" class="table-loading error">${esc(err.message)}</td></tr>`;
+    }
   }
 }
+
+// Real-time synchronization listeners for Prescriptions
+if (!_prescriptionsRealtimeTimer) {
+  _prescriptionsRealtimeTimer = setInterval(() => {
+    if (!document.hidden) {
+      const pTab = document.getElementById('tab-prescriptions');
+      if (pTab && !pTab.hidden && pTab.classList.contains('active')) {
+        loadPrescriptionsView(true);
+      }
+    }
+  }, 4000); // Poll every 4 seconds in real time
+}
+
+window.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const pTab = document.getElementById('tab-prescriptions');
+    if (pTab && !pTab.hidden && pTab.classList.contains('active')) {
+      loadPrescriptionsView(true);
+    }
+  }
+});
+
+window.addEventListener('prescription:created', () => {
+  loadPrescriptionsView(true);
+});
 
 function openNewPrescriptionModal() {
   openNewPrescriptionForPatient('', '');
@@ -1252,12 +1344,13 @@ function openNewPrescriptionModal() {
 window.openNewPrescriptionModal = openNewPrescriptionModal;
 
 async function openNewPrescriptionForPatient(patientId, patientName) {
-  if (!allPatients.length) allPatients = await api.get('/patients').catch(() => []);
+  await syncPatientLookupMap();
   const patientOptions = allPatients.map(p => {
     const u = p.user || {};
-    const pId = p.user_id || u.id;
+    const pId = p.id || p.user_id || u.id;
+    const pName = u.name || p.name || `${u.first_name || p.first_name || ''} ${u.last_name || p.last_name || ''}`.trim() || 'Patient';
     const isSel = String(pId) === String(patientId) ? 'selected' : '';
-    return `<option value="${pId}" ${isSel}>${esc(u.name || 'Patient')}</option>`;
+    return `<option value="${pId}" ${isSel}>${esc(pName)}</option>`;
   }).join('');
 
   Modal.open(`
@@ -1340,9 +1433,16 @@ async function handleCreatePrescription(e) {
   try {
     const rx = await api.createPrescription(data);
     Modal.close();
-    alert('Prescription issued successfully.');
-    loadPrescriptionsView();
-    printPrescriptionSlip(rx.id);
+    if (typeof showToast === 'function') {
+      showToast('Prescription issued successfully.', 'success');
+    } else {
+      alert('Prescription issued successfully.');
+    }
+    window.dispatchEvent(new CustomEvent('prescription:created', { detail: rx }));
+    await loadPrescriptionsView(false);
+    if (rx && rx.id) {
+      printPrescriptionSlip(rx.id);
+    }
   } catch (err) {
     alert(err.message);
   }
@@ -1355,6 +1455,10 @@ async function printPrescriptionSlip(rxId) {
     const rx = rxs.find(x => x.id === rxId);
     if (!rx) return alert('Prescription record not found.');
 
+    const pId = rx.patient_id ? String(rx.patient_id) : '';
+    const patientName = rx.patient_name || rx.patient?.name || (pId && window._dentistPatientMap && window._dentistPatientMap.get(pId)) || 'Patient';
+    const doctorName = rx.dentist_name || rx.dentist?.name || (currentUser && currentUser.name) || 'Dr. Dentist';
+
     const printContainer = document.getElementById('printable-rx-container');
     if (!printContainer) return;
 
@@ -1362,16 +1466,16 @@ async function printPrescriptionSlip(rxId) {
       <div class="rx-print-card">
         <div class="rx-print-header">
           <h1>FANO DENTAL CLINIC</h1>
-          <p style="margin:4px 0;">123 Dental Healthcare Ave., Metro Manila, Philippines</p>
-          <p style="margin:2px 0;">Tel: (02) 8-888-FANO | PRC Reg: 0089421</p>
+          <p style="margin:4px 0;">Balirong Highway, City of Naga, Cebu</p>
+          <p style="margin:2px 0;">Tel: (032) 489-1200 | PRC Reg: 0089421</p>
         </div>
         <div style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:12pt;">
           <div>
-            <strong>PATIENT:</strong> ${esc(rx.patient_name)}<br>
+            <strong>PATIENT:</strong> ${esc(patientName)}<br>
             <strong>DATE:</strong> ${new Date(rx.created_at).toLocaleDateString()}
           </div>
           <div style="text-align:right;">
-            <strong>DOCTOR:</strong> ${esc(rx.dentist_name || 'Dr. Dentist')}<br>
+            <strong>DOCTOR:</strong> ${esc(doctorName)}<br>
             <strong>Rx Ref:</strong> #${esc(rx.id)}
           </div>
         </div>
@@ -1402,7 +1506,7 @@ async function printPrescriptionSlip(rxId) {
 
         <div class="rx-signature-area">
           <div class="rx-sig-line">
-            <strong>${esc(rx.dentist_name || 'Dr. Dentist')}</strong><br>
+            <strong>${esc(doctorName)}</strong><br>
             <small>Attending Dental Surgeon</small><br>
             <small>Lic No. PRC-0089421</small>
           </div>
