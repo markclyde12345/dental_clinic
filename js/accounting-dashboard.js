@@ -620,8 +620,8 @@
     const dateStr = issuedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     safeSetText('inv-detail-treatment-name', treatmentName);
-    safeSetText('inv-detail-dentist', `👨‍⚕️ ${dentistName}`);
-    safeSetText('inv-detail-date', `📅 Issued: ${dateStr}`);
+    safeSetText('inv-detail-dentist', dentistName);
+    safeSetText('inv-detail-date', `Issued: ${dateStr}`);
     safeSetText('inv-detail-concern', concern);
     safeSetText('inv-detail-allergies', allergies);
     safeSetText('inv-detail-emergency', emergency);
@@ -712,9 +712,9 @@
           <td>${formatDate(inv.paid_at || inv.issued_at || inv.created_at)}</td>
           <td>${method}</td>
           <td style="font-weight: 700; color: #10b981;">${formatMoney(amount)}</td>
-          <td><span class="badge-status badge-paid">✅ Cleared & Deposited</span></td>
+          <td><span class="badge-status badge-paid"><i class="ti ti-check"></i> Cleared &amp; Deposited</span></td>
           <td style="text-align: right;">
-            <button type="button" class="btn-text-action" onclick="viewReceipt('${inv.id}')">🖨️ Voucher</button>
+            <button type="button" class="btn-text-action" onclick="viewReceipt('${inv.id}')"><i class="ti ti-printer"></i> Voucher</button>
           </td>
         </tr>
       `;
@@ -980,7 +980,7 @@
     allItems.forEach(item => {
       item.classList.remove('active');
       const arrow = item.querySelector('.accordion-arrow');
-      if (arrow) arrow.textContent = '▶';
+      if (arrow) arrow.className = 'ti ti-chevron-right accordion-arrow';
       const content = item.querySelector('.settings-accordion-content');
       if (content) content.style.setProperty('display', 'none', 'important');
     });
@@ -989,7 +989,7 @@
     if (!wasActive) {
       targetItem.classList.add('active');
       const targetArrow = document.getElementById(`arrow-${itemId}`);
-      if (targetArrow) targetArrow.textContent = '▼';
+      if (targetArrow) targetArrow.className = 'ti ti-chevron-down accordion-arrow';
       const targetContent = targetItem.querySelector('.settings-accordion-content');
       if (targetContent) targetContent.style.setProperty('display', 'block', 'important');
     }
@@ -1000,7 +1000,7 @@
     allItems.forEach(item => {
       item.classList.add('active');
       const arrow = item.querySelector('.accordion-arrow');
-      if (arrow) arrow.textContent = '▼';
+      if (arrow) arrow.className = 'ti ti-chevron-down accordion-arrow';
       const content = item.querySelector('.settings-accordion-content');
       if (content) content.style.setProperty('display', 'block', 'important');
     });
@@ -1011,7 +1011,7 @@
     allItems.forEach(item => {
       item.classList.remove('active');
       const arrow = item.querySelector('.accordion-arrow');
-      if (arrow) arrow.textContent = '▶';
+      if (arrow) arrow.className = 'ti ti-chevron-right accordion-arrow';
       const content = item.querySelector('.settings-accordion-content');
       if (content) content.style.setProperty('display', 'none', 'important');
     });
@@ -1286,9 +1286,9 @@
   }
 
   function getExpenseBadge(status) {
-    if (status === 'Paid') return `<span class="badge-status badge-paid">✅ Paid</span>`;
-    if (status === 'Overdue') return `<span class="badge-status badge-unpaid" style="background: #fef2f2; color: #b91c1c;">🚨 Overdue</span>`;
-    return `<span class="badge-status badge-hmo" style="background: #fefce8; color: #854d0e;">⏳ Unpaid</span>`;
+    if (status === 'Paid') return `<span class="badge-status badge-paid"><i class="ti ti-circle-check"></i> Paid</span>`;
+    if (status === 'Overdue') return `<span class="badge-status badge-unpaid" style="background: #fef2f2; color: #b91c1c;"><i class="ti ti-alert-circle"></i> Overdue</span>`;
+    return `<span class="badge-status badge-hmo" style="background: #fefce8; color: #854d0e;"><i class="ti ti-clock"></i> Unpaid</span>`;
   }
 
   function renderExpensesTable(list) {
@@ -1301,8 +1301,16 @@
     }
 
     tbody.innerHTML = list.map((exp, idx) => {
-      const catIcons = { Utilities: '💡', Rent: '🏢', Salaries: '👥', Supplies: '🦷', Equipment: '🔧', Maintenance: '🛠️', Other: '📋' };
-      const icon = catIcons[exp.category] || '📋';
+      const catIcons = {
+        Utilities: '<i class="ti ti-bolt" style="color:#f59e0b; margin-right:4px;"></i>',
+        Rent: '<i class="ti ti-building" style="color:#3b82f6; margin-right:4px;"></i>',
+        Salaries: '<i class="ti ti-users" style="color:#8b5cf6; margin-right:4px;"></i>',
+        Supplies: '<i class="ti ti-first-aid-kit" style="color:#10b981; margin-right:4px;"></i>',
+        Equipment: '<i class="ti ti-tool" style="color:#06b6d4; margin-right:4px;"></i>',
+        Maintenance: '<i class="ti ti-hammer" style="color:#f97316; margin-right:4px;"></i>',
+        Other: '<i class="ti ti-file-text" style="color:#64748b; margin-right:4px;"></i>'
+      };
+      const icon = catIcons[exp.category] || '<i class="ti ti-file-text" style="color:#64748b; margin-right:4px;"></i>';
       const isPaid = exp.status === 'Paid';
 
       return `
@@ -1316,8 +1324,8 @@
           <td style="color: #10b981;">${exp.paidDate || (isPaid ? 'Recorded' : '—')}</td>
           <td>${getExpenseBadge(exp.status)}</td>
           <td style="text-align:right; white-space:nowrap;">
-            ${!isPaid ? `<button type="button" class="btn-text-action" style="color:#10b981; margin-right:6px;" onclick="openPayBillModal(${allExpenses.indexOf(exp)})">💰 Pay</button>` : ''}
-            <button type="button" class="btn-text-action" style="color:#ef4444;" onclick="deleteExpense('${exp.id}')">🗑️</button>
+            ${!isPaid ? `<button type="button" class="btn-text-action" style="color:#10b981; margin-right:6px;" onclick="openPayBillModal(${allExpenses.indexOf(exp)})"><i class="ti ti-cash"></i> Pay</button>` : ''}
+            <button type="button" class="btn-text-action" style="color:#ef4444;" onclick="deleteExpense('${exp.id}')" title="Delete"><i class="ti ti-trash"></i></button>
           </td>
         </tr>
       `;
@@ -1366,7 +1374,7 @@
           </div>
           <strong style="font-size:1.1rem; color:#ef4444;">${formatMoney(exp.amount)}</strong>
         </div>
-        <div style="margin-top:8px; font-size:0.8rem; color:#94a3b8;">Due: ${exp.dueDate || 'N/A'} ${exp.status === 'Overdue' ? '🚨 OVERDUE' : ''}</div>
+        <div style="margin-top:8px; font-size:0.8rem; color:#94a3b8;">Due: ${exp.dueDate || 'N/A'} ${exp.status === 'Overdue' ? '<span style="color:#ef4444; font-weight:700;"><i class="ti ti-alert-triangle"></i> OVERDUE</span>' : ''}</div>
       `;
     }
 
@@ -1408,7 +1416,7 @@
             }).catch(e => console.warn('Expense DB update sync error:', e));
           }
 
-          showToast(`✅ Bill paid: ${exp.vendor} — ${formatMoney(exp.amount)}`, 'success');
+          showToast(`Bill paid: ${exp.vendor} — ${formatMoney(exp.amount)}`, 'success');
         }
       });
     }
@@ -1643,15 +1651,15 @@
       const isLow = stock > 0 && stock < threshold;
       const isOut = stock === 0;
 
-      let stockBadge = `<span class="badge-status badge-paid">✅ In Stock</span>`;
-      if (isOut) stockBadge = `<span class="badge-status badge-unpaid" style="background:#fef2f2;color:#b91c1c;">🚨 Out of Stock</span>`;
-      else if (isLow) stockBadge = `<span class="badge-status badge-hmo" style="background:#fefce8;color:#854d0e;">⚠️ Low Stock</span>`;
+      let stockBadge = `<span class="badge-status badge-paid"><i class="ti ti-check"></i> In Stock</span>`;
+      if (isOut) stockBadge = `<span class="badge-status badge-unpaid" style="background:#fef2f2;color:#b91c1c;"><i class="ti ti-alert-circle"></i> Out of Stock</span>`;
+      else if (isLow) stockBadge = `<span class="badge-status badge-hmo" style="background:#fefce8;color:#854d0e;"><i class="ti ti-alert-triangle"></i> Low Stock</span>`;
 
       const needsReorder = isLow || isOut;
 
       return `
         <tr style="${needsReorder ? 'background: #fffbeb;' : ''}">
-          <td><strong>${escapeHtml(item.name)}</strong>${needsReorder ? ' <span style="color:#f59e0b; font-size:0.75rem;">⚠️ Reorder</span>' : ''}</td>
+          <td><strong>${escapeHtml(item.name)}</strong>${needsReorder ? ' <span style="color:#f59e0b; font-size:0.75rem;"><i class="ti ti-alert-triangle"></i> Reorder</span>' : ''}</td>
           <td><span class="exp-cat-badge">${escapeHtml(item.category)}</span></td>
           <td style="font-weight:700; color:${isOut ? '#b91c1c' : isLow ? '#b45309' : '#1e293b'};">${stock}</td>
           <td style="color:#64748b; font-size:0.85rem;">${escapeHtml(item.unit || '—')}</td>
@@ -1660,7 +1668,7 @@
           <td style="color:#94a3b8;">${threshold} ${escapeHtml(item.unit || 'units')}</td>
           <td>${stockBadge}</td>
           <td style="text-align:right;">
-            ${needsReorder ? `<button type="button" class="btn-text-action" style="color:#10b981;" onclick="quickReorderItem('${escapeHtml(item.name)}', ${unitCost}, ${threshold - stock})">🛒 Reorder</button>` : `<span style="color:#94a3b8; font-size:0.8rem;">—</span>`}
+            ${needsReorder ? `<button type="button" class="btn-text-action" style="color:#10b981;" onclick="quickReorderItem('${escapeHtml(item.name)}', ${unitCost}, ${threshold - stock})"><i class="ti ti-shopping-cart-plus"></i> Reorder</button>` : `<span style="color:#94a3b8; font-size:0.8rem;">—</span>`}
           </td>
         </tr>
       `;
@@ -1697,7 +1705,7 @@
     if (!container) return;
 
     if (!list || list.length === 0) {
-      container.innerHTML = `<p style="text-align:center; color:#888; padding:20px;">All inventory items are adequately stocked! 🎉</p>`;
+      container.innerHTML = `<p style="text-align:center; color:#888; padding:20px;"><i class="ti ti-circle-check" style="color:#10b981; margin-right:4px;"></i>All inventory items are adequately stocked!</p>`;
       document.getElementById('po-total-amount').textContent = formatMoney(0);
       openModal('modal-purchase-order');
       return;
@@ -1777,7 +1785,7 @@
     renderExpensesTab();
 
     closeModal('modal-purchase-order');
-    showToast(`📤 Purchase Order ${poRef} submitted to ${vendor}! Logged as pending expense.`, 'success');
+    showToast(`Purchase Order ${poRef} submitted to ${vendor}! Logged as pending expense.`, 'success');
   };
 
   window.printPurchaseOrder = function() {
@@ -1833,7 +1841,7 @@
       }
 
       if (isManual && typeof showToast === 'function') {
-        showToast(data.isReconciled ? '✓ Financial ledger fully reconciled.' : '⚠️ Reconciliation detected items requiring review.', data.isReconciled ? 'success' : 'warning');
+        showToast(data.isReconciled ? 'Financial ledger fully reconciled.' : 'Reconciliation detected items requiring review.', data.isReconciled ? 'success' : 'warning');
       }
     } catch (err) {
       console.error('Reconciliation error:', err);

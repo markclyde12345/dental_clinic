@@ -173,7 +173,7 @@
             <div class="widget-card">
               <div class="widget-header">
                 <h3>Total Billed Revenue</h3>
-                <span class="widget-icon">💳</span>
+                <span class="widget-icon" style="color: #0b3c4d;"><i class="ti ti-receipt-2"></i></span>
               </div>
               <div class="value" id="acc-total-billed">₱0.00</div>
               <div class="widget-hint">Total gross invoices issued</div>
@@ -182,7 +182,7 @@
             <div class="widget-card highlight-card">
               <div class="widget-header">
                 <h3>Collected Revenue</h3>
-                <span class="widget-icon" style="color: #10b981;">💵</span>
+                <span class="widget-icon" style="color: #10b981;"><i class="ti ti-cash"></i></span>
               </div>
               <div class="value" id="acc-total-collected" style="color: #10b981;">₱0.00</div>
               <div class="widget-hint" id="acc-collection-rate">Collection Rate: 0%</div>
@@ -191,7 +191,7 @@
             <div class="widget-card">
               <div class="widget-header">
                 <h3>Outstanding Balance</h3>
-                <span class="widget-icon" style="color: #ef4444;">⏳</span>
+                <span class="widget-icon" style="color: #ef4444;"><i class="ti ti-clock-pause"></i></span>
               </div>
               <div class="value" id="acc-total-outstanding" style="color: #ef4444;">₱0.00</div>
               <div class="widget-hint" id="acc-unpaid-count">0 pending invoices</div>
@@ -210,7 +210,7 @@
               <div class="payment-method-bars" style="display: flex; flex-direction: column; gap: 16px; margin-top: 12px;">
                 <div>
                   <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
-                    <span>💵 Cash Collections</span>
+                    <span><i class="ti ti-cash" style="color: #10b981; margin-right: 4px;"></i>Cash Collections</span>
                     <span id="cash-share-val">₱0.00 (0%)</span>
                   </div>
                   <div class="progress-bar-bg"><div class="progress-bar-fill" id="cash-bar" style="width: 0%; background: #10b981;"></div></div>
@@ -218,7 +218,7 @@
 
                 <div>
                   <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
-                    <span>📱 GCash / Maya / E-Wallets</span>
+                    <span><i class="ti ti-device-mobile" style="color: #3b82f6; margin-right: 4px;"></i>GCash / Maya / E-Wallets</span>
                     <span id="ewallet-share-val">₱0.00 (0%)</span>
                   </div>
                   <div class="progress-bar-bg"><div class="progress-bar-fill" id="ewallet-bar" style="width: 0%; background: #3b82f6;"></div></div>
@@ -226,7 +226,7 @@
 
                 <div>
                   <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
-                    <span>💳 Credit & Debit Cards</span>
+                    <span><i class="ti ti-credit-card" style="color: #8b5cf6; margin-right: 4px;"></i>Credit &amp; Debit Cards</span>
                     <span id="card-share-val">₱0.00 (0%)</span>
                   </div>
                   <div class="progress-bar-bg"><div class="progress-bar-fill" id="card-bar" style="width: 0%; background: #8b5cf6;"></div></div>
@@ -241,7 +241,7 @@
               </div>
               <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
                 <button type="button" class="action-tile" onclick="openCreateInvoiceModal()">
-                  <span class="action-tile-icon">🧾</span>
+                  <span class="action-tile-icon" style="color: #0284c7;"><i class="ti ti-file-plus"></i></span>
                   <div>
                     <div class="action-tile-title">Issue New Invoice</div>
                     <div class="action-tile-desc">Bill a patient for treatments rendered</div>
@@ -249,7 +249,7 @@
                 </button>
 
                 <button type="button" class="action-tile" onclick="openRecordPaymentModal()">
-                  <span class="action-tile-icon">💰</span>
+                  <span class="action-tile-icon" style="color: #10b981;"><i class="ti ti-cash"></i></span>
                   <div>
                     <div class="action-tile-title">Record Payment</div>
                     <div class="action-tile-desc">Mark an invoice as settled & paid</div>
@@ -257,7 +257,7 @@
                 </button>
 
                 <button type="button" class="action-tile" onclick="runFinancialReconciliation(true)">
-                  <span class="action-tile-icon">⚖️</span>
+                  <span class="action-tile-icon" style="color: #6366f1;"><i class="ti ti-scale"></i></span>
                   <div>
                     <div class="action-tile-title">Run Reconciliation</div>
                     <div class="action-tile-desc">Audit billing, completed appts &amp; payments</div>
@@ -265,7 +265,7 @@
                 </button>
 
                 <button type="button" class="action-tile" onclick="exportInvoicesCSV()">
-                  <span class="action-tile-icon">📥</span>
+                  <span class="action-tile-icon" style="color: #0d9488;"><i class="ti ti-file-spreadsheet"></i></span>
                   <div>
                     <div class="action-tile-title">Export Ledger CSV</div>
                     <div class="action-tile-desc">Download financial data for Excel</div>
@@ -273,7 +273,7 @@
                 </button>
 
                 <button type="button" class="action-tile" onclick="switchTab('reports')">
-                  <span class="action-tile-icon">🖨️</span>
+                  <span class="action-tile-icon" style="color: #475569;"><i class="ti ti-printer"></i></span>
                   <div>
                     <div class="action-tile-title">Generate Revenue Report</div>
                     <div class="action-tile-desc">Print detailed income summary</div>
@@ -463,7 +463,7 @@
                 <h3>Payments & Collection Log</h3>
                 <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">Historical record of all settled patient transactions</p>
               </div>
-              <button type="button" class="btn-record-pay" onclick="openRecordPaymentModal()">+ Record New Payment</button>
+              <button type="button" class="btn-record-pay" onclick="openRecordPaymentModal()"><i class="ti ti-cash"></i> Record New Payment</button>
             </div>
 
             <div class="table-responsive" style="margin-top: 16px;">
@@ -514,7 +514,7 @@
             <div class="widget-card">
               <div class="widget-header">
                 <h3>Total Expenses (Month)</h3>
-                <span class="widget-icon" style="color: #ef4444;">💸</span>
+                <span class="widget-icon" style="color: #ef4444;"><i class="ti ti-receipt-refund"></i></span>
               </div>
               <div class="value" id="exp-total-month" style="color: #ef4444;">₱0.00</div>
               <div class="widget-hint" id="exp-bill-count">0 bills tracked</div>
@@ -522,7 +522,7 @@
             <div class="widget-card">
               <div class="widget-header">
                 <h3>Unpaid / Overdue Bills</h3>
-                <span class="widget-icon" style="color: #f59e0b;">⚠️</span>
+                <span class="widget-icon" style="color: #f59e0b;"><i class="ti ti-alert-triangle"></i></span>
               </div>
               <div class="value" id="exp-total-unpaid" style="color: #f59e0b;">₱0.00</div>
               <div class="widget-hint" id="exp-overdue-count">0 overdue</div>
@@ -530,7 +530,7 @@
             <div class="widget-card highlight-card">
               <div class="widget-header">
                 <h3>Paid Bills (Month)</h3>
-                <span class="widget-icon" style="color: #10b981;">✅</span>
+                <span class="widget-icon" style="color: #10b981;"><i class="ti ti-circle-check"></i></span>
               </div>
               <div class="value" id="exp-total-paid" style="color: #10b981;">₱0.00</div>
               <div class="widget-hint" id="exp-paid-count">0 settled</div>
@@ -538,7 +538,7 @@
             <div class="widget-card">
               <div class="widget-header">
                 <h3>Net Clinic Profit</h3>
-                <span class="widget-icon" style="color: #6366f1;">📊</span>
+                <span class="widget-icon" style="color: #6366f1;"><i class="ti ti-chart-pie"></i></span>
               </div>
               <div class="value" id="exp-net-profit" style="color: #6366f1;">₱0.00</div>
               <div class="widget-hint">Revenue minus total expenses</div>
@@ -549,7 +549,7 @@
           <div class="section-card" style="margin-top: 24px;">
             <div class="toolbar-row">
               <div class="search-box">
-                <span class="search-icon">🔍</span>
+                <span class="search-icon"><i class="ti ti-search"></i></span>
                 <input type="text" id="exp-search-input" placeholder="Search by vendor, category..." oninput="filterExpenses()">
               </div>
               <div class="filter-group">
@@ -569,8 +569,8 @@
                   <option value="Maintenance">Maintenance</option>
                   <option value="Other">Other</option>
                 </select>
-                <button type="button" class="btn-create-inv" onclick="openAddExpenseModal()">+ Add Expense</button>
-                <button type="button" class="btn-outline-util" onclick="exportExpensesCSV()">📥 Export CSV</button>
+                <button type="button" class="btn-create-inv" onclick="openAddExpenseModal()"><i class="ti ti-plus"></i> Add Expense</button>
+                <button type="button" class="btn-outline-util" onclick="exportExpensesCSV()"><i class="ti ti-download"></i> Export CSV</button>
               </div>
             </div>
 
@@ -607,7 +607,7 @@
             <div class="widget-card">
               <div class="widget-header">
                 <h3>Total Stock Value</h3>
-                <span class="widget-icon" style="color: #3b82f6;">📦</span>
+                <span class="widget-icon" style="color: #3b82f6;"><i class="ti ti-box"></i></span>
               </div>
               <div class="value" id="inv-total-value" style="color: #3b82f6;">₱0.00</div>
               <div class="widget-hint" id="inv-item-count">0 product types</div>
@@ -615,7 +615,7 @@
             <div class="widget-card">
               <div class="widget-header">
                 <h3>Low Stock Items</h3>
-                <span class="widget-icon" style="color: #f59e0b;">⚠️</span>
+                <span class="widget-icon" style="color: #f59e0b;"><i class="ti ti-alert-triangle"></i></span>
               </div>
               <div class="value" id="inv-low-stock-count" style="color: #f59e0b;">0</div>
               <div class="widget-hint">Items below reorder threshold</div>
@@ -623,7 +623,7 @@
             <div class="widget-card highlight-card">
               <div class="widget-header">
                 <h3>Est. Reorder Cost</h3>
-                <span class="widget-icon" style="color: #10b981;">🛒</span>
+                <span class="widget-icon" style="color: #10b981;"><i class="ti ti-shopping-cart"></i></span>
               </div>
               <div class="value" id="inv-reorder-cost" style="color: #10b981;">₱0.00</div>
               <div class="widget-hint">Projected cost to restock low items</div>
@@ -631,7 +631,7 @@
             <div class="widget-card">
               <div class="widget-header">
                 <h3>Out of Stock</h3>
-                <span class="widget-icon" style="color: #ef4444;">🚨</span>
+                <span class="widget-icon" style="color: #ef4444;"><i class="ti ti-alert-circle"></i></span>
               </div>
               <div class="value" id="inv-out-of-stock" style="color: #ef4444;">0</div>
               <div class="widget-hint">Items at zero stock — urgent reorder</div>
@@ -646,14 +646,14 @@
                 <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">Read-only view of clinic supply costs for financial planning &amp; budget forecasting</p>
               </div>
               <div style="display: flex; gap: 10px;">
-                <button type="button" class="btn-outline-util" onclick="loadInventoryCosts()">🔄 Refresh</button>
-                <button type="button" class="btn-create-inv" onclick="openPurchaseOrderModal()">🛒 Create Purchase Order</button>
+                <button type="button" class="btn-outline-util" onclick="loadInventoryCosts()"><i class="ti ti-refresh"></i> Refresh</button>
+                <button type="button" class="btn-create-inv" onclick="openPurchaseOrderModal()"><i class="ti ti-shopping-cart-plus"></i> Create Purchase Order</button>
               </div>
             </div>
 
             <div class="toolbar-row" style="margin-top: 12px;">
               <div class="search-box">
-                <span class="search-icon">🔍</span>
+                <span class="search-icon"><i class="ti ti-search"></i></span>
                 <input type="text" id="inv-search-input" placeholder="Search inventory items..." oninput="filterInventoryTable()">
               </div>
               <div class="filter-group">
@@ -763,7 +763,7 @@
                 <h3>Financial Income & Revenue Reports</h3>
                 <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">Comprehensive statement of clinic earnings, collections and tax summaries</p>
               </div>
-              <button type="button" class="btn-create-inv" onclick="printFinancialStatement()">🖨️ Print Financial Statement</button>
+              <button type="button" class="btn-create-inv" onclick="printFinancialStatement()"><i class="ti ti-printer"></i> Print Financial Statement</button>
             </div>
 
             <!-- Statement View Container -->
@@ -859,7 +859,7 @@
               allItems.forEach(item => {
                 item.classList.remove('active');
                 const arrow = item.querySelector('.accordion-arrow');
-                if (arrow) arrow.textContent = '▶';
+                if (arrow) arrow.className = 'ti ti-chevron-right accordion-arrow';
                 const content = item.querySelector('.settings-accordion-content');
                 if (content) {
                   content.style.setProperty('display', 'none', 'important');
@@ -870,7 +870,7 @@
               if (!isCurrentlyActive) {
                 targetItem.classList.add('active');
                 const targetArrow = document.getElementById('arrow-' + itemId);
-                if (targetArrow) targetArrow.textContent = '▼';
+                if (targetArrow) targetArrow.className = 'ti ti-chevron-down accordion-arrow';
                 const targetContent = targetItem.querySelector('.settings-accordion-content');
                 if (targetContent) {
                   targetContent.style.setProperty('display', 'block', 'important');
@@ -883,7 +883,7 @@
               allItems.forEach(item => {
                 item.classList.add('active');
                 const arrow = item.querySelector('.accordion-arrow');
-                if (arrow) arrow.textContent = '▼';
+                if (arrow) arrow.className = 'ti ti-chevron-down accordion-arrow';
                 const content = item.querySelector('.settings-accordion-content');
                 if (content) {
                   content.style.setProperty('display', 'block', 'important');
@@ -896,7 +896,7 @@
               allItems.forEach(item => {
                 item.classList.remove('active');
                 const arrow = item.querySelector('.accordion-arrow');
-                if (arrow) arrow.textContent = '▶';
+                if (arrow) arrow.className = 'ti ti-chevron-right accordion-arrow';
                 const content = item.querySelector('.settings-accordion-content');
                 if (content) {
                   content.style.setProperty('display', 'none', 'important');
@@ -911,7 +911,7 @@
             <div class="settings-accordion-item" id="acc-item-accounting">
               <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('accounting')">
                 <div class="accordion-title-group">
-                  <span class="accordion-arrow" id="arrow-accounting">▶</span>
+                  <i class="ti ti-chevron-right accordion-arrow" id="arrow-accounting"></i>
                   <span class="accordion-title-text">Accounting &amp; Currency</span>
                   <span class="accordion-subtitle-text">• Base currency, fiscal periods &amp; tax rules</span>
                 </div>
@@ -966,7 +966,7 @@
             <div class="settings-accordion-item active" id="acc-item-invoice">
               <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('invoice')">
                 <div class="accordion-title-group">
-                  <span class="accordion-arrow" id="arrow-invoice">▼</span>
+                  <i class="ti ti-chevron-down accordion-arrow" id="arrow-invoice"></i>
                   <span class="accordion-title-text">Invoice Settings</span>
                   <span class="accordion-subtitle-text">• Prefixes, auto-numbering &amp; payment terms</span>
                 </div>
@@ -1019,7 +1019,7 @@
             <div class="settings-accordion-item" id="acc-item-receipt">
               <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('receipt')">
                 <div class="accordion-title-group">
-                  <span class="accordion-arrow" id="arrow-receipt">▶</span>
+                  <i class="ti ti-chevron-right accordion-arrow" id="arrow-receipt"></i>
                   <span class="accordion-title-text">Receipt Settings</span>
                   <span class="accordion-subtitle-text">• BIR permit numbers, tax IDs &amp; printable receipts</span>
                 </div>
@@ -1068,7 +1068,7 @@
             <div class="settings-accordion-item" id="acc-item-payment">
               <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('payment')">
                 <div class="accordion-title-group">
-                  <span class="accordion-arrow" id="arrow-payment">▶</span>
+                  <i class="ti ti-chevron-right accordion-arrow" id="arrow-payment"></i>
                   <span class="accordion-title-text">Payment Methods</span>
                   <span class="accordion-subtitle-text">• Gateway channels, cash desks &amp; bank accounts</span>
                 </div>
@@ -1144,7 +1144,7 @@
             <div class="settings-accordion-item" id="acc-item-controls">
               <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('controls')">
                 <div class="accordion-title-group">
-                  <span class="accordion-arrow" id="arrow-controls">▶</span>
+                  <i class="ti ti-chevron-right accordion-arrow" id="arrow-controls"></i>
                   <span class="accordion-title-text">Financial Controls</span>
                   <span class="accordion-subtitle-text">• Delinquent locks, drawer caps &amp; discount limits</span>
                 </div>
@@ -1190,7 +1190,7 @@
             <div class="settings-accordion-item" id="acc-item-notifications">
               <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('notifications')">
                 <div class="accordion-title-group">
-                  <span class="accordion-arrow" id="arrow-notifications">▶</span>
+                  <i class="ti ti-chevron-right accordion-arrow" id="arrow-notifications"></i>
                   <span class="accordion-title-text">Notifications</span>
                   <span class="accordion-subtitle-text">• SMS payment receipts, billing alerts &amp; reminders</span>
                 </div>
@@ -1201,7 +1201,7 @@
                   <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
                     <div class="setting-switch-row">
                       <div class="setting-switch-info">
-                        <span class="setting-switch-title">📱 SMS Instant Payment Receipts (Twilio)</span>
+                        <span class="setting-switch-title"><i class="ti ti-device-mobile"></i> SMS Instant Payment Receipts (Twilio)</span>
                         <span class="setting-switch-desc">Send automated SMS confirmation to patient upon payment</span>
                       </div>
                       <label class="custom-switch">
@@ -1212,7 +1212,7 @@
 
                     <div class="setting-switch-row">
                       <div class="setting-switch-info">
-                        <span class="setting-switch-title">✉️ Email E-Receipts &amp; PDF Invoices</span>
+                        <span class="setting-switch-title"><i class="ti ti-mail"></i> Email E-Receipts &amp; PDF Invoices</span>
                         <span class="setting-switch-desc">Email official statement to patient inbox</span>
                       </div>
                       <label class="custom-switch">
@@ -1223,7 +1223,7 @@
 
                     <div class="setting-switch-row">
                       <div class="setting-switch-info">
-                        <span class="setting-switch-title">⏰ Automated Overdue Payment Reminders</span>
+                        <span class="setting-switch-title"><i class="ti ti-clock"></i> Automated Overdue Payment Reminders</span>
                         <span class="setting-switch-desc">Send gentle reminder SMS/email at 7, 15, and 30 days past due</span>
                       </div>
                       <label class="custom-switch">
@@ -1244,7 +1244,7 @@
             <div class="settings-accordion-item" id="acc-item-permissions">
               <button type="button" class="settings-accordion-header" onclick="toggleSettingsAccordion('permissions')">
                 <div class="accordion-title-group">
-                  <span class="accordion-arrow" id="arrow-permissions">▶</span>
+                  <i class="ti ti-chevron-right accordion-arrow" id="arrow-permissions"></i>
                   <span class="accordion-title-text">Permissions</span>
                   <span class="accordion-subtitle-text">• Role-based access for receptionists, accountants &amp; admins</span>
                 </div>
@@ -1349,7 +1349,7 @@
             <select id="pay-method" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem;">
               <option value="Cash"> Cash</option>
               <option value="GCash"> GCash / E-Wallet</option>
-              <option value="Credit Card">💳 Credit / Debit Card</option>
+              <option value="Credit Card">Credit / Debit Card</option>
               <option value="Bank Transfer"> Bank Transfer</option>
             </select>
           </div>
@@ -1435,7 +1435,7 @@
 
       <div class="modal-actions no-print" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;">
         <button type="button" class="btn-outline-util" onclick="closeModal('modal-receipt-view')">Close</button>
-        <button type="button" class="btn-create-inv" onclick="printCurrentReceipt()">🖨️ Print Receipt</button>
+        <button type="button" class="btn-create-inv" onclick="printCurrentReceipt()"><i class="ti ti-printer"></i> Print Receipt</button>
       </div>
     </div>
   </div>
@@ -1458,13 +1458,13 @@
             <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600;">Expense Category *</label>
             <select id="exp-category" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem;">
               <option value="">-- Select Category --</option>
-              <option value="Utilities">💡 Utilities (Electricity, Water, Internet)</option>
-              <option value="Rent">🏢 Rent &amp; Lease</option>
-              <option value="Salaries">👥 Staff Salaries &amp; Payroll</option>
-              <option value="Supplies">🦷 Dental Supplies &amp; Materials</option>
-              <option value="Equipment">🔧 Equipment Purchase / Repair</option>
-              <option value="Maintenance">🛠️ Clinic Maintenance</option>
-              <option value="Other">📋 Other</option>
+              <option value="Utilities">Utilities (Electricity, Water, Internet)</option>
+              <option value="Rent">Rent &amp; Lease</option>
+              <option value="Salaries">Staff Salaries &amp; Payroll</option>
+              <option value="Supplies">Dental Supplies &amp; Materials</option>
+              <option value="Equipment">Equipment Purchase / Repair</option>
+              <option value="Maintenance">Clinic Maintenance</option>
+              <option value="Other">Other</option>
             </select>
           </div>
         </div>
@@ -1491,9 +1491,9 @@
           <div>
             <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600;">Initial Status</label>
             <select id="exp-status" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem;">
-              <option value="Unpaid">⏳ Unpaid / Pending</option>
-              <option value="Paid">✅ Already Paid</option>
-              <option value="Overdue">🚨 Overdue</option>
+              <option value="Unpaid">Unpaid / Pending</option>
+              <option value="Paid">Already Paid</option>
+              <option value="Overdue">Overdue</option>
             </select>
           </div>
         </div>
@@ -1507,12 +1507,12 @@
           <div>
             <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600;">Payment Method</label>
             <select id="exp-pay-method" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem;">
-              <option value="Cash">💵 Cash</option>
-              <option value="Check">📄 Check / Cheque</option>
-              <option value="Bank Transfer">🏦 Bank Transfer</option>
-              <option value="GCash">📱 GCash / E-Wallet</option>
-              <option value="Credit Card">💳 Credit Card</option>
-              <option value="Auto-Debit">🔄 Auto-Debit</option>
+              <option value="Cash">Cash</option>
+              <option value="Check">Check / Cheque</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="GCash">GCash / E-Wallet</option>
+              <option value="Credit Card">Credit Card</option>
+              <option value="Auto-Debit">Auto-Debit</option>
             </select>
           </div>
           <div>
@@ -1523,7 +1523,7 @@
 
         <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px;">
           <button type="button" class="btn-outline-util" onclick="closeModal('modal-add-expense')">Cancel</button>
-          <button type="submit" class="btn-create-inv">💾 Save Expense Record</button>
+          <button type="submit" class="btn-create-inv"><i class="ti ti-device-floppy"></i> Save Expense Record</button>
         </div>
       </form>
     </div>
@@ -1539,7 +1539,7 @@
 
       <div style="margin-top: 16px;">
         <div class="po-alert" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.85rem; color: #1e40af;">
-          <strong>📋 Purchase Order Request</strong><br>
+          <strong><i class="ti ti-clipboard-list" style="margin-right:4px;"></i>Purchase Order Request</strong><br>
           This will generate a purchase order form for the selected low-stock or selected inventory items that can be printed and sent to your dental supplier.
         </div>
 
@@ -1571,8 +1571,8 @@
 
         <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;">
           <button type="button" class="btn-outline-util" onclick="closeModal('modal-purchase-order')">Cancel</button>
-          <button type="button" class="btn-outline-util" onclick="printPurchaseOrder()">🖨️ Print PO</button>
-          <button type="button" class="btn-create-inv" onclick="submitPurchaseOrder()">📤 Submit Order Request</button>
+          <button type="button" class="btn-outline-util" onclick="printPurchaseOrder()"><i class="ti ti-printer"></i> Print PO</button>
+          <button type="button" class="btn-create-inv" onclick="submitPurchaseOrder()"><i class="ti ti-send"></i> Submit Order Request</button>
         </div>
       </div>
     </div>
@@ -1597,12 +1597,12 @@
           <div>
             <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600;">Payment Method *</label>
             <select id="pay-bill-method" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem;">
-              <option value="Cash">💵 Cash</option>
-              <option value="Check">📄 Check / Cheque</option>
-              <option value="Bank Transfer">🏦 Bank Transfer</option>
-              <option value="GCash">📱 GCash / E-Wallet</option>
-              <option value="Credit Card">💳 Credit Card</option>
-              <option value="Auto-Debit">🔄 Auto-Debit</option>
+              <option value="Cash">Cash</option>
+              <option value="Check">Check / Cheque</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="GCash">GCash / E-Wallet</option>
+              <option value="Credit Card">Credit Card</option>
+              <option value="Auto-Debit">Auto-Debit</option>
             </select>
           </div>
         </div>
@@ -1612,7 +1612,7 @@
         </div>
         <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px;">
           <button type="button" class="btn-outline-util" onclick="closeModal('modal-pay-bill')">Cancel</button>
-          <button type="submit" class="btn-record-pay">✅ Confirm Payment</button>
+          <button type="submit" class="btn-record-pay"><i class="ti ti-check"></i> Confirm Payment</button>
         </div>
       </form>
     </div>
