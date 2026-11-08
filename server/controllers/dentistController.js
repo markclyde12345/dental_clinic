@@ -120,7 +120,7 @@ const getAppointmentsForDentist = async (req, res) => {
         patient:patient_id ( id, name, email, contact_number ),
         treatment:treatment_id ( id, name, price, duration_minutes )
       `)
-      .order('appointment_date', { ascending: true });
+      .order('appointment_date', { ascending: false });
 
     if (error) throw error;
 

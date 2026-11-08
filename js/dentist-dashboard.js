@@ -444,6 +444,14 @@ async function loadScheduleTable() {
 
   try {
     allAppointments = await api.getDentistAppointments();
+    if (Array.isArray(allAppointments)) {
+      allAppointments.sort((a, b) => {
+        const timeB = new Date(b.appointment_date || b.created_at || 0).getTime();
+        const timeA = new Date(a.appointment_date || a.created_at || 0).getTime();
+        if (timeB !== timeA) return timeB - timeA;
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      });
+    }
     if (stopSkeleton) stopSkeleton();
     applyScheduleFilters();
   } catch (err) {
@@ -482,6 +490,14 @@ function applyScheduleFilters() {
       if (!pName.toLowerCase().includes(query) && !pEmail.toLowerCase().includes(query)) return false;
     }
     return true;
+  });
+
+  // Display newest appointments at the top (descending by appointment date & creation time)
+  filtered.sort((a, b) => {
+    const timeB = new Date(b.appointment_date || b.created_at || 0).getTime();
+    const timeA = new Date(a.appointment_date || a.created_at || 0).getTime();
+    if (timeB !== timeA) return timeB - timeA;
+    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
   });
 
   if (!filtered.length) {
@@ -1203,6 +1219,9 @@ async function loadPrescriptionsView() {
       return;
     }
 
+    // Newest prescriptions at the top
+    rxs.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
     tbody.innerHTML = rxs.map(r => `
       <tr>
         <td>${new Date(r.created_at).toLocaleDateString()}</td>
@@ -1407,6 +1426,9 @@ async function loadFollowUpsView() {
       tbody.innerHTML = `<tr><td colspan="7" class="table-loading">No pending follow-ups.</td></tr>`;
       return;
     }
+
+    // Newest follow-ups at the top
+    list.sort((a, b) => new Date(b.scheduled_date || b.created_at || 0) - new Date(a.scheduled_date || a.created_at || 0));
 
     tbody.innerHTML = list.map(f => `
       <tr>
