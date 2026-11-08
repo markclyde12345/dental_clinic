@@ -109,7 +109,7 @@ const ClinicalWorkspace = (() => {
     const { dateStr, timeStr, fullStr } = formatDateTime(a.appointment_date);
     const initial = patientName.trim().charAt(0).toUpperCase() || 'P';
     const status = a.status || 'Pending';
-    const isCancelled = String(status).toLowerCase() === 'cancelled';
+    const isCancelled = String(status).trim().toLowerCase().startsWith('cancel');
     const apptId = a.id ? String(a.id) : '';
     const cleanNotes = a.notes ? a.notes.replace(/\[[^\]]+\]/g, '').trim() : '';
 
@@ -595,7 +595,8 @@ const ClinicalWorkspace = (() => {
         if (busy) return;
 
         // If appointment is already cancelled, it cannot be confirmed, started, rescheduled, or completed!
-        if (String(currentAppt.status).toLowerCase() === 'cancelled') {
+        const curStatus = String(currentAppt.status || '').trim().toLowerCase();
+        if (curStatus.startsWith('cancel')) {
           alert('This appointment has been cancelled and cannot be confirmed, started, rescheduled, or completed.');
           return;
         }

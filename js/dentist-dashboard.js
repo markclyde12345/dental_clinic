@@ -509,9 +509,6 @@ function applyScheduleFilters() {
           <button class="btn btn-ghost small" onclick="openClinicalWorkspace('${appt.id}')">
             <i class="fa-solid fa-eye"></i> View Details
           </button>
-          ${String(appt.status).toLowerCase() === 'cancelled' ? '' : `<button class="btn btn-ghost small" onclick="quickUpdateStatus('${appt.id}')">
-            <i class="fa-solid fa-pen-to-square"></i> Status
-          </button>`}
         </td>
       </tr>
     `;
@@ -1796,7 +1793,7 @@ window.openClinicalWorkspace = openClinicalWorkspace;
 function quickUpdateStatus(apptId) {
   const allList = [...(activeSchedule || []), ...(todaySchedule || [])];
   const found = allList.find(x => String(x.id) === String(apptId));
-  if (found && String(found.status).toLowerCase() === 'cancelled') {
+  if (found && String(found.status || '').trim().toLowerCase().startsWith('cancel')) {
     alert('This appointment has been cancelled and cannot be confirmed, started, rescheduled, or completed.');
     return;
   }
