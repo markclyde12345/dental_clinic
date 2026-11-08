@@ -737,29 +737,48 @@ function renderAppointmentsTable(list) {
     // Parse bracketed intake metadata from notes
     const parsedNotes = parseAppointmentNotes(appt.notes);
 
-    // Build intelligent chips
+    // Build intelligent chips (compact, minimal, meaningful only)
     let chipsHtml = '';
     if (parsedNotes.type && parsedNotes.type.toLowerCase().includes('walk-in')) {
       chipsHtml += `<span class="notes-chip" style="background: #eef6f8; color: #0b3c4d; border: 1px solid rgba(11,60,77,0.25); font-weight: 700;" title="Walk-In Patient Arrival"><i class="ti ti-walk"></i> Walk-In</span>`;
     }
     if (parsedNotes.bookingFee) {
-      chipsHtml += `<span class="notes-chip" style="background: rgba(16, 185, 129, 0.08); color: #065f46; border: 1px solid rgba(16, 185, 129, 0.25); font-weight: 600;" title="30% Booking Reservation Fee"><i class="ti ti-receipt-2"></i> Deposit: ${escapeHtml(parsedNotes.bookingFee)}</span>`;
-    }
-    if (parsedNotes.concern && parsedNotes.concern !== 'None' && parsedNotes.concern !== 'N/A') {
-      chipsHtml += `<span class="notes-chip chip-concern" title="Chief Concern"><i class="ti ti-tooth"></i> ${escapeHtml(parsedNotes.concern)}</span>`;
-    }
-    if (parsedNotes.hmo && parsedNotes.hmo !== 'None' && parsedNotes.hmo !== 'N/A') {
-      chipsHtml += `<span class="notes-chip chip-hmo" title="HMO / Insurance"><i class="ti ti-shield-check"></i> ${escapeHtml(parsedNotes.hmo)}</span>`;
+      chipsHtml += `<span class="notes-chip" style="background: rgba(16, 185, 129, 0.08); color: #065f46; border: 1px solid rgba(16, 185, 129, 0.25); font-weight: 600;" title="30% Deposit: ${escapeHtml(parsedNotes.bookingFee)}"><i class="ti ti-receipt-2"></i> ${escapeHtml(parsedNotes.bookingFee)}</span>`;
     }
     if (parsedNotes.allergies && parsedNotes.allergies.toLowerCase() !== 'none' && parsedNotes.allergies.toLowerCase() !== 'n/a') {
-      chipsHtml += `<span class="notes-chip chip-alert" title="Allergies"><i class="ti ti-alert-triangle"></i> ${escapeHtml(parsedNotes.allergies)}</span>`;
+      chipsHtml += `<span class="notes-chip chip-alert" title="Allergies: ${escapeHtml(parsedNotes.allergies)}"><i class="ti ti-alert-triangle"></i> ${escapeHtml(parsedNotes.allergies)}</span>`;
     }
 
+    // Only show real HMO insurance (exclude None, Self-Pay, N/A)
+    const hmoVal = (parsedNotes.hmo || '').trim();
+    const isRealHmo = hmoVal && !/none|self-pay|self\s*pay|n\/a|self|not\s*applicable/i.test(hmoVal);
+    if (isRealHmo) {
+      chipsHtml += `<span class="notes-chip chip-hmo" title="HMO: ${escapeHtml(hmoVal)}"><i class="ti ti-shield-check"></i> ${escapeHtml(hmoVal)}</span>`;
+    }
+
+    // Only show concern if meaningful and not duplicate of treatment
+    const concernVal = (parsedNotes.concern || '').trim();
+    const isMeaningfulConcern = concernVal &&
+      !/^(none|n\/a|routine\s*cleaning|general\s*checkup)$/i.test(concernVal) &&
+      concernVal.toLowerCase() !== (treatmentName || '').toLowerCase();
+    if (isMeaningfulConcern) {
+      chipsHtml += `<span class="notes-chip chip-concern" title="Chief Concern: ${escapeHtml(concernVal)}"><i class="ti ti-tooth"></i> ${escapeHtml(concernVal)}</span>`;
+    }
+
+    // Filter out empty or filler notes ("Notes: nothing", "none", "n/a")
+    let cleanNote = (parsedNotes.freeNotes || '')
+      .replace(/^Notes:\s*/i, '')
+      .replace(/^\[Notes:\s*/i, '')
+      .replace(/\]$/, '')
+      .trim();
+    const isMeaningfulNote = cleanNote &&
+      !/^(none|nothing|n\/a|na|no|nil|none\s*reported|no\s*notes|no\s*symptoms|normal)$/i.test(cleanNote);
+
     let freeNoteHtml = '';
-    if (parsedNotes.freeNotes) {
-      freeNoteHtml = `<div class="notes-custom-preview"><i class="ti ti-message-dots"></i> "${escapeHtml(parsedNotes.freeNotes)}"</div>`;
+    if (isMeaningfulNote) {
+      freeNoteHtml = `<div class="notes-custom-preview" title="${escapeHtml(cleanNote)}"><i class="ti ti-message-dots"></i> "${escapeHtml(cleanNote)}"</div>`;
     } else if (!chipsHtml) {
-      chipsHtml = `<span class="notes-chip chip-default">Standard Consultation</span>`;
+      chipsHtml = `<span class="notes-chip chip-default" style="color: #64748b; font-size: 0.69rem;"><i class="ti ti-notes"></i> Standard</span>`;
     }
 
     // Doctor info badge
@@ -913,15 +932,11 @@ function renderAppointmentsTable(list) {
 
         <!-- Clinical Intake & Notes -->
         <td>
-          <div class="notes-smart-cell">
+          <div class="notes-smart-cell" onclick="openApptIntakeDetails('${appt.id}')" title="Click to view full intake details" style="cursor: pointer;">
             <div class="chips-flex-row">
               ${chipsHtml}
             </div>
             ${freeNoteHtml}
-            <button class="btn-open-intake" onclick="openApptIntakeDetails('${appt.id}')">
-              <i class="ti ti-report-medical"></i>
-              <span>Intake Details &rarr;</span>
-            </button>
           </div>
         </td>
 
