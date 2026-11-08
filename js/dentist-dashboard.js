@@ -440,12 +440,14 @@ function renderQueueWidget(queue) {
 async function loadScheduleTable() {
   const tbody = document.getElementById('full-schedule-tbody');
   if (!tbody) return;
-  tbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(7, 5) : `<tr><td colspan="7" class="table-loading">Loading schedule...</td></tr>`;
+  const stopSkeleton = window.Skeleton ? window.Skeleton.show(tbody, () => window.Skeleton.tableRows(7, 5)) : null;
 
   try {
     allAppointments = await api.getDentistAppointments();
+    if (stopSkeleton) stopSkeleton();
     applyScheduleFilters();
   } catch (err) {
+    if (stopSkeleton) stopSkeleton();
     tbody.innerHTML = `<tr><td colspan="7" class="table-loading error">${esc(err.message)}</td></tr>`;
   }
 }
@@ -722,10 +724,11 @@ async function loadPatientsView() {
   const grid = document.getElementById('patient-cards-grid');
   const countEl = document.getElementById('patient-count');
   if (!grid) return;
-  grid.innerHTML = window.Skeleton ? window.Skeleton.cards(6, 'patient') : `<div class="table-loading" style="grid-column: 1/-1;">Loading patient records...</div>`;
+  const stopSkeleton = window.Skeleton ? window.Skeleton.show(grid, () => window.Skeleton.cards(6, 'patient')) : null;
 
   try {
     allPatients = await api.get('/patients');
+    if (stopSkeleton) stopSkeleton();
     if (countEl) countEl.textContent = `${allPatients.length} registered patients`;
 
     renderPatientCards(allPatients);
@@ -1190,10 +1193,11 @@ window.openCreatePlanModal = openCreatePlanModal;
 async function loadPrescriptionsView() {
   const tbody = document.getElementById('prescriptions-tbody');
   if (!tbody) return;
-  tbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(7, 4) : `<tr><td colspan="7" class="table-loading">Loading prescriptions...</td></tr>`;
+  const stopSkeleton = window.Skeleton ? window.Skeleton.show(tbody, () => window.Skeleton.tableRows(7, 4)) : null;
 
   try {
     const rxs = await api.getPrescriptions();
+    if (stopSkeleton) stopSkeleton();
     if (!rxs.length) {
       tbody.innerHTML = `<tr><td colspan="7" class="table-loading">No prescriptions issued yet.</td></tr>`;
       return;
@@ -1394,10 +1398,11 @@ window.printPrescriptionSlip = printPrescriptionSlip;
 async function loadFollowUpsView() {
   const tbody = document.getElementById('followups-tbody');
   if (!tbody) return;
-  tbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(7, 4) : `<tr><td colspan="7" class="table-loading">Loading follow-ups...</td></tr>`;
+  const stopSkeleton = window.Skeleton ? window.Skeleton.show(tbody, () => window.Skeleton.tableRows(7, 4)) : null;
 
   try {
     const list = await api.getFollowUps();
+    if (stopSkeleton) stopSkeleton();
     if (!list.length) {
       tbody.innerHTML = `<tr><td colspan="7" class="table-loading">No pending follow-ups.</td></tr>`;
       return;

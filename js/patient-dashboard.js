@@ -1022,13 +1022,15 @@ function prefillAddressFields(savedAddress) {
 // ─── Load Appointments ───────────────────────────────────────
 function loadAppointments() {
   const historyTbody = document.getElementById('history-table-body');
+  let cancelSkeleton = null;
   if (historyTbody && (!allAppointments || !allAppointments.length)) {
-    historyTbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(7, 4) : historyTbody.innerHTML;
+    cancelSkeleton = window.Skeleton ? window.Skeleton.show(historyTbody, () => window.Skeleton.tableRows(7, 4), 220) : null;
   }
   apiFetch('/appointments', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(data => {
+      if (cancelSkeleton) cancelSkeleton();
       if (!Array.isArray(data)) return;
       allAppointments = data;
       renderAppointmentStats();
@@ -1039,7 +1041,10 @@ function loadAppointments() {
       updateHistoryStats();
       checkUnratedVisitsBanner();
     })
-    .catch(err => console.error('Appointments error:', err));
+    .catch(err => {
+      if (cancelSkeleton) cancelSkeleton();
+      console.error('Appointments error:', err);
+    });
 }
 
 function renderAppointmentStats() {
@@ -1955,13 +1960,15 @@ let delinquentOverdueInvoice = null;
 
 function loadInvoices() {
   const invoicesTbody = document.getElementById('invoices-table-body');
+  let cancelSkeleton = null;
   if (invoicesTbody && (!allInvoices || !allInvoices.length)) {
-    invoicesTbody.innerHTML = window.Skeleton ? window.Skeleton.tableRows(7, 4) : invoicesTbody.innerHTML;
+    cancelSkeleton = window.Skeleton ? window.Skeleton.show(invoicesTbody, () => window.Skeleton.tableRows(7, 4), 220) : null;
   }
   return apiFetch('/invoices', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(data => {
+      if (cancelSkeleton) cancelSkeleton();
       if (!Array.isArray(data)) return allInvoices;
       allInvoices = data;
       renderInvoiceStats();
@@ -1974,6 +1981,7 @@ function loadInvoices() {
       return allInvoices;
     })
     .catch(err => {
+      if (cancelSkeleton) cancelSkeleton();
       console.error('Invoices error:', err);
       return allInvoices;
     });
@@ -2471,13 +2479,15 @@ function loadTreatments(forceRefresh = false) {
     showToast('Refreshing clinic treatments...', 'info');
   }
   const catalogGrid = document.getElementById('patient-services-catalog-grid');
+  let cancelSkeleton = null;
   if (catalogGrid && (!allTreatments || !allTreatments.length || forceRefresh)) {
-    catalogGrid.innerHTML = window.Skeleton ? window.Skeleton.cards(6, 'service') : catalogGrid.innerHTML;
+    cancelSkeleton = window.Skeleton ? window.Skeleton.show(catalogGrid, () => window.Skeleton.cards(6, 'service'), 220) : null;
   }
   return apiFetch('/treatments', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(treatments => {
+      if (cancelSkeleton) cancelSkeleton();
       allTreatments = (Array.isArray(treatments) && treatments.length > 0) ? treatments : [...DEFAULT_TREATMENTS];
       renderTreatmentsPicker();
       renderServicesCatalog();
@@ -2486,6 +2496,7 @@ function loadTreatments(forceRefresh = false) {
       }
     })
     .catch(err => {
+      if (cancelSkeleton) cancelSkeleton();
       console.error('Treatments error:', err);
       if (!allTreatments || allTreatments.length === 0) {
         allTreatments = [...DEFAULT_TREATMENTS];

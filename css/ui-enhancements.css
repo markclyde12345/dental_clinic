@@ -789,26 +789,49 @@
   }
 }
 
+@keyframes skeletonFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .skeleton,
 .skeleton-shimmer {
-  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+  /* Soft, clean light gray shimmer - never too dark */
+  background: linear-gradient(90deg, #f8fafc 0%, #edf2f7 50%, #f8fafc 100%) !important;
   background-size: 200% 100% !important;
-  animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
   border-radius: var(--radius-md, 8px);
   position: relative;
   overflow: hidden;
   border-color: transparent !important;
   pointer-events: none;
   user-select: none;
+  /* Grace period delay: stays invisible for first 220ms so fast internet users never see a flash */
+  opacity: 0;
+  animation: skeletonFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.22s forwards,
+             skeletonShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
 }
 
+/* If slow internet is detected or explicit immediate display requested */
+.is-slow-connection .skeleton,
+.is-slow-connection .skeleton-shimmer,
+.skeleton-immediate,
+.skeleton-modal-body .skeleton {
+  opacity: 1 !important;
+  animation: skeletonShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+}
+
+/* Dark mode skeleton - kept soft light-muted gray, NEVER dark or black */
 body.dark-theme .skeleton,
 .dark-theme .skeleton,
 [data-theme="dark"] .skeleton,
 body.dark-theme .skeleton-shimmer,
 .dark-theme .skeleton-shimmer,
 [data-theme="dark"] .skeleton-shimmer {
-  background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%) !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.14) 50%, rgba(255, 255, 255, 0.06) 100%) !important;
   background-size: 200% 100% !important;
   border-color: transparent !important;
 }
@@ -911,9 +934,9 @@ body.dark-theme .skeleton-card,
   max-width: 480px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+  background: linear-gradient(90deg, #f8fafc 0%, #edf2f7 50%, #f8fafc 100%) !important;
   background-size: 200% 100% !important;
-  animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  animation: skeletonShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
 }
 
 .modal-spinner::after {
@@ -923,9 +946,9 @@ body.dark-theme .skeleton-card,
   max-width: 420px;
   height: 120px;
   border-radius: 12px;
-  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+  background: linear-gradient(90deg, #f8fafc 0%, #edf2f7 50%, #f8fafc 100%) !important;
   background-size: 200% 100% !important;
-  animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  animation: skeletonShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
 }
 
 .table-loading:not(.skeleton-loaded) {
@@ -942,9 +965,9 @@ body.dark-theme .skeleton-card,
   height: 13px;
   margin: 0 auto 8px;
   border-radius: 6px;
-  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+  background: linear-gradient(90deg, #f8fafc 0%, #edf2f7 50%, #f8fafc 100%) !important;
   background-size: 200% 100% !important;
-  animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  animation: skeletonShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
 }
 
 .table-loading:not(.skeleton-loaded)::after {
@@ -954,9 +977,9 @@ body.dark-theme .skeleton-card,
   height: 10px;
   margin: 0 auto;
   border-radius: 6px;
-  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+  background: linear-gradient(90deg, #f8fafc 0%, #edf2f7 50%, #f8fafc 100%) !important;
   background-size: 200% 100% !important;
-  animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  animation: skeletonShimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
 }
 
 .spinner-enhanced {

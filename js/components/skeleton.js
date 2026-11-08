@@ -1,7 +1,9 @@
 /**
  * Skeleton Loading Engine
- * Generates realistic shimmering skeleton screens for tables, cards, modals, and lists
- * across all clinic dashboard views.
+ * Generates realistic shimmering skeleton screens for tables, cards, modals, and lists.
+ * Features:
+ *  - Soft, elegant light gray shimmer (never too dark).
+ *  - Smart Grace Period & Network Detection: only shows loading skeleton if internet is slow or latency > 220ms.
  */
 
 const Skeleton = (() => {
@@ -10,7 +12,73 @@ const Skeleton = (() => {
     return Math.max(30, base + delta);
   }
 
+  /**
+   * Detects whether the user is on a slow connection (2G, 3G, high latency, or Data Saver)
+   */
+  function isSlowConnection() {
+    if (typeof navigator === 'undefined') return false;
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (!conn) return false;
+    return conn.saveData === true ||
+           conn.effectiveType === 'slow-2g' ||
+           conn.effectiveType === '2g' ||
+           conn.effectiveType === '3g' ||
+           (typeof conn.rtt === 'number' && conn.rtt > 260) ||
+           (typeof conn.downlink === 'number' && conn.downlink < 1.5);
+  }
+
+  // Update root class for CSS-level slow network awareness
+  function syncConnectionState() {
+    if (typeof document !== 'undefined' && document.documentElement) {
+      document.documentElement.classList.toggle('is-slow-connection', isSlowConnection());
+    }
+  }
+
+  if (typeof navigator !== 'undefined') {
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn && conn.addEventListener) {
+      conn.addEventListener('change', syncConnectionState);
+    }
+  }
+  syncConnectionState();
+
   const engine = {
+    isSlowConnection,
+
+    /**
+     * Smart Loader: Only reveals skeleton if network request takes longer than grace delay
+     * or if user has slow internet.
+     * @param {HTMLElement|string} target - Target element or selector
+     * @param {function|string} skeletonContent - Generator function or HTML string
+     * @param {number} delayMs - Delay in ms before skeleton appears (default: 220ms)
+     * @returns {function} cancel function to stop skeleton from appearing
+     */
+    show(target, skeletonContent, delayMs = 220) {
+      const el = typeof target === 'string' ? document.querySelector(target) : target;
+      if (!el) return () => {};
+
+      const getContent = () => typeof skeletonContent === 'function' ? skeletonContent() : skeletonContent;
+
+      if (isSlowConnection()) {
+        // Slow internet: display immediately
+        el.innerHTML = getContent();
+        return () => {};
+      }
+
+      // Fast internet: hold off for grace period
+      let cancelled = false;
+      const timer = setTimeout(() => {
+        if (!cancelled && el) {
+          el.innerHTML = getContent();
+        }
+      }, delayMs);
+
+      return () => {
+        cancelled = true;
+        clearTimeout(timer);
+      };
+    },
+
     /**
      * Generates skeleton <tr> rows for HTML <table> bodies
      * @param {number} cols - Number of columns
