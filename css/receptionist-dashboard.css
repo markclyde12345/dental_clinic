@@ -958,19 +958,360 @@ body {
 .fast-checkin-form {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-grow: 1;
-  max-width: 480px;
+  max-width: 560px;
+  position: relative;
 }
 
-.fast-checkin-form input {
+.fast-checkin-input-wrapper {
+  position: relative;
   flex-grow: 1;
-  padding: 11px 16px;
+  display: flex;
+  align-items: center;
+}
+
+.fast-checkin-input-wrapper .search-field-icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  font-size: 1.05rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.fast-checkin-input-wrapper input {
+  width: 100%;
+  padding: 11px 36px 11px 40px;
   border-radius: 10px;
-  border: none;
+  border: 1.5px solid transparent;
   font-size: 0.88rem;
   font-family: inherit;
   outline: none;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fast-checkin-input-wrapper input:focus {
+  border-color: var(--gold-color, #c59b27);
+  box-shadow: 0 0 0 3px rgba(197, 155, 39, 0.28);
+}
+
+.fast-checkin-input-wrapper .btn-clear-search {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  transition: color 0.15s, background 0.15s;
+  z-index: 2;
+}
+
+.fast-checkin-input-wrapper .btn-clear-search:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+/* Floating Live Search Dropdown */
+.fast-checkin-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(11, 60, 77, 0.26), 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1.5px solid #e2e8f0;
+  z-index: 1000;
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: #1e293b;
+  animation: fastDropdownFade 0.18s ease-out;
+}
+
+@keyframes fastDropdownFade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fast-checkin-dropdown-header {
+  padding: 10px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fast-checkin-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+}
+
+.fast-checkin-item:last-child {
+  border-bottom: none;
+}
+
+.fast-checkin-item:hover {
+  background: #f8fafc;
+}
+
+.fast-checkin-item.highlighted {
+  background: #f0fdf4;
+}
+
+.fast-checkin-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.fast-checkin-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary-subtle, #eef6f8);
+  color: var(--primary-color, #0b3c4d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  border: 1px solid #cbd5e1;
+}
+
+.fast-checkin-info {
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.fast-checkin-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+
+.fast-checkin-patient-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #0f172a;
+}
+
+.fast-checkin-phone {
+  font-size: 0.76rem;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.fast-checkin-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: #475569;
+}
+
+.fast-checkin-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-pill-today {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #ecfdf5;
+  color: #047857;
+  font-weight: 700;
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: 12px;
+  border: 1px solid #a7f3d0;
+}
+
+.fast-checkin-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.fast-checkin-empty-state {
+  padding: 28px 18px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+/* ═════════════════════ SELECTED PATIENT STATUS CARD ═════════════════════ */
+.patient-status-card-box {
+  background: #ffffff;
+  border-radius: var(--radius-lg, 16px);
+  border: 1.5px solid #e2e8f0;
+  border-left: 5px solid var(--gold-color, #c59b27);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  animation: slideDownStatusCard 0.25s ease-out;
+  position: relative;
+}
+
+@keyframes slideDownStatusCard {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.status-card-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.status-card-patient-side {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 220px;
+}
+
+.status-card-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary-subtle, #eef6f8);
+  color: var(--primary-color, #0b3c4d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  border: 2px solid #cbd5e1;
+  flex-shrink: 0;
+}
+
+.status-card-patient-details h4 {
+  margin: 0 0 4px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-card-contact-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #64748b;
+  flex-wrap: wrap;
+}
+
+.status-card-appt-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 220px;
+}
+
+.status-card-treatment-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-card-datetime-line {
+  font-size: 0.82rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-card-right-group {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.status-card-status-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.status-card-status-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.status-card-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-xs {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+
+.badge-status-subtle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .queue-split-grid {

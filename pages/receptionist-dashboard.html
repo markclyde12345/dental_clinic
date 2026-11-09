@@ -445,19 +445,29 @@
           <div class="banner-content">
             <div class="banner-icon"><i class="ti ti-bell-ringing"></i></div>
             <div>
-              <h3>Fast Patient Check-In</h3>
-              <p>Type patient name or phone to instantly check them in upon arrival</p>
+              <h3>Fast Patient Check-In &amp; Status Search</h3>
+              <p>Type patient name or phone to view live appointment status and check in</p>
             </div>
           </div>
           <div class="fast-checkin-form">
-            <input type="text" id="fast-checkin-input" placeholder="Search scheduled patient by name or phone..." list="today-patients-datalist">
-            <datalist id="today-patients-datalist"></datalist>
+            <div class="fast-checkin-input-wrapper">
+              <i class="ti ti-search search-field-icon"></i>
+              <input type="text" id="fast-checkin-input" placeholder="Search patient name or phone to see status..." autocomplete="off" oninput="handleFastCheckInSearch(this.value)" onfocus="handleFastCheckInSearch(this.value)" onkeydown="handleFastCheckInKeydown(event)">
+              <button type="button" id="fast-checkin-clear-btn" class="btn-clear-search" onclick="clearFastCheckInSearch()" style="display:none;" title="Clear search">
+                <i class="ti ti-x"></i>
+              </button>
+              <!-- Live Floating Dropdown for Patient & Appointment Status -->
+              <div id="fast-checkin-dropdown" class="fast-checkin-dropdown" style="display: none;"></div>
+            </div>
             <button class="btn btn-gold" onclick="handleFastCheckIn()">
               <i class="ti ti-user-check"></i>
               <span>Check In Now</span>
             </button>
           </div>
         </div>
+
+        <!-- Selected Patient Status Card (Shows patient details & live appointment status) -->
+        <div id="fast-checkin-status-card" class="patient-status-card-box" style="display: none;"></div>
 
         <!-- Waiting Lounge & Chair Tracker Grid -->
         <div class="queue-split-grid">

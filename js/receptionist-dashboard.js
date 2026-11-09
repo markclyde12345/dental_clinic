@@ -1300,10 +1300,9 @@ function renderPatientQueue() {
   const badgeWaiting = document.getElementById('waiting-lounge-badge');
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const todayAppts = allAppointments.filter(a => a.appointment_date && a.appointment_date.startsWith(todayStr));
-
-  const inTreatment = todayAppts.filter(a => a.status === 'In Progress');
-  const waitingLounge = todayAppts.filter(a => a.status === 'Checked In');
+  // Any patients currently active in chairs or waiting in lounge
+  const inTreatment = allAppointments.filter(a => a.status === 'In Progress');
+  const waitingLounge = allAppointments.filter(a => a.status === 'Checked In');
 
   if (badgeTreatment) badgeTreatment.textContent = `${inTreatment.length} Active`;
   if (badgeWaiting) badgeWaiting.textContent = `${waitingLounge.length} Waiting`;
@@ -1386,50 +1385,461 @@ function renderPatientQueue() {
   }
 }
 
+let selectedFastCheckInApptId = null;
+
 function renderFastCheckInDatalist() {
-  const datalist = document.getElementById('today-patients-datalist');
-  if (!datalist) return;
+  // If an active search query is present, refresh it
+  const input = document.getElementById('fast-checkin-input');
+  if (input && input.value.trim()) {
+    handleFastCheckInSearch(input.value);
+  }
+}
+
+function handleFastCheckInSearch(query) {
+  const dropdown = document.getElementById('fast-checkin-dropdown');
+  const clearBtn = document.getElementById('fast-checkin-clear-btn');
+  if (!dropdown) return;
+
+  const q = (query || '').trim().toLowerCase();
+  if (clearBtn) {
+    clearBtn.style.display = q.length > 0 ? 'flex' : 'none';
+  }
+
+  if (!q) {
+    dropdown.style.display = 'none';
+    dropdown.innerHTML = '';
+    return;
+  }
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const pendingOrApproved = allAppointments.filter(a => {
-    return a.appointment_date && a.appointment_date.startsWith(todayStr) &&
-           (a.status === 'Pending' || a.status === 'Approved' || a.status === 'Confirmed');
+
+  // Match appointments by patient name, phone, email, treatment, or id
+  const matchedAppts = (allAppointments || []).filter(a => {
+    const p = a.patient || {};
+    const pName = (p.name || '').toLowerCase();
+    const pPhone = (p.contact_number || '').toLowerCase();
+    const pEmail = (p.email || '').toLowerCase();
+    const tName = (a.treatment?.name || a.reason || '').toLowerCase();
+    const aId = (a.id || '').toLowerCase();
+    return pName.includes(q) || pPhone.includes(q) || pEmail.includes(q) || tName.includes(q) || aId.includes(q);
   });
 
-  datalist.innerHTML = pendingOrApproved.map(appt => {
-    const p = appt.patient || {};
-    return `<option value="${p.name || ''} - ${p.contact_number || ''}" data-id="${appt.id}"></option>`;
-  }).join('');
+  // Sort matched appointments:
+  // 1. Appointments for today first
+  // 2. Active status priority: In Progress > Checked In > Confirmed/Approved > Pending > Rescheduled > Completed > Cancelled
+  // 3. Most recent date descending
+  const statusPriority = {
+    'In Progress': 6,
+    'Checked In': 5,
+    'Approved': 4,
+    'Confirmed': 4,
+    'Pending': 3,
+    'Rescheduled': 2,
+    'Completed': 1,
+    'Cancelled': 0
+  };
+
+  matchedAppts.sort((a, b) => {
+    const aDatePart = (a.appointment_date || '').split('T')[0];
+    const bDatePart = (b.appointment_date || '').split('T')[0];
+    const aIsToday = aDatePart === todayStr ? 1 : 0;
+    const bIsToday = bDatePart === todayStr ? 1 : 0;
+    if (aIsToday !== bIsToday) return bIsToday - aIsToday;
+
+    const pA = statusPriority[a.status] || 0;
+    const pB = statusPriority[b.status] || 0;
+    if (pA !== pB) return pB - pA;
+
+    return new Date(b.appointment_date) - new Date(a.appointment_date);
+  });
+
+  // Also search patient directory for patients with no active appointments
+  const matchedPatients = (allPatients || []).filter(p => {
+    const u = p.user || {};
+    const pName = (u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || p.name || '').toLowerCase();
+    const pPhone = (u.contact_number || p.contact_number || '').toLowerCase();
+    const pEmail = (u.email || p.email || '').toLowerCase();
+    return pName.includes(q) || pPhone.includes(q) || pEmail.includes(q);
+  });
+
+  if (!matchedAppts.length && !matchedPatients.length) {
+    dropdown.innerHTML = `
+      <div class="fast-checkin-empty-state">
+        <i class="ti ti-user-search" style="font-size: 1.8rem; color: #94a3b8; display: block; margin-bottom: 6px;"></i>
+        No patient or appointment found matching "<strong>${escapeHtml(query)}</strong>".
+      </div>
+    `;
+    dropdown.style.display = 'block';
+    return;
+  }
+
+  let html = '';
+
+  if (matchedAppts.length > 0) {
+    html += `
+      <div class="fast-checkin-dropdown-header">
+        <span><i class="ti ti-calendar"></i> Matching Appointments (${matchedAppts.length})</span>
+        <span>Click to view details &amp; check in</span>
+      </div>
+    `;
+
+    html += matchedAppts.slice(0, 8).map(appt => {
+      const p = appt.patient || {};
+      const patientName = p.name || 'Patient';
+      const patientPhone = p.contact_number || 'No phone';
+      const treatmentName = appt.treatment?.name || appt.reason || 'General Consultation';
+      const apptDatePart = (appt.appointment_date || '').split('T')[0];
+      const isToday = apptDatePart === todayStr;
+      const timeStr = formatTime(appt.appointment_date);
+      const dateDisplay = isToday
+        ? `<span class="badge-pill-today"><i class="ti ti-clock"></i> Today, ${timeStr}</span>`
+        : `<span class="fast-checkin-meta-item"><i class="ti ti-calendar"></i> ${formatDateTime(appt.appointment_date)}</span>`;
+
+      // Initials for avatar
+      const initials = patientName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'P';
+
+      // Status badge HTML
+      const statusBadge = getStatusBadge(appt.status);
+
+      // Action button based on appointment status
+      let actionBtn = '';
+      if (appt.status === 'Pending' || appt.status === 'Approved' || appt.status === 'Confirmed' || appt.status === 'Rescheduled') {
+        actionBtn = `
+          <button class="btn-xs btn-gold" onclick="fastCheckInPatientDirect('${appt.id}', event)" title="Check in this patient now">
+            <i class="ti ti-user-check"></i> Check In
+          </button>
+        `;
+      } else if (appt.status === 'Checked In') {
+        actionBtn = `
+          <button class="btn-xs btn-success" onclick="updateAppointmentStatus('${appt.id}', 'In Progress', 'Patient seated in chair'); event.stopPropagation();" title="Seat in treatment chair">
+            <i class="ti ti-dental"></i> Seat Chair
+          </button>
+        `;
+      } else if (appt.status === 'In Progress') {
+        actionBtn = `
+          <button class="btn-xs btn-primary" onclick="updateAppointmentStatus('${appt.id}', 'Completed', 'Treatment finished'); event.stopPropagation();" title="Complete procedure">
+            <i class="ti ti-check"></i> Complete
+          </button>
+        `;
+      }
+
+      return `
+        <div class="fast-checkin-item ${isToday ? 'highlighted' : ''}" onclick="selectPatientAppointmentFromSearch('${appt.id}')">
+          <div class="fast-checkin-item-left">
+            <div class="fast-checkin-avatar">${escapeHtml(initials)}</div>
+            <div class="fast-checkin-info">
+              <div class="fast-checkin-name-row">
+                <span class="fast-checkin-patient-name">${escapeHtml(patientName)}</span>
+                <span class="fast-checkin-phone"><i class="ti ti-phone"></i> ${escapeHtml(patientPhone)}</span>
+              </div>
+              <div class="fast-checkin-meta-row">
+                ${dateDisplay}
+                <span class="fast-checkin-meta-item"><i class="ti ti-tooth"></i> ${escapeHtml(treatmentName)}</span>
+              </div>
+            </div>
+          </div>
+          <div class="fast-checkin-item-right">
+            ${statusBadge}
+            ${actionBtn}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // If there are patients with no appointments
+  if (matchedPatients.length > 0 && matchedAppts.length === 0) {
+    html += `
+      <div class="fast-checkin-dropdown-header">
+        <span><i class="ti ti-users"></i> Registered Patients (${matchedPatients.length})</span>
+        <span>No scheduled appointments</span>
+      </div>
+    `;
+
+    html += matchedPatients.slice(0, 4).map(p => {
+      const u = p.user || {};
+      const name = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || p.name || 'Patient';
+      const phone = u.contact_number || p.contact_number || 'No contact';
+      const initials = name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'P';
+
+      return `
+        <div class="fast-checkin-item" onclick="openPatientHistoryModal('${p.id || ''}')">
+          <div class="fast-checkin-item-left">
+            <div class="fast-checkin-avatar">${escapeHtml(initials)}</div>
+            <div class="fast-checkin-info">
+              <div class="fast-checkin-name-row">
+                <span class="fast-checkin-patient-name">${escapeHtml(name)}</span>
+                <span class="fast-checkin-phone"><i class="ti ti-phone"></i> ${escapeHtml(phone)}</span>
+              </div>
+              <div class="fast-checkin-meta-row text-muted">
+                <span><i class="ti ti-info-circle"></i> Registered in directory &bull; No active appointments</span>
+              </div>
+            </div>
+          </div>
+          <div class="fast-checkin-item-right">
+            <span class="status-badge badge-pending">No Appointment</span>
+            <button class="btn-xs btn-outline" onclick="openBookingModal(); event.stopPropagation();">
+              <i class="ti ti-calendar-plus"></i> Book
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  dropdown.innerHTML = html;
+  dropdown.style.display = 'block';
+}
+
+function clearFastCheckInSearch() {
+  const input = document.getElementById('fast-checkin-input');
+  const dropdown = document.getElementById('fast-checkin-dropdown');
+  const clearBtn = document.getElementById('fast-checkin-clear-btn');
+  if (input) input.value = '';
+  if (dropdown) {
+    dropdown.innerHTML = '';
+    dropdown.style.display = 'none';
+  }
+  if (clearBtn) clearBtn.style.display = 'none';
+}
+
+function selectPatientAppointmentFromSearch(apptId) {
+  const appt = (allAppointments || []).find(a => a.id === apptId);
+  const dropdown = document.getElementById('fast-checkin-dropdown');
+  const input = document.getElementById('fast-checkin-input');
+  if (dropdown) dropdown.style.display = 'none';
+
+  if (!appt) return;
+
+  selectedFastCheckInApptId = appt.id;
+  const pName = appt.patient?.name || 'Patient';
+  if (input) input.value = pName;
+
+  showPatientStatusCard(appt);
+}
+
+function showPatientStatusCard(appt) {
+  const card = document.getElementById('fast-checkin-status-card');
+  if (!card || !appt) return;
+
+  const p = appt.patient || {};
+  const patientName = p.name || 'Patient';
+  const patientPhone = p.contact_number || 'No phone recorded';
+  const patientEmail = p.email || 'No email recorded';
+  const treatmentName = appt.treatment?.name || appt.reason || 'General Consultation';
+  const priceVal = appt.treatment?.price ? `₱${Number(appt.treatment.price).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '';
+  const todayStr = new Date().toISOString().split('T')[0];
+  const apptDatePart = (appt.appointment_date || '').split('T')[0];
+  const isToday = apptDatePart === todayStr;
+  const fullDateTime = formatDateTime(appt.appointment_date);
+
+  const statusBadge = getStatusBadge(appt.status);
+  const initials = patientName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'P';
+
+  let actionBtnHtml = '';
+  if (appt.status === 'Pending' || appt.status === 'Approved' || appt.status === 'Confirmed' || appt.status === 'Rescheduled') {
+    actionBtnHtml = `
+      <button class="btn btn-sm btn-gold" onclick="fastCheckInPatientDirect('${appt.id}')">
+        <i class="ti ti-user-check"></i>
+        <span>Check In Patient Now</span>
+      </button>
+    `;
+  } else if (appt.status === 'Checked In') {
+    actionBtnHtml = `
+      <button class="btn btn-sm btn-success" onclick="updateAppointmentStatus('${appt.id}', 'In Progress', 'Patient seated in chair')">
+        <i class="ti ti-dental"></i>
+        <span>Seat in Chair</span>
+      </button>
+    `;
+  } else if (appt.status === 'In Progress') {
+    actionBtnHtml = `
+      <button class="btn btn-sm btn-primary" onclick="updateAppointmentStatus('${appt.id}', 'Completed', 'Treatment finished')">
+        <i class="ti ti-check"></i>
+        <span>Complete Treatment</span>
+      </button>
+    `;
+  }
+
+  card.innerHTML = `
+    <div class="status-card-inner">
+      <div class="status-card-patient-side">
+        <div class="status-card-avatar">${escapeHtml(initials)}</div>
+        <div class="status-card-patient-details">
+          <h4>${escapeHtml(patientName)}</h4>
+          <div class="status-card-contact-line">
+            <span><i class="ti ti-phone"></i> ${escapeHtml(patientPhone)}</span>
+            <span><i class="ti ti-mail"></i> ${escapeHtml(patientEmail)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-card-appt-info">
+        <div class="status-card-treatment-title">
+          <i class="ti ti-tooth text-gold"></i>
+          <span>${escapeHtml(treatmentName)}</span>
+          ${priceVal ? `<span class="text-muted" style="font-size:0.8rem; font-weight:normal;">(${priceVal})</span>` : ''}
+        </div>
+        <div class="status-card-datetime-line">
+          <i class="ti ti-calendar-time"></i>
+          <span>${fullDateTime}</span>
+          ${isToday ? '<span class="badge-pill-today"><i class="ti ti-clock"></i> Today</span>' : ''}
+        </div>
+      </div>
+
+      <div class="status-card-right-group">
+        <div class="status-card-status-block">
+          <span class="status-card-status-label">Appointment Status</span>
+          <div>${statusBadge}</div>
+        </div>
+        <div class="status-card-buttons">
+          ${actionBtnHtml}
+          ${appt.patient_id ? `
+            <button class="btn btn-sm btn-outline" onclick="openPatientHistoryModal('${appt.patient_id}')" title="View Patient Chart &amp; Records">
+              <i class="ti ti-file-medical"></i> Chart
+            </button>
+          ` : ''}
+          <button class="btn btn-sm btn-ghost text-muted" onclick="dismissPatientStatusCard()" title="Close status view">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  card.style.display = 'block';
+}
+
+function dismissPatientStatusCard() {
+  const card = document.getElementById('fast-checkin-status-card');
+  if (card) {
+    card.style.display = 'none';
+    card.innerHTML = '';
+  }
+  selectedFastCheckInApptId = null;
+}
+
+async function fastCheckInPatientDirect(apptId, event) {
+  if (event) event.stopPropagation();
+  const dropdown = document.getElementById('fast-checkin-dropdown');
+  if (dropdown) dropdown.style.display = 'none';
+
+  await updateAppointmentStatus(apptId, 'Checked In', 'Patient checked in via fast check-in');
+
+  // Find updated appointment and display fresh status card
+  const updatedAppt = (allAppointments || []).find(a => a.id === apptId);
+  if (updatedAppt) {
+    showPatientStatusCard(updatedAppt);
+  }
+}
+
+function handleFastCheckInKeydown(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    handleFastCheckIn();
+  } else if (event.key === 'Escape') {
+    const dropdown = document.getElementById('fast-checkin-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+  }
 }
 
 function handleFastCheckIn() {
   const input = document.getElementById('fast-checkin-input');
   if (!input || !input.value.trim()) {
-    showToast('Please type patient name or phone to check in.', 'warning');
+    showToast('Please type patient name or phone to check in or view status.', 'warning');
     return;
   }
 
   const query = input.value.toLowerCase().trim();
   const todayStr = new Date().toISOString().split('T')[0];
 
-  const match = allAppointments.find(a => {
-    const isToday = a.appointment_date && a.appointment_date.startsWith(todayStr);
-    if (!isToday) return false;
-    const canCheckIn = a.status === 'Pending' || a.status === 'Approved' || a.status === 'Confirmed';
-    if (!canCheckIn) return false;
+  // 1. If user previously selected an appointment and clicks Check In
+  if (selectedFastCheckInApptId) {
+    const appt = (allAppointments || []).find(a => a.id === selectedFastCheckInApptId);
+    if (appt) {
+      if (appt.status === 'Pending' || appt.status === 'Approved' || appt.status === 'Confirmed' || appt.status === 'Rescheduled') {
+        fastCheckInPatientDirect(appt.id);
+        return;
+      } else if (appt.status === 'Checked In') {
+        showToast(`${appt.patient?.name || 'Patient'} is already checked in and waiting in the lounge.`, 'info');
+        showPatientStatusCard(appt);
+        return;
+      } else if (appt.status === 'In Progress') {
+        showToast(`${appt.patient?.name || 'Patient'} is currently in a treatment chair.`, 'info');
+        showPatientStatusCard(appt);
+        return;
+      } else if (appt.status === 'Completed') {
+        showToast(`${appt.patient?.name || 'Patient'}'s appointment is already completed.`, 'info');
+        showPatientStatusCard(appt);
+        return;
+      }
+    }
+  }
 
+  // 2. Search matches
+  const matches = (allAppointments || []).filter(a => {
     const pName = (a.patient?.name || '').toLowerCase();
     const pPhone = (a.patient?.contact_number || '').toLowerCase();
-    return pName.includes(query) || pPhone.includes(query) || query.includes(pName);
+    const pEmail = (a.patient?.email || '').toLowerCase();
+    return pName.includes(query) || pPhone.includes(query) || pEmail.includes(query) || query.includes(pName);
   });
 
-  if (!match) {
-    showToast('No pending appointment found today matching that name.', 'error');
+  if (!matches.length) {
+    // Check if patient exists in directory
+    const patientMatch = (allPatients || []).find(p => {
+      const u = p.user || {};
+      const name = (u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || p.name || '').toLowerCase();
+      const phone = (u.contact_number || p.contact_number || '').toLowerCase();
+      return name.includes(query) || phone.includes(query);
+    });
+
+    if (patientMatch) {
+      const pName = patientMatch.user?.name || patientMatch.name || 'Patient';
+      showToast(`Patient "${pName}" found in records, but has no scheduled appointments.`, 'warning');
+      return;
+    }
+
+    showToast('No patient or appointment found matching that name or phone.', 'error');
     return;
   }
 
-  updateAppointmentStatus(match.id, 'Checked In', 'Arrived via fast check-in');
-  input.value = '';
+  // 3. Look for eligible appointment today
+  const eligibleToday = matches.find(a => {
+    const isToday = a.appointment_date && a.appointment_date.startsWith(todayStr);
+    return isToday && (a.status === 'Pending' || a.status === 'Approved' || a.status === 'Confirmed' || a.status === 'Rescheduled');
+  });
+
+  if (eligibleToday) {
+    fastCheckInPatientDirect(eligibleToday.id);
+    return;
+  }
+
+  // 4. Look for ANY appointment today
+  const todayAppt = matches.find(a => a.appointment_date && a.appointment_date.startsWith(todayStr));
+  if (todayAppt) {
+    showPatientStatusCard(todayAppt);
+    if (todayAppt.status === 'Checked In') {
+      showToast(`${todayAppt.patient?.name || 'Patient'} is already checked in and waiting in the lounge.`, 'info');
+    } else if (todayAppt.status === 'In Progress') {
+      showToast(`${todayAppt.patient?.name || 'Patient'} is currently undergoing treatment.`, 'info');
+    } else if (todayAppt.status === 'Completed') {
+      showToast(`${todayAppt.patient?.name || 'Patient'}'s appointment has already been completed today.`, 'info');
+    } else if (todayAppt.status === 'Cancelled') {
+      showToast(`${todayAppt.patient?.name || 'Patient'}'s appointment was cancelled.`, 'warning');
+    }
+    return;
+  }
+
+  // 5. Look for upcoming appointment
+  const upcoming = matches.find(a => a.appointment_date && a.appointment_date >= todayStr && a.status !== 'Completed' && a.status !== 'Cancelled');
+  if (upcoming) {
+    showPatientStatusCard(upcoming);
+    showToast(`Showing upcoming appointment for ${upcoming.patient?.name || 'Patient'} on ${formatDateTime(upcoming.appointment_date)} (Status: ${upcoming.status}).`, 'info');
+    return;
+  }
+
+  // 6. Fallback: show the most recent appointment
+  showPatientStatusCard(matches[0]);
+  showToast(`Showing latest appointment for ${matches[0].patient?.name || 'Patient'} (Status: ${matches[0].status}).`, 'info');
 }
 
 // ─── Patients Directory Tab ──────────────────────────────────────────────────
@@ -3884,3 +4294,22 @@ async function handlePatientRequestApproval(appointmentId, actionType) {
   }
 }
 window.handlePatientRequestApproval = handlePatientRequestApproval;
+
+// ─── Fast Check-In & Live Search Handlers Expose & Outside Click ─────────────
+window.handleFastCheckInSearch = handleFastCheckInSearch;
+window.clearFastCheckInSearch = clearFastCheckInSearch;
+window.selectPatientAppointmentFromSearch = selectPatientAppointmentFromSearch;
+window.showPatientStatusCard = showPatientStatusCard;
+window.dismissPatientStatusCard = dismissPatientStatusCard;
+window.fastCheckInPatientDirect = fastCheckInPatientDirect;
+window.handleFastCheckInKeydown = handleFastCheckInKeydown;
+window.handleFastCheckIn = handleFastCheckIn;
+
+document.addEventListener('click', (e) => {
+  const dropdown = document.getElementById('fast-checkin-dropdown');
+  const input = document.getElementById('fast-checkin-input');
+  if (!dropdown || !input) return;
+  if (!dropdown.contains(e.target) && e.target !== input) {
+    dropdown.style.display = 'none';
+  }
+});
