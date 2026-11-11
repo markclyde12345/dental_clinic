@@ -2071,4 +2071,40 @@ html.dark-theme {
 html.dark-theme { --pd-ink: #f1f5f9; --pd-muted: #cbd5e1; --pd-border: #2a3b48; --pd-teal-50: #14212b; --pd-teal-100: #1b2b37; }
 
 
+/* -- Top header: always dark with clearly visible white text in dark mode -- */
+html.dark-theme body .top-header,
+html.dark-theme body header.top-header {
+  background: #101c25 !important;
+  background-image: none !important;
+  border-bottom: 1px solid #2a3b48 !important;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: none !important;
+}
+html.dark-theme body .top-header .breadcrumb,
+html.dark-theme body .top-header .breadcrumb-item,
+html.dark-theme body .top-header .breadcrumb-current,
+html.dark-theme body .top-header .breadcrumb i,
+html.dark-theme body .top-header .breadcrumb svg { color: #f1f5f9 !important; opacity: 1 !important; }
+html.dark-theme body .top-header .breadcrumb-item { color: #cbd5e1 !important; }
+html.dark-theme body .top-header .theme-toggle {
+  background: #1b2b37 !important;
+  border: 1.5px solid #4a6173 !important;
+  color: #ffd966 !important;
+  box-shadow: 0 0 0 3px rgba(255, 217, 102, 0.12) !important;
+}
+html.dark-theme body .top-header .theme-toggle i { color: #ffd966 !important; opacity: 1 !important; font-size: 1.15rem; }
+html.dark-theme body .top-header .live-clock-card {
+  background: #1b2b37 !important;
+  border: 1px solid #3a4f5f !important;
+  box-shadow: none !important;
+}
+html.dark-theme body .top-header .live-clock-card,
+html.dark-theme body .top-header .live-clock-card i,
+html.dark-theme body .top-header .live-clock-card span,
+html.dark-theme body .top-header #current-time,
+html.dark-theme body .top-header #header-date { color: #f1f5f9 !important; opacity: 1 !important; }
+html.dark-theme body .top-header .clock-divider { color: #6b8294 !important; }
+html.dark-theme body .top-header .notif-btn { background: #1b2b37 !important; border: 1px solid #3a4f5f !important; color: #f1f5f9 !important; }
+html.dark-theme body .top-header .notif-btn i { color: #f1f5f9 !important; }
+
 html.dark-theme body, html.dark-theme h1, html.dark-theme h2, html.dark-theme h3, html.dark-theme h4, html.dark-theme h5, html.dark-theme h6 { color: #f1f5f9; }
