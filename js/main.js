@@ -108,14 +108,52 @@ async function fetchLiveHeroStats(isInitial = false) {
 
     const yearsVal = Number(data.yearsExperience) || Math.max(5, new Date().getFullYear() - 2021);
     const patientsVal = Number(data.count) || 0;
-    const satisfactionVal = Number(data.satisfactionRate) || 98;
+    const satisfactionVal = data.satisfactionRate !== undefined && data.satisfactionRate !== null ? Number(data.satisfactionRate) : 0;
 
     updateStatElement(yearsStat, yearsVal, '+', isInitial);
     updateStatElement(patientStat, patientsVal, '+', isInitial);
     updateStatElement(satisfactionStat, satisfactionVal, '%', isInitial);
+
+    if (Array.isArray(data.recentReviews) && data.recentReviews.length > 0) {
+      renderLiveLandingTestimonials(data.recentReviews);
+    }
   } catch (err) {
     console.error('Failed to fetch real-time hero stats:', err);
   }
+}
+
+function renderLiveLandingTestimonials(reviews) {
+  const track = document.querySelector('.testimonials-track');
+  if (!track || !reviews || reviews.length === 0) return;
+  const sig = reviews.map(r => `${r.id}:${r.rating}:${r.comment || ''}`).join('|');
+  if (track.dataset.reviewsSig === sig) return;
+  track.dataset.reviewsSig = sig;
+
+  const cardsHtml = reviews.map(r => {
+    const ratingNum = Math.min(5, Math.max(1, Number(r.rating) || 5));
+    const stars = '★'.repeat(ratingNum) + '☆'.repeat(5 - ratingNum);
+    const comment = (r.comment || '').trim() || `Rated ${ratingNum}.0 out of 5 stars for ${r.treatment_name || 'Dental Care'}.`;
+    const name = escapeHtml(r.patient_name || 'Verified Patient');
+    const role = escapeHtml(r.treatment_name ? `${r.treatment_name} Patient` : 'Verified Patient');
+    const initial = (r.patient_name || 'P').trim().charAt(0).toUpperCase();
+    return `
+      <div class="testimonial-card">
+        <div class="t-stars">${stars}</div>
+        <p class="t-text">"${escapeHtml(comment)}"</p>
+        <div class="t-author">
+          <div class="t-avatar" style="font-weight:800;font-size:0.95rem;color:#0b3c4d;">${initial}</div>
+          <div>
+            <div class="t-name">${name}</div>
+            <div class="t-role">${role}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Duplicate list so continuous marquee scroll remains seamless
+  const minCards = reviews.length < 4 ? cardsHtml.repeat(Math.ceil(6 / reviews.length)) : cardsHtml + cardsHtml;
+  track.innerHTML = minCards;
 }
 
 /* ===== SCROLL SPY ACTIVE MENU ===== */

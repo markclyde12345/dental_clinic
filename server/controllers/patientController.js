@@ -128,8 +128,8 @@ const getPatientCount = async (req, res) => {
     if (error) throw error;
 
     const allReviews = Array.isArray(allReviewsRaw) ? allReviewsRaw : [];
-    let satisfactionRate = 98;
-    let averageStars = 4.9;
+    let satisfactionRate = 0;
+    let averageStars = 0;
 
     if (allReviews.length > 0) {
       const sumStars = allReviews.reduce((sum, r) => sum + (Number(r.rating) || 5), 0);
@@ -146,6 +146,7 @@ const getPatientCount = async (req, res) => {
       satisfactionRate,
       averageStars,
       reviewCount: allReviews.length,
+      recentReviews: allReviews.slice(0, 10),
       yearsExperience,
       timestamp: new Date().toISOString()
     });

@@ -1064,7 +1064,7 @@ const getAppointmentReview = async (req, res) => {
   try {
     const reviews = await getReviewsStore();
     const rev = reviews.find(r => String(r.appointment_id) === String(id));
-    res.json(rev || null);
+    res.json(rev ? { review: rev, ...rev } : { review: null });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
