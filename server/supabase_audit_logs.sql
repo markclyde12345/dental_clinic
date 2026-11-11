@@ -43,3 +43,21 @@ CREATE POLICY "Enable insert for authenticated users"
     FOR INSERT
     TO authenticated
     WITH CHECK (true);
+
+-- ═══════════════════════════════════════════════════════════════════
+-- LOCK DOWN ALL "UNRESTRICTED" TABLES WITH ROW LEVEL SECURITY (RLS)
+-- Safe to run: Your Node.js backend uses the `service_role` key, which
+-- automatically bypasses RLS, while blocking public/anon direct access.
+-- ═══════════════════════════════════════════════════════════════════
+
+ALTER TABLE IF EXISTS public.appointment_treatments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.dental_charts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.follow_ups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.hmo_claims ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.inventory ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.prescriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.staff_schedules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.treatment_plan_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.treatment_plans ENABLE ROW LEVEL SECURITY;
+
