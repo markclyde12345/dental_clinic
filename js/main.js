@@ -57,37 +57,66 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-/* ===== COUNTER ANIMATION ===== */
-function animateCounter(el, target, suffix = '') {
+/* ===== REAL-TIME COUNTER & HERO STATS ===== */
+function animateCounter(el, target, suffix = '', startFrom = 0, duration = 1200) {
+  if (!el) return;
+  if (el._animFrame) cancelAnimationFrame(el._animFrame);
+  const safeTarget = Number.isFinite(target) ? target : 0;
   let start = 0;
-  const duration = 1800;
   const step = timestamp => {
     if (!start) start = timestamp;
     const progress = Math.min((timestamp - start) / duration, 1);
     const eased    = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.floor(eased * target) + suffix;
-    if (progress < 1) requestAnimationFrame(step);
+    const current  = Math.round(startFrom + eased * (safeTarget - startFrom));
+    el.textContent = current + suffix;
+    if (progress < 1) {
+      el._animFrame = requestAnimationFrame(step);
+    } else {
+      el.textContent = safeTarget + suffix;
+      el._animFrame = null;
+    }
   };
-  requestAnimationFrame(step);
+  el._animFrame = requestAnimationFrame(step);
 }
 
-// Trigger counters when hero stats scroll into view
-const statsObserver = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      document.querySelectorAll('.hero-stat-num').forEach(el => {
-        const text   = el.textContent;
-        const num    = parseInt(text);
-        const suffix = text.replace(num, '');
-        animateCounter(el, num, suffix);
-      });
-      statsObserver.disconnect();
-    }
-  });
-}, { threshold: 0.5 });
+function updateStatElement(el, newValue, suffix, animateInitial = false) {
+  if (!el || !Number.isFinite(newValue)) return;
+  const prevValue = el.dataset.liveValue !== undefined ? Number(el.dataset.liveValue) : null;
+  el.dataset.liveValue = String(newValue);
 
-const statsSection = document.querySelector('.hero-stats');
-if (statsSection) statsObserver.observe(statsSection);
+  if (prevValue === null && animateInitial) {
+    animateCounter(el, newValue, suffix, 0, 1200);
+  } else if (prevValue !== null && prevValue !== newValue) {
+    animateCounter(el, newValue, suffix, prevValue, 600);
+  } else {
+    if (el._animFrame) cancelAnimationFrame(el._animFrame);
+    el.textContent = `${newValue}${suffix}`;
+  }
+}
+
+async function fetchLiveHeroStats(isInitial = false) {
+  const yearsStat = document.getElementById('years-exp-stat');
+  const patientStat = document.getElementById('patient-count-stat');
+  const satisfactionStat = document.getElementById('satisfaction-rate-stat');
+  if (!yearsStat && !patientStat && !satisfactionStat) return;
+
+  const baseOrigin = ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000' && window.location.port !== '') ? 'http://localhost:5000' : '';
+  try {
+    const res = await fetch(`${baseOrigin}/api/patients/count?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const yearsVal = Number(data.yearsExperience) || Math.max(5, new Date().getFullYear() - 2021);
+    const patientsVal = Number(data.count) || 0;
+    const satisfactionVal = Number(data.satisfactionRate) || 98;
+
+    updateStatElement(yearsStat, yearsVal, '+', isInitial);
+    updateStatElement(patientStat, patientsVal, '+', isInitial);
+    updateStatElement(satisfactionStat, satisfactionVal, '%', isInitial);
+  } catch (err) {
+    console.error('Failed to fetch real-time hero stats:', err);
+  }
+}
 
 /* ===== SCROLL SPY ACTIVE MENU ===== */
 const navLinks = document.querySelectorAll('.nav-links a:not(.nav-cta)');
@@ -116,20 +145,20 @@ window.addEventListener('scroll', () => {
 /* ===== DYNAMIC PATIENT COUNT & ACTIVE USER SESSION ===== */
 document.addEventListener('DOMContentLoaded', () => {
   initLandingUserSession();
+  fetchLiveHeroStats(true);
 
-  const patientStat = document.getElementById('patient-count-stat');
-  if (patientStat) {
-    const baseOrigin = ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000' && window.location.port !== '') ? 'http://localhost:5000' : '';
-    fetch(`${baseOrigin}/api/patients/count`)
-      .then(res => res.json())
-      .then(data => {
-        // Set the text content to the real number of patients from the DB
-        patientStat.textContent = `${data.count || 0}+`;
-      })
-      .catch(err => {
-        console.error('Failed to fetch patient count:', err);
-      });
-  }
+  // Real-time polling every 10 seconds + refresh when tab becomes visible
+  setInterval(() => {
+    if (!document.hidden) fetchLiveHeroStats(false);
+  }, 10000);
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) fetchLiveHeroStats(false);
+  });
+
+  window.addEventListener('focus', () => {
+    fetchLiveHeroStats(false);
+  });
 });
 
 /* ===== LANDING QR MODAL CONTROLLER ===== */
