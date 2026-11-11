@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="../js/theme-sync.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Patient Dashboard — Fano Dental Clinic</title>
@@ -13,6 +14,8 @@
   <link rel="stylesheet" href="../css/ai-chat.css">
   <link rel="stylesheet" href="../css/ui-enhancements.css?v=20261108_light_skeleton_v3">
   <link rel="stylesheet" href="../css/patient-home-v2.css?v=20261106_mascot">
+  <link rel="stylesheet" href="../css/dark-patient.css?v=1">
+  <link rel="stylesheet" href="../css/dark-patient-home.css?v=1">
 </head>
 <body>
 
@@ -2161,11 +2164,7 @@
       const html = document.documentElement;
       const savedTheme = localStorage.getItem('fano-theme');
 
-      // Keep clean bright theme by default
-      html.classList.remove('dark-theme');
-      if (savedTheme === 'dark') {
-        localStorage.setItem('fano-theme', 'light');
-      }
+      if (savedTheme === 'dark') html.classList.add('dark-theme');
 
       themeToggle.addEventListener('click', function() {
         const isDark = html.classList.toggle('dark-theme');

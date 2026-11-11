@@ -1,0 +1,776 @@
+/* AUTO-GENERATED dark theme overrides for receptionist. Activated by html.dark-theme (toggle in top bar). */
+
+html.dark-theme { color-scheme: dark; }
+html.dark-theme body { background: #0d171e !important; color: #dbe5ec !important; }
+html.dark-theme input, html.dark-theme select, html.dark-theme textarea {
+  background-color: #16232d !important; color: #e3ebf1 !important; border-color: #2a3b48 !important;
+}
+html.dark-theme input::placeholder, html.dark-theme textarea::placeholder { color: #7f93a3 !important; }
+html.dark-theme option { background: #16232d; color: #e3ebf1; }
+html.dark-theme [style*="background: #fff"], html.dark-theme [style*="background:#fff"],
+html.dark-theme [style*="background: white"], html.dark-theme [style*="background:white"],
+html.dark-theme [style*="background: #ffffff"], html.dark-theme [style*="background:#ffffff"] { background: #16232d !important; }
+html.dark-theme [style*="color: #0f172a"], html.dark-theme [style*="color:#0f172a"],
+html.dark-theme [style*="color: #1e293b"], html.dark-theme [style*="color:#1e293b"] { color: #e3ebf1 !important; }
+html.dark-theme table, html.dark-theme th, html.dark-theme td { border-color: #2a3b48 !important; }
+html.dark-theme ::-webkit-scrollbar-thumb { background: #2f4352; }
+html.dark-theme ::-webkit-scrollbar-track { background: #0d171e; }
+
+html.dark-theme .sidebar-menu a {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .sidebar-menu a i {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .sidebar-menu a:hover {
+  background: hsla(193, 43%, 50%, 0.16) !important;
+}
+
+html.dark-theme .nav-pill {
+  background: hsl(205, 22%, 20%) !important;
+  color: hsl(205, 20%, 80%) !important;
+}
+
+html.dark-theme .sidebar-footer {
+  border-top: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .user-info {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .logout-btn {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(0, 82%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .logout-btn:hover {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .receptionist-top-bar {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .receptionist-breadcrumb .breadcrumb-root {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .receptionist-breadcrumb .breadcrumb-sep {
+  color: hsl(205, 20%, 49%) !important;
+}
+
+html.dark-theme .receptionist-breadcrumb .breadcrumb-current {
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .header-action-grid {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .btn-header-notif {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .btn-header-notif:hover {
+  background: hsl(205, 22%, 15%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .btn-outline-primary {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .btn-outline-primary:hover {
+  background: hsla(166, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .btn-outline-secondary {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .btn-outline-secondary:hover {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(217, 43%, 68%) !important;
+}
+
+html.dark-theme .live-clock-card {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(205, 20%, 80%) !important;
+}
+
+html.dark-theme .clock-divider {
+  color: hsl(205, 20%, 49%) !important;
+}
+
+html.dark-theme .btn-secondary:hover {
+  background: hsla(193, 45%, 50%, 0.16) !important;
+}
+
+html.dark-theme .btn-outline {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .btn-outline:hover {
+  background: hsl(205, 22%, 15%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .metric-card.highlight-metric {
+  background: linear-gradient(180deg, hsl(205, 22%, 14%) 0%, hsl(205, 22%, 15%) 100%) !important;
+}
+
+html.dark-theme .bg-teal {
+  background: hsla(167, 70%, 50%, 0.16) !important;
+  color: hsl(175, 85%, 68%) !important;
+}
+
+html.dark-theme .metric-sub {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .empty-state {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .empty-state i {
+  color: hsl(205, 20%, 49%) !important;
+}
+
+html.dark-theme .empty-state p {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .medical-table th {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .medical-table td {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(205, 20%, 80%) !important;
+}
+
+html.dark-theme .medical-table tr:hover td {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .badge-pending {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 76%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .badge-approved {
+  color: hsl(224, 85%, 68%) !important;
+}
+
+html.dark-theme .badge-checkedin {
+  color: hsl(26, 85%, 68%) !important;
+}
+
+html.dark-theme .badge-inprogress {
+  color: hsl(263, 80%, 68%) !important;
+}
+
+html.dark-theme .badge-completed {
+  color: hsl(163, 85%, 68%) !important;
+}
+
+html.dark-theme .badge-cancelled {
+  color: hsl(0, 84%, 68%) !important;
+}
+
+html.dark-theme .search-box i {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .filter-group {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .filter-group select,
+html.dark-theme .filter-group input {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .fast-checkin-input-wrapper .search-field-icon {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .fast-checkin-input-wrapper input {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .fast-checkin-input-wrapper .btn-clear-search {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .fast-checkin-input-wrapper .btn-clear-search:hover {
+  color: hsl(222, 57%, 68%) !important;
+  background: hsla(210, 40%, 50%, 0.16) !important;
+}
+
+html.dark-theme .fast-checkin-dropdown {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1.5px solid hsl(205, 18%, 22%) !important;
+  color: hsl(217, 43%, 68%) !important;
+}
+
+html.dark-theme .fast-checkin-dropdown-header {
+  background: hsl(205, 22%, 15%) !important;
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .fast-checkin-item {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .fast-checkin-item:hover {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .fast-checkin-item.highlighted {
+  background: hsla(138, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .fast-checkin-avatar {
+  background: var(--primary-subtle, hsla(192, 42%, 50%, 0.16)) !important;
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .fast-checkin-patient-name {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .fast-checkin-phone {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .fast-checkin-meta-row {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .badge-pill-today {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(163, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .fast-checkin-empty-state {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .patient-status-card-box {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1.5px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .status-card-avatar {
+  background: var(--primary-subtle, hsla(192, 42%, 50%, 0.16)) !important;
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+  border: 2px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .status-card-patient-details h4 {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .status-card-contact-line {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .status-card-treatment-title {
+  color: hsl(217, 43%, 68%) !important;
+}
+
+html.dark-theme .status-card-datetime-line {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .status-card-status-label {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .badge-amber {
+  color: hsl(26, 85%, 68%) !important;
+}
+
+html.dark-theme .queue-card-item {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .queue-card-item:hover {
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .queue-card-item.active-chair {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .dentist-card {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .dentist-schedule-info {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .schedule-row {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .dentist-duty-bar {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .dentist-duty-bar.on-duty {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .dentist-duty-bar.off-duty {
+  background: hsl(205, 22%, 16%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .duty-status-label.on-duty {
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .duty-status-label.off-duty {
+  color: hsl(0, 82%, 68%) !important;
+}
+
+html.dark-theme .duty-slider {
+  background-color: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .duty-slider:before {
+  background-color: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .modal-dialog {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .modal-header {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .modal-close {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .modal-footer {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .form-group label {
+  color: hsl(205, 20%, 80%) !important;
+}
+
+html.dark-theme .form-group input:not([type="checkbox"]):not([type="radio"]),
+html.dark-theme .form-group select,
+html.dark-theme .form-group textarea {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .condition-pill-label {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .condition-pill-label:hover {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+}
+
+html.dark-theme .condition-pill-label:has(input:checked) {
+  background: hsla(192, 42%, 50%, 0.16) !important;
+}
+
+html.dark-theme .condition-pill-label span {
+  color: hsl(205, 20%, 80%) !important;
+}
+
+html.dark-theme .form-section-title {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .form-hint {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .info-callout p {
+  color: hsl(205, 20%, 80%) !important;
+}
+
+html.dark-theme .invoice-summary-card {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .summary-row {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .toast-item {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(217, 43%, 68%) !important;
+}
+
+html.dark-theme .pill-count {
+  background: hsl(205, 22%, 20%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .search-clear-btn {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .modern-table thead th {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .modern-table tbody tr:hover {
+  background: hsl(205, 22%, 16%) !important;
+}
+
+html.dark-theme .modern-table tbody td {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .ref-pill {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 76%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .appt-date i {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .patient-contact i {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .doctor-badge {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  color: hsl(224, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .chip-concern {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(23, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .chip-dentist {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  color: hsl(224, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .chip-hmo {
+  background: hsla(251, 70%, 50%, 0.16) !important;
+  color: hsl(263, 80%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .chip-alert {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  color: hsl(0, 84%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .chip-default {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 69%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .notes-custom-preview {
+  color: hsl(205, 20%, 76%) !important;
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .notes-custom-preview i {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .action-finished-label {
+  color: hsl(205, 20%, 59%) !important;
+  background: hsl(205, 22%, 15%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .btn-icon-resched {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(23, 85%, 68%) !important;
+}
+
+html.dark-theme .btn-icon-resched:hover {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .btn-icon-cancel {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  color: hsl(0, 84%, 68%) !important;
+}
+
+html.dark-theme .btn-icon-cancel:hover {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .btn-icon-view:hover {
+  background: hsla(193, 62%, 50%, 0.16) !important;
+}
+
+html.dark-theme .intake-section-card {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .intake-card-highlight {
+  background: linear-gradient(135deg, hsla(48, 70%, 50%, 0.16), hsla(39, 70%, 50%, 0.16)) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .intake-card-title {
+  color: hsl(205, 20%, 76%) !important;
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .text-amber {
+  color: hsl(38, 85%, 68%) !important;
+}
+
+html.dark-theme .text-blue {
+  color: hsl(217, 85%, 68%) !important;
+}
+
+html.dark-theme .intake-lbl {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .intake-val {
+  color: hsl(217, 43%, 68%) !important;
+}
+
+@media (max-width: 768px) {
+html.dark-theme .sidebar {
+  background: hsl(205, 22%, 14%) !important;
+}
+html.dark-theme .sidebar-drawer-close {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+html.dark-theme .sidebar-drawer-close:hover {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+  color: hsl(0, 85%, 68%) !important;
+}
+html.dark-theme .page-header-bar .header-title-block .header-subtitle {
+  color: var(--text-muted, hsl(205, 20%, 69%)) !important;
+}
+html.dark-theme .live-clock-card {
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  background: hsl(205, 22%, 14%) !important;
+}
+html.dark-theme .live-clock-card i {
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+html.dark-theme .btn-header-notif {
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+html.dark-theme .btn-qr-action {
+  background: hsl(205, 22%, 14%) !important;
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+}
+
+html.dark-theme .patient-delinquent-tag {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  color: hsl(0, 84%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .btn-header-notif {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(205, 20%, 80%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .btn-header-notif:hover {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .btn-header-notif i {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .btn-header-notif:hover i {
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .receptionist-notif-dropdown {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .rnd-header {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .rnd-unread-pill {
+  background: hsla(204, 70%, 50%, 0.16) !important;
+  color: hsl(201, 85%, 68%) !important;
+}
+
+html.dark-theme .rnd-item {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .rnd-item:hover {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .rnd-item.unread {
+  background: hsla(138, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .rnd-icon-wrap.type-warning {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(26, 85%, 68%) !important;
+}
+
+html.dark-theme .rnd-icon-wrap.type-danger {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  color: hsl(0, 84%, 68%) !important;
+}
+
+html.dark-theme .rnd-icon-wrap.type-success {
+  background: hsla(141, 70%, 50%, 0.16) !important;
+  color: hsl(142, 82%, 68%) !important;
+}
+
+html.dark-theme .rnd-icon-wrap.type-info {
+  background: hsla(204, 70%, 50%, 0.16) !important;
+  color: hsl(201, 85%, 68%) !important;
+}
+
+html.dark-theme .rnd-title {
+  color: hsl(217, 43%, 68%) !important;
+}
+
+html.dark-theme .rnd-desc {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .rnd-time {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .rnd-footer {
+  border-top: 1px solid hsl(205, 18%, 22%) !important;
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .rnd-footer-action {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .rnd-empty {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+@media (max-width: 768px) {
+html.dark-theme .mobile-bottom-taskbar {
+  border-top: 1px solid hsl(205, 18%, 22%) !important;
+}
+html.dark-theme .taskbar-item {
+  color: hsl(205, 20%, 69%) !important;
+}
+html.dark-theme .taskbar-item:hover,
+html.dark-theme .taskbar-item:focus {
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+html.dark-theme .taskbar-item.active {
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+}
+
+html.dark-theme .staff-profile-modal-card {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .staff-modal-avatar {
+  border: 4px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .staff-online-dot {
+  border: 3px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .staff-modal-name {
+  color: hsl(215, 56%, 68%) !important;
+}
+
+html.dark-theme .staff-modal-email {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .staff-role-badge {
+  background: hsla(138, 70%, 50%, 0.16) !important;
+  color: hsl(142, 82%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .staff-spec-list {
+  background: hsl(205, 22%, 15%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .staff-spec-row .spec-lbl {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .staff-spec-row .spec-val {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .btn-filter-tab {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .btn-filter-tab:hover {
+  color: hsl(195, 85%, 68%) !important;
+}
+
+html.dark-theme .btn-filter-tab.active {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(195, 85%, 68%) !important;
+}
+
+html.dark-theme {
+  --light-bg: #0d171e; --card-bg: #14212b; --border-color: #2a3b48; --dark-color: #e3ebf1;
+  --primary-subtle: #1b2b37; --text-muted: #8396a5;
+  --accent-light: rgba(16,185,129,.16); --gold-light: rgba(197,155,39,.18); --amber-light: rgba(245,158,11,.16);
+  --danger-light: rgba(239,68,68,.16); --blue-light: rgba(59,130,246,.18); --purple-light: rgba(139,92,246,.18);
+}

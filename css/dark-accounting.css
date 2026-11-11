@@ -1,0 +1,647 @@
+/* AUTO-GENERATED dark theme overrides for accounting. Activated by html.dark-theme (toggle in top bar). */
+
+html.dark-theme { color-scheme: dark; }
+html.dark-theme body { background: #0d171e !important; color: #dbe5ec !important; }
+html.dark-theme input, html.dark-theme select, html.dark-theme textarea {
+  background-color: #16232d !important; color: #e3ebf1 !important; border-color: #2a3b48 !important;
+}
+html.dark-theme input::placeholder, html.dark-theme textarea::placeholder { color: #7f93a3 !important; }
+html.dark-theme option { background: #16232d; color: #e3ebf1; }
+html.dark-theme [style*="background: #fff"], html.dark-theme [style*="background:#fff"],
+html.dark-theme [style*="background: white"], html.dark-theme [style*="background:white"],
+html.dark-theme [style*="background: #ffffff"], html.dark-theme [style*="background:#ffffff"] { background: #16232d !important; }
+html.dark-theme [style*="color: #0f172a"], html.dark-theme [style*="color:#0f172a"],
+html.dark-theme [style*="color: #1e293b"], html.dark-theme [style*="color:#1e293b"] { color: #e3ebf1 !important; }
+html.dark-theme table, html.dark-theme th, html.dark-theme td { border-color: #2a3b48 !important; }
+html.dark-theme ::-webkit-scrollbar-thumb { background: #2f4352; }
+html.dark-theme ::-webkit-scrollbar-track { background: #0d171e; }
+
+html.dark-theme .sidebar-clinic-card {
+  background: hsla(192, 42%, 50%, 0.16) !important;
+}
+
+html.dark-theme .clinic-badge-sub {
+  color: hsl(160, 85%, 68%) !important;
+}
+
+html.dark-theme .sidebar-nav-container::-webkit-scrollbar-thumb {
+  background: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .sidebar-section-header {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .sidebar-menu a {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .sidebar-menu a .nav-icon {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .sidebar-menu a:hover {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+}
+
+html.dark-theme .sidebar-menu a.active .nav-icon {
+  color: hsl(198, 85%, 68%) !important;
+}
+
+html.dark-theme .sidebar-badge.badge-pending {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  color: hsl(0, 82%, 68%) !important;
+}
+
+html.dark-theme .sidebar-menu a.active .sidebar-badge.badge-pending {
+  color: hsl(0, 85%, 82%) !important;
+}
+
+html.dark-theme .sidebar-badge.badge-hmo {
+  background: hsla(226, 70%, 50%, 0.16) !important;
+  color: hsl(243, 85%, 68%) !important;
+}
+
+html.dark-theme .sidebar-footer {
+  border-top: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .user-info {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .user-details span {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .logout-btn {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(0, 82%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .logout-btn:hover {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .accounting-top-bar {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .accounting-breadcrumb .breadcrumb-root {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .accounting-breadcrumb .breadcrumb-sep {
+  color: hsl(205, 20%, 49%) !important;
+}
+
+html.dark-theme .accounting-breadcrumb .breadcrumb-current {
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .live-sync-indicator {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(163, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .live-clock-card {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .live-clock-card i {
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .clock-divider {
+  color: hsl(205, 20%, 49%) !important;
+}
+
+html.dark-theme .header-action-grid {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .btn-outline-util {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .btn-outline-util:hover {
+  background: hsl(205, 22%, 15%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .widget-card h3 {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .widget-hint {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .progress-bar-bg {
+  background: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .action-tile {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .action-tile:hover {
+  background: hsla(193, 43%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .action-tile-desc {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .search-box {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .filter-group select {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .data-table th {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .data-table td {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .data-table tr:hover td {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .badge-paid {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(161, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .badge-unpaid {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(0, 82%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .badge-partial {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(32, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .badge-hmo {
+  background: hsla(226, 70%, 50%, 0.16) !important;
+  color: hsl(243, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .modal-card {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .modal-close-btn {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .modal-close-btn:hover {
+  color: hsl(217, 43%, 68%) !important;
+}
+
+html.dark-theme .receipt-slip {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px dashed hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .receipt-divider {
+  border-bottom: 1px dashed hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .receipt-info-grid {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .receipt-items-table th {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .receipt-footer-msg {
+  color: hsl(205, 20%, 66%) !important;
+}
+
+html.dark-theme .printable-statement {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .statement-box {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .statement-line {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .statement-line.highlight {
+  border-top: 2px solid hsl(205, 18%, 22%) !important;
+}
+
+@media print {
+html.dark-theme,
+html.dark-theme body {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+html.dark-theme .printable-statement {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+html.dark-theme .statement-header h2 {
+  color: hsl(195, 85%, 68%) !important;
+}
+html.dark-theme .statement-header p {
+  color: hsl(205, 20%, 76%) !important;
+}
+html.dark-theme .statement-box {
+  background: hsl(205, 22%, 15%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+html.dark-theme .statement-box h4 {
+  color: hsl(195, 85%, 68%) !important;
+}
+html.dark-theme .statement-line {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+html.dark-theme .statement-line span {
+  color: hsl(205, 20%, 76%) !important;
+}
+html.dark-theme .statement-line strong {
+  color: hsl(222, 57%, 68%) !important;
+}
+html.dark-theme .statement-line.highlight span,
+html.dark-theme .statement-line.highlight strong {
+  color: hsl(195, 85%, 68%) !important;
+}
+html.dark-theme .printable-statement h4 {
+  color: hsl(195, 85%, 68%) !important;
+}
+html.dark-theme .data-table th {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(195, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+html.dark-theme .data-table td {
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(217, 43%, 68%) !important;
+}
+html.dark-theme .receipt-slip {
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+}
+
+html.dark-theme .invoices-toolbar {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .search-box-modern .search-icon {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .search-box-modern input {
+  border: 1.5px solid hsl(205, 18%, 22%) !important;
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .search-box-modern input:focus {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .search-clear-btn {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .search-clear-btn:hover {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .inv-filter-dropdown-wrap .inv-filter-icon {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .inv-status-select {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1.5px solid hsl(205, 18%, 22%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .inv-status-select:hover {
+  border-color: hsl(205, 18%, 22%) !important;
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .inv-status-select:focus {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .inv-filter-dropdown-wrap .inv-filter-arrow {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .status-chips-bar {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+}
+
+html.dark-theme .status-chip {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .status-chip:hover {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .status-chip.active {
+  background: hsl(205, 22%, 14%) !important;
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .btn-secondary-action {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(205, 20%, 76%) !important;
+  border: 1.5px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .btn-secondary-action:hover {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(222, 57%, 68%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .modern-invoice-card {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .modern-invoice-table thead th {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(205, 20%, 76%) !important;
+  border-bottom: 1.5px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .modern-invoice-table tbody tr:hover {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .modern-invoice-table tbody td {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .inv-pill {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(195, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .inv-pill:hover {
+  background: hsl(205, 22%, 20%) !important;
+  color: hsl(200, 85%, 68%) !important;
+}
+
+html.dark-theme .patient-name-title {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .patient-sub-contact {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .treatment-name-bold {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .treatment-name-bold i {
+  color: hsl(200, 85%, 68%) !important;
+}
+
+html.dark-theme .info-pill.doctor-pill {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  color: hsl(224, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .info-pill.concern-pill {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(271, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .info-pill.alert-pill {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(0, 82%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .date-main {
+  color: hsl(217, 43%, 68%) !important;
+}
+
+html.dark-theme .date-sub {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .amount-billed {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .amount-paid.has-paid {
+  color: hsl(160, 85%, 68%) !important;
+}
+
+html.dark-theme .amount-paid.zero-paid {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .amount-balance.balance-alert {
+  color: hsl(0, 85%, 68%) !important;
+  background: hsl(205, 22%, 16%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .amount-balance.balance-cleared {
+  color: hsl(160, 85%, 68%) !important;
+}
+
+html.dark-theme .badge-paid {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(161, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .badge-unpaid {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(347, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .badge-overdue {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(0, 84%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .badge-partial {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(32, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .badge-baddebt {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 76%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .badge-hmo {
+  background: hsla(226, 70%, 50%, 0.16) !important;
+  color: hsl(243, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .btn-action-icon {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .btn-action-icon:hover {
+  background: hsl(205, 22%, 15%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .empty-state-cell {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .settings-accordion-item {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1.5px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .settings-accordion-header {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .settings-accordion-header:hover {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .settings-accordion-item.active .settings-accordion-header {
+  background: hsl(205, 22%, 16%) !important;
+  border-bottom: 1.5px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .accordion-arrow {
+  color: hsl(200, 85%, 68%) !important;
+}
+
+html.dark-theme .accordion-title-text {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .accordion-subtitle-text {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .accordion-badge {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .settings-accordion-content {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .setting-switch-row {
+  background: hsl(205, 22%, 15%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .setting-switch-title {
+  color: hsl(217, 43%, 68%) !important;
+}
+
+html.dark-theme .setting-switch-desc {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .custom-slider {
+  background-color: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .custom-slider:before {
+  background-color: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .inv-cost-summary {
+  border-top: 1.5px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .inv-summary-icon.icon-items {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  color: hsl(217, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .inv-summary-icon.icon-val {
+  background: hsla(192, 42%, 50%, 0.16) !important;
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .inv-summary-icon.icon-low {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(32, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .inv-summary-icon.icon-reorder {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(161, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .inv-summary-label {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .inv-summary-val {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .inv-summary-val.val-primary {
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .inv-summary-val.val-warning {
+  color: hsl(32, 85%, 68%) !important;
+}
+
+html.dark-theme .inv-summary-val.val-success {
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .inv-summary-divider {
+  background: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme {
+  --light-bg: #0d171e; --card-bg: #14212b; --border-color: #2a3b48; --dark-color: #e3ebf1;
+}

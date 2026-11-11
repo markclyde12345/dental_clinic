@@ -1,0 +1,79 @@
+/* AUTO-GENERATED dark theme overrides for patient-home. Activated by html.dark-theme (toggle in top bar). */
+
+html.dark-theme { color-scheme: dark; }
+html.dark-theme body { background: #0d171e !important; color: #dbe5ec !important; }
+html.dark-theme input, html.dark-theme select, html.dark-theme textarea {
+  background-color: #16232d !important; color: #e3ebf1 !important; border-color: #2a3b48 !important;
+}
+html.dark-theme input::placeholder, html.dark-theme textarea::placeholder { color: #7f93a3 !important; }
+html.dark-theme option { background: #16232d; color: #e3ebf1; }
+html.dark-theme [style*="background: #fff"], html.dark-theme [style*="background:#fff"],
+html.dark-theme [style*="background: white"], html.dark-theme [style*="background:white"],
+html.dark-theme [style*="background: #ffffff"], html.dark-theme [style*="background:#ffffff"] { background: #16232d !important; }
+html.dark-theme [style*="color: #0f172a"], html.dark-theme [style*="color:#0f172a"],
+html.dark-theme [style*="color: #1e293b"], html.dark-theme [style*="color:#1e293b"] { color: #e3ebf1 !important; }
+html.dark-theme table, html.dark-theme th, html.dark-theme td { border-color: #2a3b48 !important; }
+html.dark-theme ::-webkit-scrollbar-thumb { background: #2f4352; }
+html.dark-theme ::-webkit-scrollbar-track { background: #0d171e; }
+
+html.dark-theme body {
+  background-color: hsl(205, 22%, 16%) !important;
+}
+
+html.dark-theme .pd-action-outline {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .pd-stat-card {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .pd-card {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .pd-empty-appt {
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pd-empty-appt-icon {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .pd-quick-tile {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .pd-quick-tile:hover {
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pd-home-footer {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+@media (max-width: 1024px) {
+html.dark-theme .top-header {
+  background: hsl(205, 22%, 14%) !important;
+}
+}
+
+html.dark-theme .pd-stat-card,
+html.dark-theme .pd-card,
+html.dark-theme .pd-quick-tile,
+html.dark-theme .pd-home-footer,
+html.dark-theme .pd-action-outline {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .pd-empty-appt-icon {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .pd-empty-appt {
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pd-action-outline {
+  background: hsl(205, 22%, 14%) !important;
+}

@@ -1,0 +1,1472 @@
+/* AUTO-GENERATED dark theme overrides for patient. Activated by html.dark-theme (toggle in top bar). */
+
+html.dark-theme { color-scheme: dark; }
+html.dark-theme body { background: #0d171e !important; color: #dbe5ec !important; }
+html.dark-theme input, html.dark-theme select, html.dark-theme textarea {
+  background-color: #16232d !important; color: #e3ebf1 !important; border-color: #2a3b48 !important;
+}
+html.dark-theme input::placeholder, html.dark-theme textarea::placeholder { color: #7f93a3 !important; }
+html.dark-theme option { background: #16232d; color: #e3ebf1; }
+html.dark-theme [style*="background: #fff"], html.dark-theme [style*="background:#fff"],
+html.dark-theme [style*="background: white"], html.dark-theme [style*="background:white"],
+html.dark-theme [style*="background: #ffffff"], html.dark-theme [style*="background:#ffffff"] { background: #16232d !important; }
+html.dark-theme [style*="color: #0f172a"], html.dark-theme [style*="color:#0f172a"],
+html.dark-theme [style*="color: #1e293b"], html.dark-theme [style*="color:#1e293b"] { color: #e3ebf1 !important; }
+html.dark-theme table, html.dark-theme th, html.dark-theme td { border-color: #2a3b48 !important; }
+html.dark-theme ::-webkit-scrollbar-thumb { background: #2f4352; }
+html.dark-theme ::-webkit-scrollbar-track { background: #0d171e; }
+
+html.dark-theme [data-theme="dark"] .slot-btn.selected .slot-badge-available {
+  background: hsl(205, 22%, 14%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme [data-theme="dark"] .slot-btn.selected .slot-badge-available::before {
+  color: hsl(201, 85%, 68%) !important;
+}
+
+html.dark-theme [data-theme="dark"] .slot-badge-available {
+  color: hsl(158, 74%, 68%) !important;
+}
+
+html.dark-theme [data-theme="dark"] .slot-btn.occupied,
+html.dark-theme [data-theme="dark"] .slot-btn:disabled.occupied {
+  color: hsl(0, 85%, 82%) !important;
+}
+
+html.dark-theme [data-theme="dark"] .slot-btn.occupied > span:first-child {
+  text-decoration-color: hsl(0, 85%, 71%) !important;
+}
+
+html.dark-theme .sidebar-top {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .sb-logo-text {
+  color: hsl(195, 85%, 68%) !important;
+}
+
+html.dark-theme .sidebar-clinic-card {
+  background: hsla(192, 42%, 50%, 0.16) !important;
+}
+
+html.dark-theme .clinic-badge-title {
+  color: hsl(195, 85%, 68%) !important;
+}
+
+html.dark-theme .clinic-badge-sub {
+  color: hsl(160, 85%, 68%) !important;
+}
+
+html.dark-theme .nav-label {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .nav-item {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .nav-item:hover {
+  background: hsla(193, 43%, 50%, 0.16) !important;
+  color: hsl(195, 85%, 68%) !important;
+}
+
+html.dark-theme .sidebar-footer {
+  border-top: 1px solid hsl(205, 18%, 22%) !important;
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .sidebar-user-card {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .sidebar-user-name {
+  color: hsl(215, 56%, 68%) !important;
+}
+
+html.dark-theme .sidebar-user-role {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .sidebar-logout-btn {
+  background: hsl(205, 22%, 16%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(0, 82%, 68%) !important;
+}
+
+html.dark-theme .sidebar-logout-btn:hover {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .main-content {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .live-clock-card {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .live-clock-card i {
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .clock-divider {
+  color: hsl(205, 20%, 49%) !important;
+}
+
+html.dark-theme .header-action-grid {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .header-action-grid .btn-outline-primary {
+  background: hsl(205, 22%, 14%) !important;
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .header-action-grid .btn-outline-primary:hover {
+  background: hsla(193, 43%, 50%, 0.16) !important;
+}
+
+html.dark-theme .header-action-grid .btn-outline-secondary {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(205, 20%, 76%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .header-action-grid .btn-outline-secondary:hover {
+  background: hsl(205, 22%, 15%) !important;
+  color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .notif-btn {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .notif-dot {
+  border: 2px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .header-user {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .secondary-btn {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .stat-card:hover {
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .step-line {
+  background: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .step-number {
+  background: hsl(205, 22%, 14%) !important;
+  border: 2px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .service-card,
+html.dark-theme .dentist-card {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .service-card-category {
+  color: hsl(205, 20%, 69%) !important;
+  background: var(--bg-base, hsl(205, 22%, 15%)) !important;
+  border: 1px solid var(--border-light, hsl(205, 18%, 22%)) !important;
+}
+
+html.dark-theme .service-card-meta {
+  border-top: 1px solid var(--border-light, hsl(205, 18%, 22%)) !important;
+}
+
+html.dark-theme .dentist-duty-pill.on {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(161, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .dentist-duty-pill.off {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(0, 82%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .dentist-branch-pill {
+  color: hsl(200, 85%, 68%) !important;
+  background: hsla(204, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .dentist-offduty-warning {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(26, 85%, 68%) !important;
+}
+
+html.dark-theme .scc-avail-dot {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .scc-desc {
+  color: var(--text-secondary, hsl(205, 20%, 69%)) !important;
+}
+
+html.dark-theme .scc-highlights-list {
+  background: var(--bg-base, hsl(205, 22%, 15%)) !important;
+  border: 1px solid var(--border-light, hsl(205, 18%, 22%)) !important;
+}
+
+html.dark-theme .scc-highlight-chip i {
+  color: hsl(160, 85%, 68%) !important;
+}
+
+html.dark-theme .scc-meta-row {
+  border-top: 1px dashed var(--border-light, hsl(205, 18%, 22%)) !important;
+}
+
+html.dark-theme .scc-meta-label {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .scc-covered-val {
+  color: hsl(175, 85%, 68%) !important;
+}
+
+html.dark-theme .service-details-modal-card {
+  background: var(--bg-card, hsl(205, 22%, 14%)) !important;
+}
+
+html.dark-theme .sdm-tagline {
+  color: hsl(212, 85%, 78%) !important;
+}
+
+html.dark-theme .sdm-text {
+  color: var(--text-secondary, hsl(205, 20%, 76%)) !important;
+}
+
+html.dark-theme .sdm-highlight-item {
+  background: var(--bg-base, hsl(205, 22%, 15%)) !important;
+  border: 1px solid var(--border-light, hsl(205, 18%, 22%)) !important;
+}
+
+html.dark-theme .sdm-highlight-item i {
+  color: hsl(160, 85%, 68%) !important;
+}
+
+html.dark-theme .sdm-care-card.prep {
+  background: hsla(138, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .sdm-care-card.prep h5 {
+  color: hsl(143, 74%, 68%) !important;
+}
+
+html.dark-theme .sdm-care-card.prep p {
+  color: hsl(142, 82%, 68%) !important;
+}
+
+html.dark-theme .sdm-care-card.post {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .sdm-care-card.post h5 {
+  color: hsl(226, 81%, 68%) !important;
+}
+
+html.dark-theme .sdm-care-card.post p {
+  color: hsl(224, 85%, 68%) !important;
+}
+
+html.dark-theme .slot-btn {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .slot-btn.selected .slot-badge-available {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .slot-btn.selected .slot-badge-available::before {
+  color: var(--accent, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .slot-btn.occupied,
+html.dark-theme .slot-btn:disabled.occupied {
+  background: repeating-linear-gradient(
+    -45deg,
+    hsl(205, 22%, 16%),
+    hsl(205, 22%, 16%) 5px,
+    hsla(0, 70%, 50%, 0.16) 5px,
+    hsla(0, 70%, 50%, 0.16) 10px
+  ) !important;
+  border: 1.5px solid hsl(205, 18%, 22%) !important;
+  color: hsl(0, 84%, 68%) !important;
+}
+
+html.dark-theme .slot-btn.occupied > span:first-child {
+  text-decoration-color: hsl(0, 85%, 68%) !important;
+}
+
+html.dark-theme .slot-badge-available {
+  color: hsl(142, 82%, 68%) !important;
+  background: hsla(141, 70%, 50%, 0.16) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .slot-btn:disabled:not(.occupied) {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(205, 20%, 49%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .nearest-branch-banner {
+  background: linear-gradient(135deg, hsla(214, 70%, 50%, 0.16) 0%, hsla(214, 70%, 50%, 0.16) 100%) !important;
+  border: 1.5px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .nearest-branch-banner .nb-distance {
+  color: hsl(226, 81%, 68%) !important;
+}
+
+html.dark-theme .nearest-branch-banner .nb-title {
+  color: hsl(224, 74%, 68%) !important;
+}
+
+html.dark-theme .nearest-branch-banner .nb-address {
+  color: hsl(217, 85%, 68%) !important;
+}
+
+html.dark-theme .branch-card {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .branch-dist-badge {
+  background: hsla(226, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .branch-card.nearest .branch-dist-badge {
+  color: hsl(163, 85%, 68%) !important;
+  background: hsla(149, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .form-input {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .form-input:disabled,
+html.dark-theme .form-input[readonly] {
+  background: hsl(205, 22%, 15%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .data-table td {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .data-table tr:hover td {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .balance-summary {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .profile-hero-card {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .profile-cover-pattern {
+  background-image: radial-gradient(hsl(205, 22%, 14%) 1px, transparent 1px) !important;
+}
+
+html.dark-theme .profile-hero-avatar {
+  border: 4px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .profile-online-beacon {
+  border: 3px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .profile-hero-name {
+  color: hsl(215, 56%, 68%) !important;
+}
+
+html.dark-theme .profile-hero-email {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .profile-badge-pill.verified {
+  background: hsla(138, 70%, 50%, 0.16) !important;
+  color: hsl(142, 82%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .profile-badge-pill.branch {
+  background: hsla(183, 70%, 50%, 0.16) !important;
+  color: hsl(193, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .profile-stat-box {
+  background: hsl(205, 22%, 15%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .profile-stat-box:hover {
+  background: hsl(205, 22%, 14%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .profile-stat-icon {
+  color: hsl(195, 85%, 68%) !important;
+}
+
+html.dark-theme .pstat-val {
+  color: hsl(215, 56%, 68%) !important;
+}
+
+html.dark-theme .pstat-label {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .profile-completion-card {
+  background: linear-gradient(135deg, hsla(138, 70%, 50%, 0.16), hsla(152, 70%, 50%, 0.16)) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .completion-header {
+  color: hsl(143, 74%, 68%) !important;
+}
+
+html.dark-theme .completion-track {
+  background: hsla(141, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .completion-hint {
+  color: hsl(142, 82%, 68%) !important;
+}
+
+html.dark-theme .profile-form-card {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .profile-form-header {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .profile-form-title {
+  color: hsl(215, 56%, 68%) !important;
+}
+
+html.dark-theme .profile-form-sub {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .fieldset-legend {
+  color: hsl(195, 85%, 68%) !important;
+  border-bottom: 1px dashed hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .input-icon-prefix {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .os-settings-shell {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(222, 57%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .os-settings-top-header {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .os-settings-title {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .os-settings-subtitle {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .os-nav-item {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .os-nav-item:hover {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .os-nav-item.active {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  color: hsl(221, 85%, 68%) !important;
+}
+
+html.dark-theme .os-nav-icon {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .os-nav-item:hover .os-nav-icon {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .os-nav-item.active .os-nav-icon {
+  color: hsl(221, 85%, 68%) !important;
+}
+
+html.dark-theme .os-nav-divider {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+}
+
+html.dark-theme .os-nav-danger {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .os-nav-danger:hover {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(0, 82%, 68%) !important;
+}
+
+html.dark-theme .os-nav-danger.active {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(0, 82%, 68%) !important;
+}
+
+html.dark-theme .os-nav-danger.active .os-nav-icon,
+html.dark-theme .os-nav-danger:hover .os-nav-icon {
+  color: hsl(0, 82%, 68%) !important;
+}
+
+html.dark-theme .os-detail-head {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .os-detail-head-title {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .os-detail-head-desc {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .os-detail-card {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .os-detail-card h3 {
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .os-detail-card p {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .os-detail-card .form-input,
+html.dark-theme .os-detail-card select.form-input {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .os-detail-card .form-label {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .os-back-btn {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(205, 20%, 80%) !important;
+}
+
+html.dark-theme .os-back-btn:hover {
+  background: hsl(205, 22%, 15%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme body.dark-theme .os-settings-subtitle,
+html.dark-theme [data-theme="dark"] .os-settings-subtitle {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme body.dark-theme .os-nav-item,
+html.dark-theme [data-theme="dark"] .os-nav-item {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme body.dark-theme .os-nav-item.active,
+html.dark-theme [data-theme="dark"] .os-nav-item.active {
+  color: hsl(213, 85%, 68%) !important;
+}
+
+html.dark-theme body.dark-theme .os-nav-item.active .os-nav-icon,
+html.dark-theme [data-theme="dark"] .os-nav-item.active .os-nav-icon {
+  color: hsl(213, 85%, 68%) !important;
+}
+
+html.dark-theme body.dark-theme .os-detail-head-desc,
+html.dark-theme [data-theme="dark"] .os-detail-head-desc {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme body.dark-theme .os-detail-card p,
+html.dark-theme [data-theme="dark"] .os-detail-card p {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme body.dark-theme .os-detail-card .form-label,
+html.dark-theme [data-theme="dark"] .os-detail-card .form-label {
+  color: hsl(205, 20%, 49%) !important;
+}
+
+html.dark-theme .btn-asm-action {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .pill-info {
+  color: hsl(200, 85%, 68%) !important;
+}
+
+html.dark-theme .pill-neutral {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .danger-outline-btn {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .btn-size-pill {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .si-icon {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .toggle-slider {
+  background: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .toggle-slider::before {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .appointment-modal-card,
+html.dark-theme .modal-card {
+  background: var(--bg-card, hsl(205, 22%, 14%)) !important;
+  color: var(--text-primary, hsl(222, 57%, 68%)) !important;
+  border: 1px solid var(--border, hsl(205, 18%, 22%)) !important;
+}
+
+html.dark-theme .btn-action-cancel:hover {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .ai-chat-panel {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .ai-chat-messages {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .ai-chat-messages::-webkit-scrollbar-thumb {
+  background: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .ai-chat-msg.bot .msg-avatar {
+  background: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .ai-chat-msg.bot .msg-bubble {
+  background: hsl(205, 22%, 14%) !important;
+  color: hsl(205, 20%, 87%) !important;
+}
+
+html.dark-theme .ai-chat-input-area {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme #financial-activity-list::-webkit-scrollbar-thumb {
+  background: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .activity-icon.insurance {
+  background: hsla(269, 70%, 50%, 0.16) !important;
+  color: hsl(271, 85%, 68%) !important;
+}
+
+@media (max-width: 768px) {
+html.dark-theme .sidebar {
+  background: hsl(205, 22%, 14%) !important;
+}
+html.dark-theme .sidebar-top {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+html.dark-theme .sidebar-footer {
+  border-top: 1px solid hsl(205, 18%, 22%) !important;
+  background: hsl(205, 22%, 14%) !important;
+}
+html.dark-theme .burger-menu-btn {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+}
+html.dark-theme .burger-menu-btn:hover {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  color: hsl(0, 82%, 68%) !important;
+}
+html.dark-theme .burger-toggle {
+  background: hsl(205, 22%, 14%) !important;
+}
+html.dark-theme #billing-section .data-table tr {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid var(--border, hsl(205, 18%, 22%)) !important;
+}
+html.dark-theme #billing-section .data-table td {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+html.dark-theme #billing-section .data-table td::before {
+  color: hsl(205, 20%, 69%) !important;
+}
+html.dark-theme #billing-section .status-pill.pending {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(26, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+html.dark-theme #billing-section .status-pill.confirmed {
+  background: hsla(141, 70%, 50%, 0.16) !important;
+  color: hsl(142, 82%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+html.dark-theme [data-theme="dark"] #billing-section .data-table td::before {
+  color: hsl(205, 20%, 59%) !important;
+}
+html.dark-theme [data-theme="dark"] #billing-section .data-table td[data-label="Amount"] {
+  color: hsl(198, 85%, 68%) !important;
+}
+}
+
+html.dark-theme .badge-paid-check {
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .paymongo-modal-card {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .paymongo-bill-card {
+  background: linear-gradient(135deg, hsl(205, 22%, 15%) 0%, hsla(138, 70%, 50%, 0.16) 100%) !important;
+  border: 1.5px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pbc-ref {
+  color: hsl(143, 74%, 68%) !important;
+}
+
+html.dark-theme .pbc-status-pill {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(26, 85%, 68%) !important;
+}
+
+html.dark-theme .pbc-amount-wrap {
+  border-top: 1px dashed hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pbc-amount-value {
+  color: hsl(195, 85%, 68%) !important;
+}
+
+html.dark-theme .badge-gcash {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+  color: hsl(224, 85%, 68%) !important;
+}
+
+html.dark-theme .badge-maya {
+  background: hsla(138, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+  color: hsl(142, 82%, 68%) !important;
+}
+
+html.dark-theme .badge-card {
+  background: hsl(205, 22%, 15%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+  color: hsl(205, 20%, 80%) !important;
+}
+
+html.dark-theme .badge-grabpay {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+  color: hsl(163, 85%, 68%) !important;
+}
+
+html.dark-theme .badge-billease {
+  background: hsla(183, 70%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+  color: hsl(193, 85%, 68%) !important;
+}
+
+html.dark-theme .paymongo-security-note {
+  background: hsl(205, 22%, 16%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .paymongo-security-note svg {
+  color: hsl(200, 85%, 68%) !important;
+}
+
+html.dark-theme .paymongo-security-note strong {
+  color: hsl(201, 85%, 68%) !important;
+}
+
+html.dark-theme .paymongo-security-note p {
+  color: hsl(202, 85%, 68%) !important;
+}
+
+html.dark-theme .receipt-modal-card {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .receipt-details-card {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .text-green {
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .deposit-col.deposit-later {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .deposit-tag-required {
+  background: hsla(149, 70%, 50%, 0.16) !important;
+  color: hsl(163, 85%, 68%) !important;
+}
+
+html.dark-theme .deposit-tag-clinic {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .deposit-col.deposit-now .deposit-amount {
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .choice-radio-wrap {
+  border: 2px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .choice-badge-green {
+  background: hsla(141, 70%, 50%, 0.16) !important;
+  color: hsl(142, 82%, 68%) !important;
+}
+
+html.dark-theme .choice-badge-gray {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .pms-chip.gcash {
+  background: hsla(204, 70%, 50%, 0.16) !important;
+  color: hsl(201, 85%, 68%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pms-chip.maya {
+  background: hsla(141, 70%, 50%, 0.16) !important;
+  color: hsl(143, 74%, 68%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pms-chip.cards {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 80%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pms-chip.billease {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(23, 85%, 68%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pms-chip.counter {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(205, 20%, 76%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .mini-tab-pill-group {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+}
+
+html.dark-theme .mini-tab-btn {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .mini-tab-btn.active {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .history-branch-pill {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .history-payment-status.paid {
+  color: hsl(142, 85%, 68%) !important;
+}
+
+html.dark-theme .history-payment-status.unpaid {
+  color: hsl(0, 82%, 68%) !important;
+}
+
+html.dark-theme .history-concern-tag {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .pnd-unread-pill {
+  background: hsla(204, 70%, 50%, 0.16) !important;
+  color: hsl(200, 85%, 68%) !important;
+}
+
+html.dark-theme .pnd-date-header {
+  background: hsl(205, 22%, 15%) !important;
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+  border-top: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .pnd-date-title {
+  color: hsl(205, 20%, 80%) !important;
+}
+
+html.dark-theme .pnd-date-count {
+  color: hsl(200, 85%, 68%) !important;
+  background: hsla(204, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .pnd-icon-wrap.type-success {
+  background: hsla(141, 70%, 50%, 0.16) !important;
+  color: hsl(142, 82%, 68%) !important;
+}
+
+html.dark-theme .pnd-icon-wrap.type-warning {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(26, 85%, 68%) !important;
+}
+
+html.dark-theme .pnd-icon-wrap.type-danger {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  color: hsl(0, 84%, 68%) !important;
+}
+
+html.dark-theme .pnd-icon-wrap.type-info,
+html.dark-theme .pnd-icon-wrap.type-primary {
+  background: hsla(204, 70%, 50%, 0.16) !important;
+  color: hsl(201, 85%, 68%) !important;
+}
+
+html.dark-theme .pnd-time {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .patient-plan-card.minimal {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .patient-plan-card.minimal:hover {
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .min-plan-head {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .min-plan-meta {
+  color: hsl(205, 20%, 70%) !important;
+}
+
+html.dark-theme .min-status-text {
+  color: hsl(163, 85%, 68%) !important;
+}
+
+html.dark-theme .min-sep {
+  color: hsl(205, 20%, 49%) !important;
+}
+
+html.dark-theme .min-plan-title {
+  color: hsl(221, 49%, 68%) !important;
+}
+
+html.dark-theme .btn-min-print {
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .btn-min-print:hover {
+  background: hsl(205, 22%, 15%) !important;
+  color: hsl(221, 49%, 68%) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .min-progress-track {
+  background: hsl(205, 22%, 17%) !important;
+}
+
+html.dark-theme .min-progress-label {
+  color: hsl(205, 20%, 70%) !important;
+}
+
+html.dark-theme .min-section-title {
+  color: hsl(205, 20%, 70%) !important;
+}
+
+html.dark-theme .min-finding-row {
+  color: hsl(205, 20%, 80%) !important;
+}
+
+html.dark-theme .min-finding-body strong {
+  color: hsl(221, 49%, 68%) !important;
+}
+
+html.dark-theme .min-inline-tooth {
+  background: hsl(205, 22%, 17%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .min-sublabel {
+  color: hsl(205, 20%, 70%) !important;
+}
+
+html.dark-theme .patient-tooth-pill {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 80%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .min-proc-list {
+  border-top: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .min-proc-item {
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .min-proc-indicator {
+  background: hsl(205, 22%, 17%) !important;
+  color: hsl(205, 20%, 70%) !important;
+}
+
+html.dark-theme .min-proc-item.done .min-proc-indicator {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .min-proc-name {
+  color: hsl(221, 49%, 68%) !important;
+}
+
+html.dark-theme .min-proc-item.done .min-proc-name {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .min-proc-tooth {
+  color: hsl(205, 20%, 70%) !important;
+  background: hsl(205, 22%, 15%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .min-tag {
+  background: hsl(205, 22%, 17%) !important;
+  color: hsl(205, 20%, 70%) !important;
+}
+
+html.dark-theme .min-tag.done {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .min-tag.next {
+  background: hsla(204, 70%, 50%, 0.16) !important;
+  color: hsl(200, 85%, 68%) !important;
+}
+
+html.dark-theme .min-proc-desc {
+  color: hsl(205, 20%, 70%) !important;
+}
+
+html.dark-theme .min-proc-oop {
+  color: hsl(221, 49%, 68%) !important;
+}
+
+html.dark-theme .min-proc-covered {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .min-finance-bar {
+  background: hsl(205, 22%, 15%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .min-fin-label {
+  color: hsl(205, 20%, 70%) !important;
+}
+
+html.dark-theme .min-fin-value {
+  color: hsl(221, 49%, 68%) !important;
+}
+
+html.dark-theme .min-fin-value.discount {
+  color: hsl(221, 85%, 68%) !important;
+}
+
+html.dark-theme .min-fin-value.oop {
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .min-fin-divider {
+  background: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .min-fin-sub {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .plan-min-notes-row {
+  border-top: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .plan-min-notes-row strong {
+  color: hsl(221, 49%, 68%) !important;
+}
+
+html.dark-theme .min-details {
+  color: hsl(205, 20%, 70%) !important;
+}
+
+html.dark-theme .min-details summary {
+  color: hsl(195, 85%, 68%) !important;
+}
+
+html.dark-theme .min-details p {
+  color: hsl(205, 20%, 76%) !important;
+  background: hsl(205, 22%, 15%) !important;
+}
+
+@media (max-width: 1024px) {
+html.dark-theme .sidebar {
+  background: hsl(205, 22%, 14%) !important;
+}
+html.dark-theme .main-content {
+  background: hsla(210, 36%, 50%, 0.16) !important;
+}
+html.dark-theme .top-header {
+  background: hsl(205, 22%, 14%) !important;
+  border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+html.dark-theme .burger-toggle {
+  background: hsl(205, 22%, 14%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+html.dark-theme .breadcrumb-item {
+  color: hsl(205, 20%, 59%) !important;
+}
+html.dark-theme .breadcrumb-current {
+  color: hsl(195, 85%, 68%) !important;
+}
+html.dark-theme .notif-btn {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+}
+html.dark-theme .main-content {
+  background: hsla(210, 36%, 50%, 0.16) !important;
+}
+html.dark-theme .taskbar-item.active {
+  color: hsl(198, 85%, 68%) !important;
+}
+html.dark-theme .taskbar-item.active .taskbar-label {
+  color: hsl(198, 85%, 68%) !important;
+}
+}
+
+html.dark-theme .section-pill-badge {
+  background: hsla(204, 70%, 50%, 0.16) !important;
+  color: hsl(201, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .services-refresh-btn {
+  background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .services-stat-pill.stat-procedures .ssp-icon {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  color: hsl(221, 85%, 68%) !important;
+}
+
+html.dark-theme .services-stat-pill.stat-duration .ssp-icon {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .services-stat-pill.stat-quality .ssp-icon {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(32, 85%, 68%) !important;
+}
+
+html.dark-theme .services-stat-pill .ssp-label {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .services-category-chips::-webkit-scrollbar-thumb {
+  background: hsl(205, 22%, 20%) !important;
+}
+
+html.dark-theme .svc-cat-chip {
+  color: hsl(205, 20%, 76%) !important;
+  background: hsla(210, 40%, 50%, 0.16) !important;
+}
+
+html.dark-theme .svc-cat-chip:hover {
+  background: hsl(205, 22%, 20%) !important;
+  color: hsl(222, 57%, 68%) !important;
+}
+
+html.dark-theme .fin-card-label {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .fin-card.billed .fin-card-icon {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  color: hsl(221, 85%, 68%) !important;
+}
+
+html.dark-theme .fin-card.pending {
+  background: linear-gradient(180deg, hsl(205, 22%, 15%) 0%, hsl(205, 22%, 14%) 100%) !important;
+}
+
+html.dark-theme .fin-card.pending .fin-card-icon {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(32, 85%, 68%) !important;
+}
+
+html.dark-theme .fin-card.paid .fin-card-icon {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .fin-card.claims .fin-card-icon {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(262, 85%, 68%) !important;
+}
+
+html.dark-theme .fin-card-value.pending-val {
+  color: hsl(26, 85%, 68%) !important;
+}
+
+html.dark-theme .fin-card-value.paid-val {
+  color: hsl(163, 85%, 68%) !important;
+}
+
+html.dark-theme .fin-card-value.claims-val {
+  color: hsl(263, 80%, 68%) !important;
+}
+
+html.dark-theme .fin-trend-pill.positive {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .fin-trend-pill.warning {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(26, 85%, 68%) !important;
+}
+
+html.dark-theme .fin-trend-pill.neutral {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .notif-filter-chip {
+  color: hsl(205, 20%, 69%) !important;
+}
+
+html.dark-theme .pnd-sec-group-header {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .pnd-sec-group-title {
+  color: hsl(205, 20%, 76%) !important;
+}
+
+html.dark-theme .pnd-sec-group-badge {
+  color: hsl(200, 85%, 68%) !important;
+  background: hsla(204, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .pnd-sec-card:hover {
+  background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .pnd-sec-card.unread {
+  background: hsl(205, 22%, 16%) !important;
+}
+
+html.dark-theme .pnd-sec-card.unread:hover {
+  background: hsla(211, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .pnd-sec-card-icon.type-success {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(161, 85%, 68%) !important;
+}
+
+html.dark-theme .pnd-sec-card-icon.type-warning {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(32, 85%, 68%) !important;
+}
+
+html.dark-theme .pnd-sec-card-icon.type-danger {
+  background: hsl(205, 22%, 16%) !important;
+  color: hsl(0, 82%, 68%) !important;
+}
+
+html.dark-theme .pnd-sec-card-icon.type-info,
+html.dark-theme .pnd-sec-card-icon.type-primary {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  color: hsl(221, 85%, 68%) !important;
+}
+
+html.dark-theme .pnd-sec-category-pill.cat-success {
+  background: hsla(149, 70%, 50%, 0.16) !important;
+  color: hsl(163, 85%, 68%) !important;
+}
+
+html.dark-theme .pnd-sec-category-pill.cat-warning {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(23, 85%, 68%) !important;
+}
+
+html.dark-theme .pnd-sec-category-pill.cat-danger {
+  background: hsla(0, 70%, 50%, 0.16) !important;
+  color: hsl(0, 80%, 68%) !important;
+}
+
+html.dark-theme .pnd-sec-category-pill.cat-info,
+html.dark-theme .pnd-sec-category-pill.cat-primary {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  color: hsl(226, 81%, 68%) !important;
+}
+
+html.dark-theme .pnd-sec-time {
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .pnd-card-action-btn.appt {
+  background: hsla(214, 70%, 50%, 0.16) !important;
+  color: hsl(224, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pnd-card-action-btn.pay {
+  background: hsla(48, 70%, 50%, 0.16) !important;
+  color: hsl(26, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .pnd-card-action-btn.receipt {
+  background: hsla(152, 70%, 50%, 0.16) !important;
+  color: hsl(163, 85%, 68%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .star-rating-container .star-item {
+  color: hsl(205, 20%, 49%) !important;
+}
+
+html.dark-theme .star-rating-container .star-item:hover,
+html.dark-theme .star-rating-container .star-item.active {
+  color: hsl(38, 85%, 68%) !important;
+}
+
+html.dark-theme .rating-tag-pill:hover {
+  color: hsl(201, 85%, 68%) !important;
+}
+
+html.dark-theme .rating-tag-pill.active {
+  background: hsla(204, 70%, 50%, 0.16) !important;
+  color: hsl(201, 85%, 68%) !important;
+}
+
+html.dark-theme #reschedule-time-select option:disabled {
+  color: hsl(205, 20%, 59%) !important;
+  background-color: hsla(210, 40%, 50%, 0.16) !important;
+}
+
+html.dark-theme .slot-btn.occupied,
+html.dark-theme .slot-btn:disabled {
+  background: hsla(210, 40%, 50%, 0.16) !important;
+  border-color: hsl(205, 18%, 22%) !important;
+  color: hsl(205, 20%, 59%) !important;
+}
+
+html.dark-theme .address-autocomplete-dropdown {
+  background: var(--bg-card, hsl(205, 22%, 14%)) !important;
+  border: 1.5px solid var(--border, hsl(205, 18%, 22%)) !important;
+}
+
+html.dark-theme .address-suggestion-item:hover,
+html.dark-theme .address-suggestion-item.active {
+  background: var(--accent-subtle, hsl(205, 22%, 16%)) !important;
+}
+
+html.dark-theme .address-suggestion-icon {
+  color: var(--accent, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .address-suggestion-title {
+  color: var(--text-primary, hsl(222, 57%, 68%)) !important;
+}
+
+html.dark-theme .address-suggestion-sub {
+  color: var(--text-muted, hsl(205, 20%, 69%)) !important;
+}
+
+html.dark-theme .address-suggestion-dist {
+  color: hsl(200, 85%, 68%) !important;
+  background: hsla(204, 70%, 50%, 0.16) !important;
+}
+
+html.dark-theme .address-suggestion-empty {
+  color: hsl(0, 82%, 68%) !important;
+  background: hsl(205, 22%, 16%) !important;
+}
+
+html.dark-theme .address-error-msg {
+  background: hsl(205, 22%, 16%) !important;
+  border: 1px solid hsl(205, 18%, 22%) !important;
+  color: hsl(0, 82%, 68%) !important;
+}
+
+/* Variable-driven surfaces */
+html.dark-theme {
+  --bg-base: #0d171e; --bg-card: #14212b; --bg-sidebar: #101c25; --bg-sidebar-hover: #1b2b37;
+  --text-primary: #e3ebf1; --text-secondary: #b3c1cd; --text-muted: #8396a5; --text-sidebar: #b3c1cd;
+  --accent-subtle: #1b2b37; --green-bg: rgba(16,185,129,.15); --yellow-bg: rgba(217,119,6,.16); --red-bg: rgba(220,38,38,.16);
+  --border-color: #2a3b48; --border: #2a3b48;
+}
