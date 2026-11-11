@@ -1,4 +1,4 @@
-﻿/* Shared theme sync + Real-Time Cloud Persistence & Cross-Dashboard Sync Engine */
+/* Shared theme sync + Real-Time Cloud Persistence & Cross-Dashboard Sync Engine */
 (function () {
   var html = document.documentElement;
   var KEY = 'fano-theme';

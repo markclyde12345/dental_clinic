@@ -871,8 +871,8 @@ async function loadStats() {
       }
       const cachedInv = JSON.parse(localStorage.getItem('admin_cached_inventory') || '[]');
       const cachedExp = JSON.parse(localStorage.getItem('admin_cached_expenses') || '[]');
-      if (cachedInv.length > 0 && (!localInventory || localInventory.length === 0)) {
-        localInventory = cachedInv;
+      if (!Array.isArray(localInventory)) {
+        localInventory = [];
       }
       if (cachedExp.length > 0 && (!allExpenses || allExpenses.length === 0)) {
         allExpenses = cachedExp;
@@ -4440,7 +4440,19 @@ function renderInventoryRows(data) {
   if (!tbody) return;
 
   if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="padding: 32px; text-align: center; color: #888;">No supplies found in inventory ledger.</td></tr>';
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="padding: 44px 20px; text-align: center;">
+          <div style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; color: #64748b;">
+            <div style="width: 48px; height: 48px; border-radius: 12px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #0b3c4d; font-size: 24px;">
+              <i class="ti ti-package"></i>
+            </div>
+            <div style="font-weight: 700; font-size: 0.96rem; color: var(--secondary-color, #0f172a);">No clinic supplies in stock ledger yet</div>
+            <div style="font-size: 0.83rem; color: #64748b;">Click <strong>+ Add Item</strong> in the top-right corner to add your first supply item.</div>
+          </div>
+        </td>
+      </tr>
+    `;
     return;
   }
 
@@ -4450,11 +4462,11 @@ function renderInventoryRows(data) {
     const isOutOfStock = stockNum === 0 || (item.status || '').toLowerCase().includes('out');
     const isLow = !isOutOfStock && (stockNum <= threshNum || (item.status || '').toLowerCase().includes('low'));
     
-    let statusBadge = '<span style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">In Stock</span>';
+    let statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; white-space:nowrap; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; padding:4px 10px; border-radius:999px; font-size:0.73rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;"><span style="width:6px;height:6px;border-radius:50%;background:#16a34a;"></span>In Stock</span>';
     if (isOutOfStock) {
-      statusBadge = '<span style="background:#fef2f2; color:#ef4444; border:1px solid #fecaca; padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Out of Stock</span>';
+      statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; white-space:nowrap; background:#fef2f2; color:#ef4444; border:1px solid #fecaca; padding:4px 10px; border-radius:999px; font-size:0.73rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;"><span style="width:6px;height:6px;border-radius:50%;background:#ef4444;"></span>Out of Stock</span>';
     } else if (isLow) {
-      statusBadge = '<span style="background:#fffbeb; color:#d97706; border:1px solid #fde68a; padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Low Stock</span>';
+      statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; white-space:nowrap; background:#fffbeb; color:#d97706; border:1px solid #fde68a; padding:4px 10px; border-radius:999px; font-size:0.73rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;"><span style="width:6px;height:6px;border-radius:50%;background:#d97706;"></span>Low Stock</span>';
     }
 
     const priceVal = parseFloat(item.price !== undefined ? item.price : (item.unit_price !== undefined ? item.unit_price : 0)) || 0;
@@ -4462,44 +4474,47 @@ function renderInventoryRows(data) {
 
     return `
       <tr data-item-id="${item.id}" style="border-bottom: 1px solid var(--border-color); color: var(--dark-color); transition: background-color 0.2s;">
-        <td style="padding: 14px 16px; font-weight: 600; color: var(--secondary-color);">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <i class="ti ti-box" style="color: #64748b; font-size: 17px;"></i>
-            <span>${escapeHTML(item.name)}</span>
+        <td style="padding: 14px 16px; font-weight: 600; color: var(--secondary-color); vertical-align: middle;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 30px; height: 30px; border-radius: 8px; background: #f1f5f9; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: #475569;">
+              <i class="ti ti-box" style="font-size: 16px;"></i>
+            </span>
+            <span style="line-height: 1.35;">${escapeHTML(item.name)}</span>
           </div>
         </td>
-        <td style="padding: 14px 16px;">
-          <span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:4px; font-size:0.8rem; font-weight:600;">${escapeHTML(item.category || 'Disposables')}</span>
+        <td style="padding: 14px 16px; vertical-align: middle; white-space: nowrap;">
+          <span style="display:inline-block; background:#f1f5f9; color:#475569; padding:4px 10px; border-radius:6px; font-size:0.78rem; font-weight:600; white-space:nowrap;">${escapeHTML(item.category || 'Disposables')}</span>
         </td>
-        <td style="padding: 14px 16px; font-weight: 700; color: #0f172a; font-family: monospace; font-size: 0.92rem;">
+        <td style="padding: 14px 16px; font-weight: 700; color: #0f172a; font-family: 'Plus Jakarta Sans', monospace; font-size: 0.92rem; vertical-align: middle; white-space: nowrap;">
           ${priceDisplay}
         </td>
-        <td style="padding: 14px 16px;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-weight: 700; font-size: 0.92rem; color: ${isOutOfStock ? '#ef4444' : (isLow ? '#d97706' : 'var(--dark-color)')};">
-              ${stockNum} <span style="font-size:0.8rem; font-weight:normal; color:#64748b;">${escapeHTML(item.unit || 'Units')}</span>
-            </span>
-            <div style="display: inline-flex; gap: 2px; margin-left: 4px;">
-              <button type="button" title="Decrease Stock by 1" onclick="quickAdjustStock('${item.id}', -1)" style="border: 1px solid #cbd5e1; background: #ffffff; color:#334155; border-radius: 4px; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1;">-</button>
-              <button type="button" title="Increase Stock by 1" onclick="quickAdjustStock('${item.id}', 1)" style="border: 1px solid #cbd5e1; background: #ffffff; color:#334155; border-radius: 4px; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1;">+</button>
+        <td style="padding: 14px 16px; vertical-align: middle;">
+          <div style="display: flex; align-items: center; gap: 10px; white-space: nowrap;">
+            <div style="min-width: 78px;">
+              <span style="font-weight: 700; font-size: 0.94rem; color: ${isOutOfStock ? '#ef4444' : (isLow ? '#d97706' : 'var(--dark-color)')};">${stockNum}</span>
+              <span style="font-size: 0.78rem; font-weight: 500; color: #64748b; margin-left: 3px;">${escapeHTML(item.unit || 'Units')}</span>
+            </div>
+            <div style="display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;">
+              <button type="button" title="Decrease Stock by 1" onclick="quickAdjustStock('${item.id}', -1)" style="border: 1px solid #cbd5e1; background: #ffffff; color:#334155; border-radius: 6px; width: 26px; height: 26px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; padding: 0;">−</button>
+              <button type="button" title="Increase Stock by 1" onclick="quickAdjustStock('${item.id}', 1)" style="border: 1px solid #cbd5e1; background: #ffffff; color:#334155; border-radius: 6px; width: 26px; height: 26px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; padding: 0;">+</button>
             </div>
           </div>
         </td>
-        <td style="padding: 14px 16px; color: #64748b; font-size: 0.88rem;">
+        <td style="padding: 14px 16px; color: #64748b; font-size: 0.86rem; vertical-align: middle; white-space: nowrap;">
           ${threshNum} ${escapeHTML(item.unit || 'Units')}
         </td>
-        <td style="padding: 14px 16px;">
+        <td style="padding: 14px 16px; vertical-align: middle; white-space: nowrap;">
           ${statusBadge}
         </td>
-        <td style="padding: 14px 16px; text-align: right;">
-          <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
-            <button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #0284c7; color: #0284c7; width: auto; font-weight:600;" onclick="openEditInventoryModal('${item.id}', '${escapeJS(item.name)}', '${escapeJS(item.category)}', '${escapeJS(item.unit)}', ${stockNum}, ${threshNum}, ${priceVal})">
-              <i class="ti ti-edit"></i> Edit
+        <td style="padding: 14px 16px; text-align: right; vertical-align: middle; white-space: nowrap;">
+          <div style="display: inline-flex; gap: 6px; justify-content: flex-end; align-items: center; flex-wrap: nowrap;">
+            <button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 32px; padding: 0 12px; font-size: 0.78rem; border-radius: 6px; border: 1.5px solid #0284c7; background: transparent; color: #0284c7; font-weight: 600; cursor: pointer; white-space: nowrap;" onclick="openEditInventoryModal('${item.id}', '${escapeJS(item.name)}', '${escapeJS(item.category)}', '${escapeJS(item.unit)}', ${stockNum}, ${threshNum}, ${priceVal})">
+              <i class="ti ti-edit" style="font-size: 14px;"></i><span>Edit</span>
             </button>
-            <button onclick="reorderSupply('${escapeJS(item.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: var(--secondary-color); color: white;">
+            <button type="button" onclick="reorderSupply('${escapeJS(item.name)}')" style="display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.78rem; background: var(--secondary-color, #0b3c4d); color: white; white-space: nowrap;">
               Restock
             </button>
-            <button onclick="deleteInventoryItem('${item.id}', '${escapeJS(item.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: #fee2e2; color: #ef4444; transition: background 0.2s;">
+            <button type="button" onclick="deleteInventoryItem('${item.id}', '${escapeJS(item.name)}')" style="display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.78rem; background: #fee2e2; color: #ef4444; white-space: nowrap;">
               Delete
             </button>
           </div>
@@ -4515,7 +4530,7 @@ function renderInventoryTable(data) {
   const alertTitle = document.getElementById('admin-inv-alert-title');
   const alertDesc = document.getElementById('admin-inv-alert-desc');
 
-  const fullData = localInventory || data || [];
+  const fullData = Array.isArray(localInventory) ? localInventory : (Array.isArray(data) ? data : []);
   const outOfStockItems = fullData.filter(item => {
     const s = parseInt(item.stock, 10) || 0;
     return s === 0 || (item.status || '').toLowerCase().includes('out');
@@ -4541,7 +4556,7 @@ function renderInventoryTable(data) {
     if (totalAlerts > 0) {
       alertBanner.style.display = 'flex';
       if (alertTitle) {
-        alertTitle.textContent = `⚠️ ${totalAlerts} Clinic Supply Item${totalAlerts > 1 ? 's' : ''} Need Immediate Attention`;
+        alertTitle.textContent = `${totalAlerts} Clinic Supply Item${totalAlerts > 1 ? 's Need' : ' Needs'} Immediate Attention`;
       }
       if (alertDesc) {
         let descParts = [];
