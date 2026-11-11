@@ -4756,7 +4756,24 @@ function filterAndRenderUsers() {
           </div>
         </td>
         <td style="padding: 14px 16px;">${escapeHTML(u.email)}</td>
-        <td style="padding: 14px 16px;"><span class="${roleBadgeCls}">${u.role}</span></td>
+        <td style="padding: 14px 16px;">
+          <div style="display: inline-flex; align-items: center; gap: 8px;">
+            <span class="${roleBadgeCls}">${u.role}</span>
+            <select
+              aria-label="Change user role permission"
+              title="${isSelf ? 'You cannot change your own Admin role' : 'Change role & dashboard permission'}"
+              ${isSelf ? 'disabled' : ''}
+              onchange="changeUserRole('${u.id}', this.value, '${escapeJS(displayName)}')"
+              style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.76rem; font-weight: 600; background: var(--card-bg, #fff); color: var(--dark-color, #1e293b); cursor: ${isSelf ? 'not-allowed' : 'pointer'};"
+            >
+              <option value="Patient" ${u.role === 'Patient' ? 'selected' : ''}>Patient</option>
+              <option value="Receptionist" ${u.role === 'Receptionist' ? 'selected' : ''}>Receptionist</option>
+              <option value="Dentist" ${u.role === 'Dentist' ? 'selected' : ''}>Dentist</option>
+              <option value="Accounting" ${u.role === 'Accounting' ? 'selected' : ''}>Accounting</option>
+              <option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>Admin</option>
+            </select>
+          </div>
+        </td>
         <td style="padding: 14px 16px;">${escapeHTML(u.contact_number || 'N/A')}</td>
         <td style="padding: 14px 16px; font-weight: 600; color: ${statusColor};">${statusText}</td>
         <td style="padding: 14px 16px; text-align: right;">
@@ -4773,6 +4790,39 @@ function filterAndRenderUsers() {
     `;
   }).join('');
 }
+
+window.changeUserRole = function(id, newRole, userName) {
+  if (!confirm(`Grant "${newRole}" dashboard permissions to ${userName}?\n\nWhen they log in, they will be routed to the ${newRole} Dashboard.`)) {
+    loadUsers();
+    return;
+  }
+
+  fetch(`${AUTH_API}/users/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ role: newRole })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message && !data.id) {
+      showToast(data.message, 'error');
+      loadUsers();
+    } else {
+      showToast(`Updated ${userName}'s role to ${newRole}!`, 'success');
+      logConsoleEvent(`[INFO] Admin changed role for ${data.email || userName} to ${newRole}.`);
+      loadUsers();
+      if (typeof loadStaffSchedules === 'function') loadStaffSchedules();
+    }
+  })
+  .catch(err => {
+    console.error('Error updating user role:', err);
+    showToast('Failed to update user role permission', 'error');
+    loadUsers();
+  });
+};
 
 window.toggleUserStatus = function(id, currentStatus) {
   const newStatus = !currentStatus;

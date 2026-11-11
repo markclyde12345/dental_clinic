@@ -1239,23 +1239,60 @@ const createStaffUser = async (req, res) => {
   }
 };
  
- // ─── Admin: Toggle User Active Status ──────────────────────────────────────────
+ // ─── Admin: Update User Status or Role / Permissions ───────────────────────────
  // @route   PUT /api/auth/users/:id
  // @access  Private (Admin)
  const updateUserStatus = async (req, res) => {
    const { id } = req.params;
-   const { isActive } = req.body;
+   const { isActive, role } = req.body;
    try {
+     const updateFields = {};
+     if (typeof isActive === 'boolean') updateFields.is_active = isActive;
+     if (role && ['Admin', 'Dentist', 'Dental Assistant', 'Receptionist', 'Accounting', 'Patient'].includes(role)) {
+       updateFields.role = role;
+     }
+
      const { data: updated, error } = await supabase
        .from('users')
-       .update({ is_active: isActive })
+       .update(updateFields)
        .eq('id', id)
-       .select('id, email, is_active')
+       .select('id, name, email, contact_number, role, is_active')
        .single();
  
      if (error) {
        return internalError(res, error);
      }
+
+     // If role was changed, sync staff_schedules in Supabase
+     if (role && updated) {
+       try {
+         if (['Admin', 'Dentist', 'Receptionist', 'Accounting'].includes(role)) {
+           const { data: existingSched } = await supabase
+             .from('staff_schedules')
+             .select('id')
+             .or(`id.eq.${id},email.ilike.${updated.email}`)
+             .maybeSingle();
+
+           if (existingSched) {
+             await supabase.from('staff_schedules').update({ role: updated.role, name: updated.name }).eq('id', existingSched.id);
+           } else {
+             await supabase.from('staff_schedules').insert([{
+               id: updated.id,
+               name: updated.name || updated.email,
+               email: updated.email,
+               role: updated.role,
+               contact: updated.contact_number || 'N/A',
+               shift: role === 'Dentist' ? '09:00 AM - 05:00 PM' : '08:00 AM - 05:00 PM',
+               days: 'Mon - Sat',
+               availability: 'On Duty'
+             }]);
+           }
+         } else if (role === 'Patient') {
+           await supabase.from('staff_schedules').delete().eq('id', id);
+         }
+       } catch (_) {}
+     }
+
      return res.json(updated);
    } catch (error) {
      return internalError(res, error);
