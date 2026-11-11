@@ -979,6 +979,8 @@ html, body {
 
 .toast.success { background: #059669; }
 .toast.error   { background: #dc2626; }
+.toast.warning { background: #d97706; }
+.toast.info    { background: #0284c7; }
 
 @keyframes slideInRight {
   from { opacity: 0; transform: translateX(20px); }
