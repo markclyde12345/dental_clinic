@@ -20,16 +20,57 @@ html.dark-theme body {
   background-color: hsl(205, 22%, 16%) !important;
 }
 
+html.dark-theme .pd-mobile-brand-text strong {
+  color: #9fdcec !important;
+}
+
+html.dark-theme .pd-mobile-brand-text small {
+  color: #9fdcec !important;
+}
+
 html.dark-theme .pd-action-outline {
   background: hsl(205, 22%, 14%) !important;
+  color: #9fdcec !important;
 }
 
 html.dark-theme .pd-stat-card {
   background: hsl(205, 22%, 14%) !important;
 }
 
+html.dark-theme .pd-stat-icon {
+  color: #9fdcec !important;
+}
+
+html.dark-theme .pd-stat-label {
+  color: #cbd5e1 !important;
+}
+
+html.dark-theme .pd-stat-value {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .pd-stat-link {
+  color: #9fdcec !important;
+}
+
 html.dark-theme .pd-card {
   background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .pd-card-title {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .pd-card-title i {
+  color: #9fdcec !important;
+}
+
+html.dark-theme .pd-see-all {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .pd-see-all:hover {
+  color: #9fdcec !important;
 }
 
 html.dark-theme .pd-empty-appt {
@@ -38,10 +79,32 @@ html.dark-theme .pd-empty-appt {
 
 html.dark-theme .pd-empty-appt-icon {
   background: hsl(205, 22%, 14%) !important;
+  color: #9fdcec !important;
+}
+
+html.dark-theme .pd-empty-appt-text strong {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .pd-empty-appt-text span {
+  color: #cbd5e1 !important;
+}
+
+html.dark-theme .pd-quick-title {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .pd-quick-title i {
+  color: #9fdcec !important;
 }
 
 html.dark-theme .pd-quick-tile {
   background: hsl(205, 22%, 14%) !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .pd-quick-tile i {
+  color: #9fdcec !important;
 }
 
 html.dark-theme .pd-quick-tile:hover {
@@ -50,6 +113,26 @@ html.dark-theme .pd-quick-tile:hover {
 
 html.dark-theme .pd-home-footer {
   background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .pd-home-footer-brand strong {
+  color: #9fdcec !important;
+}
+
+html.dark-theme .pd-home-footer-brand small {
+  color: #cbd5e1 !important;
+}
+
+html.dark-theme .pd-home-footer-help strong {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .pd-home-footer-help small {
+  color: #cbd5e1 !important;
+}
+
+html.dark-theme .pd-home-footer-help:hover strong {
+  color: #9fdcec !important;
 }
 
 @media (max-width: 1024px) {
@@ -66,8 +149,29 @@ html.dark-theme .pd-action-outline {
   background: hsl(205, 22%, 14%) !important;
 }
 
+html.dark-theme .pd-stat-value,
+html.dark-theme .pd-card-title,
+html.dark-theme .pd-quick-title,
+html.dark-theme .pd-quick-tile span,
+html.dark-theme .pd-see-all,
+html.dark-theme .pd-empty-appt-text strong,
+html.dark-theme .pd-home-footer-help strong {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .pd-stat-label,
+html.dark-theme .pd-empty-appt-text span,
+html.dark-theme .pd-home-footer-help small {
+  color: #cbd5e1 !important;
+}
+
+html.dark-theme .pd-stat-icon {
+  color: #9fdcec !important;
+}
+
 html.dark-theme .pd-empty-appt-icon {
   background: hsl(205, 22%, 14%) !important;
+  color: #9fdcec !important;
 }
 
 html.dark-theme .pd-empty-appt {
@@ -76,4 +180,11 @@ html.dark-theme .pd-empty-appt {
 
 html.dark-theme .pd-action-outline {
   background: hsl(205, 22%, 14%) !important;
+  color: #9fdcec !important;
 }
+
+html.dark-theme .pd-home-footer-brand strong {
+  color: #9fdcec !important;
+}
+
+html.dark-theme body, html.dark-theme h1, html.dark-theme h2, html.dark-theme h3, html.dark-theme h4, html.dark-theme h5, html.dark-theme h6 { color: #f1f5f9; }

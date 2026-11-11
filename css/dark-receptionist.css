@@ -16,21 +16,38 @@ html.dark-theme table, html.dark-theme th, html.dark-theme td { border-color: #2
 html.dark-theme ::-webkit-scrollbar-thumb { background: #2f4352; }
 html.dark-theme ::-webkit-scrollbar-track { background: #0d171e; }
 
+html.dark-theme body {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .sidebar-logo {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .clinic-badge-title {
+  color: #f1f5f9 !important;
+}
+
 html.dark-theme .sidebar-menu a {
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .sidebar-menu a i {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .sidebar-menu a:hover {
   background: hsla(193, 43%, 50%, 0.16) !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .sidebar-menu a:hover i {
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .nav-pill {
   background: hsl(205, 22%, 20%) !important;
-  color: hsl(205, 20%, 80%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .sidebar-footer {
@@ -39,6 +56,14 @@ html.dark-theme .sidebar-footer {
 
 html.dark-theme .user-info {
   background: hsl(205, 22%, 15%) !important;
+}
+
+html.dark-theme .user-details h4 {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .user-details span {
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .logout-btn {
@@ -57,15 +82,19 @@ html.dark-theme .receptionist-top-bar {
 }
 
 html.dark-theme .receptionist-breadcrumb .breadcrumb-root {
-  color: hsl(205, 20%, 69%) !important;
-}
-
-html.dark-theme .receptionist-breadcrumb .breadcrumb-sep {
-  color: hsl(205, 20%, 49%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .receptionist-breadcrumb .breadcrumb-current {
   color: var(--primary-color, hsl(195, 85%, 68%)) !important;
+}
+
+html.dark-theme .page-header-bar h2 {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .page-header-bar .header-subtitle {
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .header-action-grid {
@@ -74,16 +103,18 @@ html.dark-theme .header-action-grid {
 
 html.dark-theme .btn-header-notif {
   background: hsl(205, 22%, 14%) !important;
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .btn-header-notif:hover {
   background: hsl(205, 22%, 15%) !important;
+  color: #f1f5f9 !important;
   border-color: hsl(205, 18%, 22%) !important;
 }
 
 html.dark-theme .btn-outline-primary {
   background: hsl(205, 22%, 14%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .btn-outline-primary:hover {
@@ -92,7 +123,7 @@ html.dark-theme .btn-outline-primary:hover {
 
 html.dark-theme .btn-outline-secondary {
   background: hsl(205, 22%, 14%) !important;
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .btn-outline-secondary:hover {
@@ -102,11 +133,15 @@ html.dark-theme .btn-outline-secondary:hover {
 
 html.dark-theme .live-clock-card {
   background: hsl(205, 22%, 14%) !important;
-  color: hsl(205, 20%, 80%) !important;
+  color: #f1f5f9 !important;
 }
 
-html.dark-theme .clock-divider {
-  color: hsl(205, 20%, 49%) !important;
+html.dark-theme .live-clock-card i {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .btn-secondary {
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .btn-secondary:hover {
@@ -115,11 +150,12 @@ html.dark-theme .btn-secondary:hover {
 
 html.dark-theme .btn-outline {
   background: hsl(205, 22%, 14%) !important;
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .btn-outline:hover {
   background: hsl(205, 22%, 15%) !important;
+  color: #f1f5f9 !important;
   border-color: hsl(205, 18%, 22%) !important;
 }
 
@@ -127,35 +163,47 @@ html.dark-theme .metric-card.highlight-metric {
   background: linear-gradient(180deg, hsl(205, 22%, 14%) 0%, hsl(205, 22%, 15%) 100%) !important;
 }
 
+html.dark-theme .metric-title {
+  color: #cbd5e1 !important;
+}
+
 html.dark-theme .bg-teal {
   background: hsla(167, 70%, 50%, 0.16) !important;
   color: hsl(175, 85%, 68%) !important;
 }
 
+html.dark-theme .metric-value {
+  color: #f1f5f9 !important;
+}
+
 html.dark-theme .metric-sub {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
+}
+
+html.dark-theme .card-box-title {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .card-box-sub {
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .empty-state {
-  color: hsl(205, 20%, 59%) !important;
-}
-
-html.dark-theme .empty-state i {
-  color: hsl(205, 20%, 49%) !important;
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .empty-state p {
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .medical-table th {
   background: hsl(205, 22%, 15%) !important;
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .medical-table td {
   border-bottom: 1px solid hsl(205, 18%, 22%) !important;
-  color: hsl(205, 20%, 80%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .medical-table tr:hover td {
@@ -164,7 +212,7 @@ html.dark-theme .medical-table tr:hover td {
 
 html.dark-theme .badge-pending {
   background: hsla(210, 40%, 50%, 0.16) !important;
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
   border: 1px solid hsl(205, 18%, 22%) !important;
 }
 
@@ -189,11 +237,11 @@ html.dark-theme .badge-cancelled {
 }
 
 html.dark-theme .search-box i {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .filter-group {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .filter-group select,
@@ -201,8 +249,12 @@ html.dark-theme .filter-group input {
   background: hsl(205, 22%, 14%) !important;
 }
 
+html.dark-theme .table-footer {
+  color: #cbd5e1 !important;
+}
+
 html.dark-theme .fast-checkin-input-wrapper .search-field-icon {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .fast-checkin-input-wrapper input {
@@ -211,7 +263,7 @@ html.dark-theme .fast-checkin-input-wrapper input {
 }
 
 html.dark-theme .fast-checkin-input-wrapper .btn-clear-search {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .fast-checkin-input-wrapper .btn-clear-search:hover {
@@ -228,7 +280,7 @@ html.dark-theme .fast-checkin-dropdown {
 html.dark-theme .fast-checkin-dropdown-header {
   background: hsl(205, 22%, 15%) !important;
   border-bottom: 1px solid hsl(205, 18%, 22%) !important;
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .fast-checkin-item {
@@ -254,11 +306,11 @@ html.dark-theme .fast-checkin-patient-name {
 }
 
 html.dark-theme .fast-checkin-phone {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .fast-checkin-meta-row {
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .badge-pill-today {
@@ -268,7 +320,7 @@ html.dark-theme .badge-pill-today {
 }
 
 html.dark-theme .fast-checkin-empty-state {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .patient-status-card-box {
@@ -287,7 +339,7 @@ html.dark-theme .status-card-patient-details h4 {
 }
 
 html.dark-theme .status-card-contact-line {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .status-card-treatment-title {
@@ -295,11 +347,11 @@ html.dark-theme .status-card-treatment-title {
 }
 
 html.dark-theme .status-card-datetime-line {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .status-card-status-label {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .badge-amber {
@@ -318,8 +370,28 @@ html.dark-theme .queue-card-item.active-chair {
   background: hsl(205, 22%, 15%) !important;
 }
 
+html.dark-theme .queue-num-pill {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .queue-patient-info h4 {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .queue-patient-meta {
+  color: #cbd5e1 !important;
+}
+
 html.dark-theme .dentist-card {
   background: hsl(205, 22%, 14%) !important;
+}
+
+html.dark-theme .dentist-card-meta h4 {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .dentist-card-meta span {
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .dentist-schedule-info {
@@ -327,7 +399,7 @@ html.dark-theme .dentist-schedule-info {
 }
 
 html.dark-theme .schedule-row {
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .dentist-duty-bar {
@@ -369,8 +441,16 @@ html.dark-theme .modal-header {
   background: hsl(205, 22%, 14%) !important;
 }
 
+html.dark-theme .modal-title {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .modal-sub {
+  color: #cbd5e1 !important;
+}
+
 html.dark-theme .modal-close {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .modal-footer {
@@ -378,12 +458,13 @@ html.dark-theme .modal-footer {
 }
 
 html.dark-theme .form-group label {
-  color: hsl(205, 20%, 80%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .form-group input:not([type="checkbox"]):not([type="radio"]),
 html.dark-theme .form-group select,
 html.dark-theme .form-group textarea {
+  color: #f1f5f9 !important;
   background: hsl(205, 22%, 14%) !important;
 }
 
@@ -400,19 +481,24 @@ html.dark-theme .condition-pill-label:has(input:checked) {
 }
 
 html.dark-theme .condition-pill-label span {
-  color: hsl(205, 20%, 80%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .form-section-title {
+  color: #f1f5f9 !important;
   border-bottom: 1px solid hsl(205, 18%, 22%) !important;
 }
 
 html.dark-theme .form-hint {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .form-hint a {
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .info-callout p {
-  color: hsl(205, 20%, 80%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .invoice-summary-card {
@@ -420,7 +506,7 @@ html.dark-theme .invoice-summary-card {
 }
 
 html.dark-theme .summary-row {
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .toast-item {
@@ -428,18 +514,30 @@ html.dark-theme .toast-item {
   color: hsl(217, 43%, 68%) !important;
 }
 
+html.dark-theme .status-pill-btn {
+  color: #cbd5e1 !important;
+}
+
+html.dark-theme .status-pill-btn:hover {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .status-pill-btn.active {
+  color: #f1f5f9 !important;
+}
+
 html.dark-theme .pill-count {
   background: hsl(205, 22%, 20%) !important;
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .search-clear-btn {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .modern-table thead th {
   background: hsl(205, 22%, 15%) !important;
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .modern-table tbody tr:hover {
@@ -452,16 +550,40 @@ html.dark-theme .modern-table tbody td {
 
 html.dark-theme .ref-pill {
   background: hsla(210, 40%, 50%, 0.16) !important;
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
   border: 1px solid hsl(205, 18%, 22%) !important;
 }
 
+html.dark-theme .ref-pill:hover {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .appt-date {
+  color: #f1f5f9 !important;
+}
+
 html.dark-theme .appt-date i {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
+}
+
+html.dark-theme .patient-name {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .patient-contact {
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .patient-contact i {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
+}
+
+html.dark-theme .procedure-icon-wrap {
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .procedure-name {
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .doctor-badge {
@@ -496,21 +618,25 @@ html.dark-theme .chip-alert {
 
 html.dark-theme .chip-default {
   background: hsla(210, 40%, 50%, 0.16) !important;
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
   border: 1px solid hsl(205, 18%, 22%) !important;
 }
 
 html.dark-theme .notes-custom-preview {
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
   background: hsl(205, 22%, 15%) !important;
 }
 
 html.dark-theme .notes-custom-preview i {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
+}
+
+html.dark-theme .btn-open-intake {
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .action-finished-label {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
   background: hsl(205, 22%, 15%) !important;
   border: 1px solid hsl(205, 18%, 22%) !important;
 }
@@ -533,6 +659,10 @@ html.dark-theme .btn-icon-cancel:hover {
   background: hsla(0, 70%, 50%, 0.16) !important;
 }
 
+html.dark-theme .btn-icon-view {
+  color: #f1f5f9 !important;
+}
+
 html.dark-theme .btn-icon-view:hover {
   background: hsla(193, 62%, 50%, 0.16) !important;
 }
@@ -548,8 +678,12 @@ html.dark-theme .intake-card-highlight {
 }
 
 html.dark-theme .intake-card-title {
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
   border-bottom: 1px solid hsl(205, 18%, 22%) !important;
+}
+
+html.dark-theme .text-primary {
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .text-amber {
@@ -561,7 +695,7 @@ html.dark-theme .text-blue {
 }
 
 html.dark-theme .intake-lbl {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .intake-val {
@@ -575,7 +709,7 @@ html.dark-theme .sidebar {
 html.dark-theme .sidebar-drawer-close {
   background: hsla(210, 40%, 50%, 0.16) !important;
   border: 1px solid hsl(205, 18%, 22%) !important;
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 html.dark-theme .sidebar-drawer-close:hover {
   background: hsla(0, 70%, 50%, 0.16) !important;
@@ -583,7 +717,7 @@ html.dark-theme .sidebar-drawer-close:hover {
   color: hsl(0, 85%, 68%) !important;
 }
 html.dark-theme .page-header-bar .header-title-block .header-subtitle {
-  color: var(--text-muted, hsl(205, 20%, 69%)) !important;
+  color: var(--text-muted, #f1f5f9) !important;
 }
 html.dark-theme .live-clock-card {
   border: 1px solid hsl(205, 18%, 22%) !important;
@@ -595,7 +729,7 @@ html.dark-theme .live-clock-card i {
 html.dark-theme .btn-header-notif {
   border: 1px solid hsl(205, 18%, 22%) !important;
   background: hsl(205, 22%, 14%) !important;
-  color: hsl(205, 20%, 76%) !important;
+  color: #f1f5f9 !important;
 }
 html.dark-theme .btn-qr-action {
   background: hsl(205, 22%, 14%) !important;
@@ -611,7 +745,7 @@ html.dark-theme .patient-delinquent-tag {
 
 html.dark-theme .btn-header-notif {
   background: hsl(205, 22%, 14%) !important;
-  color: hsl(205, 20%, 80%) !important;
+  color: #f1f5f9 !important;
   border: 1px solid hsl(205, 18%, 22%) !important;
 }
 
@@ -621,7 +755,7 @@ html.dark-theme .btn-header-notif:hover {
 }
 
 html.dark-theme .btn-header-notif i {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .btn-header-notif:hover i {
@@ -641,6 +775,10 @@ html.dark-theme .rnd-header {
 html.dark-theme .rnd-unread-pill {
   background: hsla(204, 70%, 50%, 0.16) !important;
   color: hsl(201, 85%, 68%) !important;
+}
+
+html.dark-theme .rnd-mark-read-btn {
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .rnd-item {
@@ -680,11 +818,11 @@ html.dark-theme .rnd-title {
 }
 
 html.dark-theme .rnd-desc {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .rnd-time {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
 }
 
 html.dark-theme .rnd-footer {
@@ -693,11 +831,15 @@ html.dark-theme .rnd-footer {
 }
 
 html.dark-theme .rnd-footer-action {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark-theme .rnd-footer-action:hover {
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .rnd-empty {
-  color: hsl(205, 20%, 59%) !important;
+  color: #cbd5e1 !important;
 }
 
 @media (max-width: 768px) {
@@ -705,7 +847,7 @@ html.dark-theme .mobile-bottom-taskbar {
   border-top: 1px solid hsl(205, 18%, 22%) !important;
 }
 html.dark-theme .taskbar-item {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 html.dark-theme .taskbar-item:hover,
 html.dark-theme .taskbar-item:focus {
@@ -733,7 +875,7 @@ html.dark-theme .staff-modal-name {
 }
 
 html.dark-theme .staff-modal-email {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .staff-role-badge {
@@ -748,7 +890,7 @@ html.dark-theme .staff-spec-list {
 }
 
 html.dark-theme .staff-spec-row .spec-lbl {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .staff-spec-row .spec-val {
@@ -756,7 +898,7 @@ html.dark-theme .staff-spec-row .spec-val {
 }
 
 html.dark-theme .btn-filter-tab {
-  color: hsl(205, 20%, 69%) !important;
+  color: #f1f5f9 !important;
 }
 
 html.dark-theme .btn-filter-tab:hover {
@@ -768,9 +910,13 @@ html.dark-theme .btn-filter-tab.active {
   color: hsl(195, 85%, 68%) !important;
 }
 
+
 html.dark-theme {
   --light-bg: #0d171e; --card-bg: #14212b; --border-color: #2a3b48; --dark-color: #e3ebf1;
   --primary-subtle: #1b2b37; --text-muted: #8396a5;
   --accent-light: rgba(16,185,129,.16); --gold-light: rgba(197,155,39,.18); --amber-light: rgba(245,158,11,.16);
   --danger-light: rgba(239,68,68,.16); --blue-light: rgba(59,130,246,.18); --purple-light: rgba(139,92,246,.18);
 }
+
+
+html.dark-theme body, html.dark-theme h1, html.dark-theme h2, html.dark-theme h3, html.dark-theme h4, html.dark-theme h5, html.dark-theme h6 { color: #f1f5f9; }
