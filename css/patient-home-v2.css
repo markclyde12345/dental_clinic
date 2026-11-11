@@ -804,3 +804,21 @@ body {
 .pd-home-footer-brand strong {
   color: var(--pd-teal-900) !important;
 }
+
+/* --------------- Auto-resize: fill the available width on any screen --------------- */
+#overview-section.pd-home {
+  width: 100%;
+  max-width: min(1400px, 100%);
+  box-sizing: border-box;
+}
+.content-section { width: 100%; box-sizing: border-box; }
+.main-content { min-width: 0; }
+@media (min-width: 601px) {
+  .pd-home .pd-stats {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+}
+.pd-home .pd-hero,
+.pd-home .pd-card,
+.pd-home .pd-quick-grid { max-width: 100%; box-sizing: border-box; }
+.pd-home img, .pd-home svg { max-width: 100%; height: auto; }
