@@ -1,6 +1,10 @@
 const supabase = require('../config/db');
 const fs = require('fs');
 const path = require('path');
+const { getCloudStore, setCloudStore, getCloudStoreSync } = require('../utils/cloudStore');
+
+getCloudStore('patient_reviews', []).catch(() => {});
+getCloudStore('clinic_settings', {}).catch(() => {});
 
 // @desc    Get appointments assigned to the logged-in dentist
 // @route   GET /api/appointments/my
@@ -261,9 +265,12 @@ const createAppointment = async (req, res) => {
       ? (req.body.patient_id || req.body.patientId)
       : req.user.id;
 
+    const clinicSettings = await getCloudStore('clinic_settings', {});
+    const defaultBookingStatus = clinicSettings && clinicSettings.autoApprove ? 'Approved' : 'Pending';
+
     const initialStatus = (req.user.role !== 'Patient' && req.body.status)
       ? req.body.status
-      : 'Pending';
+      : defaultBookingStatus;
 
     // Retrieve treatment price for invoicing
     let treatmentPrice = 0;
@@ -1000,18 +1007,18 @@ const createQrAppointment = async (req, res) => {
 // ─── Patient Reviews & Ratings Module ──────────────────────────────────────────
 const REVIEWS_FILE = path.join(__dirname, '../data/patient_reviews.json');
 
-function getReviewsStore() {
-  if (fs.existsSync(REVIEWS_FILE)) {
-    try { return JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8')); } catch (_) { return []; }
+async function getReviewsStore() {
+  try {
+    const list = await getCloudStore('patient_reviews', []);
+    return Array.isArray(list) ? list : [];
+  } catch (_) {
+    return [];
   }
-  return [];
 }
 
-function saveReviewsStore(data) {
+async function saveReviewsStore(data) {
   try {
-    const dir = path.dirname(REVIEWS_FILE);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(REVIEWS_FILE, JSON.stringify(data, null, 2), 'utf8');
+    await setCloudStore('patient_reviews', data);
   } catch (e) {
     console.error('[saveReviewsStore Error]:', e.message);
   }
@@ -1023,7 +1030,7 @@ function saveReviewsStore(data) {
 const getAppointmentReview = async (req, res) => {
   const { id } = req.params;
   try {
-    const reviews = getReviewsStore();
+    const reviews = await getReviewsStore();
     const rev = reviews.find(r => String(r.appointment_id) === String(id));
     res.json(rev || null);
   } catch (error) {
@@ -1073,7 +1080,7 @@ const createAppointmentReview = async (req, res) => {
       dentistName = req.body.dentist_name;
     }
 
-    const reviews = getReviewsStore();
+    const reviews = await getReviewsStore();
     const existingIndex = reviews.findIndex(r => String(r.appointment_id) === String(id));
 
     const reviewData = {
@@ -1095,7 +1102,7 @@ const createAppointmentReview = async (req, res) => {
       reviews.unshift(reviewData);
     }
 
-    saveReviewsStore(reviews);
+    await saveReviewsStore(reviews);
 
     try {
       const { logAuditAction } = require('../utils/auditLogger');

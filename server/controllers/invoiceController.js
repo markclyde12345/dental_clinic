@@ -1,20 +1,31 @@
 
 const fs = require('fs');
 const path = require('path');
+const { getCloudStore, setCloudStore, getCloudStoreSync } = require('../utils/cloudStore');
 const INVOICE_SUPP_PATH = path.join(__dirname, '..', 'data', 'invoice_supplements.json');
+
+// Warm invoice_supplements from Supabase
+getCloudStore('invoice_supplements', {}).catch(() => {});
 
 function loadInvoiceSupplements() {
   try {
-    const raw = fs.readFileSync(INVOICE_SUPP_PATH, 'utf8');
-    return JSON.parse(raw) || {};
+    return getCloudStoreSync('invoice_supplements', {}) || {};
   } catch {
     return {};
   }
 }
 
+async function loadInvoiceSupplementsAsync() {
+  try {
+    return (await getCloudStore('invoice_supplements', {})) || {};
+  } catch {
+    return loadInvoiceSupplements();
+  }
+}
+
 function saveInvoiceSupplements(data) {
   try {
-    fs.writeFileSync(INVOICE_SUPP_PATH, JSON.stringify(data, null, 2), 'utf8');
+    setCloudStore('invoice_supplements', data).catch(() => {});
   } catch (err) {
     console.error('Failed to save invoice supplements:', err);
   }
@@ -215,7 +226,7 @@ const getInvoices = async (req, res) => {
     if (error) throw error;
 
     // Provide legacy mapping fields and overdue calculation
-    const supplements = loadInvoiceSupplements();
+    const supplements = await loadInvoiceSupplementsAsync();
     const mapped = invoices.map(inv => {
       const supp = supplements[inv.id] || {};
       const issuedTime = inv.issued_at || inv.created_at;
@@ -565,13 +576,13 @@ const voidInvoice = async (req, res) => {
     await supabase.from('invoices').update({ status: 'Voided' }).eq('id', id);
 
     // Save supplement
-    const supplements = loadInvoiceSupplements();
+    const supplements = await loadInvoiceSupplementsAsync();
     if (!supplements[id]) supplements[id] = {};
     supplements[id].voided = true;
     supplements[id].void_reason = reason;
     supplements[id].voided_at = new Date().toISOString();
     supplements[id].voided_by = staffName;
-    saveInvoiceSupplements(supplements);
+    await setCloudStore('invoice_supplements', supplements);
 
     // Log audit
     try {
@@ -613,7 +624,7 @@ const recordInvoicePayment = async (req, res) => {
 
     if (fetchErr || !inv) return res.status(404).json({ message: 'Invoice not found.' });
 
-    const supplements = loadInvoiceSupplements();
+    const supplements = await loadInvoiceSupplementsAsync();
     if (!supplements[id]) supplements[id] = { paid_amount: 0, payments_history: [] };
 
     const currentPaid = parseFloat(supplements[id].paid_amount || 0);
@@ -645,7 +656,7 @@ const recordInvoicePayment = async (req, res) => {
     supplements[id].payment_notes = notes;
     if (!supplements[id].payments_history) supplements[id].payments_history = [];
     supplements[id].payments_history.push(paymentRecord);
-    saveInvoiceSupplements(supplements);
+    await setCloudStore('invoice_supplements', supplements);
 
     // Audit log
     try {

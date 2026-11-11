@@ -1,14 +1,15 @@
 const supabase = require('../config/db');
 const fs = require('fs');
 const path = require('path');
+const { getCloudStore } = require('../utils/cloudStore');
 
-const REVIEWS_FILE = path.join(__dirname, '../data/patient_reviews.json');
-
-function getReviewsStore() {
-  if (fs.existsSync(REVIEWS_FILE)) {
-    try { return JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8')); } catch (_) { return []; }
+async function getReviewsStore() {
+  try {
+    const list = await getCloudStore('patient_reviews', []);
+    return Array.isArray(list) ? list : [];
+  } catch (_) {
+    return [];
   }
-  return [];
 }
 
 /**
@@ -24,7 +25,7 @@ const getUserNotifications = async (req, res) => {
     const userRole = req.user.role;
     const userId = req.user.id;
     const notifications = [];
-    const allReviews = getReviewsStore();
+    const allReviews = await getReviewsStore();
 
     // ─────────────────────────────────────────────────────────────
     // 1. PATIENT NOTIFICATIONS

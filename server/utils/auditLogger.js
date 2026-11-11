@@ -3,37 +3,35 @@ const path = require('path');
 const crypto = require('crypto');
 const uuidv4 = () => crypto.randomUUID();
 const supabase = require('../config/db');
+const { getCloudStore, setCloudStore } = require('./cloudStore');
 
 const AUDIT_FILE = path.join(__dirname, '..', 'data', 'audit_logs.json');
 
-// Ensure data directory and audit_logs.json exist
+// Ensure data directory and audit_logs.json exist (local dev only)
 function ensureAuditFile() {
-  const dir = path.dirname(AUDIT_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  if (!fs.existsSync(AUDIT_FILE)) {
-    fs.writeFileSync(AUDIT_FILE, JSON.stringify([], null, 2), 'utf8');
-  }
+  if (process.env.VERCEL) return;
+  try {
+    const dir = path.dirname(AUDIT_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    if (!fs.existsSync(AUDIT_FILE)) {
+      fs.writeFileSync(AUDIT_FILE, JSON.stringify([], null, 2), 'utf8');
+    }
+  } catch (_) {}
 }
 
 /**
  * Log a sensitive staff or clinical financial action
  * @param {Object} entry
- * @param {string} entry.action - Action type (e.g. PAYMENT_COLLECTED, INVOICE_WRITTEN_OFF, APPOINTMENT_CANCELLED)
- * @param {string} entry.entityType - Entity type ('invoice', 'appointment', 'patient')
- * @param {string} entry.entityId - Primary ID of the entity
- * @param {string} entry.details - Human-readable explanation of what occurred
- * @param {Object} [entry.metadata] - Key-value metadata
- * @param {Object} [entry.req] - Express request object (extracts user, IP, agent)
  */
 async function logAuditAction(entry) {
   try {
     const { action, entityType, entityId, details, metadata = {}, req } = entry;
 
-    let userId = entry.userId || 'system';
-    let userName = entry.userName || 'System Auto';
-    let userRole = entry.userRole || 'System';
+    let userId = entry.userId || entry.user_id || 'system';
+    let userName = entry.userName || entry.user_name || 'System Auto';
+    let userRole = entry.userRole || entry.user_role || 'System';
     let ipAddress = '127.0.0.1';
     let userAgent = 'Node/Server';
 
@@ -51,12 +49,12 @@ async function logAuditAction(entry) {
       id: uuidv4(),
       timestamp: new Date().toISOString(),
       action,
-      entity_type: entityType,
-      entity_id: entityId ? String(entityId) : null,
+      entity_type: entityType || entry.entity_type || 'system',
+      entity_id: (entityId || entry.entity_id) ? String(entityId || entry.entity_id) : null,
       user_id: userId,
       user_name: userName,
       user_role: userRole,
-      details: details || `${action} performed on ${entityType} #${entityId}`,
+      details: details || `${action} performed on ${entityType || 'record'} #${entityId || ''}`,
       metadata: metadata || {},
       ip_address: typeof ipAddress === 'string' ? ipAddress.replace(/^::ffff:/, '') : '127.0.0.1',
       user_agent: userAgent
@@ -64,55 +62,20 @@ async function logAuditAction(entry) {
 
     console.log(`\x1b[36m[AUDIT LOG]\x1b[0m \x1b[1m${logItem.action}\x1b[0m by \x1b[33m${logItem.user_name} (${logItem.user_role})\x1b[0m: ${logItem.details}`);
 
-    let supabaseSaved = false;
-
-    // 1. Attempt writing to Supabase audit_logs table
-    try {
-      const { error } = await supabase.from('audit_logs').insert([{
-        id: logItem.id,
-        user_id: logItem.user_id !== 'system' ? logItem.user_id : null,
-        user_name: logItem.user_name,
-        user_role: logItem.user_role,
-        action: logItem.action,
-        entity_type: logItem.entity_type,
-        entity_id: logItem.entity_id,
-        details: logItem.details,
-        metadata: logItem.metadata,
-        ip_address: logItem.ip_address,
-        created_at: logItem.timestamp
-      }]);
-
-      if (!error) {
-        supabaseSaved = true;
-      } else if (error.code !== 'PGRST205') {
-        console.warn('[Audit Supabase Notice]', error.message);
-      }
-    } catch (_) {}
-
     // In-memory caching
     if (!global._inMemoryAuditLogs) global._inMemoryAuditLogs = [];
     global._inMemoryAuditLogs.unshift(logItem);
     if (global._inMemoryAuditLogs.length > 500) global._inMemoryAuditLogs = global._inMemoryAuditLogs.slice(0, 500);
 
-    // 2. Only persist to local JSON if Supabase failed or offline (prevents hot-reloading dev servers)
-    if (!supabaseSaved) {
-      try {
-        ensureAuditFile();
-        const raw = fs.readFileSync(AUDIT_FILE, 'utf8');
-        let logs = [];
-        try {
-          logs = JSON.parse(raw);
-          if (!Array.isArray(logs)) logs = [];
-        } catch (e) {
-          logs = [];
-        }
-
-        logs.unshift(logItem);
-        if (logs.length > 1000) logs = logs.slice(0, 1000);
-        fs.writeFileSync(AUDIT_FILE, JSON.stringify(logs, null, 2), 'utf8');
-      } catch (fsErr) {
-        console.error('[Audit File Save Error]', fsErr.message);
-      }
+    // Persist in Supabase cloudStore so Vercel serverless instances share real-time audit logs
+    try {
+      const existingLogs = await getCloudStore('audit_logs', []);
+      const logsArray = Array.isArray(existingLogs) ? existingLogs : [];
+      logsArray.unshift(logItem);
+      if (logsArray.length > 300) logsArray.length = 300;
+      await setCloudStore('audit_logs', logsArray);
+    } catch (cloudErr) {
+      console.warn('[Audit CloudStore Warning]', cloudErr.message);
     }
 
     return logItem;
@@ -128,27 +91,9 @@ async function logAuditAction(entry) {
 async function getAuditLogs(filters = {}) {
   const { limit = 100, action, entityType } = filters;
 
-  // 1. Try fetching from Supabase first
   try {
-    let query = supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(limit);
-    if (action && action !== 'ALL') query = query.eq('action', action);
-    if (entityType) query = query.eq('entity_type', entityType);
-
-    const { data, error } = await query;
-    if (!error && Array.isArray(data) && data.length > 0) {
-      return data.map(item => ({
-        ...item,
-        timestamp: item.created_at || item.timestamp
-      }));
-    }
-  } catch (_) {}
-
-  // 2. Fallback to reading from local JSON store
-  try {
-    ensureAuditFile();
-    const raw = fs.readFileSync(AUDIT_FILE, 'utf8');
-    let logs = JSON.parse(raw);
-    if (!Array.isArray(logs)) return [];
+    let logs = await getCloudStore('audit_logs', []);
+    if (!Array.isArray(logs)) logs = [];
 
     if (action && action !== 'ALL') {
       logs = logs.filter(l => l.action === action);
@@ -157,10 +102,13 @@ async function getAuditLogs(filters = {}) {
       logs = logs.filter(l => l.entity_type === entityType);
     }
 
-    return logs.slice(0, limit);
+    return logs.slice(0, limit).map(item => ({
+      ...item,
+      timestamp: item.created_at || item.timestamp
+    }));
   } catch (err) {
     console.error('[Get Audit Logs Error]', err.message);
-    return [];
+    return (global._inMemoryAuditLogs || []).slice(0, limit);
   }
 }
 

@@ -1,11 +1,16 @@
 const fs = require('fs');
 const path = require('path');
+const { getCloudStore, setCloudStore, getCloudStoreSync } = require('../utils/cloudStore');
 
-const INVOICE_SUPP_PATH = path.join(__dirname, '..', 'data', 'invoice_supplements.json');
+// Warm admin cloud stores on module load
+getCloudStore('invoice_supplements', {}).catch(() => {});
+getCloudStore('inventory_prices', {}).catch(() => {});
+getCloudStore('mfa_settings', {}).catch(() => {});
+getCloudStore('visit_supplements', {}).catch(() => {});
+
 function loadInvoiceSupplements() {
   try {
-    const raw = fs.readFileSync(INVOICE_SUPP_PATH, 'utf8');
-    return JSON.parse(raw) || {};
+    return getCloudStoreSync('invoice_supplements', {}) || {};
   } catch {
     return {};
   }
@@ -26,6 +31,10 @@ const LOCAL_PRICES_FILE = path.join(__dirname, '../data/inventory_prices.json');
 const INVENTORY_PRICES_FILE = fs.existsSync(LOCAL_PRICES_FILE) ? LOCAL_PRICES_FILE : path.join(DATA_DIR, 'inventory_prices.json');
 
 function getInventoryPricesMap() {
+  try {
+    const cloudMap = getCloudStoreSync('inventory_prices', null);
+    if (cloudMap && typeof cloudMap === 'object' && Object.keys(cloudMap).length > 0) return cloudMap;
+  } catch (_) {}
   const f = fs.existsSync(LOCAL_PRICES_FILE) ? LOCAL_PRICES_FILE : INVENTORY_PRICES_FILE;
   if (fs.existsSync(f)) {
     try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (_) { return {}; }
@@ -35,7 +44,7 @@ function getInventoryPricesMap() {
 
 function saveInventoryPricesMap(map) {
   try {
-    fs.writeFileSync(INVENTORY_PRICES_FILE, JSON.stringify(map, null, 2), 'utf8');
+    setCloudStore('inventory_prices', map).catch(() => {});
   } catch (err) {
     console.error('[Save Inventory Prices Error]', err);
   }
@@ -906,8 +915,10 @@ const getDatabaseStatus = async (req, res) => {
 
     const { count: apptCount } = await supabase.from('appointments').select('*', { count: 'exact', head: true });
     const { count: invoiceCount } = await supabase.from('invoices').select('*', { count: 'exact', head: true });
-    const { count: paymentCount } = await supabase.from('payments').select('*', { count: 'exact', head: true });
-    const { count: auditCount } = await supabase.from('audit_logs').select('*', { count: 'exact', head: true });
+    const { count: paidInvoiceCount } = await supabase.from('invoices').select('*', { count: 'exact', head: true }).eq('status', 'Paid');
+    const cloudAudits = await getCloudStore('audit_logs', []);
+    const auditCount = Array.isArray(cloudAudits) ? cloudAudits.length : 0;
+    const paymentCount = paidInvoiceCount || 0;
 
     const latestBackup = getLatestBackupInfo();
 
@@ -954,6 +965,10 @@ const defaultMfaConfig = {
 
 function getStoredMfaConfig() {
   try {
+    const cloudCfg = getCloudStoreSync('mfa_settings', null);
+    if (cloudCfg && typeof cloudCfg === 'object') {
+      return { ...defaultMfaConfig, ...cloudCfg };
+    }
     if (fs.existsSync(MFA_SETTINGS_PATH)) {
       const raw = fs.readFileSync(MFA_SETTINGS_PATH, 'utf8').replace(/^\uFEFF/, '');
       return { ...defaultMfaConfig, ...JSON.parse(raw) };
@@ -966,9 +981,7 @@ function getStoredMfaConfig() {
 
 function saveStoredMfaConfig(config) {
   try {
-    const dir = path.dirname(MFA_SETTINGS_PATH);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(MFA_SETTINGS_PATH, JSON.stringify(config, null, 2), 'utf8');
+    setCloudStore('mfa_settings', config).catch(() => {});
   } catch (e) {
     console.error('[MFA Settings Save Error]', e.message);
   }
@@ -1255,15 +1268,18 @@ const VISIT_SUPP_PATH = path.join(__dirname, '..', 'data', 'visit_supplements.js
 
 function loadVisitSupplements() {
   try {
-    const raw = fs.readFileSync(VISIT_SUPP_PATH, 'utf8');
-    return JSON.parse(raw) || {};
+    return getCloudStoreSync('visit_supplements', {}) || {};
   } catch {
     return {};
   }
 }
 
 function saveVisitSupplements(data) {
-  fs.writeFileSync(VISIT_SUPP_PATH, JSON.stringify(data, null, 2), 'utf8');
+  try {
+    setCloudStore('visit_supplements', data).catch(() => {});
+  } catch (e) {
+    console.error('[Visit Supplements Save Error]', e.message);
+  }
 }
 
 /**

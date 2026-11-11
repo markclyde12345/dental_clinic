@@ -2117,14 +2117,32 @@
         if (e && e.preventDefault) e.preventDefault();
         var desc = (document.getElementById('ri-description')?.value || '').trim();
         var cat = document.getElementById('ri-category')?.value || 'general';
+        var prio = document.getElementById('ri-priority')?.value || 'Normal';
+        var subj = (document.getElementById('ri-subject')?.value || '').trim() || ('Patient Issue (' + cat + ')');
         if (!desc) {
           if (typeof showToast === 'function') showToast('Please describe the issue or inquiry.', 'error');
           else alert('Please describe the issue or inquiry.');
           return;
         }
+        var u = {};
+        try { u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}'); } catch (_) {}
+        var apiBase = ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000' && window.location.port !== '') ? 'http://localhost:5000' : '';
+        fetch(apiBase + '/api/issues', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            category: cat,
+            priority: prio,
+            subject: subj,
+            description: desc,
+            reporter_name: u.name || 'Patient',
+            reporter_email: u.email || '',
+            reporter_id: u.id || null
+          })
+        }).catch(function() {});
         try {
           var list = JSON.parse(localStorage.getItem('pd_reported_issues') || '[]');
-          list.unshift({ id: 'iss_' + Date.now(), category: cat, description: desc, date: new Date().toISOString() });
+          list.unshift({ id: 'iss_' + Date.now(), category: cat, subject: subj, description: desc, date: new Date().toISOString() });
           localStorage.setItem('pd_reported_issues', JSON.stringify(list));
         } catch (_) {}
         if (typeof showToast === 'function') showToast('Issue report submitted! Clinic support will review it.', 'success');

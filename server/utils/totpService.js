@@ -75,15 +75,21 @@ const otplib = {
   }
 };
 const qrcode = require('qrcode');
+const { getCloudStore, setCloudStore, getCloudStoreSync } = require('./cloudStore');
 
 const VAULT_FILE = path.join(__dirname, '../data/totp_vault.json');
 const ISSUER_NAME = 'Fano Dental Clinic';
 
+// Warm vault from Supabase on startup
+getCloudStore('totp_vault', {}).catch(() => {});
+
 /**
- * Reads the persistent TOTP vault
+ * Reads the persistent TOTP vault (from cloudStore cache + local fallback)
  */
 function readVault() {
   try {
+    const cloudData = getCloudStoreSync('totp_vault', null);
+    if (cloudData && typeof cloudData === 'object') return cloudData;
     if (fs.existsSync(VAULT_FILE)) {
       const raw = fs.readFileSync(VAULT_FILE, 'utf8').replace(/^\uFEFF/, '');
       return JSON.parse(raw);
@@ -95,15 +101,11 @@ function readVault() {
 }
 
 /**
- * Saves the persistent TOTP vault
+ * Saves the persistent TOTP vault to Supabase cloudStore + local mirror
  */
 function writeVault(vault) {
   try {
-    const dir = path.dirname(VAULT_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(VAULT_FILE, JSON.stringify(vault, null, 2), 'utf8');
+    setCloudStore('totp_vault', vault).catch(() => {});
   } catch (err) {
     console.error('[TOTP Vault Save Error]', err.message);
   }

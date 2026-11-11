@@ -234,21 +234,35 @@ app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/send-otp', authLimiter);
 app.use('/api/auth/verify-otp', authLimiter);
 
-// ─── Dentists Roster with Duty Status ─────────────────────────────────────────
+// ─── Dentists Roster with Duty Status (Real-Time Supabase Backed) ─────────────
 // @route   GET /api/dentists
 // @access  Public / Authenticated
-app.get('/api/dentists', async (req, res) => {
+const { getCloudStore, setCloudStore } = require('./utils/cloudStore');
+
+const handleGetDentists = async (req, res) => {
   try {
-    // Read staff schedules for availability info
+    // 1. Read staff schedules from Supabase first, fallback to local file
     let schedules = [];
-    const staffFilePath = path.join(__dirname, 'data', 'staff_schedules.json');
-    if (fs.existsSync(staffFilePath)) {
-      try {
-        schedules = JSON.parse(fs.readFileSync(staffFilePath, 'utf8')) || [];
-      } catch (_) {}
+    try {
+      const { data: schedRows, error: schedErr } = await supabase
+        .from('staff_schedules')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (!schedErr && Array.isArray(schedRows) && schedRows.length > 0) {
+        schedules = schedRows;
+      }
+    } catch (_) {}
+
+    if (!schedules.length) {
+      const staffFilePath = path.join(__dirname, 'data', 'staff_schedules.json');
+      if (fs.existsSync(staffFilePath)) {
+        try {
+          schedules = JSON.parse(fs.readFileSync(staffFilePath, 'utf8')) || [];
+        } catch (_) {}
+      }
     }
 
-    // Query Supabase for registered dentists
+    // 2. Query Supabase for registered dentists
     let dbDentists = [];
     try {
       const { data, error } = await supabase
@@ -262,11 +276,12 @@ app.get('/api/dentists', async (req, res) => {
 
     const dentistMap = new Map();
 
-    // 1. Seed from staff_schedules
+    // Seed from staff_schedules
     schedules.filter(s => (s.role || '').toLowerCase() === 'dentist').forEach(s => {
       const key = (s.name || '').toLowerCase().trim();
       dentistMap.set(key, {
         id: s.id,
+        schedule_id: s.id,
         name: s.name,
         email: s.email || '',
         contact_number: s.contact || '',
@@ -277,95 +292,276 @@ app.get('/api/dentists', async (req, res) => {
       });
     });
 
-    // 2. Merge with dbDentists
+    // Merge with dbDentists
     dbDentists.forEach(d => {
       const key = (d.name || '').toLowerCase().trim();
       if (dentistMap.has(key)) {
         const item = dentistMap.get(key);
-        item.id = d.id || item.id;
+        item.user_id = d.id;
         item.email = d.email || item.email;
         item.contact_number = d.contact_number || item.contact_number;
-        if (!d.is_active) {
+        if (d.is_active === false) {
           item.availability = 'Off Duty';
           item.isOnDuty = false;
         }
       } else {
         dentistMap.set(key, {
           id: d.id,
+          user_id: d.id,
           name: d.name,
           email: d.email || '',
           contact_number: d.contact_number || '',
-          availability: d.is_active ? 'On Duty' : 'Off Duty',
+          availability: d.is_active !== false ? 'On Duty' : 'Off Duty',
           shift: '09:00 AM - 05:00 PM',
           days: 'Mon - Fri',
-          isOnDuty: !!d.is_active
+          isOnDuty: d.is_active !== false
         });
       }
     });
 
-    const result = Array.from(dentistMap.values());
-
-    res.json(result);
+    res.json(Array.from(dentistMap.values()));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-});
+};
+app.get('/api/dentists', handleGetDentists);
+app.get('/dentists', handleGetDentists);
 
 // @desc    Update dentist duty status (On Duty vs Off Duty / Out)
 // @route   PUT /api/dentists/:id/duty
 // @access  Private (Admin, Receptionist, Dentist)
-app.put('/api/dentists/:id/duty', async (req, res) => {
+const handleUpdateDentistDuty = async (req, res) => {
   try {
     const { id } = req.params;
     const { availability, name } = req.body;
-    const staffFilePath = path.join(__dirname, 'data', 'staff_schedules.json');
-
     let updatedDentist = null;
 
-    if (fs.existsSync(staffFilePath)) {
-      try {
-        let schedules = JSON.parse(fs.readFileSync(staffFilePath, 'utf8')) || [];
-        const found = schedules.find(s => s.id === id || (name && s.name && s.name.toLowerCase().trim() === name.toLowerCase().trim()));
-        if (found) {
-          if (availability !== undefined) found.availability = availability;
-          fs.writeFileSync(staffFilePath, JSON.stringify(schedules, null, 2), 'utf8');
-          updatedDentist = found;
-        } else if (name) {
-          const newEntry = {
-            id: id || ('dentist-' + Date.now()),
-            name,
-            email: req.body.email || '',
-            role: 'Dentist',
-            contact: req.body.contact_number || '',
-            shift: req.body.shift || '09:00 AM - 05:00 PM',
-            days: 'Mon - Sat',
-            availability: availability || 'On Duty'
-          };
-          schedules.push(newEntry);
-          fs.writeFileSync(staffFilePath, JSON.stringify(schedules, null, 2), 'utf8');
-          updatedDentist = newEntry;
-        }
-      } catch (fErr) {
-        console.warn('[Dentist duty file write error]', fErr.message);
-      }
-    }
-
-    // Also update Supabase staff_schedules if exists
+    // 1. Update in Supabase staff_schedules (by id or case-insensitive name)
     try {
       const updatePayload = {};
       if (availability !== undefined) updatePayload.availability = availability;
-      await supabase.from('staff_schedules').update(updatePayload).eq('id', id);
-    } catch (_) {}
+
+      let { data: byId } = await supabase
+        .from('staff_schedules')
+        .update(updatePayload)
+        .eq('id', id)
+        .select()
+        .maybeSingle();
+
+      if (byId) {
+        updatedDentist = byId;
+      } else if (name) {
+        const { data: byName } = await supabase
+          .from('staff_schedules')
+          .update(updatePayload)
+          .ilike('name', name.trim())
+          .select()
+          .maybeSingle();
+        if (byName) {
+          updatedDentist = byName;
+        } else {
+          const { data: inserted } = await supabase
+            .from('staff_schedules')
+            .insert([{
+              name: name.trim(),
+              email: req.body.email || 'dentist@fanoclinic.com',
+              role: 'Dentist',
+              contact: req.body.contact_number || '',
+              shift: req.body.shift || '09:00 AM - 05:00 PM',
+              days: 'Mon - Sat',
+              availability: availability || 'On Duty'
+            }])
+            .select()
+            .maybeSingle();
+          if (inserted) updatedDentist = inserted;
+        }
+      }
+    } catch (dbErr) {
+      console.warn('[Dentist duty Supabase update warning]', dbErr.message);
+    }
+
+    // 2. Mirror to local file in non-serverless dev
+    if (!process.env.VERCEL) {
+      const staffFilePath = path.join(__dirname, 'data', 'staff_schedules.json');
+      if (fs.existsSync(staffFilePath)) {
+        try {
+          let schedules = JSON.parse(fs.readFileSync(staffFilePath, 'utf8')) || [];
+          const found = schedules.find(s => s.id === id || (name && s.name && s.name.toLowerCase().trim() === name.toLowerCase().trim()));
+          if (found) {
+            if (availability !== undefined) found.availability = availability;
+            fs.writeFileSync(staffFilePath, JSON.stringify(schedules, null, 2), 'utf8');
+            if (!updatedDentist) updatedDentist = found;
+          }
+        } catch (_) {}
+      }
+    }
 
     res.json({
       success: true,
       message: 'Dentist duty updated successfully',
-      dentist: updatedDentist || { id, availability }
+      dentist: updatedDentist || { id, name, availability }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-});
+};
+app.put('/api/dentists/:id/duty', handleUpdateDentistDuty);
+app.put('/dentists/:id/duty', handleUpdateDentistDuty);
+
+// ─── Real-Time Cloud Settings & Reported Issues Endpoints ─────────────────────
+const handleGetSettings = async (req, res) => {
+  try {
+    const scope = req.query.scope || 'all';
+    const userKey = req.query.userKey || '';
+
+    const [clinic, finance, dentist] = await Promise.all([
+      getCloudStore('clinic_settings', {
+        clinicName: 'Fano Dental Clinic',
+        clinicEmail: 'contact@fanoclinic.com',
+        clinicPhone: '+63 917 123 4567',
+        clinicHours: '8:00 AM - 6:00 PM (Mon - Sat)',
+        clinicAddress: '123 Dental Ave, Suite 100, Manila',
+        autoApprove: false,
+        smsAlerts: true,
+        currency: 'PHP (₱)',
+        sessionTimeout: '30',
+        auditVerbosity: 'Standard (Mutations Only)'
+      }),
+      getCloudStore('finance_settings', {
+        currency: 'PHP (₱)',
+        vatRate: '0',
+        invPrefix: 'INV-',
+        orPrefix: 'OR-',
+        clinicTin: '000-123-456-000 NV',
+        birPermit: 'FP-042026-0019283',
+        receiptFooter: 'Thank you for trusting Fano Dental Clinic! Keep smiling.',
+        autoEmailReceipt: true,
+        overdueAlert: true,
+        expenseAlert: true,
+        dailyDigest: false
+      }),
+      getCloudStore('dentist_settings', {})
+    ]);
+
+    let userPrefs = {};
+    if (userKey) {
+      const allUserPrefs = await getCloudStore('user_preferences', {});
+      userPrefs = allUserPrefs[userKey] || {};
+    }
+
+    if (scope === 'clinic') return res.json(clinic);
+    if (scope === 'finance') return res.json(finance);
+    if (scope === 'dentist') return res.json(dentist);
+    if (scope === 'user') return res.json(userPrefs);
+
+    res.json({ clinic, finance, dentist, userPreferences: userPrefs, updatedAt: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const handleUpdateSettings = async (req, res) => {
+  try {
+    const { scope, settings, userKey } = req.body;
+    const payload = settings || req.body;
+
+    if (scope === 'clinic') {
+      const current = await getCloudStore('clinic_settings', {});
+      const merged = { ...current, ...payload, updatedAt: new Date().toISOString() };
+      await setCloudStore('clinic_settings', merged);
+      return res.json({ success: true, settings: merged });
+    }
+    if (scope === 'finance') {
+      const current = await getCloudStore('finance_settings', {});
+      const merged = { ...current, ...payload, updatedAt: new Date().toISOString() };
+      await setCloudStore('finance_settings', merged);
+      return res.json({ success: true, settings: merged });
+    }
+    if (scope === 'dentist') {
+      const current = await getCloudStore('dentist_settings', {});
+      const key = userKey || 'default';
+      const merged = userKey ? { ...current, [key]: { ...(current[key] || {}), ...payload } } : { ...current, ...payload };
+      await setCloudStore('dentist_settings', merged);
+      return res.json({ success: true, settings: userKey ? merged[key] : merged });
+    }
+    if (scope === 'user' && userKey) {
+      const allPrefs = await getCloudStore('user_preferences', {});
+      allPrefs[userKey] = { ...(allPrefs[userKey] || {}), ...payload, updatedAt: new Date().toISOString() };
+      await setCloudStore('user_preferences', allPrefs);
+      return res.json({ success: true, settings: allPrefs[userKey] });
+    }
+
+    const current = await getCloudStore('clinic_settings', {});
+    const merged = { ...current, ...payload, updatedAt: new Date().toISOString() };
+    await setCloudStore('clinic_settings', merged);
+    res.json({ success: true, settings: merged });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+app.get('/api/settings', handleGetSettings);
+app.get('/settings', handleGetSettings);
+app.put('/api/settings', handleUpdateSettings);
+app.put('/settings', handleUpdateSettings);
+
+// Patient & Staff Reported Issues (Real-Time Cloud Persistence)
+const handleGetIssues = async (req, res) => {
+  try {
+    const issues = await getCloudStore('reported_issues', []);
+    res.json(Array.isArray(issues) ? issues : []);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const handleCreateIssue = async (req, res) => {
+  try {
+    const { category, priority, subject, description, reporter_name, reporter_email, reporter_id } = req.body;
+    const issues = await getCloudStore('reported_issues', []);
+    const list = Array.isArray(issues) ? issues : [];
+
+    const newIssue = {
+      id: 'ISS-' + Math.floor(100000 + Math.random() * 900000),
+      category: category || 'General',
+      priority: priority || 'Normal',
+      subject: subject || 'Support Ticket',
+      description: description || '',
+      reporter_name: reporter_name || 'Patient',
+      reporter_email: reporter_email || '',
+      reporter_id: reporter_id || null,
+      status: 'Open',
+      date: new Date().toISOString()
+    };
+
+    list.unshift(newIssue);
+    if (list.length > 200) list.length = 200;
+    await setCloudStore('reported_issues', list);
+
+    try {
+      const { logAuditAction } = require('./utils/auditLogger');
+      logAuditAction({
+        action: 'ISSUE_REPORTED',
+        entityType: 'support_issue',
+        entityId: newIssue.id,
+        userName: newIssue.reporter_name,
+        userRole: 'Patient',
+        details: `${newIssue.reporter_name} reported issue [${newIssue.category} / ${newIssue.priority}]: "${newIssue.subject}"`,
+        metadata: newIssue,
+        req
+      });
+    } catch (_) {}
+
+    res.status(201).json({ success: true, issue: newIssue });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+app.get('/api/issues', handleGetIssues);
+app.get('/issues', handleGetIssues);
+app.post('/api/issues', handleCreateIssue);
+app.post('/issues', handleCreateIssue);
 
 // ─── Health Check Endpoint (System Availability Monitoring) ───────────────────
 // @route   GET /api/health

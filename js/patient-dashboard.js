@@ -634,15 +634,32 @@ function closeReportIssueModal() {
 function handleReportIssueSubmit(e) {
   if (e && e.preventDefault) e.preventDefault();
   const cat = document.getElementById('ri-category')?.value || 'general';
+  const prio = document.getElementById('ri-priority')?.value || 'Normal';
+  const subj = (document.getElementById('ri-subject')?.value || '').trim() || ('Patient Issue (' + cat + ')');
   const desc = (document.getElementById('ri-description')?.value || '').trim();
   if (!desc) {
     if (typeof showToast === 'function') showToast('Please describe the issue or inquiry.', 'error');
     else alert('Please describe the issue or inquiry.');
     return;
   }
+  let u = {};
+  try { u = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}'); } catch (_) {}
+  fetch(`${API_BASE_ORIGIN}/api/issues`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      category: cat,
+      priority: prio,
+      subject: subj,
+      description: desc,
+      reporter_name: u.name || 'Patient',
+      reporter_email: u.email || '',
+      reporter_id: u.id || null
+    })
+  }).catch(() => {});
   try {
     const list = JSON.parse(localStorage.getItem('pd_reported_issues') || '[]');
-    list.unshift({ id: 'iss_' + Date.now(), category: cat, description: desc, date: new Date().toISOString() });
+    list.unshift({ id: 'iss_' + Date.now(), category: cat, subject: subj, description: desc, date: new Date().toISOString() });
     localStorage.setItem('pd_reported_issues', JSON.stringify(list));
   } catch (_) {}
   if (typeof showToast === 'function') showToast('✓ Issue report submitted! Clinic support will review it.', 'success');

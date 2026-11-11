@@ -235,13 +235,23 @@ const verifyPaymongoPayment = async (req, res) => {
 
     if (updateError) throw updateError;
 
-    // 4. Update corresponding appointment payment status if applicable
-    if (invoice.appointment_id) {
-      await supabase
-        .from('appointments')
-        .update({ payment_status: 'Paid', is_paid: true })
-        .eq('id', invoice.appointment_id);
-    }
+    // 4. Record payment details in invoice_supplements cloudStore
+    try {
+      const { getCloudStore, setCloudStore } = require('../utils/cloudStore');
+      const supplements = (await getCloudStore('invoice_supplements', {})) || {};
+      if (!supplements[cleanInvoiceId]) supplements[cleanInvoiceId] = { paid_amount: 0, payments_history: [] };
+      supplements[cleanInvoiceId].paid_amount = parseFloat(updatedInvoice.amount || 0);
+      supplements[cleanInvoiceId].payment_method = 'PayMongo (Online)';
+      if (!supplements[cleanInvoiceId].payments_history) supplements[cleanInvoiceId].payments_history = [];
+      supplements[cleanInvoiceId].payments_history.push({
+        amount: parseFloat(updatedInvoice.amount || 0),
+        payment_method: 'PayMongo (Online)',
+        reference: checkout_id || 'online_checkout',
+        collected_at: new Date().toISOString(),
+        collected_by: 'PayMongo Gateway'
+      });
+      await setCloudStore('invoice_supplements', supplements);
+    } catch (_) {}
 
     // 5. Audit log
     try {

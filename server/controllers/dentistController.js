@@ -1,25 +1,32 @@
 const supabase = require('../config/db');
+const { getCloudStore, setCloudStore, getCloudStoreSync } = require('../utils/cloudStore');
 
 // In-memory / file fallback storage for dental charts, prescriptions, and followups
 const fs = require('fs');
 const path = require('path');
 
 const DATA_DIR = path.join(__dirname, '../data');
-if (!fs.existsSync(DATA_DIR)) {
-  try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (_) {}
-}
+
+// Warm cloud stores used by dentistController
+getCloudStore('dental_charts', {}).catch(() => {});
+getCloudStore('prescriptions', []).catch(() => {});
+getCloudStore('patient_images', {}).catch(() => {});
+getCloudStore('follow_ups', []).catch(() => {});
+getCloudStore('patient_reviews', []).catch(() => {});
 
 const getStore = (fileName, defaultVal = {}) => {
-  const file = path.join(DATA_DIR, fileName);
-  if (fs.existsSync(file)) {
-    try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch (_) { return defaultVal; }
+  try {
+    const val = getCloudStoreSync(fileName, defaultVal);
+    return val !== undefined && val !== null ? val : defaultVal;
+  } catch (_) {
+    return defaultVal;
   }
-  return defaultVal;
 };
 
 const saveStore = (fileName, data) => {
-  const file = path.join(DATA_DIR, fileName);
-  try { fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8'); } catch (e) {
+  try {
+    setCloudStore(fileName, data).catch(() => {});
+  } catch (e) {
     console.error(`[Store error ${fileName}]:`, e.message);
   }
 };
@@ -251,16 +258,55 @@ const getPatientRecord = async (req, res) => {
 
     if (err3) throw err3;
 
-    // Get dental chart for patient
-    const charts = getStore('dental_charts.json', {});
-    const patientChart = charts[id] || {};
+    // Get dental chart for patient (from Supabase first, then cloudStore fallback)
+    let patientChart = {};
+    try {
+      const { data: dbChart } = await supabase
+        .from('dental_charts')
+        .select('*')
+        .eq('patient_id', id)
+        .maybeSingle();
+      if (dbChart) {
+        patientChart = {
+          patientId: dbChart.patient_id,
+          chartType: dbChart.chart_type || 'adult',
+          teeth: dbChart.teeth_data || {},
+          notes: dbChart.notes || '',
+          updatedAt: dbChart.updated_at
+        };
+      } else {
+        const charts = await getCloudStore('dental_charts', {});
+        patientChart = charts[id] || {};
+      }
+    } catch (_) {
+      const charts = getStore('dental_charts.json', {});
+      patientChart = charts[id] || {};
+    }
 
-    // Get prescriptions for patient
-    const allRxs = getStore('prescriptions.json', []);
-    const patientRxs = allRxs.filter(r => String(r.patient_id) === String(id));
+    // Get prescriptions for patient (from Supabase first, then cloudStore fallback)
+    let patientRxs = [];
+    try {
+      const { data: dbRxs } = await supabase
+        .from('prescriptions')
+        .select('*, dentist:dentist_id(name)')
+        .eq('patient_id', id)
+        .order('created_at', { ascending: false });
+      if (Array.isArray(dbRxs) && dbRxs.length > 0) {
+        patientRxs = dbRxs.map(r => ({
+          ...r,
+          dentist_name: r.dentist?.name || r.dentist_name || 'Dr. Dentist'
+        }));
+      } else {
+        const allRxs = await getCloudStore('prescriptions', []);
+        patientRxs = (allRxs || []).filter(r => String(r.patient_id) === String(id));
+      }
+    } catch (_) {
+      const allRxs = getStore('prescriptions.json', []);
+      patientRxs = allRxs.filter(r => String(r.patient_id) === String(id));
+    }
 
-    // Get mock/stored X-rays & clinical images
-    const imagesStore = getStore('patient_images.json', {});
+    // Get stored X-rays & clinical images from Supabase cloudStore
+    const imagesStore = await getCloudStore('patient_images', {});
     const patientImages = imagesStore[id] || [
       { id: 'img-1', title: 'Bitewing X-Ray (Premolar & Molar View)', date: '2026-06-15', url: '../Resources/dental_xray.png', type: 'X-Ray' },
       { id: 'img-2', title: 'Panoramic Radiograph (Full Dentition Scan)', date: '2026-05-10', url: '../Resources/dental_xray.png', type: 'Panoramic' },
@@ -682,8 +728,9 @@ const getDentistReports = async (req, res) => {
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
 
-    // Compute real patient satisfaction from actual patient reviews
-    const allReviews = getStore('patient_reviews.json', []);
+    // Compute real patient satisfaction from actual patient reviews in Supabase cloudStore
+    const allReviewsRaw = await getCloudStore('patient_reviews', []);
+    const allReviews = Array.isArray(allReviewsRaw) ? allReviewsRaw : [];
     let patientSatisfaction = 'N/A';
     let averageStars = 0;
     const reviewCount = allReviews.length;
