@@ -166,6 +166,11 @@ const getPatientWithHistory = async (req, res) => {
       return res.status(404).json({ message: 'Patient chart record not found.' });
     }
 
+    // Ownership check: A Patient can only view their own medical history
+    if (req.user && req.user.role === 'Patient' && String(actualUserId) !== String(req.user.id)) {
+      return res.status(403).json({ message: 'Not authorized to access another patient\'s medical history.' });
+    }
+
     // If patient user exists but no profile row exists, initialize default profile object
     if (!profile) {
       profile = {

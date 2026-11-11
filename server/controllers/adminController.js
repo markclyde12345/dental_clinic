@@ -129,56 +129,33 @@ const createBackup = (filename, data) => {
 // @access  Private (Admin)
 const getAdminStats = async (req, res) => {
   try {
-    // 1. Count Patients (users where role = 'Patient')
-    const { count: totalPatients, error: patientError } = await supabase
-      .from('users')
-      .select('id', { count: 'exact', head: true })
-      .eq('role', 'Patient');
+    const [
+      { count: totalPatients, error: patientError },
+      { count: totalAppointments, error: apptError },
+      { data: invoices, error: invoiceError },
+      { data: recentUsers, error: userError },
+      { data: recentAppointments, error: recentApptError }
+    ] = await Promise.all([
+      supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'Patient'),
+      supabase.from('appointments').select('id', { count: 'exact', head: true }),
+      supabase.from('invoices').select('*'),
+      supabase.from('users').select('id, name, email, role, created_at').order('created_at', { ascending: false }).limit(5),
+      supabase.from('appointments').select('id, appointment_date, status, patient:patient_id ( id, name, email )').order('appointment_date', { ascending: false }).limit(5)
+    ]);
 
     if (patientError) throw patientError;
-
-    // 2. Count Appointments
-    const { count: totalAppointments, error: apptError } = await supabase
-      .from('appointments')
-      .select('id', { count: 'exact', head: true });
-
     if (apptError) throw apptError;
-
-    // 3. Monthly Revenue (sum of paid invoices, supporting both amount/total_amount and paid_amount schemas)
-    const { data: invoices, error: invoiceError } = await supabase
-      .from('invoices')
-      .select('*');
-
     if (invoiceError) throw invoiceError;
+    if (userError) throw userError;
+    if (recentApptError) throw recentApptError;
 
-    const totalRevenue = invoices.reduce((sum, inv) => {
+    const totalRevenue = (invoices || []).reduce((sum, inv) => {
       const amt = parseFloat(inv.amount || inv.total_amount || 0);
-      // Fallback: if paid_amount is missing, assume it is fully paid if status is 'paid', else 0
       const paid = inv.paid_amount !== undefined && inv.paid_amount !== null
         ? parseFloat(inv.paid_amount)
         : (inv.status?.toLowerCase() === 'paid' ? amt : 0);
       return sum + paid;
     }, 0);
-
-    // 4. Recent Activity (Latest 5 users registered & latest 5 appointments)
-    const { data: recentUsers, error: userError } = await supabase
-      .from('users')
-      .select('id, name, email, role, created_at')
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    if (userError) throw userError;
-
-    const { data: recentAppointments, error: recentApptError } = await supabase
-      .from('appointments')
-      .select(`
-        id, appointment_date, status,
-        patient:patient_id ( id, name, email )
-      `)
-      .order('appointment_date', { ascending: false })
-      .limit(5);
-
-    if (recentApptError) throw recentApptError;
 
     res.json({
       stats: {
@@ -908,15 +885,20 @@ const { performDatabaseBackup, getLatestBackupInfo } = require('../utils/backupS
 const getDatabaseStatus = async (req, res) => {
   try {
     const startTime = Date.now();
-    const { count: userCount, error: userErr } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true });
+    const [
+      { count: userCount, error: userErr },
+      { count: apptCount },
+      { count: invoiceCount },
+      { count: paidInvoiceCount },
+      cloudAudits
+    ] = await Promise.all([
+      supabase.from('users').select('*', { count: 'exact', head: true }),
+      supabase.from('appointments').select('*', { count: 'exact', head: true }),
+      supabase.from('invoices').select('*', { count: 'exact', head: true }),
+      supabase.from('invoices').select('*', { count: 'exact', head: true }).eq('status', 'Paid'),
+      getCloudStore('audit_logs', [])
+    ]);
     const latencyMs = Date.now() - startTime;
-
-    const { count: apptCount } = await supabase.from('appointments').select('*', { count: 'exact', head: true });
-    const { count: invoiceCount } = await supabase.from('invoices').select('*', { count: 'exact', head: true });
-    const { count: paidInvoiceCount } = await supabase.from('invoices').select('*', { count: 'exact', head: true }).eq('status', 'Paid');
-    const cloudAudits = await getCloudStore('audit_logs', []);
     const auditCount = Array.isArray(cloudAudits) ? cloudAudits.length : 0;
     const paymentCount = paidInvoiceCount || 0;
 

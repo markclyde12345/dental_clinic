@@ -176,14 +176,14 @@ const sendInvoiceEmail = async (patientEmail, patientName, invoiceId, amount, st
 // @access  Private
 const getInvoices = async (req, res) => {
   try {
-    // If patient, auto-reconcile any appointments that are missing invoices
+    // If patient, auto-reconcile any completed/active appointments that are missing invoices
     if (req.user.role === 'Patient' && req.user.id) {
       try {
         const { data: appts } = await supabase
           .from('appointments')
           .select('id, treatment_id, appointment_date, status, treatment:treatment_id ( id, name, price )')
           .eq('patient_id', req.user.id)
-          .neq('status', 'Cancelled');
+          .in('status', ['Completed', 'Checked In', 'In Progress']);
 
         if (appts && appts.length > 0) {
           const { data: existingInvs } = await supabase

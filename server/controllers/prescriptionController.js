@@ -6,6 +6,17 @@ const supabase = require('../config/db');
 const getAppointmentPrescriptions = async (req, res) => {
   const { id } = req.params;
   try {
+    if (req.user && req.user.role === 'Patient') {
+      const { data: appt } = await supabase
+        .from('appointments')
+        .select('id, patient_id')
+        .eq('id', id)
+        .maybeSingle();
+      if (!appt || String(appt.patient_id) !== String(req.user.id)) {
+        return res.status(403).json({ message: 'Not authorized to view prescriptions for this appointment.' });
+      }
+    }
+
     const { data, error } = await supabase
       .from('prescriptions')
       .select('*, patient:patient_id ( id, name, email ), dentist:dentist_id ( id, name, email )')
@@ -30,15 +41,15 @@ const getAppointmentPrescriptions = async (req, res) => {
 const getPatientPrescriptions = async (req, res) => {
   const { id } = req.params;
   try {
+    if (req.user.role === 'Patient' && String(id) !== String(req.user.id)) {
+      return res.status(403).json({ message: 'Forbidden: Patients can only view their own prescriptions.' });
+    }
+
     let query = supabase
       .from('prescriptions')
       .select('*, patient:patient_id ( id, name, email ), dentist:dentist_id ( id, name, email ), appointment:appointment_id ( id, appointment_date )')
       .eq('patient_id', id)
       .order('created_at', { ascending: false });
-
-    if (req.user.role === 'Patient') {
-      query = query.eq('patient_id', req.user.id);
-    }
 
     const { data, error } = await query;
     if (error) throw error;

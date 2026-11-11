@@ -31,16 +31,24 @@ const getUserNotifications = async (req, res) => {
     // 1. PATIENT NOTIFICATIONS
     // ─────────────────────────────────────────────────────────────
     if (userRole === 'Patient') {
-      // 1a. Patient Appointments
-      const { data: appts } = await supabase
-        .from('appointments')
-        .select(`
-          id, appointment_date, status, created_at, notes,
-          treatment:treatment_id ( name, price )
-        `)
-        .eq('patient_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(10);
+      // 1a & 1b. Fetch Patient Appointments and Invoices in parallel
+      const [{ data: appts }, { data: invs }] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select(`
+            id, appointment_date, status, created_at, notes,
+            treatment:treatment_id ( name, price )
+          `)
+          .eq('patient_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('invoices')
+          .select(`id, amount, status, issued_at, paid_at`)
+          .eq('patient_id', userId)
+          .order('issued_at', { ascending: false })
+          .limit(6)
+      ]);
 
       (appts || []).forEach(a => {
         const rawDate = a.appointment_date || '';
@@ -146,14 +154,7 @@ const getUserNotifications = async (req, res) => {
         }
       });
 
-      // 1b. Patient Invoices & Billing
-      const { data: invs } = await supabase
-        .from('invoices')
-        .select(`id, amount, status, issued_at, paid_at`)
-        .eq('patient_id', userId)
-        .order('issued_at', { ascending: false })
-        .limit(6);
-
+      // 1b. Patient Invoices & Billing (already fetched in parallel above)
       (invs || []).forEach(inv => {
         const ref = inv.id.slice(0, 8).toUpperCase();
         const amt = parseFloat(inv.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
@@ -363,15 +364,36 @@ const getUserNotifications = async (req, res) => {
     // ─────────────────────────────────────────────────────────────
     else if (userRole === 'Admin' || userRole === 'Super Admin' || userRole === 'Accounting' || req.query.role === 'admin') {
       const isAdminRole = userRole === 'Admin' || userRole === 'Super Admin' || req.query.role === 'admin';
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      const [
+        invListRes,
+        pendingApptsRes,
+        cancelledApptsRes,
+        queueApptsRes,
+        overdueInvsRes,
+        unpaidInvsRes
+      ] = await Promise.all([
+        isAdminRole
+          ? supabase.from('inventory').select('id, name, stock, threshold, unit, status').order('created_at', { ascending: true })
+          : Promise.resolve({ data: [] }),
+        isAdminRole
+          ? supabase.from('appointments').select('id, appointment_date, status, created_at, notes, patient:patient_id ( name, contact_number ), treatment:treatment_id ( name )').eq('status', 'Pending').order('created_at', { ascending: false }).limit(8)
+          : Promise.resolve({ data: [] }),
+        isAdminRole
+          ? supabase.from('appointments').select('id, appointment_date, status, created_at, notes, patient:patient_id ( name ), treatment:treatment_id ( name )').eq('status', 'Cancelled').order('created_at', { ascending: false }).limit(4)
+          : Promise.resolve({ data: [] }),
+        isAdminRole
+          ? supabase.from('appointments').select('id, appointment_date, status, created_at, patient:patient_id ( name ), treatment:treatment_id ( name )').eq('status', 'Checked In')
+          : Promise.resolve({ data: [] }),
+        supabase.from('invoices').select('id, amount, patient:patient_id ( name )').eq('status', 'Unpaid').lt('issued_at', thirtyDaysAgo),
+        supabase.from('invoices').select('id, amount').eq('status', 'Unpaid')
+      ]);
 
       if (isAdminRole) {
         // 3-LowStock: Low Stock & Depleted Supplies Alerts for Admin
         try {
-          const { data: invList } = await supabase
-            .from('inventory')
-            .select('id, name, stock, threshold, unit, status')
-            .order('created_at', { ascending: true });
-
+          const invList = invListRes.data;
           const lowOrOut = (invList || []).filter(item => {
             const stockNum = parseInt(item.stock, 10) || 0;
             const threshNum = parseInt(item.threshold, 10) || 10;
@@ -407,17 +429,7 @@ const getUserNotifications = async (req, res) => {
         }
 
         // 3a. Pending Appointments (Individual actionable bookings)
-        const { data: pendingAppts } = await supabase
-          .from('appointments')
-          .select(`
-            id, appointment_date, status, created_at, notes,
-            patient:patient_id ( name, contact_number ),
-            treatment:treatment_id ( name )
-          `)
-          .eq('status', 'Pending')
-          .order('created_at', { ascending: false })
-          .limit(8);
-
+        const pendingAppts = pendingApptsRes.data;
         (pendingAppts || []).forEach(a => {
           const patientName = a.patient?.name || 'Patient';
           const treatmentName = a.treatment?.name || 'Dental Consultation';
@@ -443,17 +455,7 @@ const getUserNotifications = async (req, res) => {
         });
 
         // 3b. Recent Cancellations (alert that chair slot reopened)
-        const { data: cancelledAppts } = await supabase
-          .from('appointments')
-          .select(`
-            id, appointment_date, status, created_at, notes,
-            patient:patient_id ( name ),
-            treatment:treatment_id ( name )
-          `)
-          .eq('status', 'Cancelled')
-          .order('created_at', { ascending: false })
-          .limit(4);
-
+        const cancelledAppts = cancelledApptsRes.data;
         (cancelledAppts || []).forEach(a => {
           const patientName = a.patient?.name || 'Patient';
           const treatmentName = a.treatment?.name || 'Appointment';
@@ -479,15 +481,7 @@ const getUserNotifications = async (req, res) => {
         });
 
         // 3c. Front Lounge Queue
-        const { data: queueAppts } = await supabase
-          .from('appointments')
-          .select(`
-            id, appointment_date, status, created_at,
-            patient:patient_id ( name ),
-            treatment:treatment_id ( name )
-          `)
-          .eq('status', 'Checked In');
-
+        const queueAppts = queueApptsRes.data;
         if (queueAppts && queueAppts.length > 0) {
           notifications.push({
             id: `admin-queue-${queueAppts.length}`,
@@ -522,13 +516,7 @@ const getUserNotifications = async (req, res) => {
       }
 
       // 3d. Overdue Balances (> 30 days)
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const { data: overdueInvs } = await supabase
-        .from('invoices')
-        .select('id, amount, patient:patient_id ( name )')
-        .eq('status', 'Unpaid')
-        .lt('issued_at', thirtyDaysAgo);
-
+      const overdueInvs = overdueInvsRes.data;
       if (overdueInvs && overdueInvs.length > 0) {
         notifications.push({
           id: 'admin-overdue-alert',
@@ -543,11 +531,7 @@ const getUserNotifications = async (req, res) => {
       }
 
       // 3e. Unpaid Invoices Counter
-      const { data: unpaidInvs } = await supabase
-        .from('invoices')
-        .select('id, amount')
-        .eq('status', 'Unpaid');
-
+      const unpaidInvs = unpaidInvsRes.data;
       if (unpaidInvs && unpaidInvs.length > 0) {
         const totalPending = unpaidInvs.reduce((sum, i) => sum + (parseFloat(i.amount) || 0), 0);
         notifications.push({

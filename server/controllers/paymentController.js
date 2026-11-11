@@ -190,6 +190,10 @@ const verifyPaymongoPayment = async (req, res) => {
       return res.status(404).json({ message: 'Invoice not found' });
     }
 
+    if (req.user && req.user.role === 'Patient' && String(invoice.patient_id) !== String(req.user.id)) {
+      return res.status(403).json({ message: 'Unauthorized to verify payment for this invoice' });
+    }
+
     // If already marked paid
     if (invoice.status === 'Paid') {
       return res.json({ success: true, message: 'Invoice is already marked as Paid.', invoice });

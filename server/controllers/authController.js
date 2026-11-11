@@ -1494,12 +1494,21 @@ const socialLogin = async (req, res) => {
       const { data: userByName } = await supabase
         .from('users')
         .select('*')
+        .eq('role', 'Patient')
         .ilike('name', fullName)
         .maybeSingle();
       if (userByName) existingUser = userByName;
     }
 
     if (findError) throw findError;
+
+    // Security check: Never allow unverified fallback tokens to sign into privileged staff/admin accounts
+    if (existingUser && existingUser.role !== 'Patient' && access_token === 'fallback_fb_auth') {
+      return res.status(403).json({
+        success: false,
+        message: 'Staff and administrator accounts must sign in using verified credentials or an authenticated OAuth session.'
+      });
+    }
 
     let userRecord = existingUser;
 

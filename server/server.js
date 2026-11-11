@@ -405,8 +405,9 @@ const handleUpdateDentistDuty = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-app.put('/api/dentists/:id/duty', handleUpdateDentistDuty);
-app.put('/dentists/:id/duty', handleUpdateDentistDuty);
+const { protect, authorize } = require('./middleware/auth');
+app.put('/api/dentists/:id/duty', protect, authorize('Admin', 'Receptionist', 'Dentist'), handleUpdateDentistDuty);
+app.put('/dentists/:id/duty', protect, authorize('Admin', 'Receptionist', 'Dentist'), handleUpdateDentistDuty);
 
 // ─── Real-Time Cloud Settings & Reported Issues Endpoints ─────────────────────
 const handleGetSettings = async (req, res) => {
@@ -508,10 +509,10 @@ const handleUpdateSettings = async (req, res) => {
   }
 };
 
-app.get('/api/settings', handleGetSettings);
-app.get('/settings', handleGetSettings);
-app.put('/api/settings', handleUpdateSettings);
-app.put('/settings', handleUpdateSettings);
+app.get('/api/settings', protect, handleGetSettings);
+app.get('/settings', protect, handleGetSettings);
+app.put('/api/settings', protect, handleUpdateSettings);
+app.put('/settings', protect, handleUpdateSettings);
 
 // Patient & Staff Reported Issues (Real-Time Cloud Persistence)
 const handleGetIssues = async (req, res) => {
@@ -566,10 +567,10 @@ const handleCreateIssue = async (req, res) => {
   }
 };
 
-app.get('/api/issues', handleGetIssues);
-app.get('/issues', handleGetIssues);
-app.post('/api/issues', handleCreateIssue);
-app.post('/issues', handleCreateIssue);
+app.get('/api/issues', protect, authorize('Admin', 'Receptionist'), handleGetIssues);
+app.get('/issues', protect, authorize('Admin', 'Receptionist'), handleGetIssues);
+app.post('/api/issues', protect, handleCreateIssue);
+app.post('/issues', protect, handleCreateIssue);
 
 // ─── Health Check Endpoint (System Availability Monitoring) ───────────────────
 // @route   GET /api/health

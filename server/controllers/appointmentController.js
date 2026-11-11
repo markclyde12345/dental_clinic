@@ -86,6 +86,10 @@ const getAppointmentById = async (req, res) => {
     if (error) throw error;
     if (!appointment) return res.status(404).json({ message: 'Appointment not found.' });
 
+    if (req.user && req.user.role === 'Patient' && appointment.patient?.id && String(appointment.patient.id) !== String(req.user.id)) {
+      return res.status(403).json({ message: 'Not authorized to view this appointment.' });
+    }
+
     res.json({
       ...appointment,
       patient_id: appointment.patient?.id || null,
@@ -576,6 +580,10 @@ const updateAppointment = async (req, res) => {
       .eq('id', id)
       .maybeSingle();
 
+    if (req.user && req.user.role === 'Patient' && existingAppt && String(existingAppt.patient_id) !== String(req.user.id)) {
+      return res.status(403).json({ message: 'Not authorized to modify another patient\'s appointment.' });
+    }
+
     const previousDate = existingAppt?.appointment_date;
     const previousStatus = existingAppt?.status;
     const existingNotes = existingAppt?.notes || '';
@@ -643,6 +651,19 @@ const updateAppointment = async (req, res) => {
       sendAppointmentStatusEmail(updated, 'Rescheduled').catch(() => {});
     } else if (status) {
       sendAppointmentStatusEmail(updated, status).catch(() => {});
+    }
+
+    // Auto-void unpaid invoices when an appointment is cancelled
+    if (updated.status === 'Cancelled' || status === 'Cancelled') {
+      try {
+        await supabase
+          .from('invoices')
+          .update({ status: 'Voided' })
+          .eq('appointment_id', id)
+          .eq('status', 'Unpaid');
+      } catch (voidErr) {
+        console.warn('[Auto-Void Invoice Skip]', voidErr.message);
+      }
     }
 
     // Auto-generate an invoice when an appointment is completed (and none exists yet)
@@ -753,6 +774,17 @@ const updateAppointment = async (req, res) => {
 const deleteAppointment = async (req, res) => {
   const { id } = req.params;
   try {
+    if (req.user && req.user.role === 'Patient') {
+      const { data: apptOwner } = await supabase
+        .from('appointments')
+        .select('patient_id')
+        .eq('id', id)
+        .maybeSingle();
+      if (!apptOwner || String(apptOwner.patient_id) !== String(req.user.id)) {
+        return res.status(403).json({ message: 'Not authorized to delete this appointment.' });
+      }
+    }
+
     const { error } = await supabase
       .from('appointments')
       .delete()

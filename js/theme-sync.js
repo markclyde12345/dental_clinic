@@ -142,12 +142,21 @@
     }
   }
 
+  function getStoredAuthHeaders() {
+    var headers = { 'Content-Type': 'application/json' };
+    try {
+      var tok = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (tok) headers['Authorization'] = 'Bearer ' + tok;
+    } catch (_) {}
+    return headers;
+  }
+
   function pushCloudSettings(scope, settingsObj, userKey) {
     var nativeFetch = window.__nativeFetch || window.fetch;
     if (!nativeFetch) return;
     nativeFetch(apiOrigin + '/api/settings', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getStoredAuthHeaders(),
       body: JSON.stringify({ scope: scope, settings: settingsObj, userKey: userKey })
     }).then(function () {
       if (bc) {
@@ -247,7 +256,9 @@
     var nativeFetch = window.__nativeFetch || window.fetch;
     if (!nativeFetch) return;
     var userKey = getCurrentUserKey();
-    nativeFetch(apiOrigin + '/api/settings?userKey=' + encodeURIComponent(userKey))
+    nativeFetch(apiOrigin + '/api/settings?userKey=' + encodeURIComponent(userKey), {
+      headers: getStoredAuthHeaders()
+    })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
         if (!data) return;

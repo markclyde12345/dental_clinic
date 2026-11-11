@@ -49,6 +49,10 @@ const getTreatmentPlan = async (req, res) => {
     if (error) throw error;
     if (!data) return res.status(404).json({ message: 'Treatment plan not found.' });
 
+    if (req.user && req.user.role === 'Patient' && data.patient?.id && String(data.patient.id) !== String(req.user.id)) {
+      return res.status(403).json({ message: 'Not authorized to view this treatment plan.' });
+    }
+
     res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });

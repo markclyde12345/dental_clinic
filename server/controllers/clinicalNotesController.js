@@ -8,12 +8,16 @@ const getClinicalNotes = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('appointments')
-      .select('id, notes')
+      .select('id, notes, patient_id')
       .eq('id', id)
       .maybeSingle();
 
     if (error) throw error;
     if (!data) return res.status(404).json({ message: 'Appointment not found.' });
+
+    if (req.user && req.user.role === 'Patient' && String(data.patient_id) !== String(req.user.id)) {
+      return res.status(403).json({ message: 'Not authorized to view clinical notes for this appointment.' });
+    }
 
     res.json({ id: data.id, clinical_notes: data.notes || '', notes: data.notes || '' });
   } catch (error) {
