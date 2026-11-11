@@ -1,12 +1,12 @@
 {
-  "clinicName": "Fano Dental Clinic",
-  "clinicEmail": "contact@fanoclinic.com",
-  "clinicPhone": "+63 917 123 4567",
-  "clinicHours": "8:00 AM - 6:00 PM (Mon - Sat)",
-  "clinicAddress": "123 Dental Ave, Suite 100, Manila",
-  "autoApprove": false,
+  "currency": "₱",
   "smsAlerts": true,
-  "currency": "PHP (₱)",
-  "sessionTimeout": "30",
-  "auditVerbosity": "Standard (Mutations Only)"
+  "clinicName": "Fano Dental Clinic",
+  "autoApprove": false,
+  "clinicEmail": "contact@fanoclinic.com",
+  "clinicHours": "8:00 AM - 6:00 PM (Mon - Sat)",
+  "clinicPhone": "+63 917 123 4567",
+  "clinicAddress": "123 Dental Ave, Suite 100, Manila",
+  "auditVerbosity": "Standard (Mutations Only)",
+  "sessionTimeout": "30"
 }

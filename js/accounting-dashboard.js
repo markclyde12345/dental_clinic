@@ -28,8 +28,20 @@
   let currentReceiptInvoice = null;
 
   // Formatting helpers
+  function normalizeCurrencySymbol(val) {
+    if (!val || typeof val !== 'string') return '₱';
+    const trimmed = val.trim();
+    const match = trimmed.match(/\(([^)]+)\)/);
+    if (match && match[1]) return match[1].trim();
+    if (trimmed.toUpperCase() === 'PHP') return '₱';
+    if (trimmed.toUpperCase() === 'USD') return '$';
+    if (trimmed.toUpperCase() === 'EUR') return '€';
+    if (trimmed.toUpperCase() === 'JPY') return '¥';
+    return trimmed;
+  }
+
   function getCurrency() {
-    return localStorage.getItem('acc-currency') || '₱';
+    return normalizeCurrencySymbol(localStorage.getItem('acc-currency') || '₱');
   }
 
   function formatMoney(amount) {
@@ -367,15 +379,15 @@
     const ewalletPct = totalCollected > 0 ? Math.round((ewalletTotal / collectedBase) * 100) : 0;
     const cardPct = totalCollected > 0 ? Math.round((cardTotal / collectedBase) * 100) : 0;
 
-    safeSetText('cash-share-val', `${formatMoney(cashTotal)} (${cashPct}%)`);
+    safeSetText('cash-share-val', formatMoney(cashTotal));
     const cashBar = document.getElementById('cash-bar');
     if (cashBar) cashBar.style.width = `${cashPct}%`;
 
-    safeSetText('ewallet-share-val', `${formatMoney(ewalletTotal)} (${ewalletPct}%)`);
+    safeSetText('ewallet-share-val', formatMoney(ewalletTotal));
     const ewalletBar = document.getElementById('ewallet-bar');
     if (ewalletBar) ewalletBar.style.width = `${ewalletPct}%`;
 
-    safeSetText('card-share-val', `${formatMoney(cardTotal)} (${cardPct}%)`);
+    safeSetText('card-share-val', formatMoney(cardTotal));
     const cardBar = document.getElementById('card-bar');
     if (cardBar) cardBar.style.width = `${cardPct}%`;
 

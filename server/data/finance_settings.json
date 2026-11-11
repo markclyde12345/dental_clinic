@@ -1,0 +1,13 @@
+{
+  "vatRate": "0",
+  "currency": "₱",
+  "orPrefix": "OR-",
+  "birPermit": "FP-042026-0019283",
+  "clinicTin": "000-123-456-000 NV",
+  "invPrefix": "INV-",
+  "dailyDigest": false,
+  "expenseAlert": true,
+  "overdueAlert": true,
+  "receiptFooter": "Thank you for trusting Fano Dental Clinic! Keep smiling.",
+  "autoEmailReceipt": true
+}

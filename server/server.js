@@ -423,12 +423,12 @@ const handleGetSettings = async (req, res) => {
         clinicAddress: '123 Dental Ave, Suite 100, Manila',
         autoApprove: false,
         smsAlerts: true,
-        currency: 'PHP (₱)',
+        currency: '₱',
         sessionTimeout: '30',
         auditVerbosity: 'Standard (Mutations Only)'
       }),
       getCloudStore('finance_settings', {
-        currency: 'PHP (₱)',
+        currency: '₱',
         vatRate: '0',
         invPrefix: 'INV-',
         orPrefix: 'OR-',
@@ -442,6 +442,14 @@ const handleGetSettings = async (req, res) => {
       }),
       getCloudStore('dentist_settings', {})
     ]);
+
+    const normCur = (v) => {
+      if (!v || typeof v !== 'string') return '₱';
+      const m = v.trim().match(/\(([^)]+)\)/);
+      return m && m[1] ? m[1].trim() : v.trim();
+    };
+    if (clinic && clinic.currency) clinic.currency = normCur(clinic.currency);
+    if (finance && finance.currency) finance.currency = normCur(finance.currency);
 
     let userPrefs = {};
     if (userKey) {

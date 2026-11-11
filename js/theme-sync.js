@@ -156,6 +156,14 @@
     }).catch(function () {});
   }
 
+  function normalizeCurrencySymbol(val) {
+    if (!val || typeof val !== 'string') return '₱';
+    var trimmed = val.trim();
+    var match = trimmed.match(/\(([^)]+)\)/);
+    if (match && match[1]) return match[1].trim();
+    return trimmed;
+  }
+
   function collectAndPushClinicSettings() {
     var payload = {
       clinicName: localStorage.getItem('set-clinic-name') || 'Fano Dental Clinic',
@@ -165,7 +173,7 @@
       clinicAddress: localStorage.getItem('set-clinic-address') || '123 Dental Ave, Suite 100, Manila',
       autoApprove: localStorage.getItem('set-auto-approve') === 'true',
       smsAlerts: localStorage.getItem('set-sms-alerts') !== 'false',
-      currency: localStorage.getItem('set-currency') || 'PHP (₱)',
+      currency: normalizeCurrencySymbol(localStorage.getItem('set-currency') || '₱'),
       sessionTimeout: localStorage.getItem('set-session-timeout') || '30',
       auditVerbosity: localStorage.getItem('set-audit-verbosity') || 'Standard (Mutations Only)',
       twilioSid: localStorage.getItem('set-twilio-sid') || '',
@@ -176,7 +184,7 @@
 
   function collectAndPushFinanceSettings() {
     var payload = {
-      currency: localStorage.getItem('acc-currency') || 'PHP (₱)',
+      currency: normalizeCurrencySymbol(localStorage.getItem('acc-currency') || '₱'),
       vatRate: localStorage.getItem('acc-vat') || '0',
       invPrefix: localStorage.getItem('acc-inv-prefix') || 'INV-',
       orPrefix: localStorage.getItem('acc-or-prefix') || 'OR-',
@@ -254,7 +262,10 @@
             if (c.clinicAddress) setLocalSilent('set-clinic-address', c.clinicAddress);
             if (c.autoApprove !== undefined) setLocalSilent('set-auto-approve', c.autoApprove);
             if (c.smsAlerts !== undefined) setLocalSilent('set-sms-alerts', c.smsAlerts);
-            if (c.currency) setLocalSilent('set-currency', c.currency);
+            if (c.currency) {
+              c.currency = normalizeCurrencySymbol(c.currency);
+              setLocalSilent('set-currency', c.currency);
+            }
             if (c.sessionTimeout) setLocalSilent('set-session-timeout', c.sessionTimeout);
             if (c.auditVerbosity) setLocalSilent('set-audit-verbosity', c.auditVerbosity);
 
@@ -280,7 +291,10 @@
 
           if (data.finance) {
             var f = data.finance;
-            if (f.currency) setLocalSilent('acc-currency', f.currency);
+            if (f.currency) {
+              f.currency = normalizeCurrencySymbol(f.currency);
+              setLocalSilent('acc-currency', f.currency);
+            }
             if (f.vatRate !== undefined) setLocalSilent('acc-vat', f.vatRate);
             if (f.invPrefix) setLocalSilent('acc-inv-prefix', f.invPrefix);
             if (f.orPrefix) setLocalSilent('acc-or-prefix', f.orPrefix);

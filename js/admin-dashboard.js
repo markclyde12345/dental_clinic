@@ -39,7 +39,10 @@ const INVOICE_API = `${BASE_ORIGIN}/api/invoices`;
 const TREATMENT_API = `${BASE_ORIGIN}/api/treatments`;
 
 function getCurrencySymbol() {
-  return localStorage.getItem('set-currency') || '₱';
+  const raw = localStorage.getItem('set-currency') || '₱';
+  const match = String(raw).trim().match(/\(([^)]+)\)/);
+  if (match && match[1]) return match[1].trim();
+  return raw;
 }
 
 function getAuthToken() {
