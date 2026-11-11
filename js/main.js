@@ -266,6 +266,13 @@ function initLandingUserSession() {
   const rawName = userInfo?.name || userInfo?.fullName || (userInfo?.email ? userInfo.email.split('@')[0] : 'Patient');
   const initial = rawName.charAt(0).toUpperCase();
 
+  const svgDashboard = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>`;
+  const svgArrowRight = `<svg class="nav-arrow-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>`;
+  const svgLogout = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2"></path><path d="M9 12h12l-3-3"></path><path d="m18 15 3-3"></path></svg>`;
+  const svgUser = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg>`;
+  const svgCheckCircle = `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="#0d9488" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>`;
+  const svgCalendarPlus = `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="4" y="5" width="16" height="16" rx="2"></rect><line x1="16" y1="3" x2="16" y2="7"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="4" y1="11" x2="20" y2="11"></line><line x1="12" y1="14" x2="12" y2="18"></line><line x1="10" y1="16" x2="14" y2="16"></line></svg>`;
+
   // 1. Desktop / Tablet Navbar
   if (navAuthWrapper) {
     if (isLoggedIn) {
@@ -279,19 +286,19 @@ function initLandingUserSession() {
             </div>
           </div>
           <a href="${dashUrl}" class="btn-nav-dashboard" title="Return to ${userRole} Dashboard">
-            <i class="ti ti-layout-dashboard"></i>
+            ${svgDashboard}
             <span>Dashboard</span>
-            <i class="ti ti-arrow-right"></i>
+            ${svgArrowRight}
           </a>
           <button type="button" class="btn-nav-logout" onclick="landingLogout()" title="Sign Out">
-            <i class="ti ti-logout"></i>
+            ${svgLogout}
           </button>
         </div>
       `;
     } else {
       navAuthWrapper.innerHTML = `
         <a href="login.html" class="btn-nav-login" title="Sign in to your account">
-          <i class="ti ti-user"></i>
+          ${svgUser}
           <span>Log In</span>
         </a>
       `;
@@ -311,12 +318,12 @@ function initLandingUserSession() {
             </div>
           </div>
           <a href="${dashUrl}" class="btn-mobile-dash-cta" onclick="closeMobileMenu()">
-            <i class="ti ti-layout-dashboard"></i>
+            ${svgDashboard}
             <span>Go to Dashboard</span>
-            <i class="ti ti-arrow-right"></i>
+            ${svgArrowRight}
           </a>
           <button type="button" class="btn-mobile-signout" onclick="landingLogout()">
-            <i class="ti ti-logout"></i> Sign Out
+            ${svgLogout} Sign Out
           </button>
         </div>
       `;
@@ -324,7 +331,7 @@ function initLandingUserSession() {
       mobileAccountContainer.innerHTML = `
         <div class="mobile-account-guest">
           <a href="login.html" class="btn-mobile-guest-login" onclick="closeMobileMenu()">
-            <i class="ti ti-user"></i>
+            ${svgUser}
             <span>Log In to Account</span>
           </a>
         </div>
@@ -337,16 +344,16 @@ function initLandingUserSession() {
     heroActions.innerHTML = `
       <div style="width: 100%; margin-bottom: 8px;">
         <div class="hero-account-badge">
-          <i class="ti ti-circle-check-filled" style="color: #0d9488; font-size: 1.1rem;"></i>
+          ${svgCheckCircle}
           <span>Welcome back, <strong>${escapeHtml(rawName)}</strong> (Logged In)</span>
         </div>
       </div>
       <a href="${dashUrl}" class="btn-primary">
-        <i class="ti ti-layout-dashboard" style="font-size: 1.15rem;"></i>
+        ${svgDashboard}
         <span>Go to Dashboard →</span>
       </a>
       <a href="#booking" class="btn-hero-secondary">
-        <i class="ti ti-calendar-plus" style="font-size: 1.1rem; color: #0d9488;"></i>
+        ${svgCalendarPlus}
         <span>Book Appointment</span>
       </a>
     `;

@@ -1458,7 +1458,8 @@ footer {
     height: 32px;
     justify-content: center;
   }
-  .btn-nav-dashboard i.ti-arrow-right {
+  .btn-nav-dashboard i.ti-arrow-right,
+  .btn-nav-dashboard .nav-arrow-icon {
     display: none;
   }
   .btn-nav-login span {

@@ -7,9 +7,9 @@
   <meta name="description" content="Experience advanced, comfortable, and professional dental services designed for every smile. Where science meets artistry at Fano Dental Clinic.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/style.css?v=20260921_auth">
+  <link rel="stylesheet" href="../css/style.css?v=20261111_icons">
   <link rel="stylesheet" href="../css/ui-enhancements.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="../css/tabler-icons.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
@@ -29,7 +29,7 @@
       <img src="../Resources/logo.png" alt="Fano Dental Clinic Logo" class="nav-logo-img">
       <span class="nav-logo-text">Fano Dental</span>
     </a>
-    <button class="mobile-close" id="mobileClose" aria-label="Close menu"><i class="ti ti-x"></i></button>
+    <button class="mobile-close" id="mobileClose" aria-label="Close menu"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
   </div>
   <div id="mobileAccountContainer" class="mobile-account-slot"></div>
   <div class="mobile-menu-links">
@@ -56,7 +56,7 @@
     </ul>
     <div class="nav-auth-wrapper" id="navAuthWrapper"></div>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Dark Mode">
-      <i class="ti ti-moon"></i>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
     </button>
     <button class="hamburger" id="hamburger" aria-label="Open menu">
       <span></span><span></span><span></span>
@@ -472,7 +472,7 @@
     </div>
   </div>
 
-  <script src="../js/main.js?v=20260921_auth"></script>
+  <script src="../js/main.js?v=20261111_icons"></script>
   <script src="../js/offline-monitor.js"></script>
   <script>
     /* ===== THEME TOGGLE ===== */
@@ -480,15 +480,19 @@
       const themeToggle = document.getElementById('themeToggle');
       const html = document.documentElement;
       const savedTheme = localStorage.getItem('fano-theme');
+      const moonSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>';
+      const sunSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>';
 
       if (savedTheme === 'dark') {
         html.classList.add('dark-theme');
-        themeToggle.innerHTML = '<i class="ti ti-sun"></i>';
+        themeToggle.innerHTML = sunSvg;
+      } else {
+        themeToggle.innerHTML = moonSvg;
       }
 
       themeToggle.addEventListener('click', function() {
         const isDark = html.classList.toggle('dark-theme');
-        themeToggle.innerHTML = isDark ? '<i class="ti ti-sun"></i>' : '<i class="ti ti-moon"></i>';
+        themeToggle.innerHTML = isDark ? sunSvg : moonSvg;
         localStorage.setItem('fano-theme', isDark ? 'dark' : 'light');
       });
     })();
