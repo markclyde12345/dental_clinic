@@ -2024,7 +2024,6 @@ function setupFilters() {
     const contactNumber = document.getElementById('patient-phone').value.trim();
     const dob = document.getElementById('patient-dob').value;
     const gender = document.getElementById('patient-gender').value;
-    const bloodType = document.getElementById('patient-blood').value;
     const allergies = document.getElementById('patient-allergies').value.trim();
     const medicalNotes = document.getElementById('patient-notes').value.trim();
 
@@ -2055,7 +2054,6 @@ function setupFilters() {
       role: 'Patient',
       dob,
       gender,
-      bloodType,
       allergies,
       medicalNotes,
       password: 'patientpassword123',
@@ -2089,7 +2087,6 @@ function setupFilters() {
       allPatients.unshift({
         id: data.id,
         user_id: data.id,
-        blood_type: bloodType || 'O+',
         gender: gender || 'Male',
         date_of_birth: dob || null,
         allergies: allergiesArray,
@@ -2396,7 +2393,7 @@ function filterAndRenderPatients() {
   if (!tbody) return;
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #888;">No patients found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="padding: 24px; text-align: center; color: #888;">No patients found</td></tr>';
     return;
   }
 
@@ -2407,7 +2404,6 @@ function filterAndRenderPatients() {
     const email = p.user ? p.user.email : 'No Email';
     const gender = p.gender || 'Unspecified';
     const dobVal = p.date_of_birth ? new Date(p.date_of_birth).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
-    const bloodType = p.blood_type || 'Unspecified';
     const allergiesStr = Array.isArray(p.allergies) ? p.allergies.join(', ') : (p.allergies || 'None');
     const phone = p.user ? (p.user.contact_number || p.user.contactNumber || '') : '';
     const notes = p.medical_notes || '';
@@ -2418,7 +2414,6 @@ function filterAndRenderPatients() {
     const escEmail = escapeJS(email);
     const escGender = escapeJS(gender);
     const escDob = p.date_of_birth || '';
-    const escBlood = escapeJS(bloodType);
     const escPhone = escapeJS(phone);
     const escAllergies = escapeJS(allergiesStr);
     const escNotes = escapeJS(notes);
@@ -2429,11 +2424,10 @@ function filterAndRenderPatients() {
         <td style="padding: 14px 16px;">${escapeHTML(email)}</td>
         <td style="padding: 14px 16px;">${escapeHTML(gender)}</td>
         <td style="padding: 14px 16px;">${escapeHTML(dobVal)}</td>
-        <td style="padding: 14px 16px;">${escapeHTML(bloodType)}</td>
         <td style="padding: 14px 16px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(allergiesStr)}">${escapeHTML(allergiesStr)}</td>
         <td style="padding: 14px 16px; text-align: right;">
           <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;">
-            <button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="openEditPatientModal('${p.user_id}', '${escFirstName}', '${escLastName}', '${escEmail}', '${escGender}', '${escDob}', '${escBlood}', '${escPhone}', '${escAllergies}', '${escNotes}')">Edit</button>
+            <button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="openEditPatientModal('${p.user_id}', '${escFirstName}', '${escLastName}', '${escEmail}', '${escGender}', '${escDob}', '${escPhone}', '${escAllergies}', '${escNotes}')">Edit</button>
             <button class="btn-danger-action" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; width: auto;" onclick="deletePatientUser('${p.user_id}', '${escapeJS(name)}')">Delete</button>
           </div>
         </td>
@@ -7199,7 +7193,7 @@ function initPasswordToggles() {
 }
 
 // ─── Edit Patient Modal & Handler ─────────────────────────────────────────────
-window.openEditPatientModal = function(userId, firstName, lastName, email, gender, dob, bloodType, phone, allergies, medicalNotes) {
+window.openEditPatientModal = function(userId, firstName, lastName, email, gender, dob, phone, allergies, medicalNotes) {
   document.getElementById('edit-patient-user-id').value = userId;
   document.getElementById('edit-patient-firstname').value = firstName;
   document.getElementById('edit-patient-lastname').value = lastName;
@@ -7211,7 +7205,6 @@ window.openEditPatientModal = function(userId, firstName, lastName, email, gende
     document.getElementById('edit-patient-dob').value = '';
   }
 
-  document.getElementById('edit-patient-blood').value = bloodType;
   document.getElementById('edit-patient-phone').value = phone;
   document.getElementById('edit-patient-allergies').value = allergies;
   document.getElementById('edit-patient-notes').value = medicalNotes;
@@ -7226,7 +7219,6 @@ document.getElementById('edit-patient-form')?.addEventListener('submit', (e) => 
   const lastName = document.getElementById('edit-patient-lastname').value.trim();
   const gender = document.getElementById('edit-patient-gender').value;
   const dob = document.getElementById('edit-patient-dob').value;
-  const bloodType = document.getElementById('edit-patient-blood').value;
   const contactNumber = document.getElementById('edit-patient-phone').value.trim();
   const allergies = document.getElementById('edit-patient-allergies').value.trim();
   const medicalNotes = document.getElementById('edit-patient-notes').value.trim();
@@ -7236,7 +7228,6 @@ document.getElementById('edit-patient-form')?.addEventListener('submit', (e) => 
     lastName,
     dob,
     gender,
-    bloodType,
     contactNumber,
     allergies,
     medicalNotes
