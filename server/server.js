@@ -32,6 +32,8 @@ const hpp = require('hpp');
 
 // ─── Initialize Supabase and run seeder ───────────────────────────────────────
 const supabase = require('./config/db');
+const { recordServerLog, detectModuleFromPath, installConsoleErrorHook } = require('./utils/systemLogger');
+installConsoleErrorHook();
 const seedUsers = require('./utils/seeder');
 
 // Only run seeder during local development or non-serverless boot
@@ -229,6 +231,35 @@ const authLimiter = rateLimit({
 });
 
 app.use('/api/', generalLimiter);
+
+// ─── Cross-Module API Error & Failure Detection Middleware ────────────────────
+app.use((req, res, next) => {
+  const urlPath = req.originalUrl || req.url || '';
+  if (!urlPath.startsWith('/api/') && !urlPath.startsWith('/auth/') && !urlPath.startsWith('/appointments') && !urlPath.startsWith('/patients') && !urlPath.startsWith('/dentist') && !urlPath.startsWith('/invoices') && !urlPath.startsWith('/payments')) {
+    return next();
+  }
+
+  let capturedErrorMessage = '';
+  const origJson = res.json.bind(res);
+  res.json = (body) => {
+    if (res.statusCode >= 400 && body && typeof body === 'object') {
+      capturedErrorMessage = body.message || body.error || '';
+    }
+    return origJson(body);
+  };
+
+  res.on('finish', () => {
+    if (res.statusCode >= 400 && !urlPath.includes('/api/admin/logs')) {
+      const level = res.statusCode >= 500 ? 'ERROR' : 'WARN';
+      const mod = detectModuleFromPath(urlPath);
+      const actor = req.user ? `${req.user.role || 'User'}` : 'Unauthenticated';
+      const reason = capturedErrorMessage ? ` — ${capturedErrorMessage}` : '';
+      recordServerLog(level, mod, `${req.method} ${urlPath.split('?')[0]} → HTTP ${res.statusCode} (${actor})${reason}`);
+    }
+  });
+
+  next();
+});
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/send-otp', authLimiter);
@@ -726,6 +757,8 @@ app.get('/', (req, res) => {
 // ─── Global Error Handler ─────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   const status = err.status || err.statusCode || 500;
+  const mod = detectModuleFromPath(req.originalUrl || '');
+  recordServerLog('ERROR', mod, `Unhandled ${req.method} ${req.originalUrl}: ${err.message || 'Internal server error'}`);
   console.error('[GLOBAL ERROR]', err.message, err.stack);
   res.status(status).json({ message: err.message || 'An internal server error occurred.' });
 });

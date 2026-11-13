@@ -83,31 +83,8 @@ try {
   console.warn('[Admin] Could not create backup directories (read-only filesystem?):', err.message);
 }
 
-// ─── Live System Logs Buffer ──────────────────────────────────────────────────
-const systemLogsBuffer = [
-  { id: 1, timestamp: new Date(Date.now() - 120000).toISOString(), level: 'INFO', module: 'SYSTEM', message: 'System core services initialized. Security middleware (Helmet, RateLimiters, XSS) active.' },
-  { id: 2, timestamp: new Date(Date.now() - 90000).toISOString(), level: 'SUCCESS', module: 'DATABASE', message: 'Supabase PostgreSQL cloud connection verified and pool active.' },
-  { id: 3, timestamp: new Date(Date.now() - 60000).toISOString(), level: 'INFO', module: 'AI', message: 'AI Dental Symptoms & Diagnosis service online (Gemini 2.5 Flash).' },
-  { id: 4, timestamp: new Date(Date.now() - 40000).toISOString(), level: 'INFO', module: 'AUTH', message: 'JWT Auth token validator and RBAC guards online.' },
-  { id: 5, timestamp: new Date(Date.now() - 20000).toISOString(), level: 'INFO', module: 'SYSTEM', message: 'REST API listener ready on port 5000.' }
-];
-
-let nextLogId = 6;
-
-const recordServerLog = (level, moduleName, message) => {
-  const newEntry = {
-    id: nextLogId++,
-    timestamp: new Date().toISOString(),
-    level: (level || 'INFO').toUpperCase(),
-    module: (moduleName || 'SYSTEM').toUpperCase(),
-    message: String(message)
-  };
-  systemLogsBuffer.unshift(newEntry);
-  if (systemLogsBuffer.length > 250) {
-    systemLogsBuffer.pop();
-  }
-  return newEntry;
-};
+// ─── Live System Logs Buffer (Shared across all modules) ─────────────────────
+const { systemLogsBuffer, recordServerLog } = require('../utils/systemLogger');
 
 const createBackup = (filename, data) => {
   if (IS_SERVERLESS) return; // Skip local file backups in production/serverless
