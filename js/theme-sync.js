@@ -17,6 +17,9 @@
   function mirror() {
     var isDark = html.classList.contains('dark-theme');
     if (document.body) document.body.classList.toggle('dark-theme', isDark);
+    var dmSwitch = document.getElementById('set-dark-mode');
+    if (dmSwitch && dmSwitch.checked !== isDark) dmSwitch.checked = isDark;
+    try { localStorage.setItem('set-dark-mode', isDark ? 'true' : 'false'); } catch (e) {}
     paintIcon(isDark);
   }
 

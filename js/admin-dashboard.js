@@ -6647,7 +6647,8 @@ window.loadSettings = function() {
   const autoApprove = localStorage.getItem('set-auto-approve') === 'true';
   const smsAlerts = localStorage.getItem('set-sms-alerts') !== 'false';
   const currency = localStorage.getItem('set-currency') || '₱';
-  const darkMode = localStorage.getItem('set-dark-mode') === 'true';
+  const storedTheme = localStorage.getItem('fano-theme');
+  const darkMode = storedTheme ? storedTheme === 'dark' : localStorage.getItem('set-dark-mode') === 'true';
 
   document.getElementById('set-clinic-name').value = clinicName;
   document.getElementById('set-clinic-email').value = clinicEmail;
@@ -6671,16 +6672,21 @@ window.loadSettings = function() {
 };
 
 function applyThemePreference(darkMode) {
-  if (darkMode) {
-    document.body.classList.add('dark-theme');
-  } else {
-    document.body.classList.remove('dark-theme');
-  }
+  const isDark = !!darkMode;
+  document.documentElement.classList.toggle('dark-theme', isDark);
+  document.body.classList.toggle('dark-theme', isDark);
+  try {
+    localStorage.setItem('fano-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('set-dark-mode', isDark ? 'true' : 'false');
+  } catch (_) {}
+  const dmSwitch = document.getElementById('set-dark-mode');
+  if (dmSwitch && dmSwitch.checked !== isDark) dmSwitch.checked = isDark;
 }
 
 // Apply saved theme preference on initial page load
 (function() {
-  const darkMode = localStorage.getItem('set-dark-mode') === 'true';
+  const storedTheme = localStorage.getItem('fano-theme');
+  const darkMode = storedTheme ? storedTheme === 'dark' : localStorage.getItem('set-dark-mode') === 'true';
   applyThemePreference(darkMode);
 })();
 
