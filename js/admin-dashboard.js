@@ -2861,8 +2861,10 @@ function populateBillingModalDropdowns() {
     const patients = allPatients || [];
     patientSel.innerHTML = '<option value="">Select Patient...</option>' +
       patients.map(p => {
-        const name = p.name || `${p.first_name || ''} ${p.last_name || ''}`.trim();
-        return `<option value="${p.id}">${escapeHTML(name)} (${escapeHTML(p.email || '')})</option>`;
+        const u = p.user || p;
+        const name = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Patient';
+        const email = u.email || '';
+        return `<option value="${p.user_id || p.id}">${escapeHTML(name)}${email ? ` (${escapeHTML(email)})` : ''}</option>`;
       }).join('');
   }
 
@@ -5738,7 +5740,12 @@ function populateHistoryDropdowns() {
       const sel = document.getElementById('av-patient');
       if (sel) {
         sel.innerHTML = '<option value="">Select Patient…</option>' +
-          histAllPatients.map(p => `<option value="${p.id}">${p.first_name} ${p.last_name} (${p.email || ''})</option>`).join('');
+          histAllPatients.map(p => {
+            const u = p.user || p;
+            const pName = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Patient';
+            const pEmail = u.email || '';
+            return `<option value="${p.user_id || p.id}">${escapeHTML(pName)}${pEmail ? ` (${escapeHTML(pEmail)})` : ''}</option>`;
+          }).join('');
       }
     }).catch(() => {});
 
@@ -5748,7 +5755,10 @@ function populateHistoryDropdowns() {
       histAllDentists = Array.isArray(data) ? data : (data.users || []);
       const avSel     = document.getElementById('av-dentist');
       const dentFilter = document.getElementById('hist-dentist-filter');
-      const opts = histAllDentists.map(d => `<option value="${d.id}">${d.first_name} ${d.last_name}</option>`).join('');
+      const opts = histAllDentists.map(d => {
+        const dName = d.name || `${d.first_name || ''} ${d.last_name || ''}`.trim() || 'Dentist';
+        return `<option value="${d.id}">${escapeHTML(dName)}</option>`;
+      }).join('');
       if (avSel)      avSel.innerHTML      = '<option value="">Unassigned</option>' + opts;
       if (dentFilter) dentFilter.innerHTML = '<option value="">All Dentists</option>' + opts;
     }).catch(() => {});
