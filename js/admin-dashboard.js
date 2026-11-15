@@ -8021,13 +8021,19 @@ if (typeof document !== 'undefined') {
 
   function openRoleAccessModal() {
     const modal = document.getElementById('modal-role-access');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+    }
     if (!loaded) loadPermissions();
   }
 
   function closeRoleAccessModal() {
     const modal = document.getElementById('modal-role-access');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+      modal.classList.remove('active');
+      modal.style.display = 'none';
+    }
   }
 
   function init() {
