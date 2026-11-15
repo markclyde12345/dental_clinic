@@ -1212,6 +1212,28 @@
               </table>
             </div>
           </div>
+
+          <!-- Role Access Permissions -->
+          <div class="admin-table-card" id="role-permissions-card" style="margin-top: 24px;">
+            <div class="admin-table-card-header">
+              <div>
+                <h3 class="admin-table-title"><i class="ti ti-shield-lock"></i> Role Access Permissions</h3>
+                <p class="admin-table-subtitle">Choose which actions each staff role is allowed to perform. Admins always have full access.</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-secondary" id="btn-reload-permissions" type="button"><i class="ti ti-refresh"></i> Reset Changes</button>
+                <button class="btn-primary" id="btn-save-permissions" type="button"><i class="ti ti-device-floppy"></i> Save Permissions</button>
+              </div>
+            </div>
+            <div class="admin-table-wrapper">
+              <table class="table-enhanced" id="role-permissions-table">
+                <thead><tr id="role-permissions-head"><th>Permission</th></tr></thead>
+                <tbody id="role-permissions-body">
+                  <tr><td style="padding: 16px; color: #94a3b8;">Loading permissions...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <!-- 9. S TAB -->

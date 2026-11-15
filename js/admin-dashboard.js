@@ -7937,3 +7937,100 @@ if (typeof document !== 'undefined') {
 }
 
 
+
+// ─── Role Access Permissions (Manage Users tab) ─────────────────────────────
+(function setupRolePermissions() {
+  let permState = null; // { roles, permissions, matrix }
+  let loaded = false;
+
+  const escapeText = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function renderPermissions() {
+    const head = document.getElementById('role-permissions-head');
+    const body = document.getElementById('role-permissions-body');
+    if (!head || !body || !permState) return;
+
+    head.innerHTML = '<th>Permission</th>' + permState.roles
+      .map((r) => `<th style="text-align: center; width: 130px;">${escapeText(r)}</th>`).join('');
+
+    let lastGroup = null;
+    body.innerHTML = permState.permissions.map((p) => {
+      let groupRow = '';
+      if (p.group !== lastGroup) {
+        lastGroup = p.group;
+        groupRow = `<tr><td colspan="${permState.roles.length + 1}" style="padding: 10px 16px 4px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #64748b;">${escapeText(p.group)}</td></tr>`;
+      }
+      const cells = permState.roles.map((role) => {
+        const checked = permState.matrix[role] && permState.matrix[role][p.key] ? 'checked' : '';
+        return `<td style="text-align: center;">
+          <input type="checkbox" class="perm-toggle" data-role="${escapeText(role)}" data-key="${escapeText(p.key)}" ${checked}
+            aria-label="${escapeText(role)}: ${escapeText(p.label)}" style="width: 18px; height: 18px; cursor: pointer; accent-color: #0f3d4c;">
+        </td>`;
+      }).join('');
+      return `${groupRow}<tr>
+        <td style="padding: 12px 16px;">
+          <div style="font-weight: 600;">${escapeText(p.label)}</div>
+          <div style="font-size: 0.78rem; color: #94a3b8;">${escapeText(p.description)}</div>
+        </td>${cells}</tr>`;
+    }).join('');
+
+    body.querySelectorAll('.perm-toggle').forEach((cb) => {
+      cb.addEventListener('change', () => {
+        const { role, key } = cb.dataset;
+        permState.matrix[role] = permState.matrix[role] || {};
+        permState.matrix[role][key] = cb.checked;
+      });
+    });
+  }
+
+  async function loadPermissions() {
+    const body = document.getElementById('role-permissions-body');
+    try {
+      const res = await fetch(`${BASE_ORIGIN}/api/admin/permissions`, { headers: { Authorization: `Bearer ${getAuthToken()}` } });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Failed to load permissions');
+      permState = data;
+      loaded = true;
+      renderPermissions();
+    } catch (err) {
+      if (body) body.innerHTML = `<tr><td style="padding: 16px; color: #dc2626;">${escapeText(err.message)}</td></tr>`;
+    }
+  }
+
+  async function savePermissions() {
+    if (!permState) return;
+    const btn = document.getElementById('btn-save-permissions');
+    if (btn) btn.disabled = true;
+    try {
+      const res = await fetch(`${BASE_ORIGIN}/api/admin/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getAuthToken()}` },
+        body: JSON.stringify({ matrix: permState.matrix })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Failed to save permissions');
+      permState.matrix = data.matrix;
+      renderPermissions();
+      showToast('Role permissions saved.', 'success');
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function init() {
+    document.getElementById('btn-save-permissions')?.addEventListener('click', savePermissions);
+    document.getElementById('btn-reload-permissions')?.addEventListener('click', loadPermissions);
+    // Load the first time the Users tab is opened (or immediately if it's already showing).
+    document.querySelectorAll('.nav-tab[data-tab="users"]').forEach((t) =>
+      t.addEventListener('click', () => { if (!loaded) loadPermissions(); }));
+    window.addEventListener('hashchange', () => { if (window.location.hash === '#users' && !loaded) loadPermissions(); });
+    if (document.getElementById('tab-users')?.classList.contains('active') || window.location.hash === '#users') {
+      loadPermissions();
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();

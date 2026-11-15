@@ -37,6 +37,41 @@ const {
   exportHistoryCSV,
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
+const {
+  CONFIGURABLE_ROLES,
+  PERMISSIONS,
+  getPermissionMatrix,
+  savePermissionMatrix,
+  requirePermission,
+} = require('../utils/permissions');
+
+// ─── Role Permissions (Admin grants specific access to each staff role) ──────
+const permissionCatalog = PERMISSIONS.map(({ key, group, label, description }) => ({ key, group, label, description }));
+
+router.route('/permissions')
+  .get(protect, authorize('Admin'), async (req, res) => {
+    try {
+      res.json({ roles: CONFIGURABLE_ROLES, permissions: permissionCatalog, matrix: await getPermissionMatrix() });
+    } catch (err) { res.status(500).json({ message: err.message }); }
+  })
+  .put(protect, authorize('Admin'), async (req, res) => {
+    try {
+      const matrix = await savePermissionMatrix(req.body && req.body.matrix);
+      console.log(`[Permissions] ${req.user?.name || 'Admin'} updated role permissions`);
+      res.json({ message: 'Role permissions updated.', matrix });
+    } catch (err) { res.status(500).json({ message: err.message }); }
+  });
+
+// Any logged-in staff member can read their own permissions (used to show/hide buttons).
+router.get('/permissions/me', protect, async (req, res) => {
+  try {
+    const role = req.user.role;
+    const matrix = await getPermissionMatrix();
+    const mine = {};
+    for (const p of PERMISSIONS) mine[p.key] = role === 'Admin' ? true : !!(matrix[role] && matrix[role][p.key]);
+    res.json({ role, permissions: mine });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
 
 router.get('/stats', protect, authorize('Admin'), getAdminStats);
 router.get('/analytics', protect, authorize('Admin'), getAdminAnalytics);
@@ -71,10 +106,10 @@ router.route('/logs')
 // Inventory routes — Accounting can read for cost analysis; Receptionist can report low stock; Admin full access
 router.route('/inventory')
   .get(protect, authorize('Admin', 'Accounting', 'Receptionist'), getInventory)
-  .post(protect, authorize('Admin', 'Receptionist'), addInventory);
+  .post(protect, requirePermission('inventory.edit'), addInventory);
 
 router.route('/inventory/:id')
-  .put(protect, authorize('Admin', 'Receptionist'), updateInventory)
+  .put(protect, requirePermission('inventory.edit'), updateInventory)
   .delete(protect, authorize('Admin'), deleteInventory);
 
 // Staff schedules routes
@@ -101,7 +136,7 @@ router.route('/history/:id')
 router.patch('/history/:id/archive', protect, authorize('Admin'), archiveVisitRecord);
 router.patch('/history/:id/checkin',  protect, authorize('Admin', 'Receptionist'), checkInVisit);
 router.patch('/history/:id/checkout', protect, authorize('Admin', 'Receptionist'), checkOutVisit);
-router.get('/history-export', protect, authorize('Admin', 'Receptionist'), exportHistoryCSV);
+router.get('/history-export', protect, requirePermission('history.export'), exportHistoryCSV);
 
 module.exports = router;
 

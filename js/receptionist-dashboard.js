@@ -215,14 +215,20 @@ async function loadDashboardData() {
   try {
     const authHeader = { 'Authorization': `Bearer ${token}` };
 
-    const [apptsRes, patientsRes, dentistsRes, treatmentsRes, invoicesRes, schedulesRes] = await Promise.all([
+    const [apptsRes, patientsRes, dentistsRes, treatmentsRes, invoicesRes, schedulesRes, permsRes] = await Promise.all([
       fetch(`${BASE_ORIGIN}/api/appointments`, { headers: authHeader }),
       fetch(`${BASE_ORIGIN}/api/patients`, { headers: authHeader }),
       fetch(`${BASE_ORIGIN}/api/dentists`, { headers: authHeader }),
       fetch(`${BASE_ORIGIN}/api/treatments`, { headers: authHeader }),
       fetch(`${BASE_ORIGIN}/api/invoices`, { headers: authHeader }),
-      fetch(`${BASE_ORIGIN}/api/admin/staff-schedules`, { headers: authHeader }).catch(() => ({ ok: false }))
+      fetch(`${BASE_ORIGIN}/api/admin/staff-schedules`, { headers: authHeader }).catch(() => ({ ok: false })),
+      fetch(`${BASE_ORIGIN}/api/admin/permissions/me`, { headers: authHeader }).catch(() => ({ ok: false }))
     ]);
+
+    if (permsRes.ok && typeof permsRes.json === 'function') {
+      const permData = await permsRes.json().catch(() => ({}));
+      window.myPermissions = permData.permissions || {};
+    }
 
     allAppointments = apptsRes.ok ? await apptsRes.json() : [];
     allPatients = patientsRes.ok ? await patientsRes.json() : [];
@@ -2134,10 +2140,10 @@ function renderBillingTable(list) {
     } else {
       actionBtn = `
         <div style="display: flex; align-items: center; gap: 6px;">
-          <button class="btn btn-sm btn-success" onclick="openPaymentModal('${inv.id}', '${escapeHtml(patientName)}', '${inv.amount || inv.total_amount || 0}')" title="Collect payment">
+          ${(!window.myPermissions || window.myPermissions['invoice.collect'] !== false) ? `<button class="btn btn-sm btn-success" onclick="openPaymentModal('${inv.id}', '${escapeHtml(patientName)}', '${inv.amount || inv.total_amount || 0}')" title="Collect payment">
             <i class="ti ti-cash"></i> Collect
-          </button>
-          ${daysOld >= 60 ? `
+          </button>` : '<span class="text-muted" style="font-size: 0.78rem;">Pending</span>'}
+          ${daysOld >= 60 && window.myPermissions && window.myPermissions['invoice.writeoff'] ? `
             <button class="btn btn-sm" onclick="markInvoiceAsBadDebt('${inv.id}', '${escapeHtml(patientName)}', '${daysOld}')" title="Write off as uncollectible bad debt" style="background: #f1f5f9; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.74rem; padding: 4px 8px;">
               <i class="ti ti-ban"></i> Write Off
             </button>
@@ -2169,13 +2175,12 @@ async function markInvoiceAsBadDebt(invId, patientName, daysOld) {
   }
 
   try {
-    const res = await fetch(`${BASE_ORIGIN}/api/invoices/${invId}`, {
-      method: 'PUT',
+    const res = await fetch(`${BASE_ORIGIN}/api/invoices/${invId}/write-off`, {
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ status: 'Written Off' })
+      }
     });
 
     if (!res.ok) {
