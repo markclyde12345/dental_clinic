@@ -8019,10 +8019,26 @@ if (typeof document !== 'undefined') {
     }
   }
 
+  function openRoleAccessModal() {
+    const modal = document.getElementById('modal-role-access');
+    if (modal) modal.style.display = 'flex';
+    if (!loaded) loadPermissions();
+  }
+
+  function closeRoleAccessModal() {
+    const modal = document.getElementById('modal-role-access');
+    if (modal) modal.style.display = 'none';
+  }
+
   function init() {
+    document.getElementById('btn-open-role-access')?.addEventListener('click', openRoleAccessModal);
+    document.getElementById('btn-close-role-access')?.addEventListener('click', closeRoleAccessModal);
+    document.getElementById('modal-role-access')?.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'modal-role-access') closeRoleAccessModal();
+    });
     document.getElementById('btn-save-permissions')?.addEventListener('click', savePermissions);
     document.getElementById('btn-reload-permissions')?.addEventListener('click', loadPermissions);
-    // Load the first time the Users tab is opened (or immediately if it's already showing).
+    // Preload the first time the Users tab is opened (or immediately if it's already showing).
     document.querySelectorAll('.nav-tab[data-tab="users"]').forEach((t) =>
       t.addEventListener('click', () => { if (!loaded) loadPermissions(); }));
     window.addEventListener('hashchange', () => { if (window.location.hash === '#users' && !loaded) loadPermissions(); });
