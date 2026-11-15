@@ -2173,18 +2173,18 @@ async function markInvoiceAsBadDebt(invId, patientName, daysOld) {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        ...authHeader
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({ status: 'Written Off' })
     });
 
     if (!res.ok) {
-      const err = await res.json();
+      const err = await res.json().catch(() => ({}));
       throw new Error(err.message || 'Failed to update invoice');
     }
 
     showToast(`Invoice for ${patientName} written off as bad debt.`, 'info');
-    await loadInitialData();
+    await loadDashboardData();
   } catch (err) {
     showToast(err.message || 'Failed to write off invoice', 'error');
   }
