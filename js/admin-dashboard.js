@@ -5395,6 +5395,7 @@ function escapeHTML(str) {
 }
 
 function logout() {
+  if (!confirm('Are you sure you want to log out?')) return;
   localStorage.removeItem('token');
   localStorage.removeItem('userInfo');
   localStorage.removeItem('admin_active_tab');

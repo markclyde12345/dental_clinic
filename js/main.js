@@ -435,6 +435,7 @@ function escapeHtml(str) {
 }
 
 window.landingLogout = function() {
+  if (!confirm('Are you sure you want to log out?')) return;
   localStorage.removeItem('token');
   localStorage.removeItem('userInfo');
   localStorage.removeItem('sessionExpiry');
