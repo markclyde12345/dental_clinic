@@ -401,4 +401,65 @@
     pullCloudSettings();
     triggerDashboardRefresh();
   });
+
+  // ─── Reusable Styled Logout Confirmation Popup ─────────────────────────────
+  window.confirmLogout = function (onConfirm) {
+    var existing = document.getElementById('fano-logout-confirm-modal');
+    if (existing) existing.remove();
+
+    var isDark = document.documentElement.classList.contains('dark-mode') ||
+                 document.body.classList.contains('dark-mode');
+
+    var overlay = document.createElement('div');
+    overlay.id = 'fano-logout-confirm-modal';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.style.cssText = [
+      'position:fixed', 'inset:0', 'z-index:9999999',
+      'display:flex', 'align-items:center', 'justify-content:center',
+      'padding:16px', 'background:rgba(11,19,30,0.58)',
+      'backdrop-filter:blur(4px)', '-webkit-backdrop-filter:blur(4px)'
+    ].join(';');
+
+    var cardBg = isDark ? '#1e293b' : '#ffffff';
+    var cardBorder = isDark ? '1px solid #334155' : '1px solid rgba(11,60,77,0.12)';
+    var titleColor = isDark ? '#f8fafc' : '#0f172a';
+    var textColor = isDark ? '#cbd5e1' : '#475569';
+    var cancelBg = isDark ? '#334155' : '#f1f5f9';
+    var cancelColor = isDark ? '#e2e8f0' : '#334155';
+
+    overlay.innerHTML =
+      '<div style="background:' + cardBg + ';border:' + cardBorder + ';border-radius:16px;padding:24px;width:100%;max-width:380px;box-shadow:0 24px 48px -12px rgba(15,23,42,0.35);font-family:inherit;text-align:center;">' +
+        '<div style="width:48px;height:48px;margin:0 auto 14px;border-radius:50%;background:rgba(220,38,38,0.12);color:#dc2626;display:flex;align-items:center;justify-content:center;">' +
+          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
+        '</div>' +
+        '<h3 style="margin:0 0 8px;font-size:1.12rem;font-weight:700;color:' + titleColor + ';">Confirm Log Out</h3>' +
+        '<p style="margin:0 0 22px;font-size:0.9rem;line-height:1.5;color:' + textColor + ';">Are you sure you want to log out of your account?</p>' +
+        '<div style="display:flex;gap:10px;justify-content:center;">' +
+          '<button type="button" id="fano-logout-cancel" style="flex:1;padding:10px 16px;border-radius:10px;border:none;background:' + cancelBg + ';color:' + cancelColor + ';font-weight:600;font-size:0.9rem;cursor:pointer;">Cancel</button>' +
+          '<button type="button" id="fano-logout-confirm" style="flex:1;padding:10px 16px;border-radius:10px;border:none;background:#dc2626;color:#ffffff;font-weight:600;font-size:0.9rem;cursor:pointer;">Log Out</button>' +
+        '</div>' +
+      '</div>';
+
+    function close() {
+      document.removeEventListener('keydown', onKey);
+      overlay.remove();
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') close();
+    }
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) close();
+    });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(overlay);
+
+    document.getElementById('fano-logout-cancel').addEventListener('click', close);
+    document.getElementById('fano-logout-confirm').addEventListener('click', function () {
+      close();
+      if (typeof onConfirm === 'function') onConfirm();
+    });
+    document.getElementById('fano-logout-cancel').focus();
+  };
 })();

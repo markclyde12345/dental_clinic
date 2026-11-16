@@ -5882,14 +5882,17 @@ function safeVal(id, val) {
 }
 
 function logout() {
-  if (!confirm('Are you sure you want to log out?')) return;
-  localStorage.removeItem('token');
-  localStorage.removeItem('userInfo');
-  localStorage.removeItem('sessionExpiry');
-  sessionStorage.removeItem('token');
-  sessionStorage.removeItem('userInfo');
-  sessionStorage.removeItem('sessionExpiry');
-  window.location.replace('login.html');
+  const doLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
+    localStorage.removeItem('sessionExpiry');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('userInfo');
+    sessionStorage.removeItem('sessionExpiry');
+    window.location.replace('login.html');
+  };
+  if (typeof window.confirmLogout === 'function') window.confirmLogout(doLogout);
+  else if (confirm('Are you sure you want to log out?')) doLogout();
 }
 
 // ═══════════════════════════════════════════════════════════

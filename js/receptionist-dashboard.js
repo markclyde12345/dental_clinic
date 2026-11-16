@@ -3572,12 +3572,15 @@ function showToast(message, type = 'info') {
 }
 
 function logout() {
-  if (!confirm('Are you sure you want to log out?')) return;
-  localStorage.removeItem('token');
-  localStorage.removeItem('userInfo');
-  sessionStorage.removeItem('token');
-  sessionStorage.removeItem('userInfo');
-  window.location.replace('login.html');
+  const doLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('userInfo');
+    window.location.replace('login.html');
+  };
+  if (typeof window.confirmLogout === 'function') window.confirmLogout(doLogout);
+  else if (confirm('Are you sure you want to log out?')) doLogout();
 }
 
 // ═══════════════════════════════════════════════════════════
