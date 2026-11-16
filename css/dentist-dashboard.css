@@ -2599,6 +2599,9 @@ body {
 .mobile-bottom-taskbar {
   display: none !important;
 }
+.burger-toggle {
+  display: none !important;
+}
 
 @media (max-width: 768px) {
   .dashboard-layout {
