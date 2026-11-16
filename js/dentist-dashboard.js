@@ -826,15 +826,12 @@ function renderPatientCards(patients) {
     const blood = p.blood_type || 'N/A';
     const pId = p.user_id || u.id;
 
-    // Use doctor/patient assets if present or gradient avatar
-    const photoUrl = p.avatar_url || u.avatar_url || (idx % 2 === 0 ? '../Resources/doctor1.webp' : '../Resources/doctor3.webp');
-
     return `
       <div class="patient-card-item">
         <div>
           <div class="patient-header">
             <div class="patient-avatar-badge">
-              <img src="${photoUrl}" alt="${esc(name)}" class="patient-avatar-img" onerror="this.outerHTML='<span>${initial}</span>'">
+              <span>${initial}</span>
             </div>
             <div>
               <h4 class="patient-name-title">${esc(name)}</h4>
