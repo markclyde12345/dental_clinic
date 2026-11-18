@@ -2213,7 +2213,9 @@ function renderInvoicesPreview() {
           <span class="inv-amount">₱${amount}</span>
           ${isPaid
         ? `<span class="status-pill confirmed">Paid</span>`
-        : `<button class="btn-paymongo-mini" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, Card)"><i class="ti ti-credit-card" style="font-size: 12px;"></i> Pay</button>`}
+        : (['Voided', 'Written Off', 'Cancelled'].includes(inv.status)
+          ? `<span class="status-pill cancelled">${escapeHTML(inv.status)}</span>`
+          : `<button class="btn-paymongo-mini" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, Card)"><i class="ti ti-credit-card" style="font-size: 12px;"></i> Pay</button>`)}
         </div>
       </div>`;
   }).join('');
@@ -2242,19 +2244,22 @@ function renderInvoicesTable() {
     const service = inv.appointment?.treatment?.name || inv.treatment_name || 'Dental Consultation';
     const refId = inv.id.slice(0, 8).toUpperCase();
 
+    const isNonPayable = ['Voided', 'Written Off', 'Cancelled'].includes(statusLabel);
     let actionButton = '';
-    if (!isPaid) {
-      actionButton = `
-        <button class="btn-paymongo" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, GrabPay, Card)">
-          <i class="ti ti-credit-card" style="font-size: 14px;"></i>
-          <span>Pay with PayMongo</span>
-        </button>
-      `;
-    } else {
+    if (isPaid) {
       actionButton = `
         <button class="btn-receipt-view" onclick="viewInvoiceReceipt('${inv.id}')" title="View & Print Official Receipt">
           <i class="ti ti-printer" style="font-size: 13px;"></i>
           <span>Receipt</span>
+        </button>
+      `;
+    } else if (isNonPayable) {
+      actionButton = `<span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">${escapeHTML(statusLabel)}</span>`;
+    } else {
+      actionButton = `
+        <button class="btn-paymongo" onclick="openPaymongoModal('${inv.id}')" title="Pay with PayMongo (GCash, Maya, GrabPay, Card)">
+          <i class="ti ti-credit-card" style="font-size: 14px;"></i>
+          <span>Pay with PayMongo</span>
         </button>
       `;
     }
