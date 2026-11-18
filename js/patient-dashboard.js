@@ -2371,6 +2371,9 @@ function executePayMongoCheckout() {
     .then(data => {
       if (data.mode === 'live' && data.checkout_url) {
         // Live PayMongo Checkout Session
+        if (data.checkout_id) {
+          sessionStorage.setItem('paymongo_checkout_' + activePaymentInvoice.id, data.checkout_id);
+        }
         showToast('Redirecting to PayMongo secure payment page...', 'success');
         closePaymongoModal();
         window.location.href = data.checkout_url;
@@ -2467,6 +2470,8 @@ function checkPaymentReturnStatus() {
   const invoiceId = params.get('invoice_id');
 
   if (paymentStatus === 'success' && invoiceId) {
+    const savedCheckoutId = sessionStorage.getItem('paymongo_checkout_' + invoiceId) || undefined;
+    if (savedCheckoutId) sessionStorage.removeItem('paymongo_checkout_' + invoiceId);
     showToast('PayMongo payment completed! Updating your records...', 'success');
     apiFetch('/payments/paymongo/verify', {
       method: 'POST',
@@ -2474,7 +2479,7 @@ function checkPaymentReturnStatus() {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ invoice_id: invoiceId })
+      body: JSON.stringify({ invoice_id: invoiceId, checkout_id: savedCheckoutId })
     })
       .then(res => {
         loadInvoices();

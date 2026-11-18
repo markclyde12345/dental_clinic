@@ -202,8 +202,15 @@ const verifyPaymongoPayment = async (req, res) => {
     const secretKey = process.env.PAYMONGO_SECRET_KEY;
     const isLiveKey = secretKey && !secretKey.includes('PLACEHOLDER') && secretKey.startsWith('sk_');
 
-    // 2. If live Checkout ID and live key, verify with PayMongo API
-    if (isLiveKey && checkout_id && !checkout_id.startsWith('sandbox_')) {
+    // 2. When a PayMongo key is configured, require a real PayMongo checkout session and verify it
+    if (isLiveKey) {
+      if (!checkout_id || String(checkout_id).startsWith('sandbox_')) {
+        return res.status(400).json({
+          success: false,
+          message: 'A valid PayMongo checkout session is required to verify this payment.'
+        });
+      }
+
       const authHeader = 'Basic ' + Buffer.from(secretKey + ':').toString('base64');
       const pmRes = await fetch(`https://api.paymongo.com/v1/checkout_sessions/${checkout_id}`, {
         headers: {
@@ -213,16 +220,21 @@ const verifyPaymongoPayment = async (req, res) => {
       });
 
       const pmData = await pmRes.json();
-      if (pmRes.ok && pmData?.data) {
-        const payments = pmData.data.attributes?.payments || [];
-        const isPaid = payments.some(p => p.attributes?.status === 'paid') || pmData.data.attributes?.status === 'paid';
+      if (!pmRes.ok || !pmData?.data) {
+        return res.status(502).json({
+          success: false,
+          message: pmData?.errors?.[0]?.detail || 'Unable to verify payment status with PayMongo.'
+        });
+      }
 
-        if (!isPaid) {
-          return res.status(400).json({
-            success: false,
-            message: 'Payment has not been completed on PayMongo yet.'
-          });
-        }
+      const payments = pmData.data.attributes?.payments || [];
+      const isPaid = payments.some(p => p.attributes?.status === 'paid') || pmData.data.attributes?.status === 'paid';
+
+      if (!isPaid) {
+        return res.status(400).json({
+          success: false,
+          message: 'Payment has not been completed on PayMongo yet.'
+        });
       }
     }
 
