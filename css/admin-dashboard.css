@@ -3710,6 +3710,26 @@ body.dark-theme .status-pill-written-off {
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
 }
 
+input.admin-select-pill,
+textarea.admin-select-pill {
+  background-image: none;
+  padding: 10px 12px;
+  cursor: text;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 0.86rem;
+}
+
+input[type="datetime-local"].admin-select-pill,
+input[type="date"].admin-select-pill {
+  cursor: pointer;
+}
+
+.modal-card select.admin-select-pill {
+  padding: 9px 32px 9px 12px;
+  font-size: 0.86rem;
+}
+
 .admin-select-pill:focus {
   border-color: #0284c7;
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
@@ -5612,6 +5632,65 @@ body.dark-theme #modal-admin-service-details #admin-detail-duration {
 .req-star { color: #e74c3c; font-weight: 700; }
 
 /* Form rows in modals */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 4px;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--dark-color, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.modal-footer {
+  border-top: 1px solid #e2e8f0;
+  margin-top: 6px;
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+  border-color: #334155;
+}
+
+body.dark-mode .modal-close {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
 .hist-form-row { display: flex; flex-direction: column; gap: 4px; }
 .hist-form-label { font-size: 0.82rem; font-weight: 600; color: var(--dark-color); }
 .hist-field-err { font-size: 0.76rem; color: #e74c3c; min-height: 16px; }
