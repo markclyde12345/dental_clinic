@@ -1091,7 +1091,58 @@ function renderRevenueChart(invoices, period) {
     points.push({ x, y, val: values[i], label: labels[i] });
   }
 
-  const lineD = points.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
+  // Smooth monotone cubic Bezier path (keeps flat segments flat and prevents overshooting baseline)
+  function buildSmoothPath(pts, minY, maxY) {
+    if (!pts.length) return '';
+    if (pts.length === 1) return `M ${pts[0].x},${pts[0].y}`;
+    const n = pts.length;
+    const dx = [];
+    const dy = [];
+    const slopes = [];
+    for (let i = 0; i < n - 1; i++) {
+      dx[i] = pts[i + 1].x - pts[i].x || 1;
+      dy[i] = pts[i + 1].y - pts[i].y;
+      slopes[i] = dy[i] / dx[i];
+    }
+    const tangents = new Array(n).fill(0);
+    tangents[0] = slopes[0];
+    tangents[n - 1] = slopes[n - 2];
+    for (let i = 1; i < n - 1; i++) {
+      if (slopes[i - 1] * slopes[i] <= 0) {
+        tangents[i] = 0;
+      } else {
+        tangents[i] = (slopes[i - 1] + slopes[i]) / 2;
+      }
+    }
+    for (let i = 0; i < n - 1; i++) {
+      if (slopes[i] === 0) {
+        tangents[i] = 0;
+        tangents[i + 1] = 0;
+      } else {
+        const a = tangents[i] / slopes[i];
+        const b = tangents[i + 1] / slopes[i];
+        const s = Math.hypot(a, b);
+        if (s > 3) {
+          const t = 3 / s;
+          tangents[i] = t * a * slopes[i];
+          tangents[i + 1] = t * b * slopes[i];
+        }
+      }
+    }
+    const clampY = (y) => Math.min(maxY, Math.max(minY, y));
+    let d = `M ${pts[0].x},${pts[0].y}`;
+    for (let i = 0; i < n - 1; i++) {
+      const h = dx[i] / 3;
+      const cp1x = (pts[i].x + h).toFixed(2);
+      const cp1y = clampY(pts[i].y + tangents[i] * h).toFixed(2);
+      const cp2x = (pts[i + 1].x - h).toFixed(2);
+      const cp2y = clampY(pts[i + 1].y - tangents[i + 1] * h).toFixed(2);
+      d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${pts[i + 1].x.toFixed(2)},${pts[i + 1].y.toFixed(2)}`;
+    }
+    return d;
+  }
+
+  const lineD = buildSmoothPath(points, 10, 150);
   const areaD = `${lineD} L 500,150 L 0,150 Z`;
 
   const linePath = document.getElementById('revenue-line-path');
