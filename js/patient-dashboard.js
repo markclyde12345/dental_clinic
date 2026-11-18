@@ -16,13 +16,13 @@ function showConnectionError(msg) {
 // API fetch wrapper with error handling
 function apiFetch(endpoint, options = {}) {
   return fetch(`${API}${endpoint}`, options)
-    .then(res => {
+    .then(async res => {
       if (!res.ok) {
-        // Show connection error only for server-side issues (5xx)
+        const errBody = await res.json().catch(() => ({}));
         if (res.status >= 500) {
-          showConnectionError(`Server error ${res.status}`);
+          showConnectionError(errBody.message || `Server error ${res.status}`);
         }
-        throw new Error(`HTTP ${res.status}`);
+        throw new Error(errBody.message || `HTTP ${res.status}`);
       }
       return res.json();
     })
