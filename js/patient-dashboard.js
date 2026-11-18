@@ -3331,6 +3331,11 @@ function updateDentistSummary(dentistName) {
   summaryEl.textContent = (name === 'No Preference') ? 'No Preference (Auto-assigned)' : name;
 }
 
+function getLocalTodayDateStr() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
 function setupBookingWizard() {
   const form = document.getElementById('booking-wizard-form');
   if (!form) return;
@@ -3341,13 +3346,15 @@ function setupBookingWizard() {
   const dateInput = document.getElementById('wizard-date');
 
   // Prevent default date selection of past days
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalTodayDateStr();
   if (dateInput) {
     dateInput.min = todayStr;
-    dateInput.addEventListener('change', () => {
+    const onDateChange = () => {
       checkAvailableSlots();
       updateDateTimeSummary();
-    });
+    };
+    dateInput.addEventListener('change', onDateChange);
+    dateInput.addEventListener('input', onDateChange);
   }
 
   // Load Dentists List
@@ -4387,8 +4394,9 @@ function validateStep(step) {
 
     const isOtherConsultation = concern === 'Other Consultation' || (concern && concern.toLowerCase().includes('other'));
 
+    const isPastDate = !!date && date < getLocalTodayDateStr();
     const requiredChecks = [
-      { ok: !!date, el: dateEl, label: 'Appointment Date' },
+      { ok: !!date && !isPastDate, el: dateEl, label: isPastDate ? 'Future Appointment Date (date is in the past)' : 'Appointment Date' },
       { ok: !!time, el: slotsGrid, label: 'Available Time Slot' },
       { ok: !!name, el: nameEl, label: 'Full Name' },
       { ok: !!email, el: emailEl, label: 'Email Address' },
@@ -4618,7 +4626,34 @@ function isTimeSlotInSet(slotLabel, occupiedSet) {
 
 function checkAvailableSlots() {
   const dateVal = document.getElementById('wizard-date')?.value;
+  const slotsGrid = document.getElementById('slots-picker-grid');
   const slotButtons = document.querySelectorAll('.slot-btn');
+
+  let pastNotice = document.getElementById('past-date-slots-notice');
+  if (!pastNotice && slotsGrid && slotsGrid.parentNode) {
+    pastNotice = document.createElement('div');
+    pastNotice.id = 'past-date-slots-notice';
+    pastNotice.style.cssText = 'display:none; padding:14px 16px; border-radius:12px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; font-size:0.86rem; font-weight:600; margin-top:6px;';
+    pastNotice.innerHTML = '<i class="ti ti-calendar-off" style="margin-right:6px;"></i>Selected date is in the past. Please choose today or a future date to view available appointments.';
+    slotsGrid.parentNode.insertBefore(pastNotice, slotsGrid.nextSibling);
+  }
+
+  const todayStr = getLocalTodayDateStr();
+  if (dateVal && dateVal < todayStr) {
+    selectedTime = '';
+    const timeInput = document.getElementById('wizard-time');
+    if (timeInput) timeInput.value = '';
+    slotButtons.forEach(btn => {
+      btn.classList.remove('selected', 'occupied', 'slot-loading');
+      btn.disabled = true;
+    });
+    if (slotsGrid) slotsGrid.style.display = 'none';
+    if (pastNotice) pastNotice.style.display = 'block';
+    return;
+  }
+
+  if (slotsGrid) slotsGrid.style.display = '';
+  if (pastNotice) pastNotice.style.display = 'none';
 
   if (!dateVal) {
     slotButtons.forEach(btn => {
