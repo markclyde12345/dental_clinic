@@ -60,8 +60,8 @@ const createPaymongoCheckout = async (req, res) => {
     // PayMongo amounts are represented in centavos (PHP 1.00 = 100 centavos)
     const amountInCentavos = Math.round(amountFloat * 100);
 
-    const secretKey = process.env.PAYMONGO_SECRET_KEY;
-    const isLiveKey = secretKey && !secretKey.includes('PLACEHOLDER') && secretKey.startsWith('sk_');
+    const secretKey = String(process.env.PAYMONGO_SECRET_KEY || '').trim();
+    const isLiveKey = Boolean(secretKey && !secretKey.includes('PLACEHOLDER') && secretKey.startsWith('sk_'));
 
     const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
     const refererBase = req.headers.referer ? req.headers.referer.split('?')[0] : null;
@@ -146,19 +146,10 @@ const createPaymongoCheckout = async (req, res) => {
       });
     }
 
-    // 3. Sandbox / Fallback mode (when PayMongo secret key is not yet set in .env)
-    const sandboxId = `sandbox_cs_${Date.now()}_${invoice.id.slice(0, 6)}`;
-    return res.json({
-      mode: 'sandbox',
-      checkout_url: null,
-      checkout_id: sandboxId,
-      invoice_id: invoice.id,
-      amount: amountFloat,
-      is_booking_fee: isBookingFee,
-      service_name: treatmentName,
-      invoice_ref: invoiceRef,
-      patient_name: invoice.patient?.name || req.user.name,
-      message: 'PayMongo sandbox mode active. Set PAYMONGO_SECRET_KEY in server/.env for live hosted PayMongo checkout.'
+    // 3. Reject if PayMongo secret key is not configured (never auto-mark Paid without real checkout)
+    return res.status(503).json({
+      success: false,
+      message: 'PayMongo online payment gateway is not configured on this server. Please set PAYMONGO_SECRET_KEY in your environment variables and redeploy.'
     });
 
   } catch (error) {
@@ -199,43 +190,48 @@ const verifyPaymongoPayment = async (req, res) => {
       return res.json({ success: true, message: 'Invoice is already marked as Paid.', invoice });
     }
 
-    const secretKey = process.env.PAYMONGO_SECRET_KEY;
-    const isLiveKey = secretKey && !secretKey.includes('PLACEHOLDER') && secretKey.startsWith('sk_');
+    const secretKey = String(process.env.PAYMONGO_SECRET_KEY || '').trim();
+    const isLiveKey = Boolean(secretKey && !secretKey.includes('PLACEHOLDER') && secretKey.startsWith('sk_'));
 
-    // 2. When a PayMongo key is configured, require a real PayMongo checkout session and verify it
-    if (isLiveKey) {
-      if (!checkout_id || String(checkout_id).startsWith('sandbox_')) {
-        return res.status(400).json({
-          success: false,
-          message: 'A valid PayMongo checkout session is required to verify this payment.'
-        });
-      }
-
-      const authHeader = 'Basic ' + Buffer.from(secretKey + ':').toString('base64');
-      const pmRes = await fetch(`https://api.paymongo.com/v1/checkout_sessions/${checkout_id}`, {
-        headers: {
-          'Authorization': authHeader,
-          'Accept': 'application/json'
-        }
+    if (!isLiveKey) {
+      return res.status(503).json({
+        success: false,
+        message: 'PayMongo online payment gateway is not configured on this server.'
       });
+    }
 
-      const pmData = await pmRes.json();
-      if (!pmRes.ok || !pmData?.data) {
-        return res.status(502).json({
-          success: false,
-          message: pmData?.errors?.[0]?.detail || 'Unable to verify payment status with PayMongo.'
-        });
+    // 2. Require a real PayMongo checkout session and verify it with PayMongo API
+    if (!checkout_id || String(checkout_id).startsWith('sandbox_')) {
+      return res.status(400).json({
+        success: false,
+        message: 'A valid PayMongo checkout session is required to verify this payment.'
+      });
+    }
+
+    const authHeader = 'Basic ' + Buffer.from(secretKey + ':').toString('base64');
+    const pmRes = await fetch(`https://api.paymongo.com/v1/checkout_sessions/${checkout_id}`, {
+      headers: {
+        'Authorization': authHeader,
+        'Accept': 'application/json'
       }
+    });
 
-      const payments = pmData.data.attributes?.payments || [];
-      const isPaid = payments.some(p => p.attributes?.status === 'paid') || pmData.data.attributes?.status === 'paid';
+    const pmData = await pmRes.json();
+    if (!pmRes.ok || !pmData?.data) {
+      return res.status(502).json({
+        success: false,
+        message: pmData?.errors?.[0]?.detail || 'Unable to verify payment status with PayMongo.'
+      });
+    }
 
-      if (!isPaid) {
-        return res.status(400).json({
-          success: false,
-          message: 'Payment has not been completed on PayMongo yet.'
-        });
-      }
+    const payments = pmData.data.attributes?.payments || [];
+    const isPaid = payments.some(p => p.attributes?.status === 'paid') || pmData.data.attributes?.status === 'paid';
+
+    if (!isPaid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment has not been completed on PayMongo yet.'
+      });
     }
 
     // 3. Mark invoice as Paid in Supabase

@@ -2378,28 +2378,7 @@ function executePayMongoCheckout() {
         closePaymongoModal();
         window.location.href = data.checkout_url;
       } else {
-        // Sandbox mode simulation
-        showToast('PayMongo Gateway connected! Confirming payment...', 'success');
-        return apiFetch('/payments/paymongo/verify', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            invoice_id: activePaymentInvoice.id,
-            checkout_id: data.checkout_id || 'sandbox_test'
-          })
-        });
-      }
-    })
-    .then(res => {
-      if (res && res.success) {
-        showToast('Payment verified successfully!', 'success');
-        const paidInvId = activePaymentInvoice.id;
-        closePaymongoModal();
-        loadInvoices();
-        viewInvoiceReceipt(paidInvId);
+        throw new Error(data.message || 'Online PayMongo checkout is not available right now. Please try again later.');
       }
     })
     .catch(err => {
