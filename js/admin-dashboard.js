@@ -6150,13 +6150,28 @@ function closePersonTimeline() {
 }
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
-function exportHistoryCSV() {
-  const link = document.createElement('a');
-  link.href = `/api/admin/history-export`;
-  link.setAttribute('download', 'fano_visits_history.csv');
-  // For authenticated request, open in new tab
-  const newWin = window.open(`/api/admin/history-export`, '_blank');
-  if (!newWin) showToast('Pop-up blocked. Try allowing pop-ups.', 'error');
+async function exportHistoryCSV() {
+  try {
+    const res = await fetch(`${BASE_ORIGIN}/api/admin/history-export`, {
+      headers: { Authorization: `Bearer ${getAuthToken()}` }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to export visits CSV');
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'fano_visits_history.csv');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showToast('Visits history exported to CSV.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Failed to export CSV', 'error');
+  }
 }
 
 // ── Print ─────────────────────────────────────────────────────────────────────
