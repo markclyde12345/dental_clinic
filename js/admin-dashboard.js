@@ -1094,8 +1094,31 @@ function renderRevenueChart(invoices, period) {
   const lineD = points.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
   const areaD = `${lineD} L 500,150 L 0,150 Z`;
 
-  document.getElementById('revenue-line-path').setAttribute('d', lineD);
-  document.getElementById('revenue-area-path').setAttribute('d', areaD);
+  const linePath = document.getElementById('revenue-line-path');
+  const areaPath = document.getElementById('revenue-area-path');
+  if (linePath) linePath.setAttribute('d', lineD);
+  if (areaPath) areaPath.setAttribute('d', areaD);
+
+  // Animate line draw-in and gradient area fade-in
+  if (linePath && typeof linePath.getTotalLength === 'function') {
+    const totalLen = Math.ceil(linePath.getTotalLength()) || 600;
+    linePath.style.transition = 'none';
+    linePath.style.strokeDasharray = `${totalLen}`;
+    linePath.style.strokeDashoffset = `${totalLen}`;
+    if (areaPath) {
+      areaPath.style.transition = 'none';
+      areaPath.style.opacity = '0';
+    }
+    void linePath.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      linePath.style.transition = 'stroke-dashoffset 0.95s cubic-bezier(0.22, 1, 0.36, 1)';
+      linePath.style.strokeDashoffset = '0';
+      if (areaPath) {
+        areaPath.style.transition = 'opacity 0.75s ease 0.2s';
+        areaPath.style.opacity = '1';
+      }
+    });
+  }
 
   // 4. Hook up Mouse Events for Tooltip
   svg.onmousemove = function(e) {
