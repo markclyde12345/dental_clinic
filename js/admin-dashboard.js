@@ -705,7 +705,7 @@ window.submitAddBranch = async function(e) { if (e) e.preventDefault(); };
 window.deleteCustomBranch = async function() {};
 
 // ─── 1. Load Home Overview Stats ──────────────────────────────────────────────
-let currentRevenuePeriod = '12months';
+let currentRevenuePeriod = '7days';
 let currentFinancialPeriod = '12months';
 let currentPatientPeriod = '12months';
 let currentExpensesPeriod = '12months';

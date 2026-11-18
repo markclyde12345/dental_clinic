@@ -310,17 +310,17 @@
               <div class="admin-card">
                 <div class="admin-card-header">
                   <div class="admin-card-title-group">
-                    <span id="revenue-card-title" class="admin-card-title"><i class="ti ti-chart-area-line"></i> Revenue (Last 12 Months)</span>
+                    <span id="revenue-card-title" class="admin-card-title"><i class="ti ti-chart-area-line"></i> Revenue (Last 7 Days)</span>
                     <div class="admin-card-hero-val">
                       <h2 id="revenue-total-cash">₱0.00</h2>
                       <span id="revenue-percentage-badge" class="admin-badge-trend" style="background: #e6f7ee; color: #2ecc71;">▲ 0.0%</span>
                     </div>
                   </div>
                   <select id="revenue-period-select" class="admin-select-pill">
-                    <option value="7days">Last 7 Days</option>
+                    <option value="7days" selected>Last 7 Days</option>
                     <option value="30days">Last 30 Days</option>
                     <option value="4weeks">Last 4 Weeks</option>
-                    <option value="12months" selected>Last 12 Months</option>
+                    <option value="12months">Last 12 Months</option>
                     <option value="5years">Last 5 Years</option>
                     <option value="year2026">Year 2026</option>
                   </select>
@@ -2996,7 +2996,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="../js/components/skeleton.js?v=20261108_light_skeleton_v3"></script>
-  <script src="../js/admin-dashboard.js?v=20261118_revenue_smooth_v2"></script>
+  <script src="../js/admin-dashboard.js?v=20261118_revenue_7days_v3"></script>
   <script src="../js/offline-monitor.js"></script>
   <script>
     /* ===== ADMIN THEME TOGGLE ===== */
