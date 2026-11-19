@@ -6893,10 +6893,9 @@ let adminMapUiBound = false;
 function getStoredClinics() {
   try {
     const raw = localStorage.getItem(CLINICS_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      const hasHq = parsed.some(c => c.id === 'hq-naga' || c.isMain);
-      return hasHq ? parsed : [DEFAULT_HQ_CLINIC, ...parsed];
+    if (raw !== null) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
     }
   } catch (_) {}
   return [DEFAULT_HQ_CLINIC];
@@ -6992,7 +6991,7 @@ window.renderBranchesList = function() {
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="font-size: 0.72rem; color: #0284c7; font-weight: 600;"><i class="ti ti-focus-2"></i> Locate</span>
-            ${!c.isMain ? `<button type="button" onclick="event.stopPropagation(); deleteBranch('${escapeMapText(c.id)}')" title="Remove clinic" style="border: none; background: #fee2e2; color: #dc2626; width: 26px; height: 26px; border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;"><i class="ti ti-trash" style="font-size: 14px;"></i></button>` : ''}
+            <button type="button" onclick="event.stopPropagation(); deleteBranch('${escapeMapText(c.id)}')" title="Remove clinic" style="border: none; background: #fee2e2; color: #dc2626; width: 26px; height: 26px; border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;"><i class="ti ti-trash" style="font-size: 14px;"></i></button>
           </div>
         </div>
         <div style="font-size: 0.84rem; color: #475569; display: flex; align-items: center; gap: 6px;">
@@ -7012,11 +7011,11 @@ window.renderBranchesList = function() {
 window.deleteBranch = function(clinicId) {
   const clinics = getStoredClinics();
   const target = clinics.find(c => c.id === clinicId);
-  if (!target || target.isMain) return;
+  if (!target) return;
   if (!confirm(`Remove "${target.name}" from the clinic map?`)) return;
   const updated = clinics.filter(c => c.id !== clinicId);
   saveStoredClinics(updated);
-  if (activeClinicId === clinicId) activeClinicId = updated[0]?.id || 'hq-naga';
+  if (activeClinicId === clinicId) activeClinicId = updated[0]?.id || null;
   window.updateAdminMapMarkers();
   window.renderBranchesList();
   showToast(`Removed ${target.name}.`, 'info');
