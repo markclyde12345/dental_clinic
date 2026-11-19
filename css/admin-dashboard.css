@@ -5513,6 +5513,17 @@ body.dark-theme #modal-admin-service-details #admin-detail-duration {
   border-color: #d97706;
 }
 
+.btn-hist-delete {
+  color: #dc2626;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.btn-hist-delete:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
 .btn-hist-timeline {
   color: #7c3aed;
   background: #f5f3ff;

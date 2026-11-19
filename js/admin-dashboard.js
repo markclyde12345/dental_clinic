@@ -2505,8 +2505,8 @@ function filterAndRenderPatients() {
         <td style="padding: 14px 16px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(allergiesStr)}">${escapeHTML(allergiesStr)}</td>
         <td style="padding: 14px 16px; text-align: right;">
           <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;">
-            <button class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="openEditPatientModal('${p.user_id}', '${escFirstName}', '${escLastName}', '${escEmail}', '${escGender}', '${escDob}', '${escPhone}', '${escAllergies}', '${escNotes}')">Edit</button>
-            <button class="btn-danger-action" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; width: auto;" onclick="deletePatientUser('${p.user_id}', '${escapeJS(name)}')">Delete</button>
+            <button type="button" class="btn-hist-action btn-hist-edit" title="Edit Patient" onclick="openEditPatientModal('${p.user_id}', '${escFirstName}', '${escLastName}', '${escEmail}', '${escGender}', '${escDob}', '${escPhone}', '${escAllergies}', '${escNotes}')"><i class="ti ti-edit"></i></button>
+            <button type="button" class="btn-hist-action btn-hist-delete" title="Delete Patient" onclick="deletePatientUser('${p.user_id}', '${escapeJS(name)}')"><i class="ti ti-trash"></i></button>
           </div>
         </td>
       </tr>
@@ -3455,10 +3455,8 @@ function renderStaffTable(data) {
         <td style="padding: 14px 16px;">${escapeHTML(s.contact)}</td>
         <td style="padding: 14px 16px; text-align: right;">
           <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;">
-            <button type="button" class="slot-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: #8e44ad; color: #8e44ad; width: auto;" onclick="event.preventDefault(); openEditStaffScheduleModal('${s.id}', '${escapeJS(s.name)}', '${escapeJS(s.role)}', '${escapeJS(s.shift)}', '${escapeJS(s.days)}', '${escapeJS(s.contact)}', '${escapeJS(s.availability)}')">Edit</button>
-            <button type="button" onclick="event.preventDefault(); deleteStaffSchedule('${s.id}', '${escapeHTML(s.name)}')" style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; background: #fee2e2; color: #ef4444; transition: background 0.2s;">
-              Delete
-            </button>
+            <button type="button" class="btn-hist-action btn-hist-edit" title="Edit Staff Schedule" onclick="event.preventDefault(); openEditStaffScheduleModal('${s.id}', '${escapeJS(s.name)}', '${escapeJS(s.role)}', '${escapeJS(s.shift)}', '${escapeJS(s.days)}', '${escapeJS(s.contact)}', '${escapeJS(s.availability)}')"><i class="ti ti-edit"></i></button>
+            <button type="button" class="btn-hist-action btn-hist-delete" title="Delete Staff Schedule" onclick="event.preventDefault(); deleteStaffSchedule('${s.id}', '${escapeHTML(s.name)}')"><i class="ti ti-trash"></i></button>
           </div>
         </td>
       </tr>
@@ -7344,7 +7342,7 @@ window.loadSettingsTreatments = function() {
         <td style="padding: 10px 12px;">${currency}${t.price}</td>
         <td style="padding: 10px 12px;">${t.duration_minutes || t.durationMinutes || 30} mins</td>
         <td style="padding: 10px 12px; text-align: right;">
-          <button class="btn-danger-action" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; width: auto;" onclick="deleteTreatmentItem('${t.id}')">Delete</button>
+          <button type="button" class="btn-hist-action btn-hist-delete" title="Delete Treatment" onclick="deleteTreatmentItem('${t.id}')"><i class="ti ti-trash"></i></button>
         </td>
       </tr>
     `).join('');
