@@ -674,18 +674,36 @@ function updateAllTimerDisplays(timeString) {
   if (overviewTimerEl) overviewTimerEl.textContent = timeString;
 }
 
+const MAX_CHAIR_SESSION_SEC = 4 * 3600; // Cap single dental chair session at 4 hours (clinic is not 24/7)
+
+function isSameLocalDay(tsA, tsB) {
+  const a = new Date(tsA);
+  const b = new Date(tsB);
+  return a.getFullYear() === b.getFullYear() &&
+         a.getMonth() === b.getMonth() &&
+         a.getDate() === b.getDate();
+}
+
 function startChairTimer(apptId, serverCreatedAt) {
   if (apptId) activeChairApptId = apptId;
   const targetId = activeChairApptId || apptId;
   if (!targetId) return;
 
+  const now = Date.now();
+  const maxSessionMs = MAX_CHAIR_SESSION_SEC * 1000;
   const storageKey = 'dentist_chair_start_' + targetId;
   let startTime = parseInt(localStorage.getItem(storageKey), 10);
 
-  // If not in localStorage, use appointment created_at / updated_at or Date.now()
-  if (!startTime || isNaN(startTime)) {
-    const fallbackTime = serverCreatedAt ? new Date(serverCreatedAt).getTime() : Date.now();
-    startTime = (fallbackTime && fallbackTime <= Date.now()) ? fallbackTime : Date.now();
+  // Discard stale timestamps (from a previous day or older than max chair session, e.g. appointment booking created_at)
+  const isValidStart = (ts) =>
+    Number.isFinite(ts) &&
+    ts <= now &&
+    isSameLocalDay(ts, now) &&
+    (now - ts) <= maxSessionMs;
+
+  if (!isValidStart(startTime)) {
+    const fallbackTime = serverCreatedAt ? new Date(serverCreatedAt).getTime() : NaN;
+    startTime = isValidStart(fallbackTime) ? fallbackTime : now;
     try {
       localStorage.setItem(storageKey, startTime.toString());
     } catch (_) {}
@@ -695,14 +713,21 @@ function startChairTimer(apptId, serverCreatedAt) {
   if (chairTimerInterval) clearInterval(chairTimerInterval);
 
   const calcAndRender = () => {
-    const elapsedSec = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
-    chairTimerSeconds = elapsedSec;
-    const timeStr = formatElapsedTimer(elapsedSec);
-    updateAllTimerDisplays(timeStr);
+    const rawElapsed = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+    const cappedSec = Math.min(rawElapsed, MAX_CHAIR_SESSION_SEC);
+    chairTimerSeconds = cappedSec;
+    const timeStr = formatElapsedTimer(cappedSec);
+    updateAllTimerDisplays(rawElapsed >= MAX_CHAIR_SESSION_SEC ? `${timeStr} (Max)` : timeStr);
+    if (rawElapsed >= MAX_CHAIR_SESSION_SEC && chairTimerInterval) {
+      clearInterval(chairTimerInterval);
+      chairTimerInterval = null;
+    }
   };
 
   calcAndRender();
-  chairTimerInterval = setInterval(calcAndRender, 1000);
+  if (chairTimerSeconds < MAX_CHAIR_SESSION_SEC) {
+    chairTimerInterval = setInterval(calcAndRender, 1000);
+  }
 }
 
 function stopChairTimer(apptId) {
