@@ -60,7 +60,7 @@ const createPaymongoCheckout = async (req, res) => {
     // PayMongo amounts are represented in centavos (PHP 1.00 = 100 centavos)
     const amountInCentavos = Math.round(amountFloat * 100);
 
-    const secretKey = String(process.env.PAYMONGO_SECRET_KEY || '').trim();
+    const secretKey = String(process.env.PAYMONGO_SECRET_KEY || '').trim().replace(/^["']|["']$/g, '');
     const isLiveKey = Boolean(secretKey && !secretKey.includes('PLACEHOLDER') && secretKey.startsWith('sk_'));
 
     const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
@@ -190,7 +190,7 @@ const verifyPaymongoPayment = async (req, res) => {
       return res.json({ success: true, message: 'Invoice is already marked as Paid.', invoice });
     }
 
-    const secretKey = String(process.env.PAYMONGO_SECRET_KEY || '').trim();
+    const secretKey = String(process.env.PAYMONGO_SECRET_KEY || '').trim().replace(/^["']|["']$/g, '');
     const isLiveKey = Boolean(secretKey && !secretKey.includes('PLACEHOLDER') && secretKey.startsWith('sk_'));
 
     if (!isLiveKey) {
