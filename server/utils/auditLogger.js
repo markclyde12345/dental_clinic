@@ -21,6 +21,26 @@ function ensureAuditFile() {
   } catch (_) {}
 }
 
+function parseDeviceFromUA(ua) {
+  if (!ua || typeof ua !== 'string' || ua === 'Node/Server') return 'Server / API';
+  let browser = 'Browser';
+  if (/Edg\//i.test(ua)) browser = 'Edge';
+  else if (/OPR\/|Opera/i.test(ua)) browser = 'Opera';
+  else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browser = 'Chrome';
+  else if (/Firefox\//i.test(ua)) browser = 'Firefox';
+  else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browser = 'Safari';
+  else if (/Postman|curl|insomnia/i.test(ua)) browser = 'API Client';
+
+  let os = 'Unknown OS';
+  if (/Windows/i.test(ua)) os = 'Windows';
+  else if (/iPhone|iPad|iOS/i.test(ua)) os = 'iOS';
+  else if (/Android/i.test(ua)) os = 'Android';
+  else if (/Mac OS X|Macintosh/i.test(ua)) os = 'macOS';
+  else if (/Linux/i.test(ua)) os = 'Linux';
+
+  return `${browser} on ${os}`;
+}
+
 /**
  * Log a sensitive staff or clinical financial action
  * @param {Object} entry
@@ -41,26 +61,52 @@ async function logAuditAction(entry) {
         userName = req.user.name || `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || userName;
         userRole = req.user.role || userRole;
       }
-      ipAddress = req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || req.ip || ipAddress;
+      const rawIp = req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || req.ip || ipAddress;
+      ipAddress = typeof rawIp === 'string' ? rawIp.split(',')[0].trim().replace(/^::ffff:/, '') : '127.0.0.1';
       userAgent = req.headers?.['user-agent'] || userAgent;
     }
 
+    const existingLogs = await getCloudStore('audit_logs', []).catch(() => []);
+    const logsArray = Array.isArray(existingLogs) ? existingLogs : [];
+    const prevHash = logsArray[0]?.integrity_hash || 'GENESIS';
+
+    const timestamp = new Date().toISOString();
+    const cleanEntityType = entityType || entry.entity_type || 'system';
+    const cleanEntityId = (entityId || entry.entity_id) ? String(entityId || entry.entity_id) : null;
+    const cleanDetails = details || `${action} performed on ${cleanEntityType} #${cleanEntityId || ''}`;
+    const device = parseDeviceFromUA(userAgent);
+
+    const hashPayload = JSON.stringify({
+      prevHash,
+      timestamp,
+      action,
+      entity_type: cleanEntityType,
+      entity_id: cleanEntityId,
+      user_id: userId,
+      ip_address: ipAddress,
+      details: cleanDetails
+    });
+    const integrityHash = crypto.createHash('sha256').update(hashPayload).digest('hex');
+
     const logItem = {
       id: uuidv4(),
-      timestamp: new Date().toISOString(),
+      timestamp,
       action,
-      entity_type: entityType || entry.entity_type || 'system',
-      entity_id: (entityId || entry.entity_id) ? String(entityId || entry.entity_id) : null,
+      entity_type: cleanEntityType,
+      entity_id: cleanEntityId,
       user_id: userId,
       user_name: userName,
       user_role: userRole,
-      details: details || `${action} performed on ${entityType || 'record'} #${entityId || ''}`,
+      details: cleanDetails,
       metadata: metadata || {},
-      ip_address: typeof ipAddress === 'string' ? ipAddress.replace(/^::ffff:/, '') : '127.0.0.1',
-      user_agent: userAgent
+      ip_address: ipAddress,
+      user_agent: userAgent,
+      device,
+      prev_hash: prevHash,
+      integrity_hash: integrityHash
     };
 
-    console.log(`\x1b[36m[AUDIT LOG]\x1b[0m \x1b[1m${logItem.action}\x1b[0m by \x1b[33m${logItem.user_name} (${logItem.user_role})\x1b[0m: ${logItem.details}`);
+    console.log(`\x1b[36m[AUDIT LOG]\x1b[0m \x1b[1m${logItem.action}\x1b[0m by \x1b[33m${logItem.user_name} (${logItem.user_role})\x1b[0m [${logItem.ip_address} • ${logItem.device}]: ${logItem.details}`);
 
     // In-memory caching
     if (!global._inMemoryAuditLogs) global._inMemoryAuditLogs = [];
@@ -69,8 +115,6 @@ async function logAuditAction(entry) {
 
     // Persist in Supabase cloudStore so Vercel serverless instances share real-time audit logs
     try {
-      const existingLogs = await getCloudStore('audit_logs', []);
-      const logsArray = Array.isArray(existingLogs) ? existingLogs : [];
       logsArray.unshift(logItem);
       if (logsArray.length > 300) logsArray.length = 300;
       await setCloudStore('audit_logs', logsArray);
@@ -104,7 +148,8 @@ async function getAuditLogs(filters = {}) {
 
     return logs.slice(0, limit).map(item => ({
       ...item,
-      timestamp: item.created_at || item.timestamp
+      timestamp: item.created_at || item.timestamp,
+      device: item.device || parseDeviceFromUA(item.user_agent)
     }));
   } catch (err) {
     console.error('[Get Audit Logs Error]', err.message);

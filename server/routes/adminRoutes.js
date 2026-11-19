@@ -37,6 +37,7 @@ const {
   exportHistoryCSV,
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
+const { logAuditAction } = require('../utils/auditLogger');
 const {
   CONFIGURABLE_ROLES,
   PERMISSIONS,
@@ -58,6 +59,14 @@ router.route('/permissions')
     try {
       const matrix = await savePermissionMatrix(req.body && req.body.matrix);
       console.log(`[Permissions] ${req.user?.name || 'Admin'} updated role permissions`);
+      logAuditAction({
+        action: 'PERMISSION_CHANGED',
+        entityType: 'permissions',
+        entityId: 'role_matrix',
+        details: `${req.user?.name || 'Admin'} updated staff role access permissions`,
+        metadata: { matrix },
+        req
+      });
       res.json({ message: 'Role permissions updated.', matrix });
     } catch (err) { res.status(500).json({ message: err.message }); }
   });

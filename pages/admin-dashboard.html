@@ -1246,6 +1246,59 @@
 
         <!-- 9. S TAB -->
         <div id="tab-logs" class="tab-pane">
+          <!-- Tamper-Resistant Structured Audit Trail (Who, What, When, Where) -->
+          <div class="admin-table-card" style="margin-bottom: 24px;">
+            <div class="admin-table-card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 class="admin-table-title" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <i class="ti ti-shield-lock"></i> Tamper-Resistant Audit Trail
+                  <span style="font-size: 0.7rem; font-weight: 700; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 3px 9px; border-radius: 999px;">Read-Only &bull; SHA-256 Chained</span>
+                </h3>
+                <p class="admin-table-subtitle">Chronological record documenting <strong>Who</strong> (Actor), <strong>What</strong> (Action &amp; Target), <strong>When</strong> (Timestamp), and <strong>Where</strong> (IP &amp; Device).</p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span id="audit-trail-count" class="logs-counter-badge">0 Events</span>
+                <button type="button" id="btn-export-audit-csv" class="btn-secondary" style="padding: 7px 13px; font-size: 0.8rem; border-radius: 8px;"><i class="ti ti-file-spreadsheet"></i> Export CSV</button>
+                <button type="button" id="btn-refresh-audit-trail" class="btn-primary" style="padding: 7px 13px; font-size: 0.8rem; border-radius: 8px;"><i class="ti ti-refresh"></i> Refresh</button>
+              </div>
+            </div>
+
+            <div class="admin-filter-bar" style="margin-bottom: 16px; padding: 10px 14px;">
+              <div class="search-input-wrapper" style="flex: 1; max-width: 440px;">
+                <i class="ti ti-search" style="font-size: 16px; color: #94a3b8;"></i>
+                <input type="text" id="audit-trail-search" placeholder="Search by actor, user ID, action, target, IP, or device...">
+              </div>
+              <div class="filter-group">
+                <span class="filter-group-label">Category:</span>
+                <select id="audit-trail-filter" class="admin-select-pill">
+                  <option value="ALL">All Events</option>
+                  <option value="AUTH">Auth &amp; Login</option>
+                  <option value="PERMISSION">Permissions</option>
+                  <option value="INVOICE">Billing &amp; Invoices</option>
+                  <option value="APPOINTMENT">Appointments</option>
+                  <option value="PATIENT">Patients &amp; Records</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="admin-table-wrapper" style="max-height: 460px; overflow-y: auto;">
+              <table class="table-enhanced" id="audit-trail-table">
+                <thead>
+                  <tr>
+                    <th style="min-width: 155px;">When (Timestamp)</th>
+                    <th style="min-width: 170px;">Who (Actor)</th>
+                    <th style="min-width: 260px;">What (Action &amp; Target)</th>
+                    <th style="min-width: 175px;">Where (Source)</th>
+                    <th style="min-width: 105px;">Integrity</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-trail-tbody">
+                  <tr><td colspan="5" style="padding: 20px; text-align: center; color: #94a3b8;">Loading audit trail...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <div class="logs-card-wrapper">
             <!-- Header with Live Badge and Quick Actions -->
             <div class="logs-header-row">
@@ -3024,7 +3077,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="../js/components/skeleton.js?v=20261108_light_skeleton_v3"></script>
-  <script src="../js/admin-dashboard.js?v=20261119_clinic_map_add_v5"></script>
+  <script src="../js/admin-dashboard.js?v=20261119_audit_trail_v6"></script>
   <script src="../js/offline-monitor.js"></script>
   <script>
     /* ===== ADMIN THEME TOGGLE ===== */

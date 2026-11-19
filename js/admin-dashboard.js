@@ -8523,3 +8523,175 @@ if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
+// ─── Tamper-Resistant Audit Trail Viewer (Who, What, When, Where) ───────────
+(function setupAuditTrailViewer() {
+  let cachedAuditLogs = [];
+  let bound = false;
+
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function formatExactTimestamp(ts) {
+    if (!ts) return '—';
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return esc(ts);
+    return d.toLocaleString('en-US', {
+      year: 'numeric', month: 'short', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+    });
+  }
+
+  function getActionBadgeStyle(action) {
+    const a = String(action || '').toUpperCase();
+    if (a.includes('FAIL') || a.includes('LOCK') || a.includes('VOID') || a.includes('DELETE') || a.includes('WRITTEN_OFF')) {
+      return 'background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;';
+    }
+    if (a.includes('PERMISSION') || a.includes('MFA') || a.includes('SECURITY') || a.includes('PASSWORD')) {
+      return 'background:#fef3c7;color:#b45309;border:1px solid #fde68a;';
+    }
+    if (a.includes('PAID') || a.includes('SUCCESS') || a.includes('CREATED')) {
+      return 'background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;';
+    }
+    return 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;';
+  }
+
+  function renderAuditTrail() {
+    const tbody = document.getElementById('audit-trail-tbody');
+    const countEl = document.getElementById('audit-trail-count');
+    if (!tbody) return;
+
+    const query = (document.getElementById('audit-trail-search')?.value || '').toLowerCase().trim();
+    const cat = document.getElementById('audit-trail-filter')?.value || 'ALL';
+
+    const filtered = cachedAuditLogs.filter((l) => {
+      if (cat !== 'ALL') {
+        const hay = `${l.action || ''} ${l.entity_type || ''}`.toUpperCase();
+        if (cat === 'AUTH' && !/(LOGIN|LOGOUT|MFA|TOTP|PASSWORD|OTP|AUTH)/.test(hay)) return false;
+        if (cat === 'PERMISSION' && !hay.includes('PERMISSION')) return false;
+        if (cat === 'INVOICE' && !/(INVOICE|PAYMENT|EXPENSE|BILL)/.test(hay)) return false;
+        if (cat === 'APPOINTMENT' && !/(APPOINTMENT|VISIT|QUEUE)/.test(hay)) return false;
+        if (cat === 'PATIENT' && !/(PATIENT|CHART|PRESCRIPTION|USER)/.test(hay)) return false;
+      }
+      if (query) {
+        const full = `${l.timestamp || ''} ${l.user_name || ''} ${l.user_id || ''} ${l.user_role || ''} ${l.action || ''} ${l.entity_type || ''} ${l.entity_id || ''} ${l.details || ''} ${l.ip_address || ''} ${l.device || ''}`.toLowerCase();
+        if (!full.includes(query)) return false;
+      }
+      return true;
+    });
+
+    if (countEl) countEl.textContent = `${filtered.length} Event${filtered.length !== 1 ? 's' : ''}`;
+
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #94a3b8;">No audit trail events match your filter.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map((l) => {
+      const shortUserId = l.user_id ? String(l.user_id).slice(0, 10) : 'system';
+      const targetStr = l.entity_type
+        ? `${l.entity_type}${l.entity_id ? ' #' + String(l.entity_id).slice(0, 8).toUpperCase() : ''}`
+        : 'system';
+      const shortHash = l.integrity_hash ? String(l.integrity_hash).slice(0, 10) : 'Legacy';
+
+      return `
+        <tr>
+          <td style="font-size: 0.8rem; white-space: nowrap; color: #334155;">
+            <div style="font-weight: 600;">${formatExactTimestamp(l.timestamp)}</div>
+          </td>
+          <td>
+            <div style="font-weight: 700; font-size: 0.85rem; color: var(--secondary-color);">${esc(l.user_name || 'System')}</div>
+            <div style="display: flex; align-items: center; gap: 5px; margin-top: 2px; flex-wrap: wrap;">
+              <span style="font-size: 0.68rem; font-weight: 700; background: #f1f5f9; color: #475569; padding: 1px 7px; border-radius: 999px;">${esc(l.user_role || 'System')}</span>
+              <code style="font-size: 0.7rem; color: #64748b;" title="User ID: ${esc(l.user_id || 'system')}">ID: ${esc(shortUserId)}</code>
+            </div>
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 3px;">
+              <span style="font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; ${getActionBadgeStyle(l.action)}">${esc(l.action || 'EVENT')}</span>
+              <span style="font-size: 0.74rem; font-weight: 600; color: #475569;">&rarr; ${esc(targetStr)}</span>
+            </div>
+            <div style="font-size: 0.8rem; color: #475569; line-height: 1.35;">${esc(l.details || '')}</div>
+          </td>
+          <td style="font-size: 0.78rem; color: #475569;">
+            <div style="font-weight: 600; font-family: monospace;"><i class="ti ti-world" style="color:#0284c7;"></i> ${esc(l.ip_address || '127.0.0.1')}</div>
+            <div style="font-size: 0.74rem; color: #64748b; margin-top: 2px;"><i class="ti ti-device-desktop"></i> ${esc(l.device || 'Web Browser')}</div>
+          </td>
+          <td>
+            <span title="SHA-256 Chain Hash: ${esc(l.integrity_hash || 'Legacy record')}" style="display: inline-flex; align-items: center; gap: 4px; font-family: monospace; font-size: 0.72rem; background: #f8fafc; border: 1px solid #e2e8f0; color: #059669; padding: 3px 7px; border-radius: 6px;">
+              <i class="ti ti-lock-check" style="font-size: 13px;"></i> ${esc(shortHash)}
+            </span>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadAuditTrail() {
+    const tbody = document.getElementById('audit-trail-tbody');
+    try {
+      const res = await fetch(`${BASE_ORIGIN}/api/audit-logs?limit=150`, {
+        headers: { Authorization: `Bearer ${getAuthToken()}` }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Failed to load audit trail');
+      cachedAuditLogs = Array.isArray(data.logs) ? data.logs : [];
+      renderAuditTrail();
+    } catch (err) {
+      if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="padding: 18px; text-align: center; color: #dc2626;">${esc(err.message)}</td></tr>`;
+    }
+  }
+
+  function exportAuditTrailCSV() {
+    if (!cachedAuditLogs.length) {
+      showToast('No audit events available to export.', 'info');
+      return;
+    }
+    const headers = ['Timestamp (When)', 'Actor Name (Who)', 'Role', 'User ID', 'Action (What)', 'Target Entity', 'Target ID', 'Details', 'IP Address (Where)', 'Device (Where)', 'SHA-256 Integrity Hash'];
+    const csvCell = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+    const rows = cachedAuditLogs.map((l) => [
+      l.timestamp || '',
+      l.user_name || '',
+      l.user_role || '',
+      l.user_id || '',
+      l.action || '',
+      l.entity_type || '',
+      l.entity_id || '',
+      l.details || '',
+      l.ip_address || '',
+      l.device || '',
+      l.integrity_hash || ''
+    ].map(csvCell).join(','));
+    const csv = [headers.map(csvCell).join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fano_audit_trail_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Audit trail exported to CSV.', 'success');
+  }
+
+  function init() {
+    if (bound) return;
+    bound = true;
+    document.getElementById('audit-trail-search')?.addEventListener('input', renderAuditTrail);
+    document.getElementById('audit-trail-filter')?.addEventListener('change', renderAuditTrail);
+    document.getElementById('btn-refresh-audit-trail')?.addEventListener('click', loadAuditTrail);
+    document.getElementById('btn-export-audit-csv')?.addEventListener('click', exportAuditTrailCSV);
+    document.getElementById('btn-refresh-logs')?.addEventListener('click', loadAuditTrail);
+    document.querySelectorAll('.nav-tab[data-tab="logs"]').forEach((t) =>
+      t.addEventListener('click', loadAuditTrail));
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash === '#logs') loadAuditTrail();
+    });
+    if (document.getElementById('tab-logs')?.classList.contains('active') || window.location.hash === '#logs') {
+      loadAuditTrail();
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
