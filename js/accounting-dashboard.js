@@ -1390,7 +1390,91 @@
   function renderExpensesTab() {
     renderExpenseKPIs();
     renderExpensesTable(allExpenses);
+    renderFinanceExpensesDonut();
     updateSidebarBadges();
+  }
+
+  function renderFinanceExpensesDonut() {
+    const svg = document.getElementById('finance-exp-donut-svg');
+    const totalEl = document.getElementById('finance-exp-donut-total');
+    const legendEl = document.getElementById('finance-exp-donut-legend');
+    const periodSel = document.getElementById('finance-exp-period-select');
+    if (!svg || !totalEl || !legendEl) return;
+
+    if (periodSel && !periodSel.dataset.bound) {
+      periodSel.dataset.bound = '1';
+      periodSel.addEventListener('change', renderFinanceExpensesDonut);
+    }
+
+    const period = periodSel ? periodSel.value : '12months';
+    const now = new Date();
+    const cutoff = period === '7days'
+      ? new Date(now.getTime() - 7 * 86400000)
+      : period === '30days'
+        ? new Date(now.getTime() - 30 * 86400000)
+        : period === '12months'
+          ? new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
+          : null;
+
+    const categoryTotals = {};
+    let grandTotal = 0;
+
+    (allExpenses || []).forEach(exp => {
+      const amt = parseFloat(exp.amount) || 0;
+      if (amt <= 0) return;
+      if (cutoff) {
+        const dt = new Date(exp.paidDate || exp.dueDate || exp.created_at || Date.now());
+        if (!isNaN(dt.getTime()) && dt < cutoff) return;
+      }
+      const cat = (exp.category || 'Other').trim() || 'Other';
+      categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
+      grandTotal += amt;
+    });
+
+    totalEl.textContent = formatMoney(grandTotal);
+
+    const palette = {
+      Salaries: '#f43f5e',
+      Supplies: '#06b6d4',
+      Rent: '#f59e0b',
+      Equipment: '#0284c7',
+      Utilities: '#10b981',
+      Maintenance: '#8b5cf6',
+      Marketing: '#ec4899',
+      Other: '#64748b'
+    };
+    const fallbackColors = ['#f43f5e', '#06b6d4', '#f59e0b', '#0284c7', '#10b981', '#8b5cf6', '#ec4899', '#64748b'];
+
+    const radius = 68;
+    const circumference = 2 * Math.PI * radius;
+
+    if (grandTotal <= 0) {
+      svg.innerHTML = `<circle cx="90" cy="90" r="${radius}" fill="none" stroke="#e2e8f0" stroke-width="22"></circle>`;
+      legendEl.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; font-size: 0.82rem;">No expenses recorded for this period yet.</div>`;
+      return;
+    }
+
+    const entries = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+    let offset = 0;
+    let circlesHtml = `<circle cx="90" cy="90" r="${radius}" fill="none" stroke="#f1f5f9" stroke-width="22"></circle>`;
+    let legendHtml = '';
+
+    entries.forEach(([cat, amt], idx) => {
+      const pct = (amt / grandTotal) * 100;
+      const segLen = (pct / 100) * circumference;
+      const color = palette[cat] || fallbackColors[idx % fallbackColors.length];
+      circlesHtml += `<circle cx="90" cy="90" r="${radius}" fill="none" stroke="${color}" stroke-width="22" stroke-dasharray="${segLen.toFixed(2)} ${circumference.toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" style="transition: stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease;"><title>${escapeHtml(cat)}: ${pct.toFixed(1)}% (${formatMoney(amt)})</title></circle>`;
+      offset += segLen;
+      legendHtml += `
+        <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: ${color}; flex-shrink: 0;"></span>
+          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(cat)}: <strong>${Math.round(pct)}%</strong> (${formatMoney(amt)})</span>
+        </div>
+      `;
+    });
+
+    svg.innerHTML = circlesHtml;
+    legendEl.innerHTML = legendHtml;
   }
 
   function renderExpenseKPIs() {

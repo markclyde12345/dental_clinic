@@ -207,36 +207,68 @@
 
           <!-- Collection Breakdown & Fast Actions -->
           <div class="analytics-row" style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-top: 24px;">
-            <!-- Collection Efficiency & Payment Methods -->
-            <div class="section-card">
-              <div class="section-card-header">
-                <h3>Collection Breakdown by Payment Method</h3>
-                <span style="font-size: 0.8rem; color: #64748b;">Current Fiscal Period</span>
+            <!-- Left Column: Collection Breakdown + Expenses Breakdown Donut -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <!-- Collection Efficiency & Payment Methods -->
+              <div class="section-card">
+                <div class="section-card-header">
+                  <h3>Collection Breakdown by Payment Method</h3>
+                  <span style="font-size: 0.8rem; color: #64748b;">Current Fiscal Period</span>
+                </div>
+
+                <div class="payment-method-bars" style="display: flex; flex-direction: column; gap: 16px; margin-top: 12px;">
+                  <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
+                      <span><i class="ti ti-cash" style="color: #10b981; margin-right: 4px;"></i>Cash Collections</span>
+                      <span id="cash-share-val">₱0.00</span>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="cash-bar" style="width: 0%; background: #10b981;"></div></div>
+                  </div>
+
+                  <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
+                      <span><i class="ti ti-device-mobile" style="color: #3b82f6; margin-right: 4px;"></i>GCash / Maya / E-Wallets</span>
+                      <span id="ewallet-share-val">₱0.00</span>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="ewallet-bar" style="width: 0%; background: #3b82f6;"></div></div>
+                  </div>
+
+                  <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
+                      <span><i class="ti ti-credit-card" style="color: #8b5cf6; margin-right: 4px;"></i>Credit &amp; Debit Cards</span>
+                      <span id="card-share-val">₱0.00</span>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="card-bar" style="width: 0%; background: #8b5cf6;"></div></div>
+                  </div>
+                </div>
               </div>
 
-              <div class="payment-method-bars" style="display: flex; flex-direction: column; gap: 16px; margin-top: 12px;">
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
-                    <span><i class="ti ti-cash" style="color: #10b981; margin-right: 4px;"></i>Cash Collections</span>
-                    <span id="cash-share-val">₱0.00</span>
-                  </div>
-                  <div class="progress-bar-bg"><div class="progress-bar-fill" id="cash-bar" style="width: 0%; background: #10b981;"></div></div>
+              <!-- Expenses Breakdown Donut Chart -->
+              <div class="section-card" id="finance-expenses-breakdown-card">
+                <div class="section-card-header" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                  <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.04em; color: #475569;">
+                    <i class="ti ti-chart-pie" style="color: #0284c7; font-size: 18px;"></i> Expenses Breakdown
+                  </h3>
+                  <select id="finance-exp-period-select" style="padding: 6px 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; font-size: 0.8rem; font-weight: 600; color: #334155; cursor: pointer;">
+                    <option value="12months" selected>Last 12 Months</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="all">All Time</option>
+                  </select>
                 </div>
 
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
-                    <span><i class="ti ti-device-mobile" style="color: #3b82f6; margin-right: 4px;"></i>GCash / Maya / E-Wallets</span>
-                    <span id="ewallet-share-val">₱0.00</span>
+                <div style="display: flex; flex-direction: column; align-items: center; padding: 14px 0 18px;">
+                  <div style="position: relative; width: 196px; height: 196px; display: flex; align-items: center; justify-content: center;">
+                    <svg id="finance-exp-donut-svg" viewBox="0 0 180 180" width="196" height="196" style="transform: rotate(-90deg); overflow: visible;"></svg>
+                    <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none;">
+                      <span style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; color: #64748b;">TOTAL EXPENSE</span>
+                      <strong id="finance-exp-donut-total" style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin-top: 2px;">₱0.00</strong>
+                    </div>
                   </div>
-                  <div class="progress-bar-bg"><div class="progress-bar-fill" id="ewallet-bar" style="width: 0%; background: #3b82f6;"></div></div>
                 </div>
 
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
-                    <span><i class="ti ti-credit-card" style="color: #8b5cf6; margin-right: 4px;"></i>Credit &amp; Debit Cards</span>
-                    <span id="card-share-val">₱0.00</span>
-                  </div>
-                  <div class="progress-bar-bg"><div class="progress-bar-fill" id="card-bar" style="width: 0%; background: #8b5cf6;"></div></div>
+                <div id="finance-exp-donut-legend" style="border-top: 1px solid #f1f5f9; padding-top: 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; font-size: 0.83rem; color: #334155;">
+                  <div style="grid-column: 1 / -1; text-align: center; color: #94a3b8;">Loading expenses breakdown...</div>
                 </div>
               </div>
             </div>
@@ -1747,7 +1779,7 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script src="../js/components/skeleton.js?v=20261108_light_skeleton_v3"></script>
-  <script src="../js/accounting-dashboard.js?v=20261108_skeleton_v1"></script>
+  <script src="../js/accounting-dashboard.js?v=20261120_expenses_donut_v2"></script>
   <script src="../js/offline-monitor.js"></script>
   <script>
     (function() {
