@@ -6238,6 +6238,9 @@ window.switchSettingsSection = function(sectionId, element) {
     targetPane.style.display = 'block';
   }
 
+  if (sectionId === 'general' || sectionId === 'clinic') {
+    setTimeout(() => { if (typeof window.initAdminBranchMap === 'function') window.initAdminBranchMap(); }, 120);
+  }
   if (sectionId === 'utilities') {
     loadDatabaseHealthStatus();
   }
@@ -6868,19 +6871,360 @@ function createClinicPin(branch, isSelected = true) {
   });
 }
 
+const CLINICS_STORAGE_KEY = 'fano_clinic_locations';
+const DEFAULT_HQ_CLINIC = {
+  id: 'hq-naga',
+  name: 'Fano Dental Clinic',
+  badge: 'Headquarters',
+  isMain: true,
+  address: 'Balirong Highway, City of Naga, Cebu, Philippines (6037)',
+  phone: '+63 917 555 0101',
+  hours: 'Mon–Sat 8:00 AM – 5:00 PM',
+  lat: 10.2098,
+  lng: 123.7580
+};
+
+let adminClinicMarkerMap = {};
+let activeClinicId = 'hq-naga';
+let draftClinicPin = null;
+let draftClinicCoords = null;
+let adminMapUiBound = false;
+
+function getStoredClinics() {
+  try {
+    const raw = localStorage.getItem(CLINICS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const hasHq = parsed.some(c => c.id === 'hq-naga' || c.isMain);
+      return hasHq ? parsed : [DEFAULT_HQ_CLINIC, ...parsed];
+    }
+  } catch (_) {}
+  return [DEFAULT_HQ_CLINIC];
+}
+
+function saveStoredClinics(list) {
+  try {
+    localStorage.setItem(CLINICS_STORAGE_KEY, JSON.stringify(list));
+  } catch (_) {}
+}
+
+function escapeMapText(str) {
+  return String(str == null ? '' : str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function buildClinicPopupHtml(c) {
+  return `
+    <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:210px; padding:2px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:4px;">
+        <strong style="color:#0b3c4d; font-size:13px;">${escapeMapText(c.name)}</strong>
+        <span style="font-size:9px; background:#e0f2fe; color:#0284c7; padding:1px 6px; border-radius:8px; font-weight:700;">${escapeMapText(c.badge || (c.isMain ? 'Headquarters' : 'Branch'))}</span>
+      </div>
+      <p style="color:#475569; font-size:11px; margin:0 0 6px 0; line-height:1.4;">📍 ${escapeMapText(c.address)}</p>
+      <div style="font-size:10.5px; color:#64748b;">
+        <div>📞 ${escapeMapText(c.phone || 'N/A')}</div>
+        <div>🕒 ${escapeMapText(c.hours || 'Mon–Sat 8:00 AM – 5:00 PM')}</div>
+      </div>
+    </div>
+  `;
+}
+
+window.updateAdminMapMarkers = function() {
+  if (!adminMap || typeof L === 'undefined') return;
+  (adminBranchMarkers || []).forEach(m => { try { adminMap.removeLayer(m); } catch (_) {} });
+  adminBranchMarkers = [];
+  adminClinicMarkerMap = {};
+
+  const clinics = getStoredClinics();
+  clinics.forEach(c => {
+    const lat = Number(c.lat);
+    const lng = Number(c.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    const marker = L.marker([lat, lng], {
+      icon: createClinicPin({ isMain: !!c.isMain }),
+      title: c.name
+    }).addTo(adminMap);
+    marker.bindPopup(buildClinicPopupHtml(c));
+    marker.on('click', () => {
+      activeClinicId = c.id;
+      window.renderBranchesList();
+    });
+    adminBranchMarkers.push(marker);
+    adminClinicMarkerMap[c.id] = marker;
+  });
+};
+
+window.focusClinicOnMap = function(clinicId) {
+  const clinics = getStoredClinics();
+  const clinic = clinics.find(c => c.id === clinicId) || clinics[0];
+  if (!clinic) return;
+  activeClinicId = clinic.id;
+  window.renderBranchesList();
+  if (!adminMap) window.initAdminBranchMap();
+  if (adminMap) {
+    adminMap.invalidateSize();
+    adminMap.flyTo([Number(clinic.lat), Number(clinic.lng)], 17, { duration: 0.9 });
+    const marker = adminClinicMarkerMap[clinic.id];
+    if (marker) {
+      setTimeout(() => marker.openPopup(), 350);
+    }
+  }
+};
+
+window.renderBranchesList = function() {
+  const container = document.getElementById('admin-clinics-list');
+  const countBadge = document.getElementById('admin-clinic-count-badge');
+  const clinics = getStoredClinics();
+  if (countBadge) {
+    countBadge.textContent = `${clinics.length} Clinic${clinics.length !== 1 ? 's' : ''}`;
+  }
+  if (!container) return;
+
+  container.innerHTML = clinics.map(c => {
+    const isActive = c.id === activeClinicId;
+    const latStr = Number(c.lat).toFixed(4);
+    const lngStr = Number(c.lng).toFixed(4);
+    return `
+      <div class="admin-clinic-list-item" onclick="focusClinicOnMap('${escapeMapText(c.id)}')" style="cursor: pointer; background: ${isActive ? '#f0f9ff' : '#f8fafc'}; border: 1.5px solid ${isActive ? '#0284c7' : '#e2e8f0'}; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; transition: all 0.2s ease;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <div style="font-weight: 700; color: var(--secondary-color); font-size: 0.96rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span>${escapeMapText(c.name)}</span>
+            <span style="font-size: 0.68rem; font-weight: 700; background: ${c.isMain ? '#e0f2fe' : '#dcfce7'}; color: ${c.isMain ? '#0284c7' : '#15803d'}; padding: 2px 8px; border-radius: 12px;">${escapeMapText(c.badge || (c.isMain ? 'Headquarters' : 'Branch'))}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 0.72rem; color: #0284c7; font-weight: 600;"><i class="ti ti-focus-2"></i> Locate</span>
+            ${!c.isMain ? `<button type="button" onclick="event.stopPropagation(); deleteBranch('${escapeMapText(c.id)}')" title="Remove clinic" style="border: none; background: #fee2e2; color: #dc2626; width: 26px; height: 26px; border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;"><i class="ti ti-trash" style="font-size: 14px;"></i></button>` : ''}
+          </div>
+        </div>
+        <div style="font-size: 0.84rem; color: #475569; display: flex; align-items: center; gap: 6px;">
+          <i class="ti ti-map-pin" style="color: #0284c7; font-size: 15px; flex-shrink: 0;"></i>
+          <span>${escapeMapText(c.address)}</span>
+        </div>
+        <div style="display: flex; gap: 16px; font-size: 0.79rem; color: #64748b; margin-top: 2px; flex-wrap: wrap;">
+          <span><i class="ti ti-phone"></i> ${escapeMapText(c.phone || 'N/A')}</span>
+          <span><i class="ti ti-clock"></i> ${escapeMapText(c.hours || 'Mon–Sat 8:00 AM – 5:00 PM')}</span>
+          <span><i class="ti ti-world"></i> ${latStr}° N, ${lngStr}° E</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+window.deleteBranch = function(clinicId) {
+  const clinics = getStoredClinics();
+  const target = clinics.find(c => c.id === clinicId);
+  if (!target || target.isMain) return;
+  if (!confirm(`Remove "${target.name}" from the clinic map?`)) return;
+  const updated = clinics.filter(c => c.id !== clinicId);
+  saveStoredClinics(updated);
+  if (activeClinicId === clinicId) activeClinicId = updated[0]?.id || 'hq-naga';
+  window.updateAdminMapMarkers();
+  window.renderBranchesList();
+  showToast(`Removed ${target.name}.`, 'info');
+};
+
+async function searchClinicStreet(query) {
+  const q = String(query || '').trim();
+  if (!q) return [];
+  const urls = [
+    `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=ph&limit=5&q=${encodeURIComponent(q)}`,
+    `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(q)}`
+  ];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) continue;
+      const items = await res.json();
+      if (Array.isArray(items) && items.length > 0) return items;
+    } catch (_) {}
+  }
+  return [];
+}
+
+function placeDraftClinicPin(lat, lng, label) {
+  draftClinicCoords = { lat: Number(lat), lng: Number(lng) };
+  const previewEl = document.getElementById('new-clinic-coords-preview');
+  if (previewEl) {
+    previewEl.textContent = `Pinned: ${draftClinicCoords.lat.toFixed(5)}° N, ${draftClinicCoords.lng.toFixed(5)}° E`;
+  }
+  if (!adminMap || typeof L === 'undefined') return;
+  if (draftClinicPin) {
+    try { adminMap.removeLayer(draftClinicPin); } catch (_) {}
+  }
+  draftClinicPin = L.marker([draftClinicCoords.lat, draftClinicCoords.lng], {
+    icon: createClinicPin({ isMain: false }),
+    title: label || 'New Clinic Pin'
+  }).addTo(adminMap);
+  if (label) {
+    draftClinicPin.bindPopup(`<strong style="font-size:12px;">📍 ${escapeMapText(label)}</strong>`).openPopup();
+  }
+  adminMap.invalidateSize();
+  adminMap.flyTo([draftClinicCoords.lat, draftClinicCoords.lng], 17, { duration: 0.85 });
+}
+
+function bindAdminMapUi() {
+  if (adminMapUiBound) return;
+  adminMapUiBound = true;
+
+  const toggleBtn = document.getElementById('btn-toggle-add-clinic');
+  const formPanel = document.getElementById('admin-add-clinic-form');
+  const cancelBtn = document.getElementById('btn-cancel-add-clinic');
+  const saveBtn = document.getElementById('btn-save-new-clinic');
+  const findBtn = document.getElementById('btn-find-clinic-street');
+  const addrInput = document.getElementById('new-clinic-address');
+  const suggBox = document.getElementById('clinic-street-suggestions');
+
+  const closeForm = () => {
+    if (formPanel) formPanel.style.display = 'none';
+    if (suggBox) suggBox.style.display = 'none';
+    if (draftClinicPin && adminMap) {
+      try { adminMap.removeLayer(draftClinicPin); } catch (_) {}
+      draftClinicPin = null;
+    }
+    draftClinicCoords = null;
+  };
+
+  toggleBtn?.addEventListener('click', () => {
+    if (!formPanel) return;
+    const isHidden = formPanel.style.display === 'none' || !formPanel.style.display;
+    formPanel.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) {
+      window.initAdminBranchMap();
+      setTimeout(() => adminMap?.invalidateSize(), 120);
+      document.getElementById('new-clinic-name')?.focus();
+    } else {
+      closeForm();
+    }
+  });
+
+  cancelBtn?.addEventListener('click', closeForm);
+
+  const runStreetSearch = async (autoSelectFirst) => {
+    const q = addrInput?.value?.trim();
+    if (!q || q.length < 3) {
+      if (suggBox) suggBox.style.display = 'none';
+      return;
+    }
+    if (findBtn) {
+      findBtn.disabled = true;
+      findBtn.innerHTML = '<i class="ti ti-loader-2"></i> Finding...';
+    }
+    const results = await searchClinicStreet(q);
+    if (findBtn) {
+      findBtn.disabled = false;
+      findBtn.innerHTML = '<i class="ti ti-search"></i> Find Street';
+    }
+    if (!results.length) {
+      if (autoSelectFirst) showToast('Street not found. Try a more specific street/city or click directly on the map.', 'error');
+      if (suggBox) suggBox.style.display = 'none';
+      return;
+    }
+    if (autoSelectFirst) {
+      const first = results[0];
+      if (addrInput) addrInput.value = first.display_name;
+      placeDraftClinicPin(first.lat, first.lon, first.display_name);
+      if (suggBox) suggBox.style.display = 'none';
+      return;
+    }
+    if (suggBox) {
+      suggBox.innerHTML = results.map((r, idx) => `
+        <div class="clinic-sugg-item" data-idx="${idx}" style="padding: 9px 12px; font-size: 0.82rem; color: #1e293b; cursor: pointer; border-bottom: 1px solid #f1f5f9;">
+          <i class="ti ti-map-pin" style="color: #0284c7; margin-right: 6px;"></i>${escapeMapText(r.display_name)}
+        </div>
+      `).join('');
+      suggBox.style.display = 'block';
+      suggBox.querySelectorAll('.clinic-sugg-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const item = results[Number(el.dataset.idx)];
+          if (!item) return;
+          if (addrInput) addrInput.value = item.display_name;
+          placeDraftClinicPin(item.lat, item.lon, item.display_name);
+          suggBox.style.display = 'none';
+        });
+      });
+    }
+  };
+
+  let streetTimer = null;
+  addrInput?.addEventListener('input', () => {
+    clearTimeout(streetTimer);
+    streetTimer = setTimeout(() => runStreetSearch(false), 450);
+  });
+  addrInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      runStreetSearch(true);
+    }
+  });
+  findBtn?.addEventListener('click', () => runStreetSearch(true));
+
+  saveBtn?.addEventListener('click', async () => {
+    const name = document.getElementById('new-clinic-name')?.value?.trim();
+    const address = addrInput?.value?.trim();
+    const phone = document.getElementById('new-clinic-phone')?.value?.trim() || '+63 917 555 0101';
+    const hours = document.getElementById('new-clinic-hours')?.value?.trim() || 'Mon–Sat 8:00 AM – 5:00 PM';
+
+    if (!name) {
+      showToast('Please enter a clinic or branch name.', 'error');
+      return;
+    }
+    if (!address) {
+      showToast('Please enter a street or address.', 'error');
+      return;
+    }
+
+    if (!draftClinicCoords) {
+      const results = await searchClinicStreet(address);
+      if (results.length > 0) {
+        draftClinicCoords = { lat: Number(results[0].lat), lng: Number(results[0].lon) };
+      } else {
+        showToast('Please click "Find Street" or click on the map to pin the location first.', 'error');
+        return;
+      }
+    }
+
+    const clinics = getStoredClinics();
+    const newClinic = {
+      id: 'branch-' + Date.now(),
+      name,
+      badge: 'Branch',
+      isMain: false,
+      address,
+      phone,
+      hours,
+      lat: draftClinicCoords.lat,
+      lng: draftClinicCoords.lng
+    };
+
+    clinics.push(newClinic);
+    saveStoredClinics(clinics);
+
+    document.getElementById('new-clinic-name').value = '';
+    document.getElementById('new-clinic-address').value = '';
+    document.getElementById('new-clinic-phone').value = '';
+    closeForm();
+
+    window.updateAdminMapMarkers();
+    window.focusClinicOnMap(newClinic.id);
+    showToast(`Added "${newClinic.name}" to the clinic map!`, 'success');
+  });
+}
+
 window.initAdminBranchMap = function() {
+  bindAdminMapUi();
+  window.renderBranchesList();
+
   const mapContainer = document.getElementById('admin-branch-map');
   if (!mapContainer || typeof L === 'undefined') return;
 
-  const lat = 10.2098;
-  const lng = 123.7580;
+  const clinics = getStoredClinics();
+  const active = clinics.find(c => c.id === activeClinicId) || clinics[0] || DEFAULT_HQ_CLINIC;
 
   if (!adminMap) {
-    adminMap = L.map('admin-branch-map').setView([lat, lng], 14);
-    const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-      maxZoom: 20,
-      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-      attribution: '&copy; Google Maps'
+    adminMap = L.map('admin-branch-map').setView([Number(active.lat), Number(active.lng)], 16);
+
+    const osmStreets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(adminMap);
 
     const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -6890,44 +7234,74 @@ window.initAdminBranchMap = function() {
     });
 
     L.control.layers({
-      "Google Maps": googleRoadmap,
+      "Street Map (OSM)": osmStreets,
       "CARTO Voyager": cartoVoyager
     }, null, { position: 'topright' }).addTo(adminMap);
 
-    const marker = L.marker([lat, lng], {
-      icon: createClinicPin({ isMain: true }),
-      title: 'Fano Dental Clinic'
-    }).addTo(adminMap);
+    // Allow clicking directly on the map to pin a street while the Add Clinic form is open
+    adminMap.on('click', async (e) => {
+      const formPanel = document.getElementById('admin-add-clinic-form');
+      if (!formPanel || formPanel.style.display === 'none') return;
+      const { lat, lng } = e.latlng;
+      placeDraftClinicPin(lat, lng, 'Locating street...');
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.display_name) {
+            const addrInput = document.getElementById('new-clinic-address');
+            if (addrInput) addrInput.value = data.display_name;
+            placeDraftClinicPin(lat, lng, data.display_name);
+          }
+        }
+      } catch (_) {}
+    });
 
-    marker.bindPopup(`
-      <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:210px; padding:2px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:4px;">
-          <strong style="color:#0b3c4d; font-size:13px;">Fano Dental Clinic</strong>
-          <span style="font-size:9px; background:#e0f2fe; color:#0284c7; padding:1px 6px; border-radius:8px; font-weight:700;">Headquarters</span>
-        </div>
-        <p style="color:#475569; font-size:11px; margin:0 0 6px 0; line-height:1.4;">📍 Balirong Highway, City of Naga, Cebu</p>
-        <div style="font-size:10.5px; color:#64748b;">
-          <div>📞 +63 917 555 0101</div>
-          <div>🕒 Mon–Sat 8:00 AM – 5:00 PM</div>
-        </div>
-      </div>
-    `).openPopup();
+    window.updateAdminMapMarkers();
 
-    adminBranchMarkers = [marker];
-  } else {
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => {
+        if (adminMap && mapContainer.offsetWidth > 0 && mapContainer.offsetHeight > 0) {
+          adminMap.invalidateSize();
+        }
+      });
+      ro.observe(mapContainer);
+    }
+
     setTimeout(() => {
       adminMap.invalidateSize();
-      adminMap.setView([lat, lng], 14);
-    }, 200);
+      const m = adminClinicMarkerMap[active.id];
+      if (m) m.openPopup();
+    }, 250);
+  } else {
+    window.updateAdminMapMarkers();
+    setTimeout(() => {
+      adminMap.invalidateSize();
+    }, 150);
   }
 };
 
-window.updateAdminMapMarkers = function() {};
 window.zoomToBranchPin = function(lat, lng) {
-  if (adminMap) adminMap.flyTo([lat || 10.2098, lng || 123.7580], 15);
+  if (adminMap) adminMap.flyTo([lat || 10.2098, lng || 123.7580], 17);
 };
-window.renderBranchesList = function() {};
-window.deleteBranch = function() {};
+
+// Auto-initialize clinic map whenever the Settings tab or Clinic Info section is opened
+(function attachClinicMapTriggers() {
+  const triggerMap = () => setTimeout(() => window.initAdminBranchMap(), 120);
+  const bind = () => {
+    document.querySelectorAll('.nav-tab[data-tab="settings"]').forEach(el => el.addEventListener('click', triggerMap));
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash === '#settings') triggerMap();
+    });
+    if (document.getElementById('tab-settings')?.classList.contains('active') || window.location.hash === '#settings') {
+      triggerMap();
+    } else {
+      window.renderBranchesList();
+    }
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
 
 // Treatments & Services management
 window.loadSettingsTreatments = function() {

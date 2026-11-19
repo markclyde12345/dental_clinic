@@ -1735,34 +1735,62 @@
 
               <!-- Clinic Location with Interactive Map -->
               <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                  <h3 style="margin: 0; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.15rem; font-weight: 700;">Clinic Location &amp; Map</h3>
-                  <span style="font-size: 0.75rem; background: rgba(52, 152, 219, 0.1); color: #2980b9; padding: 4px 10px; border-radius: 20px; font-weight: 600;">Main Clinic (Naga)</span>
-                </div>
-                <p style="margin: 0 0 16px 0; font-size: 0.85rem; color: #666; line-height: 1.4;">Primary clinic location details and interactive geographical pin marker.</p>
-                
-                <!-- Map Container -->
-                <div style="position: relative; margin-bottom: 16px;">
-                  <div id="admin-branch-map" style="height: 260px; border-radius: 12px; border: 1px solid var(--border-color); z-index: 1;"></div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                  <div>
+                    <h3 style="margin: 0; font-family: var(--font-display); color: var(--secondary-color); font-size: 1.15rem; font-weight: 700;">Clinic Location &amp; Map</h3>
+                    <p style="margin: 4px 0 0 0; font-size: 0.84rem; color: #666; line-height: 1.4;">Search any street, add clinic branches, and click any clinic below to locate its street on the map.</p>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span id="admin-clinic-count-badge" style="font-size: 0.75rem; background: rgba(52, 152, 219, 0.1); color: #2980b9; padding: 5px 10px; border-radius: 20px; font-weight: 600;">1 Clinic</span>
+                    <button type="button" id="btn-toggle-add-clinic" class="btn-primary" style="padding: 7px 14px; font-size: 0.8rem; border-radius: 10px; display: inline-flex; align-items: center; gap: 5px;">
+                      <i class="ti ti-map-pin-plus"></i> Add Clinic
+                    </button>
+                  </div>
                 </div>
 
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 8px;">
-                  <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="font-weight: 700; color: var(--secondary-color); font-size: 1rem; display: flex; align-items: center; gap: 8px;">
-                      <span>Fano Dental Clinic</span>
-                      <span style="font-size: 0.7rem; font-weight: 700; background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 12px;">Headquarters</span>
+                <!-- Inline Add Clinic Form -->
+                <div id="admin-add-clinic-form" style="display: none; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 16px; margin-bottom: 16px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <strong style="font-size: 0.92rem; color: var(--secondary-color);"><i class="ti ti-building-hospital"></i> Add New Clinic Location</strong>
+                    <span id="new-clinic-coords-preview" style="font-size: 0.75rem; color: #0284c7; font-weight: 600;">Click map or search a street to pin</span>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <div>
+                      <label style="display: block; font-size: 0.76rem; font-weight: 600; color: #475569; margin-bottom: 4px;">Clinic / Branch Name *</label>
+                      <input type="text" id="new-clinic-name" placeholder="e.g. Fano Dental — Minglanilla Branch" style="width: 100%; padding: 8px 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.84rem; box-sizing: border-box;">
+                    </div>
+                    <div>
+                      <label style="display: block; font-size: 0.76rem; font-weight: 600; color: #475569; margin-bottom: 4px;">Contact Phone</label>
+                      <input type="text" id="new-clinic-phone" placeholder="e.g. +63 917 555 0102" style="width: 100%; padding: 8px 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.84rem; box-sizing: border-box;">
                     </div>
                   </div>
-                  <div style="font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 6px;">
-                    <i class="ti ti-map-pin" style="color: #0284c7; font-size: 16px;"></i>
-                    <span>Balirong Highway, City of Naga, Cebu, Philippines (6037)</span>
+                  <div style="position: relative; margin-bottom: 10px;">
+                    <label style="display: block; font-size: 0.76rem; font-weight: 600; color: #475569; margin-bottom: 4px;">Street / Address * <span style="font-weight: 400; color: #64748b;">(type a street name to locate on map)</span></label>
+                    <div style="display: flex; gap: 8px;">
+                      <input type="text" id="new-clinic-address" autocomplete="off" placeholder="e.g. Natalio Bacalso Ave, Minglanilla, Cebu" style="flex: 1; padding: 8px 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.84rem; box-sizing: border-box;">
+                      <button type="button" id="btn-find-clinic-street" class="btn-secondary" style="padding: 8px 13px; font-size: 0.8rem; border-radius: 8px; white-space: nowrap;"><i class="ti ti-search"></i> Find Street</button>
+                    </div>
+                    <div id="clinic-street-suggestions" style="display: none; position: absolute; left: 0; right: 0; top: 100%; margin-top: 4px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 12px 24px rgba(15,23,42,0.12); z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
                   </div>
-                  <div style="display: flex; gap: 20px; font-size: 0.82rem; color: #64748b; margin-top: 4px; flex-wrap: wrap;">
-                    <span><i class="ti ti-phone"></i> +63 917 555 0101</span>
-                    <span><i class="ti ti-clock"></i> Mon–Sat 8:00 AM – 5:00 PM</span>
-                    <span><i class="ti ti-world"></i> 10.2098° N, 123.7580° E</span>
+                  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 180px;">
+                      <label style="display: block; font-size: 0.76rem; font-weight: 600; color: #475569; margin-bottom: 4px;">Operating Hours</label>
+                      <input type="text" id="new-clinic-hours" value="Mon–Sat 8:00 AM – 5:00 PM" style="width: 100%; padding: 8px 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.84rem; box-sizing: border-box;">
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                      <button type="button" id="btn-cancel-add-clinic" class="btn-secondary" style="padding: 8px 14px; font-size: 0.82rem; border-radius: 8px;">Cancel</button>
+                      <button type="button" id="btn-save-new-clinic" class="btn-primary" style="padding: 8px 16px; font-size: 0.82rem; border-radius: 8px;"><i class="ti ti-check"></i> Save Clinic</button>
+                    </div>
                   </div>
                 </div>
+
+                <!-- Map Container -->
+                <div style="position: relative; margin-bottom: 16px;">
+                  <div id="admin-branch-map" style="height: 300px; width: 100%; border-radius: 12px; border: 1px solid var(--border-color); z-index: 1; background: #e2e8f0;"></div>
+                </div>
+
+                <!-- Dynamic Clinic Locations List -->
+                <div id="admin-clinics-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
               </div>
             </div>
           </div>
@@ -2996,7 +3024,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="../js/components/skeleton.js?v=20261108_light_skeleton_v3"></script>
-  <script src="../js/admin-dashboard.js?v=20261118_export_csv_v4"></script>
+  <script src="../js/admin-dashboard.js?v=20261119_clinic_map_add_v5"></script>
   <script src="../js/offline-monitor.js"></script>
   <script>
     /* ===== ADMIN THEME TOGGLE ===== */
