@@ -216,11 +216,12 @@ const createAppointment = async (req, res) => {
 
     const { data: activeAppts, error: conflictErr } = await supabase
       .from('appointments')
-      .select('id, appointment_date, status')
+      .select('id, patient_id, appointment_date, status')
       .neq('status', 'Cancelled');
 
     if (conflictErr) throw conflictErr;
 
+    const targetMs = new Date(targetDate).getTime();
     const hasConflict = (activeAppts || []).some(a => {
       if (!a.appointment_date) return false;
       // Direct string exact match or prefix
@@ -233,11 +234,29 @@ const createAppointment = async (req, res) => {
         if (aDate === targetDateStr && aTime === targetTimeStr) return true;
       }
 
+      // Also match exact UTC epoch timestamp (within 1 minute) in case timezone formats differ
+      const aMs = new Date(a.appointment_date).getTime();
+      if (!isNaN(targetMs) && !isNaN(aMs) && Math.abs(aMs - targetMs) < 60000) return true;
+
       return false;
     });
 
     if (hasConflict) {
       return res.status(400).json({ message: 'This time slot is already occupied. Please choose another time.' });
+    }
+
+    // Prevent same patient from holding multiple active bookings at the same time
+    if (req.user.role === 'Patient') {
+      const activeStatuses = ['Pending', 'Confirmed', 'Scheduled', 'Checked In', 'In Progress'];
+      const existingPatientAppt = (activeAppts || []).find(a =>
+        String(a.patient_id) === String(req.user.id) &&
+        activeStatuses.includes(a.status)
+      );
+      if (existingPatientAppt) {
+        return res.status(400).json({
+          message: 'You already have an active appointment booked. Please complete, reschedule, or cancel your existing appointment before booking another.'
+        });
+      }
     }
 
     // Delinquent balance protection: Patients with unpaid balances > 30 days cannot book new appointments
