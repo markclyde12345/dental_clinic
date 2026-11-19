@@ -425,8 +425,7 @@ const authUser = async (req, res) => {
       return res.status(403).json({
         message: 'Account not verified. A verification code has been sent to your email.',
         email: user.email,
-        requireVerification: true,
-        ...(process.env.NODE_ENV !== 'production' || (user.email && user.email.toLowerCase().endsWith('@fanoclinic.com')) ? { devCode: otp } : {})
+        requireVerification: true
       });
     }
 
@@ -534,8 +533,7 @@ const authUser = async (req, res) => {
             maskedEmail,
             channel: 'email',
             availableChannels: ['email'],
-            message: 'Admin Multi-Factor Authentication required. A 6-digit security code has been sent to your email.',
-            ...(process.env.NODE_ENV !== 'production' || (user.email && user.email.toLowerCase().endsWith('@fanoclinic.com')) ? { devCode: otp } : {})
+            message: 'Admin Multi-Factor Authentication required. A 6-digit security code has been sent to your email.'
           });
         }
       }
@@ -651,8 +649,7 @@ const sendOTP = async (req, res) => {
       }
 
     return res.json({ 
-      message: 'If this email is registered, a code will be sent.',
-      ...(process.env.NODE_ENV !== 'production' ? { devCode: otp } : {})
+      message: 'If this email is registered, a code will be sent.'
     });
   } catch (error) {
     return internalError(res, error);

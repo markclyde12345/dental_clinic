@@ -165,8 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           const channelParam = data.channel || 'email';
           const mfaTypeParam = data.mfaType ? `&mfaType=${encodeURIComponent(data.mfaType)}` : '';
-          const devParam = data.devCode ? `&devCode=${encodeURIComponent(data.devCode)}` : '';
-          window.location.href = `verify.html?email=${encodeURIComponent(data.email)}&flow=admin-mfa&channel=${encodeURIComponent(channelParam)}${mfaTypeParam}${devParam}`;
+          window.location.href = `verify.html?email=${encodeURIComponent(data.email)}&flow=admin-mfa&channel=${encodeURIComponent(channelParam)}${mfaTypeParam}`;
         }, 800);
         return;
       }
