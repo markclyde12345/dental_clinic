@@ -265,6 +265,10 @@ function activateTab(targetTab, skipDataLoad = false) {
     }
   });
 
+  if (targetTab === 'settings' && typeof window.initAdminBranchMap === 'function') {
+    setTimeout(() => window.initAdminBranchMap(), 120);
+  }
+
   // If not on appointments tab, ensure branch subnav items are not highlighted
   if (targetTab !== 'appointments') {
     document.querySelectorAll('#sb-branches-subnav .sb-subnav-item').forEach(item => {
@@ -7284,7 +7288,7 @@ window.zoomToBranchPin = function(lat, lng) {
   if (adminMap) adminMap.flyTo([lat || 10.2098, lng || 123.7580], 17);
 };
 
-// Auto-initialize clinic map whenever the Settings tab or Clinic Info section is opened
+// Auto-initialize clinic map whenever the Settings tab or Clinic Info section becomes visible
 (function attachClinicMapTriggers() {
   const triggerMap = () => setTimeout(() => window.initAdminBranchMap(), 120);
   const bind = () => {
@@ -7292,6 +7296,15 @@ window.zoomToBranchPin = function(lat, lng) {
     window.addEventListener('hashchange', () => {
       if (window.location.hash === '#settings') triggerMap();
     });
+    const mapEl = document.getElementById('admin-branch-map');
+    if (mapEl && typeof IntersectionObserver !== 'undefined') {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some(e => e.isIntersecting)) {
+          window.initAdminBranchMap();
+        }
+      }, { threshold: 0.05 });
+      io.observe(mapEl);
+    }
     if (document.getElementById('tab-settings')?.classList.contains('active') || window.location.hash === '#settings') {
       triggerMap();
     } else {
