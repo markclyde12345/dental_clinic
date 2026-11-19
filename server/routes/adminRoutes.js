@@ -40,45 +40,63 @@ const { protect, authorize } = require('../middleware/auth');
 const { logAuditAction } = require('../utils/auditLogger');
 const {
   CONFIGURABLE_ROLES,
+  STAFF_ROLES,
   PERMISSIONS,
-  getPermissionMatrix,
-  savePermissionMatrix,
+  getPermissionStore,
+  savePermissionStore,
+  getEffectivePermissions,
   requirePermission,
 } = require('../utils/permissions');
+const supabase = require('../config/db');
 
-// ─── Role Permissions (Admin grants specific access to each staff role) ──────
-const permissionCatalog = PERMISSIONS.map(({ key, group, label, description }) => ({ key, group, label, description }));
+// ─── Staff & Role Permissions (Admin grants specific access per staff user or role) ──
+const permissionCatalog = PERMISSIONS.map(({ key, group, label, description, userOnly }) => ({ key, group, label, description, userOnly: !!userOnly }));
 
 router.route('/permissions')
   .get(protect, authorize('Admin'), async (req, res) => {
     try {
-      res.json({ roles: CONFIGURABLE_ROLES, permissions: permissionCatalog, matrix: await getPermissionMatrix() });
+      const [{ matrix, userOverrides }, usersRes] = await Promise.all([
+        getPermissionStore(),
+        supabase
+          .from('users')
+          .select('id, name, first_name, last_name, email, role, is_active')
+          .in('role', STAFF_ROLES)
+          .order('name', { ascending: true })
+      ]);
+      const staffUsers = (usersRes.data || [])
+        .filter((u) => u.role && u.role !== 'Patient' && u.role !== 'Admin')
+        .map((u) => ({
+          id: u.id,
+          name: u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email,
+          email: u.email,
+          role: u.role,
+          is_active: u.is_active !== false
+        }));
+      res.json({ roles: CONFIGURABLE_ROLES, permissions: permissionCatalog, matrix, userOverrides, staffUsers });
     } catch (err) { res.status(500).json({ message: err.message }); }
   })
   .put(protect, authorize('Admin'), async (req, res) => {
     try {
-      const matrix = await savePermissionMatrix(req.body && req.body.matrix);
-      console.log(`[Permissions] ${req.user?.name || 'Admin'} updated role permissions`);
+      const { matrix: inMatrix, userOverrides: inUsers } = req.body || {};
+      const updated = await savePermissionStore({ matrix: inMatrix, userOverrides: inUsers });
+      console.log(`[Permissions] ${req.user?.name || 'Admin'} updated staff/role permissions`);
       logAuditAction({
         action: 'PERMISSION_CHANGED',
         entityType: 'permissions',
-        entityId: 'role_matrix',
-        details: `${req.user?.name || 'Admin'} updated staff role access permissions`,
-        metadata: { matrix },
+        entityId: inUsers ? 'staff_user_access' : 'role_matrix',
+        details: `${req.user?.name || 'Admin'} updated staff/role access permissions`,
+        metadata: { updatedUsers: inUsers ? Object.keys(inUsers) : [] },
         req
       });
-      res.json({ message: 'Role permissions updated.', matrix });
+      res.json({ message: 'Access permissions updated.', matrix: updated.matrix, userOverrides: updated.userOverrides });
     } catch (err) { res.status(500).json({ message: err.message }); }
   });
 
-// Any logged-in staff member can read their own permissions (used to show/hide buttons).
+// Any logged-in staff member can read their own effective permissions (user override + role default).
 router.get('/permissions/me', protect, async (req, res) => {
   try {
-    const role = req.user.role;
-    const matrix = await getPermissionMatrix();
-    const mine = {};
-    for (const p of PERMISSIONS) mine[p.key] = role === 'Admin' ? true : !!(matrix[role] && matrix[role][p.key]);
-    res.json({ role, permissions: mine });
+    const permissions = await getEffectivePermissions(req.user);
+    res.json({ role: req.user.role, permissions });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 

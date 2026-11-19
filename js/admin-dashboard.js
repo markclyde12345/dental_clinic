@@ -8415,14 +8415,146 @@ if (typeof document !== 'undefined') {
 
 
 
-// ─── Role Access Permissions (Manage Users tab) ─────────────────────────────
+// ─── Staff & Role Access Permissions (Manage Users tab) ─────────────────────
 (function setupRolePermissions() {
-  let permState = null; // { roles, permissions, matrix }
+  let permState = null; // { roles, permissions, matrix, userOverrides, staffUsers }
+  let selectedStaffId = null;
+  let activeMode = 'users'; // 'users' | 'roles'
   let loaded = false;
 
   const escapeText = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  function renderPermissions() {
+  function switchPermMode(mode) {
+    activeMode = mode;
+    const paneUsers = document.getElementById('perm-pane-users');
+    const paneRoles = document.getElementById('perm-pane-roles');
+    const tabUsers = document.getElementById('perm-tab-users');
+    const tabRoles = document.getElementById('perm-tab-roles');
+    if (paneUsers) paneUsers.style.display = mode === 'users' ? 'block' : 'none';
+    if (paneRoles) paneRoles.style.display = mode === 'roles' ? 'block' : 'none';
+    if (tabUsers) tabUsers.className = mode === 'users' ? 'btn-primary' : 'btn-secondary';
+    if (tabRoles) tabRoles.className = mode === 'roles' ? 'btn-primary' : 'btn-secondary';
+  }
+
+  function getStaffEffective(user, key) {
+    const ov = permState?.userOverrides?.[user.id];
+    if (ov && ov['admin.access'] === true) return true;
+    if (ov && typeof ov[key] === 'boolean') return ov[key];
+    return !!(permState?.matrix?.[user.role]?.[key]);
+  }
+
+  function renderStaffList() {
+    const listEl = document.getElementById('perm-staff-list');
+    if (!listEl || !permState) return;
+    const q = (document.getElementById('perm-staff-search')?.value || '').toLowerCase().trim();
+    const staff = (permState.staffUsers || []).filter((u) => {
+      if (!q) return true;
+      return `${u.name} ${u.email} ${u.role}`.toLowerCase().includes(q);
+    });
+
+    if (!staff.length) {
+      listEl.innerHTML = '<div style="padding: 12px; font-size: 0.8rem; color: #94a3b8;">No staff accounts found.</div>';
+      return;
+    }
+
+    if (!selectedStaffId || !staff.some((u) => u.id === selectedStaffId)) {
+      selectedStaffId = staff[0].id;
+    }
+
+    listEl.innerHTML = staff.map((u) => {
+      const isSel = u.id === selectedStaffId;
+      const ov = permState.userOverrides?.[u.id];
+      const hasAdmin = !!(ov && ov['admin.access']);
+      const hasCustom = !!(ov && Object.keys(ov).length > 0);
+      const badge = hasAdmin
+        ? '<span style="font-size:0.64rem;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:999px;font-weight:700;">Admin Access</span>'
+        : (hasCustom ? '<span style="font-size:0.64rem;background:#e0f2fe;color:#0284c7;padding:1px 6px;border-radius:999px;font-weight:700;">Custom</span>' : '');
+      return `
+        <button type="button" class="perm-staff-item" data-uid="${escapeText(u.id)}" style="text-align:left;width:100%;padding:9px 10px;border-radius:10px;border:1.5px solid ${isSel ? '#0f3d4c' : '#e2e8f0'};background:${isSel ? '#f0f9ff' : '#ffffff'};cursor:pointer;">
+          <div style="font-weight:700;font-size:0.83rem;color:#0f172a;display:flex;align-items:center;justify-content:space-between;gap:4px;">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeText(u.name)}</span>
+            ${badge}
+          </div>
+          <div style="font-size:0.73rem;color:#64748b;margin-top:2px;">${escapeText(u.role)}</div>
+        </button>
+      `;
+    }).join('');
+
+    listEl.querySelectorAll('.perm-staff-item').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedStaffId = btn.dataset.uid;
+        renderStaffList();
+        renderSelectedUserPermissions();
+      });
+    });
+  }
+
+  function renderSelectedUserPermissions() {
+    const header = document.getElementById('perm-selected-user-header');
+    const body = document.getElementById('user-permissions-body');
+    if (!header || !body || !permState) return;
+
+    const user = (permState.staffUsers || []).find((u) => u.id === selectedStaffId);
+    if (!user) {
+      header.innerHTML = '<span style="font-size:0.85rem;color:#64748b;">Select a staff user from the list.</span>';
+      body.innerHTML = '<tr><td colspan="2" style="padding:16px;color:#94a3b8;">No staff user selected.</td></tr>';
+      return;
+    }
+
+    const ov = permState.userOverrides?.[user.id] || {};
+    const hasCustom = Object.keys(ov).length > 0;
+    const isAdminGranted = ov['admin.access'] === true;
+
+    header.innerHTML = `
+      <div>
+        <div style="font-weight:700;font-size:0.92rem;color:#0f172a;">${escapeText(user.name)} <span style="font-size:0.72rem;background:#e2e8f0;color:#334155;padding:2px 8px;border-radius:999px;font-weight:600;margin-left:4px;">${escapeText(user.role)}</span></div>
+        <div style="font-size:0.76rem;color:#64748b;">${escapeText(user.email)}</div>
+      </div>
+      ${hasCustom ? '<button type="button" id="btn-reset-user-override" class="btn-secondary" style="padding:5px 10px;font-size:0.74rem;border-radius:7px;">Reset to Role Default</button>' : '<span style="font-size:0.74rem;color:#64748b;">Using Role Defaults</span>'}
+    `;
+
+    document.getElementById('btn-reset-user-override')?.addEventListener('click', () => {
+      permState.userOverrides = permState.userOverrides || {};
+      permState.userOverrides[user.id] = null;
+      renderStaffList();
+      renderSelectedUserPermissions();
+    });
+
+    let lastGroup = null;
+    body.innerHTML = permState.permissions.map((p) => {
+      let groupRow = '';
+      if (p.group !== lastGroup) {
+        lastGroup = p.group;
+        groupRow = `<tr><td colspan="2" style="padding:9px 14px 4px;font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#64748b;">${escapeText(p.group)}</td></tr>`;
+      }
+      const checked = getStaffEffective(user, p.key) ? 'checked' : '';
+      const lockedByAdmin = isAdminGranted && p.key !== 'admin.access';
+      return `${groupRow}<tr>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:0.86rem;">${escapeText(p.label)}</div>
+          <div style="font-size:0.75rem;color:#94a3b8;">${escapeText(p.description)}</div>
+        </td>
+        <td style="text-align:center;">
+          <input type="checkbox" class="user-perm-toggle" data-key="${escapeText(p.key)}" ${checked} ${lockedByAdmin ? 'disabled' : ''}
+            style="width:18px;height:18px;cursor:${lockedByAdmin ? 'not-allowed' : 'pointer'};accent-color:#0f3d4c;">
+        </td>
+      </tr>`;
+    }).join('');
+
+    body.querySelectorAll('.user-perm-toggle').forEach((cb) => {
+      cb.addEventListener('change', () => {
+        permState.userOverrides = permState.userOverrides || {};
+        if (!permState.userOverrides[user.id] || permState.userOverrides[user.id] === null) {
+          permState.userOverrides[user.id] = {};
+        }
+        permState.userOverrides[user.id][cb.dataset.key] = cb.checked;
+        renderStaffList();
+        renderSelectedUserPermissions();
+      });
+    });
+  }
+
+  function renderRoleMatrix() {
     const head = document.getElementById('role-permissions-head');
     const body = document.getElementById('role-permissions-body');
     if (!head || !body || !permState) return;
@@ -8431,7 +8563,7 @@ if (typeof document !== 'undefined') {
       .map((r) => `<th style="text-align: center; width: 130px;">${escapeText(r)}</th>`).join('');
 
     let lastGroup = null;
-    body.innerHTML = permState.permissions.map((p) => {
+    body.innerHTML = permState.permissions.filter((p) => !p.userOnly).map((p) => {
       let groupRow = '';
       if (p.group !== lastGroup) {
         lastGroup = p.group;
@@ -8456,21 +8588,30 @@ if (typeof document !== 'undefined') {
         const { role, key } = cb.dataset;
         permState.matrix[role] = permState.matrix[role] || {};
         permState.matrix[role][key] = cb.checked;
+        renderSelectedUserPermissions();
       });
     });
   }
 
   async function loadPermissions() {
     const body = document.getElementById('role-permissions-body');
+    const staffList = document.getElementById('perm-staff-list');
     try {
       const res = await fetch(`${BASE_ORIGIN}/api/admin/permissions`, { headers: { Authorization: `Bearer ${getAuthToken()}` } });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || 'Failed to load permissions');
-      permState = data;
+      permState = {
+        ...data,
+        userOverrides: data.userOverrides || {},
+        staffUsers: data.staffUsers || []
+      };
       loaded = true;
-      renderPermissions();
+      renderStaffList();
+      renderSelectedUserPermissions();
+      renderRoleMatrix();
     } catch (err) {
       if (body) body.innerHTML = `<tr><td style="padding: 16px; color: #dc2626;">${escapeText(err.message)}</td></tr>`;
+      if (staffList) staffList.innerHTML = `<div style="padding: 12px; color: #dc2626; font-size: 0.8rem;">${escapeText(err.message)}</div>`;
     }
   }
 
@@ -8482,13 +8623,16 @@ if (typeof document !== 'undefined') {
       const res = await fetch(`${BASE_ORIGIN}/api/admin/permissions`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getAuthToken()}` },
-        body: JSON.stringify({ matrix: permState.matrix })
+        body: JSON.stringify({ matrix: permState.matrix, userOverrides: permState.userOverrides })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || 'Failed to save permissions');
       permState.matrix = data.matrix;
-      renderPermissions();
-      showToast('Role permissions saved.', 'success');
+      permState.userOverrides = data.userOverrides || {};
+      renderStaffList();
+      renderSelectedUserPermissions();
+      renderRoleMatrix();
+      showToast('Staff & role access permissions saved.', 'success');
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -8502,7 +8646,8 @@ if (typeof document !== 'undefined') {
       modal.style.display = 'flex';
       modal.classList.add('active');
     }
-    if (!loaded) loadPermissions();
+    switchPermMode(activeMode);
+    loadPermissions();
   }
 
   function closeRoleAccessModal() {
@@ -8519,9 +8664,11 @@ if (typeof document !== 'undefined') {
     document.getElementById('modal-role-access')?.addEventListener('click', (e) => {
       if (e.target && e.target.id === 'modal-role-access') closeRoleAccessModal();
     });
+    document.getElementById('perm-tab-users')?.addEventListener('click', () => switchPermMode('users'));
+    document.getElementById('perm-tab-roles')?.addEventListener('click', () => switchPermMode('roles'));
+    document.getElementById('perm-staff-search')?.addEventListener('input', renderStaffList);
     document.getElementById('btn-save-permissions')?.addEventListener('click', savePermissions);
     document.getElementById('btn-reload-permissions')?.addEventListener('click', loadPermissions);
-    // Preload the first time the Users tab is opened (or immediately if it's already showing).
     document.querySelectorAll('.nav-tab[data-tab="users"]').forEach((t) =>
       t.addEventListener('click', () => { if (!loaded) loadPermissions(); }));
     window.addEventListener('hashchange', () => { if (window.location.hash === '#users' && !loaded) loadPermissions(); });
