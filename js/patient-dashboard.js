@@ -2375,13 +2375,17 @@ function executePayMongoCheckout() {
   })
     .then(data => {
       if (data.mode === 'live' && data.checkout_url) {
-        // Live PayMongo Checkout Session
+        // Live / Official PayMongo Checkout Session
         if (data.checkout_id) {
           sessionStorage.setItem('paymongo_checkout_' + activePaymentInvoice.id, data.checkout_id);
         }
         showToast('Redirecting to PayMongo secure payment page...', 'success');
         closePaymongoModal();
         window.location.href = data.checkout_url;
+      } else if (data.mode === 'test_simulator' && data.checkout_id) {
+        // Interactive PayMongo Test Mode Checkout (user must explicitly authorize or cancel — never auto-pays)
+        closePaymongoModal();
+        openPaymongoTestSimulator(data);
       } else {
         throw new Error(data.message || 'Online PayMongo checkout is not available right now. Please try again later.');
       }
@@ -2394,6 +2398,112 @@ function executePayMongoCheckout() {
       if (btn) btn.disabled = false;
       if (btnText) btnText.textContent = originalText;
     });
+}
+
+function openPaymongoTestSimulator(sessionData) {
+  const existing = document.getElementById('fano-paymongo-test-sim');
+  if (existing) existing.remove();
+
+  const isDark = document.documentElement.classList.contains('dark-mode') ||
+                 document.documentElement.classList.contains('dark-theme') ||
+                 document.body.classList.contains('dark-mode');
+
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const subBg = isDark ? '#0f172a' : '#f8fafc';
+  const borderCol = isDark ? '#334155' : '#e2e8f0';
+  const titleCol = isDark ? '#f8fafc' : '#0f172a';
+  const mutedCol = isDark ? '#94a3b8' : '#64748b';
+
+  const amt = parseFloat(sessionData.amount || 0).toFixed(2);
+  let selectedChannel = 'GCash';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'fano-paymongo-test-sim';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999999;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(11,19,30,0.65);backdrop-filter:blur(4px);';
+
+  const channels = ['GCash', 'Maya', 'Debit / Credit Card', 'GrabPay'];
+  const channelBtns = channels.map((ch, idx) =>
+    `<button type="button" class="pm-test-ch-btn" data-channel="${ch}" style="padding:10px 12px;border-radius:10px;border:1.5px solid ${idx === 0 ? '#0d9488' : borderCol};background:${idx === 0 ? 'rgba(13,148,136,0.12)' : subBg};color:${titleCol};font-weight:600;font-size:0.84rem;cursor:pointer;text-align:center;">${ch}</button>`
+  ).join('');
+
+  overlay.innerHTML = `
+    <div style="background:${cardBg};border:1px solid ${borderCol};border-radius:18px;padding:24px;width:100%;max-width:430px;box-shadow:0 24px 48px -12px rgba(15,23,42,0.4);font-family:inherit;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#fef3c7;color:#b45309;font-size:0.74rem;font-weight:700;letter-spacing:0.04em;">● TEST MODE — NO REAL MONEY</span>
+        <button type="button" id="pm-sim-close" style="border:none;background:transparent;color:${mutedCol};font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+      </div>
+      <h3 style="margin:0 0 4px;font-size:1.15rem;font-weight:700;color:${titleCol};">PayMongo Test Checkout</h3>
+      <p style="margin:0 0 16px;font-size:0.84rem;color:${mutedCol};">${escapeHTML(sessionData.service_name || 'Dental Service')} • Invoice #${escapeHTML(sessionData.invoice_ref || '')}</p>
+      <div style="background:${subBg};border:1px solid ${borderCol};border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <span style="font-size:0.82rem;font-weight:600;color:${mutedCol};">AMOUNT TO PAY</span>
+        <span style="font-size:1.35rem;font-weight:800;color:#0d9488;">₱${amt}</span>
+      </div>
+      <div style="font-size:0.78rem;font-weight:700;color:${mutedCol};margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;">Select Test Payment Method</div>
+      <div id="pm-sim-channels" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">${channelBtns}</div>
+      <div style="display:flex;gap:10px;">
+        <button type="button" id="pm-sim-cancel" style="flex:1;padding:11px 14px;border-radius:10px;border:1px solid ${borderCol};background:${subBg};color:${titleCol};font-weight:600;font-size:0.88rem;cursor:pointer;">Cancel Payment</button>
+        <button type="button" id="pm-sim-approve" style="flex:1.4;padding:11px 14px;border-radius:10px;border:none;background:#0d9488;color:#ffffff;font-weight:700;font-size:0.88rem;cursor:pointer;">Authorize Test Payment</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  overlay.querySelectorAll('.pm-test-ch-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      selectedChannel = b.dataset.channel;
+      overlay.querySelectorAll('.pm-test-ch-btn').forEach(other => {
+        const active = other === b;
+        other.style.borderColor = active ? '#0d9488' : borderCol;
+        other.style.background = active ? 'rgba(13,148,136,0.12)' : subBg;
+      });
+    });
+  });
+
+  const cancelSim = () => {
+    overlay.remove();
+    showToast('Test payment cancelled. Invoice remains Unpaid.', 'info');
+  };
+
+  document.getElementById('pm-sim-close')?.addEventListener('click', cancelSim);
+  document.getElementById('pm-sim-cancel')?.addEventListener('click', cancelSim);
+
+  document.getElementById('pm-sim-approve')?.addEventListener('click', async () => {
+    const approveBtn = document.getElementById('pm-sim-approve');
+    if (approveBtn) {
+      approveBtn.disabled = true;
+      approveBtn.textContent = 'Authorizing...';
+    }
+    try {
+      const res = await apiFetch('/payments/paymongo/verify', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          invoice_id: sessionData.invoice_id,
+          checkout_id: sessionData.checkout_id,
+          confirmed: true,
+          payment_method: `PayMongo Test (${selectedChannel})`
+        })
+      });
+      if (res && res.success) {
+        overlay.remove();
+        showToast(`Test payment authorized via ${selectedChannel}!`, 'success');
+        await loadInvoices();
+        viewInvoiceReceipt(sessionData.invoice_id);
+      } else {
+        throw new Error(res?.message || 'Test payment could not be verified.');
+      }
+    } catch (err) {
+      showToast(err.message || 'Test payment failed.', 'error');
+      if (approveBtn) {
+        approveBtn.disabled = false;
+        approveBtn.textContent = 'Authorize Test Payment';
+      }
+    }
+  });
 }
 
 async function viewInvoiceReceipt(invoiceOrId) {
