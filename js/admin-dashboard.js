@@ -2895,15 +2895,27 @@ function exportBillingToExcel() {
       ? parseFloat(inv.paid_amount)
       : (inv.status?.toLowerCase() === 'paid' ? total : 0);
 
-    const patientName = inv.patient ? (inv.patient.name || `${inv.patient.first_name || ''} ${inv.patient.last_name || ''}`.trim()) : (inv.patient_name || 'Patient');
-    const invoiceNum = `#INV-${(inv.id || '').substring(0, 8).toUpperCase()}`;
+    let patientName = inv.patient
+      ? (inv.patient.name || `${inv.patient.first_name || ''} ${inv.patient.last_name || ''}`.trim())
+      : (inv.patient_name || '');
+    if (!patientName || patientName === 'Patient') {
+      const pid = String(inv.patient_id || '');
+      const matchedPat = (allPatients || []).find(p => String(p.user_id || p.id || p.user?.id) === pid);
+      const matchedUser = matchedPat ? (matchedPat.user || matchedPat) : (allUsers || []).find(u => String(u.id) === pid);
+      if (matchedUser) {
+        patientName = matchedUser.name || `${matchedUser.first_name || ''} ${matchedUser.last_name || ''}`.trim() || matchedUser.email || 'Patient';
+      } else {
+        patientName = patientName || 'Walk-in Patient';
+      }
+    }
+    const treatmentName = inv.appointment?.treatment?.name || inv.treatment_name || inv.service || 'Dental Consultation';
     const issuedVal = inv.issued_at || inv.created_at;
     const issuedDateStr = issuedVal ? new Date(issuedVal).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
     const status = inv.voided ? 'Voided' : (inv.status || 'Unpaid');
 
     return {
-      'Invoice ID': invoiceNum,
-      'Patient': patientName,
+      'Patient Name': patientName,
+      'Treatment / Service': treatmentName,
       'Billed Amount': total,
       'Paid Amount': paid,
       'Issued Date': issuedDateStr,
@@ -2917,8 +2929,8 @@ function exportBillingToExcel() {
 
   // Auto-size columns
   ws['!cols'] = [
-    { wch: 16 }, // Invoice ID
-    { wch: 28 }, // Patient
+    { wch: 28 }, // Patient Name
+    { wch: 26 }, // Treatment / Service
     { wch: 16 }, // Billed Amount
     { wch: 16 }, // Paid Amount
     { wch: 16 }, // Issued Date
