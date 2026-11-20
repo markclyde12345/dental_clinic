@@ -5,6 +5,7 @@ const { getCloudStore, setCloudStore, getCloudStoreSync } = require('../utils/cl
 // Warm admin cloud stores on module load
 getCloudStore('invoice_supplements', {}).catch(() => {});
 getCloudStore('inventory_prices', {}).catch(() => {});
+getCloudStore('inventory_suppliers', {}).catch(() => {});
 getCloudStore('mfa_settings', {}).catch(() => {});
 getCloudStore('visit_supplements', {}).catch(() => {});
 
@@ -418,6 +419,29 @@ const getDetailedStats = async (req, res) => {
 // @desc    Get dental supplies inventory stock levels with pricing
 // @route   GET /api/admin/inventory
 // @access  Private (Admin)
+function getInventorySuppliersMap() {
+  try {
+    const cloudMap = getCloudStoreSync('inventory_suppliers', null);
+    if (cloudMap && typeof cloudMap === 'object') return cloudMap;
+  } catch (_) {}
+  return {};
+}
+
+function saveInventorySuppliersMap(map) {
+  try {
+    setCloudStore('inventory_suppliers', map).catch(() => {});
+  } catch (_) {}
+}
+
+function getItemSupplier(item, map) {
+  const rec = (item && map && (map[item.id] || map[item.name])) || {};
+  return {
+    supplier_name: rec.supplier_name || '',
+    supplier_phone: rec.supplier_phone || '',
+    supplier_email: rec.supplier_email || ''
+  };
+}
+
 const getInventory = async (req, res) => {
   try {
     let { data: inventory, error } = await supabase
@@ -428,12 +452,17 @@ const getInventory = async (req, res) => {
     if (error) throw error;
 
     const pricesMap = getInventoryPricesMap();
+    const suppliersMap = (await getCloudStore('inventory_suppliers', {}).catch(() => null)) || getInventorySuppliersMap();
     const enriched = (inventory || []).map(item => {
       const price = getItemPrice(item, pricesMap);
+      const sup = getItemSupplier(item, suppliersMap);
       return {
         ...item,
         price,
-        unit_price: price
+        unit_price: price,
+        supplier_name: sup.supplier_name,
+        supplier_phone: sup.supplier_phone,
+        supplier_email: sup.supplier_email
       };
     });
 
@@ -449,7 +478,7 @@ const getInventory = async (req, res) => {
 // @access  Private (Admin)
 const addInventory = async (req, res) => {
   try {
-    const { name, category, unit, stock, threshold, status, notes, price, unit_price } = req.body;
+    const { name, category, unit, stock, threshold, status, notes, price, unit_price, supplier_name, supplier_phone, supplier_email } = req.body;
     if (!name) {
       return res.status(400).json({ message: 'Item name is required' });
     }
@@ -508,6 +537,22 @@ const addInventory = async (req, res) => {
     saveInventoryPricesMap(pricesMap);
     itemResult.price = itemPrice;
     itemResult.unit_price = itemPrice;
+
+    // Save Seller / Supplier contact info in cloudStore
+    const suppliersMap = (await getCloudStore('inventory_suppliers', {}).catch(() => null)) || getInventorySuppliersMap();
+    const supRecord = {
+      supplier_name: String(supplier_name || '').trim(),
+      supplier_phone: String(supplier_phone || '').trim(),
+      supplier_email: String(supplier_email || '').trim()
+    };
+    if (supRecord.supplier_name || supRecord.supplier_phone || supRecord.supplier_email) {
+      suppliersMap[itemResult.id] = supRecord;
+      suppliersMap[itemResult.name] = supRecord;
+      saveInventorySuppliersMap(suppliersMap);
+    }
+    itemResult.supplier_name = supRecord.supplier_name;
+    itemResult.supplier_phone = supRecord.supplier_phone;
+    itemResult.supplier_email = supRecord.supplier_email;
 
     // Detailed Audit Logging
     try {
@@ -1661,3 +1706,104 @@ Object.assign(module.exports, {
   getPersonTimeline: exports.getPersonTimeline,
   exportHistoryCSV: exports.exportHistoryCSV
 });
+
+// @desc    Send a supply order notification to the seller via Email and/or SMS
+// @route   POST /api/admin/inventory/:id/order-notify
+// @access  Private (Admin, Accounting, Receptionist)
+exports.notifyInventorySupplier = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { quantity, notes, supplier_name, supplier_phone, supplier_email } = req.body || {};
+
+    const qty = Math.max(1, parseInt(quantity, 10) || 1);
+    const { data: item } = await supabase.from('inventory').select('*').eq('id', id).maybeSingle();
+    if (!item) return res.status(404).json({ message: 'Inventory item not found.' });
+
+    const suppliersMap = (await getCloudStore('inventory_suppliers', {}).catch(() => null)) || getInventorySuppliersMap();
+    const existingSup = getItemSupplier(item, suppliersMap);
+    const supName = String(supplier_name || existingSup.supplier_name || 'Dental Supplier').trim();
+    const supPhone = String(supplier_phone || existingSup.supplier_phone || '').trim();
+    const supEmail = String(supplier_email || existingSup.supplier_email || '').trim();
+
+    if (!supPhone && !supEmail) {
+      return res.status(400).json({ message: 'Please provide a seller contact number or email to send the order notification.' });
+    }
+
+    // Persist updated seller details for future orders
+    suppliersMap[item.id] = { supplier_name: supName, supplier_phone: supPhone, supplier_email: supEmail };
+    suppliersMap[item.name] = { supplier_name: supName, supplier_phone: supPhone, supplier_email: supEmail };
+    saveInventorySuppliersMap(suppliersMap);
+
+    const pricesMap = getInventoryPricesMap();
+    const unitPrice = getItemPrice(item, pricesMap);
+    const estTotal = (unitPrice * qty).toFixed(2);
+    const staffName = req.user?.name || req.user?.email || 'Clinic Admin';
+    const orderRef = `PO-${Date.now().toString().slice(-6)}`;
+    const unitLabel = item.unit || 'Units';
+
+    const channelsSent = [];
+
+    if (supEmail) {
+      const subject = `Supply Order Request (${orderRef}): ${item.name} — Fano Dental Clinic`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 560px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+          <div style="background: #0b3c4d; color: #ffffff; padding: 20px 24px;">
+            <h2 style="margin: 0; font-size: 18px;">Fano Dental Clinic — Supply Order Notification</h2>
+            <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.85;">Order Reference: ${orderRef}</p>
+          </div>
+          <div style="padding: 22px 24px; color: #1e293b; font-size: 14px; line-height: 1.6;">
+            <p style="margin-top: 0;">Hello <strong>${supName}</strong>,</p>
+            <p>Fano Dental Clinic would like to place a restock order for the following dental supply item:</p>
+            <table style="width: 100%; border-collapse: collapse; margin: 14px 0; background: #f8fafc; border-radius: 8px;">
+              <tr><td style="padding: 8px 12px; color: #64748b; font-weight: 600;">Supply Item</td><td style="padding: 8px 12px; font-weight: 700;">${item.name}</td></tr>
+              <tr><td style="padding: 8px 12px; color: #64748b; font-weight: 600;">Category</td><td style="padding: 8px 12px;">${item.category || 'Supplies'}</td></tr>
+              <tr><td style="padding: 8px 12px; color: #64748b; font-weight: 600;">Order Quantity</td><td style="padding: 8px 12px; font-weight: 700; color: #0284c7;">${qty} ${unitLabel}</td></tr>
+              <tr><td style="padding: 8px 12px; color: #64748b; font-weight: 600;">Est. Total</td><td style="padding: 8px 12px;">₱${estTotal}</td></tr>
+              ${notes ? `<tr><td style="padding: 8px 12px; color: #64748b; font-weight: 600;">Notes</td><td style="padding: 8px 12px;">${notes}</td></tr>` : ''}
+            </table>
+            <p style="font-size: 13px; color: #475569;">Requested by: <strong>${staffName}</strong><br>Fano Dental Clinic — Balirong Highway, City of Naga, Cebu</p>
+          </div>
+        </div>
+      `;
+      const text = `Fano Dental Clinic Supply Order (${orderRef})\nItem: ${item.name}\nQuantity: ${qty} ${unitLabel}\nEst. Total: ₱${estTotal}${notes ? `\nNotes: ${notes}` : ''}\nRequested by: ${staffName}`;
+      try {
+        await sendEmail(supEmail, subject, html, text);
+        channelsSent.push(`Email (${supEmail})`);
+      } catch (e) {
+        console.warn('[Supplier Email Warning]', e.message);
+      }
+    }
+
+    if (supPhone) {
+      const smsMsg = `Fano Dental Clinic Order (${orderRef}): Requesting ${qty} ${unitLabel} of ${item.name} (Est. PHP ${estTotal}).${notes ? ' Note: ' + notes : ''} Please confirm availability.`;
+      try {
+        await sendSMS(supPhone, smsMsg);
+        channelsSent.push(`SMS (${supPhone})`);
+      } catch (e) {
+        console.warn('[Supplier SMS Warning]', e.message);
+      }
+    }
+
+    try {
+      const { logAuditAction } = require('../utils/auditLogger');
+      logAuditAction({
+        action: 'SUPPLIER_ORDER_NOTIFIED',
+        entityType: 'inventory',
+        entityId: item.id,
+        details: `${staffName} sent order notification (${orderRef}) for ${qty} ${unitLabel} of "${item.name}" to ${supName} via ${channelsSent.join(' & ') || 'record'}`,
+        metadata: { orderRef, quantity: qty, supplier_name: supName, supplier_phone: supPhone, supplier_email: supEmail },
+        req
+      });
+    } catch (_) {}
+
+    return res.json({
+      success: true,
+      orderRef,
+      channelsSent,
+      message: `Order notification (${orderRef}) sent to ${supName}${channelsSent.length ? ' via ' + channelsSent.join(' & ') : ''}.`
+    });
+  } catch (err) {
+    console.error('[Notify Inventory Supplier Error]', err.message);
+    return res.status(500).json({ message: err.message || 'Failed to send order notification.' });
+  }
+};

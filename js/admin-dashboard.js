@@ -4554,7 +4554,10 @@ function renderInventoryRows(data) {
             <span style="width: 30px; height: 30px; border-radius: 8px; background: #f1f5f9; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: #475569;">
               <i class="ti ti-box" style="font-size: 16px;"></i>
             </span>
-            <span style="line-height: 1.35;">${escapeHTML(item.name)}</span>
+            <div>
+              <div style="line-height: 1.35;">${escapeHTML(item.name)}</div>
+              ${(item.supplier_name || item.supplier_phone || item.supplier_email) ? `<div style="font-size: 0.74rem; font-weight: 500; color: #64748b; margin-top: 2px;">${escapeHTML(item.supplier_name || 'Seller')}${item.supplier_phone ? ' &bull; ' + escapeHTML(item.supplier_phone) : ''}${item.supplier_email ? ' &bull; ' + escapeHTML(item.supplier_email) : ''}</div>` : ''}
+            </div>
           </div>
         </td>
         <td style="padding: 14px 16px; vertical-align: middle; white-space: nowrap;">
@@ -4586,8 +4589,8 @@ function renderInventoryRows(data) {
             <button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 32px; padding: 0 12px; font-size: 0.78rem; border-radius: 6px; border: 1.5px solid #0284c7; background: transparent; color: #0284c7; font-weight: 600; cursor: pointer; white-space: nowrap;" onclick="openEditInventoryModal('${item.id}', '${escapeJS(item.name)}', '${escapeJS(item.category)}', '${escapeJS(item.unit)}', ${stockNum}, ${threshNum}, ${priceVal})">
               <i class="ti ti-edit" style="font-size: 14px;"></i><span>Edit</span>
             </button>
-            <button type="button" onclick="reorderSupply('${escapeJS(item.name)}')" style="display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.78rem; background: var(--secondary-color, #0b3c4d); color: white; white-space: nowrap;">
-              Restock
+            <button type="button" onclick="openOrderSupplierModal('${item.id}')" title="Send order notification to seller via Email or SMS" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 32px; padding: 0 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.78rem; background: var(--secondary-color, #0b3c4d); color: white; white-space: nowrap;">
+              <i class="ti ti-send" style="font-size: 13px;"></i> Order / Notify
             </button>
             <button type="button" onclick="deleteInventoryItem('${item.id}', '${escapeJS(item.name)}')" style="display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.78rem; background: #fee2e2; color: #ef4444; white-space: nowrap;">
               Delete
@@ -5001,6 +5004,9 @@ if (addInventoryForm) {
     const threshold = parseInt(document.getElementById('inv-threshold').value, 10) || 0;
     const priceInput = document.getElementById('inv-price');
     const price = priceInput ? (parseFloat(priceInput.value) || 0) : 0;
+    const supplier_name = document.getElementById('inv-supplier-name')?.value?.trim() || '';
+    const supplier_phone = document.getElementById('inv-supplier-phone')?.value?.trim() || '';
+    const supplier_email = document.getElementById('inv-supplier-email')?.value?.trim() || '';
     const status = stock === 0 ? 'Out of Stock' : (stock <= threshold ? 'Low Stock' : 'In Stock');
 
     fetch(`${ADMIN_API}/inventory`, {
@@ -5009,7 +5015,7 @@ if (addInventoryForm) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ name, category, unit, stock, threshold, status, price, unit_price: price })
+      body: JSON.stringify({ name, category, unit, stock, threshold, status, price, unit_price: price, supplier_name, supplier_phone, supplier_email })
     })
     .then(res => res.json())
     .then(newItem => {
@@ -8852,3 +8858,109 @@ if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
+// ─── Order / Notify Seller Modal (Email & SMS Order Notification) ───────────
+window.openOrderSupplierModal = function(itemId) {
+  const item = (localInventory || []).find((i) => String(i.id) === String(itemId));
+  if (!item) {
+    showToast('Supply item not found.', 'error');
+    return;
+  }
+
+  const existing = document.getElementById('fano-order-supplier-modal');
+  if (existing) existing.remove();
+
+  const isDark = document.body.classList.contains('dark-mode') || document.documentElement.classList.contains('dark-mode');
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const subBg = isDark ? '#0f172a' : '#f8fafc';
+  const borderCol = isDark ? '#334155' : '#cbd5e1';
+  const titleCol = isDark ? '#f8fafc' : '#0f172a';
+  const mutedCol = isDark ? '#94a3b8' : '#64748b';
+
+  const suggestedQty = Math.max(10, (parseInt(item.threshold, 10) || 10) * 2 - (parseInt(item.stock, 10) || 0));
+
+  const overlay = document.createElement('div');
+  overlay.id = 'fano-order-supplier-modal';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(11,19,30,0.62);backdrop-filter:blur(4px);';
+  overlay.innerHTML = `
+    <div style="background:${cardBg};border:1px solid ${borderCol};border-radius:18px;padding:24px;width:100%;max-width:460px;box-shadow:0 24px 48px -12px rgba(15,23,42,0.4);font-family:inherit;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h3 style="margin:0;font-size:1.1rem;font-weight:700;color:${titleCol};"><i class="ti ti-truck-delivery"></i> Order &amp; Notify Seller</h3>
+        <button type="button" id="ord-sup-close" style="border:none;background:transparent;color:${mutedCol};font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+      </div>
+      <div style="background:${subBg};border:1px solid ${borderCol};border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:0.84rem;color:${titleCol};">
+        <strong>${escapeHTML(item.name)}</strong>
+        <div style="font-size:0.76rem;color:${mutedCol};margin-top:2px;">Current Stock: ${parseInt(item.stock, 10) || 0} ${escapeHTML(item.unit || 'Units')} &bull; Est. Unit Cost: ₱${(parseFloat(item.price || item.unit_price || 0)).toFixed(2)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="display:block;font-size:0.78rem;font-weight:600;color:${mutedCol};margin-bottom:4px;">Order Quantity *</label>
+            <input type="number" id="ord-sup-qty" min="1" value="${suggestedQty}" style="width:100%;padding:9px 11px;border:1px solid ${borderCol};border-radius:8px;background:${subBg};color:${titleCol};font-size:0.88rem;box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="display:block;font-size:0.78rem;font-weight:600;color:${mutedCol};margin-bottom:4px;">Seller / Supplier Name</label>
+            <input type="text" id="ord-sup-name" value="${escapeHTML(item.supplier_name || '')}" placeholder="e.g. Dental Supply Corp." style="width:100%;padding:9px 11px;border:1px solid ${borderCol};border-radius:8px;background:${subBg};color:${titleCol};font-size:0.88rem;box-sizing:border-box;">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="display:block;font-size:0.78rem;font-weight:600;color:${mutedCol};margin-bottom:4px;">Seller Contact Number (SMS)</label>
+            <input type="tel" id="ord-sup-phone" value="${escapeHTML(item.supplier_phone || '')}" placeholder="09171234567" style="width:100%;padding:9px 11px;border:1px solid ${borderCol};border-radius:8px;background:${subBg};color:${titleCol};font-size:0.88rem;box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="display:block;font-size:0.78rem;font-weight:600;color:${mutedCol};margin-bottom:4px;">Seller Email</label>
+            <input type="email" id="ord-sup-email" value="${escapeHTML(item.supplier_email || '')}" placeholder="orders@supplier.com" style="width:100%;padding:9px 11px;border:1px solid ${borderCol};border-radius:8px;background:${subBg};color:${titleCol};font-size:0.88rem;box-sizing:border-box;">
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:0.78rem;font-weight:600;color:${mutedCol};margin-bottom:4px;">Order Notes / Delivery Instructions</label>
+          <textarea id="ord-sup-notes" rows="2" placeholder="e.g. Please deliver by Friday morning..." style="width:100%;padding:9px 11px;border:1px solid ${borderCol};border-radius:8px;background:${subBg};color:${titleCol};font-size:0.85rem;box-sizing:border-box;font-family:inherit;"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+        <button type="button" id="ord-sup-cancel" class="btn-secondary" style="padding:9px 16px;border-radius:8px;font-size:0.85rem;">Cancel</button>
+        <button type="button" id="ord-sup-send" class="btn-primary" style="padding:9px 16px;border-radius:8px;font-size:0.85rem;"><i class="ti ti-send"></i> Send Order Notification</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  document.getElementById('ord-sup-close')?.addEventListener('click', close);
+  document.getElementById('ord-sup-cancel')?.addEventListener('click', close);
+
+  document.getElementById('ord-sup-send')?.addEventListener('click', async () => {
+    const qty = parseInt(document.getElementById('ord-sup-qty')?.value, 10) || 0;
+    const supplier_name = document.getElementById('ord-sup-name')?.value?.trim() || '';
+    const supplier_phone = document.getElementById('ord-sup-phone')?.value?.trim() || '';
+    const supplier_email = document.getElementById('ord-sup-email')?.value?.trim() || '';
+    const notes = document.getElementById('ord-sup-notes')?.value?.trim() || '';
+
+    if (qty < 1) { showToast('Please enter a valid order quantity.', 'error'); return; }
+    if (!supplier_phone && !supplier_email) { showToast('Enter a seller contact number or email to notify.', 'error'); return; }
+
+    const sendBtn = document.getElementById('ord-sup-send');
+    if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = 'Sending...'; }
+
+    try {
+      const res = await fetch(`${ADMIN_API}/inventory/${item.id}/order-notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getAuthToken()}` },
+        body: JSON.stringify({ quantity: qty, supplier_name, supplier_phone, supplier_email, notes })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Failed to notify seller');
+      item.supplier_name = supplier_name;
+      item.supplier_phone = supplier_phone;
+      item.supplier_email = supplier_email;
+      renderInventoryTable(localInventory);
+      close();
+      showToast(data.message || 'Order notification sent to seller!', 'success');
+    } catch (err) {
+      showToast(err.message, 'error');
+      if (sendBtn) { sendBtn.disabled = false; sendBtn.innerHTML = '<i class="ti ti-send"></i> Send Order Notification'; }
+    }
+  });
+};

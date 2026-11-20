@@ -8,6 +8,7 @@ const {
   addInventory,
   updateInventory,
   deleteInventory,
+  notifyInventorySupplier,
   getStaffSchedules, 
   addStaffSchedule,
   updateStaffSchedule,
@@ -138,6 +139,8 @@ router.route('/inventory')
 router.route('/inventory/:id')
   .put(protect, requirePermission('inventory.edit'), updateInventory)
   .delete(protect, authorize('Admin'), deleteInventory);
+
+router.post('/inventory/:id/order-notify', protect, authorize('Admin', 'Accounting', 'Receptionist'), notifyInventorySupplier);
 
 // Staff schedules routes
 router.route('/staff-schedules')

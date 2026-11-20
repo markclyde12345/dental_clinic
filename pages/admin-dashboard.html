@@ -2255,6 +2255,23 @@
             <input type="number" id="inv-threshold" required min="0" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
           </div>
         </div>
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 12px;">
+          <div style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 10px;"><i class="ti ti-truck-delivery"></i> Seller / Supplier Order Contact</div>
+          <div style="margin-bottom: 10px;">
+            <label style="display: block; margin-bottom: 6px; font-size: 0.84rem; font-weight: 600; color: var(--dark-color);">Seller / Supplier Name</label>
+            <input type="text" id="inv-supplier-name" placeholder="e.g. Cebu Dental Supply Corp." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 0.84rem; font-weight: 600; color: var(--dark-color);">Seller Contact Number</label>
+              <input type="tel" id="inv-supplier-phone" placeholder="e.g. 09171234567" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 0.84rem; font-weight: 600; color: var(--dark-color);">Seller Email (Notifications)</label>
+              <input type="email" id="inv-supplier-email" placeholder="e.g. orders@supplier.com" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 0.9rem; box-sizing: border-box;">
+            </div>
+          </div>
+        </div>
         <div style="display: flex; gap: 12px; align-items: center; justify-content: flex-end; margin-top: 10px;">
           <button type="button" id="btn-cancel-add-inventory" style="padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border-color); background: white; cursor: pointer; font-size: 0.9rem; font-weight: 600;">Cancel</button>
           <button type="submit" style="padding: 10px 20px; border-radius: 8px; border: none; background: var(--secondary-color); color: white; cursor: pointer; font-size: 0.9rem; font-weight: 600;">Save Item</button>
@@ -3110,7 +3127,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="../js/components/skeleton.js?v=20261108_light_skeleton_v3"></script>
-  <script src="../js/admin-dashboard.js?v=20261119_staff_user_perms_v10"></script>
+  <script src="../js/admin-dashboard.js?v=20261120_supplier_notify_v11"></script>
   <script src="../js/offline-monitor.js"></script>
   <script>
     /* ===== ADMIN THEME TOGGLE ===== */
