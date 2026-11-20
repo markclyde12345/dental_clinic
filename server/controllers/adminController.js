@@ -1710,7 +1710,7 @@ Object.assign(module.exports, {
 // @desc    Send a supply order notification to the seller via Email and/or SMS
 // @route   POST /api/admin/inventory/:id/order-notify
 // @access  Private (Admin, Accounting, Receptionist)
-exports.notifyInventorySupplier = async (req, res) => {
+module.exports.notifyInventorySupplier = async (req, res) => {
   try {
     const { id } = req.params;
     const { quantity, notes, supplier_name, supplier_phone, supplier_email } = req.body || {};
